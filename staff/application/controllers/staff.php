@@ -2370,7 +2370,7 @@ class Staff extends CI_Controller {
 		$cphUser = $this->uri->segment(2);
 		
 		$notes = array();
-		$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'username="'.$cphUser.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
+		$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$this->staffM->getSingleField('staffs', 'empID', 'username="'.$cphUser.'"').'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
 		
 		$noteType = $this->staffM->definevar('noteType');
 		$types = array();
