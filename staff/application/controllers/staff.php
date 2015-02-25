@@ -2263,7 +2263,7 @@ class Staff extends CI_Controller {
 		$segment3 = $this->uri->segment(3); //logged user
 		
 		if($this->uri->segment(4)=='redirect'){
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'active=1 AND username="'.$segment3.'"');
+			$empID = $this->staffM->getSingleField('staffs', 'empID', 'active=1 AND office!="OKC" AND username="'.$segment3.'"');
 			if(!empty($empID)){
 				$this->session->set_userdata('uid', $empID);
 				$this->session->set_userdata('u', md5($segment3.'dv'));								
