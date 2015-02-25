@@ -1077,7 +1077,7 @@ class Staffmodel extends CI_Model {
 						if($fld=='supervisor'){
 							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'is_supervisor=1', '', 'fname ASC');
 						}else if($fld=='title'){
-							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp', 'active=1', '', 'title ASC');
+							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', 'active=1', '', 'title ASC');
 						}
 						
 						if($fld=='supervisor' || $fld=='title'){							
