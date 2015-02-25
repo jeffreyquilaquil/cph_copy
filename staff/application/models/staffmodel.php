@@ -503,7 +503,7 @@ class Staffmodel extends CI_Model {
 		$pdf->SetTextColor(0, 0, 0);
 		
 		$pdf->setXY(108, 71.4);
-		$pdf->Write(0, date('F d, Y', strtotime($leave->date_requested)));	
+		$pdf->Write(0, date('F d, Y', strtotime($leave->date_requested)));
 		$pdf->setXY(108, 76.6);
 		$pdf->Write(0, $leave->name);
 				
@@ -1083,8 +1083,8 @@ class Staffmodel extends CI_Model {
 						if($fld=='supervisor' || $fld=='title'){							
 							foreach($aRR AS $va):
 								if( $v==$va->id || ($fld=='title' && $v==$va->val)) $vvalue=$va->val;
-								
-								if($fld=='title' || ($fld=='supervisor' && ($va->active==1 || $va->id==$v))){								
+															
+								if(($va->active==1 || $va->id==$v) && ($fld=='title' || $fld=='supervisor')){								
 									$disp .= '<option value="'.$va->id.'" '.(( $v==$va->id || ($fld=='title' && $v==$va->val)) ? 'selected="selected"' : '').'>';
 									if($fld=='title') $disp .= $va->val.' ('.$va->org.' > '.$va->dept.' > '.$va->grp.' > '.$va->subgrp.')';
 									else $disp .= $va->val;
@@ -1121,28 +1121,29 @@ class Staffmodel extends CI_Model {
 		$ptNotes = $this->staffM->getPTQueryResults('eNotes', 'eNotes.*, eData.u', 'u="'.$username.'"', 'LEFT JOIN eData ON eKey=eNoteOwner', 'eNoteStamp DESC');
 		
 		foreach($myNotes AS $m):
-			$notesArr[$m->timestamp]['from'] = 'careerPH';
-			$notesArr[$m->timestamp]['timestamp'] = $m->dateissued;
-			$notesArr[$m->timestamp]['note'] = $m->ntexts;
-			$notesArr[$m->timestamp]['staffID'] = $m->sID;
-			$notesArr[$m->timestamp]['username'] = $m->username;
-			$notesArr[$m->timestamp]['name'] = $m->name;
-			$notesArr[$m->timestamp]['type'] = $m->ntype;
-			$notesArr[$m->timestamp]['access'] = $m->accesstype;
+			$notesArr[] = array(
+				'from' => 'careerPH',
+				'timestamp' => $m->dateissued,
+				'note' => $m->ntexts,
+				'staffID' => $m->sID,
+				'username' => $m->username,
+				'name' => $m->name,
+				'type' => $m->ntype,
+				'access' => $m->accesstype
+			);
 		endforeach;
 		
 		
 		foreach($ptNotes AS $p):
-			$notesArr[$p->eNoteStamp]['from'] = 'pt';
-			$notesArr[$p->eNoteStamp]['timestamp'] = $p->eNoteStamp;
-			$notesArr[$p->eNoteStamp]['note'] = $p->eNoteText;
-			$notesArr[$p->eNoteStamp]['staffID'] = 0;
-			$notesArr[$p->eNoteStamp]['username'] = $p->username;
-			
-			if(isset($noteType[$p->category])) $notesArr[$p->eNoteStamp]['type'] = $noteType[$p->category];
-			else $notesArr[$p->eNoteStamp]['type'] = 0;
-			
-			$notesArr[$p->eNoteStamp]['access'] = $p->permissions;
+			$notesArr[] = array(
+				'from' => 'pt',
+				'timestamp' => $p->eNoteStamp,
+				'note' => $p->eNoteText,
+				'staffID' => 0,
+				'username' => $p->username,
+				'type' => ((isset($noteType[$p->category]))?$noteType[$p->category]:0),
+				'access' => $p->permissions
+			);
 		endforeach;
 				
 		foreach ($notesArr as $key => $row) {

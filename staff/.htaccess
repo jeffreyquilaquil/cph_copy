@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteBase /staff/
+	RewriteBase /~divi/staff/
 	# RewriteCond %{REQUEST_FILENAME} !-f
 	# RewriteCond %{REQUEST_FILENAME} !-di
 	RewriteCond $1 !^(index\.php|css|images|js|uploads|includes)
