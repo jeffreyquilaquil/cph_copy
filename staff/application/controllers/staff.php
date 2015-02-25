@@ -2370,23 +2370,26 @@ class Staff extends CI_Controller {
 		$cphUser = $this->uri->segment(2);
 		
 		$notes = array();
-		$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$this->staffM->getSingleField('staffs', 'empID', 'username="'.$cphUser.'"').'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
-		
-		$noteType = $this->staffM->definevar('noteType');
-		$types = array();
-		foreach($noteType AS $k=>$n):
-			$types[$n] = $k;
-		endforeach;
-		
-		if(count($myNotes)>0){
-			foreach($myNotes AS $m):
-				$notes[] = array(
-						'eNoteText'=>'<p><b>'.$m->name.'</b> ('.date('M d y h:i a', strtotime($m->timestamp)).') <br> </p><p>'.$m->ntexts.'</p>', 
-						'username' => $m->username, 
-						'eNoteStamp' => $m->timestamp,
-						'category' => $types[$m->ntype]
-					);
+		$empID = $this->staffM->getSingleField('staffs', 'empID', 'username="'.$cphUser.'"');
+		if($empID!=''){
+			$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
+					
+			$noteType = $this->staffM->definevar('noteType');
+			$types = array();
+			foreach($noteType AS $k=>$n):
+				$types[$n] = $k;
 			endforeach;
+			
+			if(count($myNotes)>0){
+				foreach($myNotes AS $m):
+					$notes[] = array(
+							'eNoteText'=>'<p><b>'.$m->name.'</b> ('.date('M d y h:i a', strtotime($m->timestamp)).') <br> </p><p>'.$m->ntexts.'</p>', 
+							'username' => $m->username, 
+							'eNoteStamp' => $m->timestamp,
+							'category' => $types[$m->ntype]
+						);
+				endforeach;
+			}
 		}
 		echo serialize($notes);
 	}
