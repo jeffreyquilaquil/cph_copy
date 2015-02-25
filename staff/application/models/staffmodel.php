@@ -184,7 +184,8 @@ class Staffmodel extends CI_Model {
 						'salary'=>1,
 						'performance'=>2,
 						'timeoff'=>3,
-						'disciplinary'=>4
+						'disciplinary'=>4,
+						'actions'=>5
 					);
 		}
 		
