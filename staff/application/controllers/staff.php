@@ -2274,7 +2274,7 @@ class Staff extends CI_Controller {
 			header('Location:'.$this->config->base_url().'staffinfo/'.$segment2.'/');
 			exit;
 		}else{
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'username="'.$segment2.'"');
+			$empID = $this->staffM->getSingleField('staffs', 'empID', 'office!="OKC" AND username="'.$segment2.'"');
 			if(!empty($empID)){
 				echo 'exist';
 			}
