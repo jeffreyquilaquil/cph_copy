@@ -36,7 +36,7 @@
 		<input type="button" value="Search" id="insearch"/>
 	</div>
 	<div class="wrapper-box">
-		<h2 class="wheadtext">QUICK LINKS-test</h2>
+		<h2 class="wheadtext">QUICK LINKS</h2>
 		<a class="iframe tanone" href="<?= $this->config->base_url() ?>requestcoe/">Print Certificate of Employment</a><br/><br/>
 		<a class="iframe tanone" href="<?= $this->config->base_url() ?>fileleave/">File for a Leave/Offset</a><br/><br/>
 		<a href="mailto:accounting.cebu@tatepublishing.net" class="tanone">Payroll Inquiry</a><br/><br/>
