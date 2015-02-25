@@ -14,9 +14,9 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://careerph.tatepublishing.net/~divi/staff/';
-$config['career_url']	= 'http://careerph.tatepublishing.net/~divi';
-$config['career_uri']	= 'http://careerph.tatepublishing.net/~divi'.$_SERVER['REQUEST_URI'];
+$config['base_url']	= 'http://careerph.tatepublishing.net/staff/';
+$config['career_url']	= 'http://careerph.tatepublishing.net';
+$config['career_uri']	= 'http://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
 
 /*
 |--------------------------------------------------------------------------
