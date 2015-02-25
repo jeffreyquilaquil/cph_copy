@@ -1,3 +1,6 @@
+<style>
+	.nTD{ width:65px; }
+</style>
 <?php
 	if(count($row)==0){
 		echo 'No staff record found.';
@@ -50,7 +53,7 @@
 
 	<ul class="tabs" style="text-align:right;">
 		<li class="tab-link current" data-tab="tab-1">Info</li>
-		<li class="tab-link" data-tab="tab-2">Notes</li>
+		<li class="tab-link" data-tab="tab-2" id="getNotes" onClick="getNotes('<?= $row->empID ?>', '<?= $row->username ?>');">Notes</li>
 	</ul>
 	
 	<div id="tab-1" class="tab-content current">
@@ -76,9 +79,14 @@
 	
 		<table class="tableInfo" style="position:relative;">
 		<tr class="trlabel" id="pdetails"><td colspan=2>Personal Details <?php if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){ ?><a href="javascript:void(0)" class="edit" onClick="reqUpdate('pdetails')" id="pdetailsupb"><?= ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'') ?>Update</a><?php } ?>
-		<div style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">
-			<a href="http://staffthumbnails.s3.amazonaws.com/<?= $row->username ?>.jpg" class="imgiframe" title="PT profile picture"/><img src="http://staffthumbnails.s3.amazonaws.com/<?= $row->username ?>.jpg" width="80px"></a><br/>
-		<?php if(count(array_intersect($this->myaccess,array('full','hr')))>0){ 
+		<div style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">			
+		<?php 
+			$ptimg = 'http://staffthumbnails.s3.amazonaws.com/'.$row->username.'.jpg';
+			if(!(@file_get_contents($ptimg, 0, NULL, 0, 1)))
+				$ptimg = $this->config->base_url().'css/images/logo.png';
+			echo '<a href="'.$ptimg.'" class="imgiframe" title="PT profile picture"/><img src="'.$ptimg.'" width="80px"></a><br/>';
+			
+			if(count(array_intersect($this->myaccess,array('full','hr')))>0){ 
 				echo '<a href="javascript:void(0)" id="updatePTpic">Update</a>';
 				echo '<form id="PTpform" action="" method="POST" enctype="multipart/form-data">';
 				echo '<input type="file" name="PTpicture" id="PTpicture" class="hidden"/>';
@@ -337,42 +345,12 @@
 					</form>
 				</td>
 			</tr>
+			<tr class="traddnote hidden"><td><br/></td></tr>
 		</table>
-			
-		<div style="height:600px; overflow:auto;">
-		<table class="tableInfo">
-		<tr class="traddnote hidden"><td><br/></td></tr>
-		<?php
-			if(count($myNotes)==0){
-				echo '<tr><td>No notes.</td></tr>';
-			}else{
-				foreach($myNotes AS $m):
-					if($m['access']=='' || $m['access']=='assoc' || 
-						$m['access']=='full' && (count(array_intersect($this->myaccess,array('full','hr')))>0) ||
-						$m['access']=='exec' && $this->user->is_supervisor==1
-					){
-						echo '<tr class="nnotes nstat_'.$m['type'].'" valign="top">';					
-						if($m['from']=='careerPH')
-							$img = $this->config->base_url().'uploads/staffs/'.$m['username'].'/'.$m['username'].'.jpg';					
-						
-						if($m['from']=='pt' || ($m['from']=='careerPH' && !(@file_get_contents($img, 0, NULL, 0, 1))))
-							$img = 'http://staffthumbnails.s3.amazonaws.com/'.$m['username'].'.jpg';
-											
-						if(!(@file_get_contents($img, 0, NULL, 0, 1))) $img = $this->config->base_url().'css/images/logo.png';
-						
-						
-						
-						echo '<td><img src="'.$img.'" width="60px"/></td>';
-						
-						if($m['from']=='careerPH') echo '<td><b>'.$m['name'].'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$m['note'].'<br/><br/></td>';
-						else echo '<td>'.$m['note'].'</td>';	
-						echo '</tr>';
-					}
-				endforeach;
-			}			
-		?>	
-		</table>
-		</div>	
+		
+		<div id="myNotes"></div>
+		<div id="loadingNotes" style="text-align:center; width:100%; padding-top:20px;"><img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/></div>
+		
 	</div>	
 
 <?php } ?>
@@ -659,6 +637,25 @@
 		$('.'+fld+'fld').removeClass('hidden');	
 		$('.'+fld+'show').removeClass('hidden');
 		$('#'+fld+'upb').removeClass('hidden');
+	}
+	
+	function getNotes(empID, username){
+		$.post('<?= $this->config->base_url().'myNotes/' ?>',{empID:empID, username:username}, 
+		function(notes){
+			$('#myNotes').html(notes);
+			$('#loadingNotes').addClass('hidden');
+			$('#getNotes').removeAttr('onClick');
+		});		
+	}
+	
+	function addGetNotes(empID, username, halo, t){
+		$(t).html('<img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/>');
+		$(t).removeAttr('onClick');
+		$.post('<?= $this->config->base_url().'myNotes/' ?>',{empID:empID, username:username, halo:halo}, 
+		function(notes){
+			$('#myNotes').append(notes);
+			$(t).addClass('hidden');
+		});
 	}
 			
 </script>
