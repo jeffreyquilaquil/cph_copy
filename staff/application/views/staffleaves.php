@@ -21,7 +21,7 @@
 <div id="tab-1" class="tab-content <?= (($current=='tab-1')?'current':'') ?>">
 <br/>
 <?php if(count($tquery)==0){
-	echo 'No filed leaves for today.';
+	echo 'None.';
 }else{ 
 	echo $this->staffM->leaveTableDisplay($tquery);
 } ?>
