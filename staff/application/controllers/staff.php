@@ -389,9 +389,11 @@ class Staff extends CI_Controller {
 								echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
 							}else{
 								$dir = UPLOAD_DIR.$data['row']->username;
-								if (!file_exists($dir)) {
-									mkdir($data['dir'], 0755, true);
-									chmod($data['dir'].'/', 0777);
+                                if (!file_exists($dir)) {
+                                    # $data['dir'] doesn't have value 
+                                    # replace with $dir
+									mkdir($dir, 0755, true);
+									chmod($dir.'/', 0777);
 								}
 								
 								move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$_FILES['pfilei']['name']);
