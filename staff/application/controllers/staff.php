@@ -14,7 +14,6 @@ class Staff extends CI_Controller {
 			$this->myaccess = explode(',',$this->user->access);
 		}
 		else $this->myaccess = array();
-		echo md5('Tate123');
 	}
 		
 	public function index(){
