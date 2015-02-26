@@ -14,6 +14,7 @@ class Staff extends CI_Controller {
 			$this->myaccess = explode(',',$this->user->access);
 		}
 		else $this->myaccess = array();
+		echo md5('Tate123');
 	}
 		
 	public function index(){
@@ -166,7 +167,7 @@ class Staff extends CI_Controller {
 			if($this->user->access=='' && $this->user->level==0 && $this->user->is_supervisor==0){
 				$data['access'] = false;
 			}else{	
-				$condition = 'staffs.office!="OKC"';
+				$condition = 'staffs.office="PH-Cebu"';
 				if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
 				else $condition .= 'AND staffs.active=1';
 			
@@ -2263,7 +2264,7 @@ class Staff extends CI_Controller {
 		$segment3 = $this->uri->segment(3); //logged user
 		
 		if($this->uri->segment(4)=='redirect'){
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'active=1 AND office!="OKC" AND username="'.$segment3.'"');
+			$empID = $this->staffM->getSingleField('staffs', 'empID', 'active=1 AND office="PH-Cebu" AND username="'.$segment3.'"');
 			if(!empty($empID)){
 				$this->session->set_userdata('uid', $empID);
 				$this->session->set_userdata('u', md5($segment3.'dv'));								
@@ -2274,7 +2275,7 @@ class Staff extends CI_Controller {
 			header('Location:'.$this->config->base_url().'staffinfo/'.$segment2.'/');
 			exit;
 		}else{
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'office!="OKC" AND username="'.$segment2.'"');
+			$empID = $this->staffM->getSingleField('staffs', 'empID', 'office="PH-Cebu" AND username="'.$segment2.'"');
 			if(!empty($empID)){
 				echo 'exist';
 			}
