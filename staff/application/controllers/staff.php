@@ -2258,45 +2258,7 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	public function checkStaff(){
-		$segment2 = $this->uri->segment(2); //visit account
-		$segment3 = $this->uri->segment(3); //logged user
-		
-		if($this->uri->segment(4)=='redirect'){
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'active=1 AND office="PH-Cebu" AND username="'.$segment3.'"');
-			if(!empty($empID)){
-				$this->session->set_userdata('uid', $empID);
-				$this->session->set_userdata('u', md5($segment3.'dv'));								
-			}else{
-				$this->session->set_userdata('ufromPT', $segment3);	
-			}
-		
-			header('Location:'.$this->config->base_url().'staffinfo/'.$segment2.'/');
-			exit;
-		}else{
-			$empID = $this->staffM->getSingleField('staffs', 'empID', 'office="PH-Cebu" AND username="'.$segment2.'"');
-			if(!empty($empID)){
-				echo 'exist';
-			}
-		}		
-	}
-	
-	public function getUserData(){
-		$uName = $this->uri->segment(2); //visit account
-				
-		$query = $this->staffM->getSQLQueryArrayResults('SELECT regDate AS reg_date, empStatus AS emp_status, email AS comp_email, companyNumber AS phone_line, extn AS extension, skype AS skype_account, google AS google_account, "" AS job_r, office, username AS u, CONCAT(fname," ",lname) AS n, address AS ad, city AS c, country AS s, zip AS z, email, phone1 AS p1, phone2 AS p2, bdate AS bD, idNum AS py, dept AS eDeptName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supName, levelName AS postype, "" AS nt, startDate AS sD, endDate AS eD, accessEndDate AS eSD, if(fulltime=1, "Y", "N") AS fT, maritalStatus AS md, "0" AS ex, "Y" AS dd, "Y" AS li, "Y" AS hi, spouse AS sp, dependents AS dp, title, shift, leaveCredits AS leaveC, sss AS SSS, philhealth AS Philhealth, tin AS TIN, hdmf AS HDMF,gender FROM staffs LEFT JOIN newPositions ON position=posID LEFT JOIN orgLevel ON orgLevel_fk=levelID WHERE username="'.$uName.'"'); 
-		
-		$info = array();
-		if(count($query)>0){
-		foreach($query[0] AS $dex=>$q):
-			$info[$dex] = $q;
-		endforeach;
-		}
-		//var_dump($info);
-		echo serialize($info);
-	}
-	
-		
+			
 	public function getStaffEmails(){	
 		$condition = '';
 		if($this->user->access==''){
@@ -2365,34 +2327,6 @@ class Staff extends CI_Controller {
 		}
 		
 	}
-		
-	public function getUserNotes(){
-		$cphUser = $this->uri->segment(2);
-		
-		$notes = array();
-		$empID = $this->staffM->getSingleField('staffs', 'empID', 'username="'.$cphUser.'"');
-		if($empID!=''){
-			$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
-					
-			$noteType = $this->staffM->definevar('noteType');
-			$types = array();
-			foreach($noteType AS $k=>$n):
-				$types[$n] = $k;
-			endforeach;
-			
-			if(count($myNotes)>0){
-				foreach($myNotes AS $m):
-					$notes[] = array(
-							'eNoteText'=>'<p><b>'.$m->name.'</b> ('.date('M d y h:i a', strtotime($m->timestamp)).') <br> </p><p>'.$m->ntexts.'</p>', 
-							'username' => $m->username, 
-							'eNoteStamp' => $m->timestamp,
-							'category' => $types[$m->ntype]
-						);
-				endforeach;
-			}
-		}
-		echo serialize($notes);
-	}
-		
+				
 	
 }
