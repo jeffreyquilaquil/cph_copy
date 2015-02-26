@@ -65,8 +65,8 @@ if(isset($_POST) AND !empty($_POST)){
 	}
 	
 	if($postSuccess=='yes'){
-		if($_POST['office']== 'cebu') $s = 'PH';
-		else $s = 'OK';	
+		if($_POST['office']== 'cebu') $s = 'PH-Cebu';
+		else $s = 'OKC';	
 		
 		$eDataArr = array(
 					'u' => $_POST['username'],
@@ -108,7 +108,7 @@ if(isset($_POST) AND !empty($_POST)){
 					'position' => $hire['position'],
 					'supervisor' => $db->selectSingleQuery('staffs','empID', 'CONCAT( fname,  " ", lname ) =  "'.$jobReq['supervisor'].'"'),
 					'startDate' => date('Y-m-d', strtotime($startD)),
-					'office' => $_POST['office'],
+					'office' => (($_POST['office']=='cebu')?'PH-Cebu':$_POST['office']),
 					'shift' => $_POST['shift'],
 					'sal' => $hire['salaryOffer'],
 					'bdate' => $hire['bdate'],

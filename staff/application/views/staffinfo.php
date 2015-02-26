@@ -144,11 +144,13 @@
 			if(count(array_intersect($this->myaccess,array('full','hr')))>0){
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, true);
 				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, true);
+				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), true);
 			}else{
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, false);
+				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), false);
 			}
 			
-			echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), true);
+			
 			echo $this->staffM->displayInfo('jdetails', 'shift', $row->shift, true, 'Ex. 07:00am - 04:00pm Mon-Fri');
 			echo $this->staffM->displayInfo('jdetails', 'startDate', (($row->startDate!='0000-00-00')? date('F d, Y',strtotime($row->startDate)) : ''), true);			
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);
