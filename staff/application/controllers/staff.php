@@ -221,7 +221,7 @@ class Staff extends CI_Controller {
 		$this->staffpage('staffinfo');			
 	}
 	
-	public function staffpage($page){
+    public function staffpage($page){
 		$data['content'] = 'staffinfo'; 
 				
 		if($this->user!=false){	
@@ -373,21 +373,22 @@ class Staff extends CI_Controller {
 								$err = 'No file uploaded.';
 							}else if(strlen($_FILES['pfilei']['name'])>100){
 								$err = 'Filename is too long. Please upload filename less than 100 characters.';
+							}
+							
+							if($err!=''){
+								echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
 							}else{
+								$filename = $_FILES['pfilei']['name'];
 								$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
 								$ddArr = array();
 								for($d=0; $d<count($dd); $d++){
 									$ddArr[] = $dd[$d]->fileName;
 								}
 								
-								if(in_array($_FILES['pfilei']['name'], $ddArr)){
-									$err = 'Filename already existed. File not uploaded.';
+								if(in_array($filename, $ddArr)){
+									$filename = date('YmdHis').'_'.$filename;
 								}
-							}
 							
-							if($err!=''){
-								echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
-							}else{
 								$dir = UPLOAD_DIR.$data['row']->username;
                                 if (!file_exists($dir)) {
                                     # $data['dir'] doesn't have value 
@@ -396,22 +397,22 @@ class Staff extends CI_Controller {
 									chmod($dir.'/', 0777);
 								}
 								
-								move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$_FILES['pfilei']['name']);
+								move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$filename);
 								$pIns['empID_fk'] = $data['row']->empID;
 								$pIns['uploadedBy'] = $this->user->empID;
-								$pIns['fileName'] = $_FILES['pfilei']['name'];
+								$pIns['fileName'] = $filename;
 								$pIns['dateUploaded'] = date('Y-m-d H:i:s');
 								$this->staffM->insertQuery('staffUploads', $pIns);
 								
 								//add notifications
 								$ciframe = '';
-								if(strpos($_FILES['pfilei']['name'],'.jpg') !== false || strpos($_FILES['pfilei']['name'],'.png') !== false || strpos($_FILES['pfilei']['name'],'.gif') !== false || strpos($_FILES['pfilei']['name'],'.pdf') !== false){
+								if(strpos($filename,'.jpg') !== false || strpos($filename,'.png') !== false || strpos($filename,'.gif') !== false || strpos($filename,'.pdf') !== false){
 									$ciframe = 'class="iframe"';
 								}
 								if($data['row']->empID==$this->user->empID){
-									$this->staffM->addMyNotif($this->user->empID, 'You uploaded file <a href="'.$this->config->base_url().$dir.'/'.$_FILES['pfilei']['name'].'" '.$ciframe.'>'.$_FILES['pfilei']['name'].'</a>');
+									$this->staffM->addMyNotif($this->user->empID, 'You uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>');
 								}else{
-									$ttxt = $this->user->name.' uploaded file <a href="'.$this->config->base_url().$dir.'/'.$_FILES['pfilei']['name'].'" '.$ciframe.'>'.$_FILES['pfilei']['name'].'</a>';
+									$ttxt = $this->user->name.' uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>';
 									$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
 								}							
 							}
@@ -466,8 +467,11 @@ class Staff extends CI_Controller {
 							header("Cache-Control: no-cache, must-revalidate"); 
 							header('Location:'.$_SERVER['REQUEST_URI']);
 							exit;
+						}else if($_POST['submitType']=='editUploadName'){
+							$this->staffM->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('docName'=>$_POST['docName']));
+							exit;
 						}
-					}
+					} //end of POST not empty
 				
 					$data['leaveTypeArr'] = $this->staffM->definevar('leaveType');
 					$data['leaveStatusArr'] = $this->staffM->definevar('leaveStatus');
@@ -1168,20 +1172,33 @@ class Staff extends CI_Controller {
 		
 		if($this->user!=false){
 			$data['submitted'] = false;	
-			if($this->user->empStatus=='probationary' && $this->uri->segment(2)==''){
+			$data['segment2'] = $this->uri->segment(2);
+			if($this->user->empStatus=='probationary' && $data['segment2']==''){
 				header('Location:'.$this->config->base_url().'fileleave/leave/');
 				exit;
 			}
 			
-			if($this->uri->segment(2)=='offset'){
+			if($data['segment2']=='offset'){
 				$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
 			}else{
 				$data['numLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3');
 			}
 									
 			if(isset($_POST) && !empty($_POST)){
-				$data['errortxt'] = '';
-						
+				if($_POST['submitType']=='chooseFromUploaded'){
+					$upFiles = $this->staffM->getQueryResults('staffUploads', 'upID, docName, fileName', 'empID_fk="'.$this->user->empID.'" AND isDeleted=0');
+					if(count($upFiles)==0){
+						echo 'No uploaded files.';
+					}else{
+						echo '<b>Uploaded files:</b><br/>';
+						foreach($upFiles AS $u):
+							echo '<input type="checkbox" class="upFile" onClick="addSupVal(\'upDocDV++'.$u->fileName.'\', this);"/> <a href="'.$this->config->base_url().UPLOAD_DIR.$this->user->username.'/'.$u->fileName.'">'.(($u->docName!='')?$u->docName:$u->fileName).'</a><br/>';
+						endforeach;
+					}		
+					exit;
+				}
+				
+				$data['errortxt'] = '';										
 				if(empty($_POST['reason'])) $data['errortxt'] .= 'Reason of absence is empty<br/>';
 								
 				if($_POST['submitType']=='offset'){
@@ -1242,7 +1259,7 @@ class Staff extends CI_Controller {
 								$vdate = date('F d, Y H:i', strtotime('+13 days'));
 																
 								if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
-									$data['errortxt'] .= 'Invalid Start of Leave. Vacation leave cannot be filed less than 2 weeks. Enter code to bypass this condition.<br/>';
+									$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
 								}
 								if($_POST['totalHours']>40){
 									$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
@@ -1253,24 +1270,51 @@ class Staff extends CI_Controller {
 							}
 						}
 					}
-					
-					if($_POST['leaveType']==2 || $_POST['leaveType']==3 || $_POST['leaveType']==5){						
-						$numsD = 0;
-						foreach($_FILES['supDocs']['name'] AS $s):
-							if($s!='') $numsD++;
-						endforeach;
+					$numsD = 0;
+					if($_POST['leaveType']==2 || $_POST['leaveType']==3 || ($_POST['leaveType']==5 && $_POST['fromUploaded']=='')){	
+						if(isset($_FILES['supDocs'])){
+							foreach($_FILES['supDocs']['name'] AS $s):
+								if($s!='') $numsD++;
+							endforeach;
+						}
 						
 						if(($_POST['leaveStart']!='' && strtotime($_POST['leaveStart']) > strtotime($dtoday) && $numsD==0) || 
-							(!isset($_POST['noDocs']) && $numsD==0)){
+							(!isset($_POST['noDocs']) && $numsD==0) ){
 							$data['errortxt'] .= 'No supporting documents submitted.<br/>';
 						}
 					}
+					
+					if($_POST['leaveType']==5){
+						$today = date('Y-m-d');
+						$startDay = date('m-d', strtotime($this->user->startDate));
+
+						$validYear = date('Y-').$startDay;
+						if($today<$validYear)
+							$validYear = date('Y-', strtotime('-1 year')).$startDay;
+						
+						$patHours = $this->staffM->getQueryArrayResults('staffLeaves', 'totalHours', 'leaveType=5 AND status=1 AND iscancelled=0 AND reason="'.$_POST['reason'].'" AND empID_fk="'.$this->user->empID.'" AND leaveStart>"'.$validYear.'"');
+											
+						$phours = 0;
+						foreach($patHours AS $p):
+							$phours += $p->totalHours;
+						endforeach;
+						if($phours>56){ //8hours x 7days
+							$data['errortxt'] .= 'Paternity leave is valid for 7 days in a year per child. You already used '.($phours/8).' days.<br/>';
+						}else if(($phours+$_POST['totalHours']) > 56){
+							$data['errortxt'] .= 'Paternity leave is valid for 7 days in a year per child. You already used '.($phours/8).' days. You only have '.((56-$phours)/8).' day/s or '.(56-$phours).' hours remaining leaves.<br/>';
+						}
+					}
+					
 				}
 								
 				if(empty($_POST['totalHours'])){ $data['errortxt'] .= 'Total Number of Hours is empty<br/>'; }
 				else if(!ctype_digit ($_POST['totalHours'])){ $data['errortxt'] .= 'Total Number of Hours is invalid<br/>'; }
 				else if($_POST['totalHours']%4!=0){ $data['errortxt'] .= 'Number of hours should be divisible by 4 or 8.'; }
 				else if(isset($cnthrs) && $_POST['totalHours']!=$cnthrs){ $data['errortxt'] .= 'Number of offset hours does not match with hours of absence.'; }
+				
+				if($data['errortxt']!='' && (($_POST['leaveType']==2 || $_POST['leaveType']==3 || $_POST['leaveType']==5) && $numsD>0 || ($_POST['leaveType']==5 && $_POST['fromUploaded']!=''))){
+					$data['errortxt'] .= 'Select supporting documents again.<br/>';
+				}
 									
 				//process if no errors
 				if(empty($data['errortxt'])){
@@ -1293,6 +1337,9 @@ class Staff extends CI_Controller {
 						$this->staffM->updateQuery('staffCodes', array('codeID'=>$code->codeID), array('usedBy'=>$this->user->empID, 'dateUsed'=>date('Y-m-d H:i:s'), 'type'=>'Leave', 'status'=>2));
 						$this->staffM->addMyNotif($code->generatedBy, $this->user->name.' used your generated code '.$_POST['code'].' for filing leave.', 0, 1);
 					}
+					
+					if(isset($_POST['fromUploaded']) && !empty($_POST['fromUploaded']))
+						$insArr['supDocs'] = $_POST['fromUploaded'];
 									
 					$insID = $this->staffM->insertQuery('staffLeaves', $insArr);
 					
@@ -1301,13 +1348,13 @@ class Staff extends CI_Controller {
 						for($x=0; $x<5; $x++){
 							if($_FILES['supDocs']['name'][$x]!=''){
 								$katski = array_reverse(explode('.', $_FILES['supDocs']['name'][$x]));
-								$fname = $insID.'_'.$x.'.'.$katski[0];
+								$fname = $insID.'_'.$this->user->empID.'_'.date('YmdHis').'_'.$x.'.'.$katski[0];
 								$insDoc .= $fname.'|';
 								move_uploaded_file($_FILES['supDocs']['tmp_name'][$x], UPLOADS.'/leaves/'.$fname);	
 							}
 						}	
-						if($insDoc!=''){
-							$this->staffM->updateQuery('staffLeaves', array('leaveID'=>$insID), array('supDocs'=>$insDoc));
+						if($insDoc!=''){							
+							$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$insID.'"', 'supDocs', $insDoc);
 						}
 					}
 									
@@ -1324,178 +1371,6 @@ class Staff extends CI_Controller {
 					}
 										
 					$data['submitted'] = true;
-				}					
-			}
-		}
-		$this->load->view('includes/templatecolorbox', $data);
-	}
-	
-	public function fileleave2(){
-		$data['content'] = 'fileleave2';
-		
-		if($this->user!=false){
-			$data['submitted'] = false;	
-			$data['segment2'] = $this->uri->segment(2);
-			if($this->user->empStatus=='probationary' && $data['segment2']==''){
-				header('Location:'.$this->config->base_url().'fileleave2/leave/');
-				exit;
-			}
-			
-			if($data['segment2']=='offset'){
-				$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
-			}else{
-				$data['numLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3');
-			}
-									
-			if(isset($_POST) && !empty($_POST)){
-				$data['errortxt'] = '';
-												
-				if(empty($_POST['reason'])) $data['errortxt'] .= '<li>Reason of absence is empty</li>';
-								
-				if($_POST['submitType']=='offset'){
-					$_POST['leaveType'] = '4'; //for offset leave type
-					if(empty($_POST['leaveStart'])) $data['errortxt'] .= '<li>Start Date and Time of Absence is empty</li>';
-					if(empty($_POST['leaveEnd'])) $data['errortxt'] .= '<li>End Date and Time of Absence is empty</li>';
-					if(strtotime($_POST['leaveStart']) > strtotime($_POST['leaveEnd'])){
-						$data['errortxt'] .= '<li>End of Leave is less than start of leave.</li>';
-					}elseif(strtotime($_POST['leaveStart']) == strtotime($_POST['leaveEnd'])){
-						$data['errortxt'] .= '<li>The start and end of your leave is the same.</li>';
-					}
-					
-					$offdates = '';
-					$cnthrs = 0;
-					$offdatecheck = true;
-					for($u=0; $u<count($_POST['offdate']); $u++){
-						$start = $_POST['offdate'][$u]['start'];
-						$end = $_POST['offdate'][$u]['end'];
-					
-						if(!empty($start) && !empty($end)){
-							$offdates .= date('Y-m-d H:i', strtotime($start)).','.date('Y-m-d H:i', strtotime($end)).'|';
-							$countnumhours = round((strtotime(date('Y-m-d H:i', strtotime($end))) - strtotime(date('Y-m-d H:i', strtotime($start))))/3600, 1);
-							if($countnumhours==9) $cnthrs += 8;
-							else $cnthrs += $countnumhours;
-						}
-						
-						if((!empty($start) && empty($end)) || (empty($start) && !empty($end)))
-							$offdatecheck = false;						
-					}
-					
-					$tambal = 0;
-					foreach($data['numOffset'] AS $noffset):
-						$tambal += $noffset->totalHours;
-					endforeach;
-					
-					if(($tambal+$cnthrs)>16) $data['errortxt'] .= '<li>You cannot file offset leave more than 16 hours in a month.</li>';
-					
-					if($offdatecheck==false) $data['errortxt'] .= '<li>Check your schedule of work to compensate</li>';
-					if(empty($offdates)) $data['errortxt'] .= '<li>Schedule of work to compensate absence is empty</li>';
-					
-				}else{					
-					if(empty($_POST['leaveStart'])) $data['errortxt'] .= '<li>Start Date and Time of Absence is empty</li>';
-					if(empty($_POST['leaveEnd'])) $data['errortxt'] .= '<li>End Date and Time of Absence is empty</li>';
-					
-					if(isset($_POST['code']) && !empty($_POST['code'])){
-						$code = $this->staffM->getSingleInfo('staffCodes', 'codeID, generatedBy', 'code="'.$_POST['code'].'" AND usedBy=0 AND status=1');
-						if(count($code)==0) $data['errortxt'] = '<li>Code is invalid or already used.</li>';
-					}
-					
-					$dtoday = date('F d, Y H:i');					
-					if(!empty($_POST['leaveStart']) && !empty($_POST['leaveEnd'])){
-						if(strtotime($_POST['leaveStart']) > strtotime($_POST['leaveEnd'])){
-							$data['errortxt'] .= '<li>End of Leave is less than start of leave.</li>';
-						}elseif(strtotime($_POST['leaveStart']) == strtotime($_POST['leaveEnd'])){
-							$data['errortxt'] .= '<li>The start and end of your leave is the same.</li>';
-						}else{							
-							if($_POST['leaveType']==1){
-								$vdate = date('F d, Y H:i', strtotime('+13 days'));
-																
-								if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
-									$data['errortxt'] .= '<li>Invalid Start of Leave. Vacation leave cannot be filed less than 2 weeks. Enter code to bypass this condition.</li>';
-								}
-								if($_POST['totalHours']>40){
-									$data['errortxt'] .= '<li>The maximum number of days per leave application is five (5) days or forty (40) hours.</li>';
-								}
-							}else if($_POST['leaveType']==2 || $_POST['leaveType']==3){
-								if(strtotime(date('Y-m-d', strtotime($_POST['leaveStart']))) >= strtotime(date('Y-m-d')) && (!isset($code) || (isset($code) && count($code)==0)))
-									$data['errortxt'] .= '<li>Invalid Start of Leave. Sick/Emergency leave cannot be filed in advance. Enter code to bypass this condition.</li>';
-							}
-						}
-					}
-					
-					if($_POST['leaveType']==2 || $_POST['leaveType']==3 || $_POST['leaveType']==5){						
-						$numsD = 0;
-						foreach($_FILES['supDocs']['name'] AS $s):
-							if($s!='') $numsD++;
-						endforeach;
-						
-						if(($_POST['leaveStart']!='' && strtotime($_POST['leaveStart']) > strtotime($dtoday) && $numsD==0) || 
-							(!isset($_POST['noDocs']) && $numsD==0)){
-							$data['errortxt'] .= '<li>No supporting documents submitted.</li>';
-						}
-					}
-				}
-								
-				if(empty($_POST['totalHours'])){ $data['errortxt'] .= '<li>Total Number of Hours is empty</li>'; }
-				else if(!ctype_digit ($_POST['totalHours'])){ $data['errortxt'] .= '<li>Total Number of Hours is invalid</li>'; }
-				else if($_POST['totalHours']%4!=0){ $data['errortxt'] .= '<li>Number of hours should be divisible by 4 or 8.</li>'; }
-				else if(isset($cnthrs) && $_POST['totalHours']!=$cnthrs){ $data['errortxt'] .= '<li>Number of offset hours is '.$cnthrs.' hours.</li>'; }
-					
-				if(!empty($data['errortxt'])){
-					echo $data['errortxt'];
-					exit;
-				}else{ //process if no errors
-					$insArr['empID_fk'] = $this->user->empID;
-					$insArr['date_requested'] = date('Y-m-d H:i:s');
-					$insArr['reason'] = addslashes($_POST['reason']);
-					$insArr['totalHours'] = $_POST['totalHours'];
-					$insArr['notesforHR'] = $_POST['notesforHR'];
-					$insArr['leaveStart'] = date('Y-m-d H:i', strtotime($_POST['leaveStart']));
-					$insArr['leaveEnd'] = date('Y-m-d H:i', strtotime($_POST['leaveEnd']));
-					if($_POST['leaveType']==4){
-						$insArr['offsetdates'] = $offdates;
-						$insArr['leaveType'] = 4;
-					}else{
-						$insArr['leaveType'] = $_POST['leaveType'];
-					}
-					
-					if(isset($_POST['code']) && !empty($_POST['code']) && isset($code) && count($code)>0){
-						$insArr['code'] = $_POST['code'];
-						$this->staffM->updateQuery('staffCodes', array('codeID'=>$code->codeID), array('usedBy'=>$this->user->empID, 'dateUsed'=>date('Y-m-d H:i:s'), 'type'=>'Leave', 'status'=>2));
-						$this->staffM->addMyNotif($code->generatedBy, $this->user->name.' used your generated code '.$_POST['code'].' for filing leave.', 0, 1);
-					}
-									
-					$insID = $this->staffM->insertQuery('staffLeaves', $insArr);
-					
-					if(isset($_FILES) && !empty($_FILES['supDocs'])){	
-						$insDoc = '';
-						for($x=0; $x<5; $x++){
-							if($_FILES['supDocs']['name'][$x]!=''){
-								$katski = array_reverse(explode('.', $_FILES['supDocs']['name'][$x]));
-								$fname = $insID.'_'.$x.'.'.$katski[0];
-								$insDoc .= $fname.'|';
-								move_uploaded_file($_FILES['supDocs']['tmp_name'][$x], UPLOADS.'/leaves/'.$fname);	
-							}
-						}	
-						if($insDoc!=''){
-							$this->staffM->updateQuery('staffLeaves', array('leaveID'=>$insID), array('supDocs'=>$insDoc));
-						}
-					}
-									
-					$leaveTypeArr = $this->staffM->definevar('leaveType');
-					//add notes to employee
-					$this->staffM->addMyNotif($this->user->empID, 'You filed '.$leaveTypeArr[$_POST['leaveType']].' for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Click <a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$insID.'/">here</a> for details.', 3);
-					
-					//add notes to supervisors					
-					$ntexts = $this->user->name.' files '.$leaveTypeArr[$_POST['leaveType']].' for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page, view <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">leave details page</a> or click <a href="'.$this->config->base_url().'leavepdf/'.$insID.'/" class="iframe"> here</a> to view the file.';
-						
-					$superID = $this->staffM->getStaffSupervisorsID($this->user->empID);
-					for($s=0; $s<count($superID); $s++){
-						$this->staffM->addMyNotif($superID[$s], $ntexts, 0, 1);
-					}
-										
-					//$data['submitted'] = true;
-					echo 'submitted';
-					exit;
 				}					
 			}
 		}
@@ -1544,7 +1419,7 @@ class Staff extends CI_Controller {
 							$updateArr['approverID'] = $this->user->empID;
 							$updateArr['remarks'] = $_POST['remarks'];						
 							$updateArr['dateApproved'] = date('Y-m-d');	
-							if($data['row']->leaveType!=4)
+							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5)
 								$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];	
 														
 							$usernote = $this->user->name.' <b>'.strtolower($data['leaveStatusArr'][$updateArr['status']]).'</b> your leave request.';
@@ -1560,7 +1435,7 @@ class Staff extends CI_Controller {
 							$updateArr['hrapprover'] = $this->user->empID;
 							$updateArr['hrremarks'] = $_POST['remarks'];						
 							$updateArr['hrdateapproved'] = date('Y-m-d');
-							if($data['row']->leaveType!=4)
+							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5)
 								$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];
 															
 							$usernote = 'Updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request';							
@@ -1574,7 +1449,7 @@ class Staff extends CI_Controller {
 							$approvernote = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
 							$actby = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
 								
-							if($data['row']->leaveType!=4){
+							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5){
 								$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
 							}
 							
@@ -1595,7 +1470,7 @@ class Staff extends CI_Controller {
 							}
 							
 							$uEmail = '<p>Hi '.$data['row']->fname.',</p>
-									<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' leave request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
+									<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
 							$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Leave Request', $uEmail, 'CareerPH Auto-Email');
 							
 						}else if($_POST['submitType']=='cancel'){
@@ -1646,6 +1521,16 @@ class Staff extends CI_Controller {
 						}else if($_POST['submitType']=='resubmit'){
 							$updateArr['status'] = 0;	
 							$actby = 'Resubmit your leave request. ';
+						}else if($_POST['submitType']=='uploadSD'){	
+							$katski = array_reverse(explode('.', $_FILES['supDocs']['name']));
+							$fname = $data['row']->leaveID.'_'.$this->user->empID.'_'.date('YmdHis').'.'.$katski[0]; 
+							move_uploaded_file($_FILES['supDocs']['tmp_name'], UPLOADS.'/leaves/'.$fname);	
+							
+							$this->staffM->dbQuery('UPDATE staffLeaves SET supDocs=CONCAT(supDocs,"'.$fname.'|'.'") WHERE leaveID="'.$data['row']->leaveID.'"');
+						}else if($_POST['submitType']=='removeDoc'){							
+							$sDoc = str_replace($_POST['fname'].'|', '', $data['row']->supDocs);
+							$this->staffM->updateQuery('staffLeaves', array('leaveID'=>$data['row']->leaveID), array('supDocs'=>$sDoc));
+							exit;
 						}						
 						
 						$addnote = ' Check <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">leave details page</a> or click <a class="iframe" href="'.$this->config->base_url().'leavepdf/'.$data['row']->leaveID.'/">here</a> to view the file.';
@@ -2169,15 +2054,22 @@ class Staff extends CI_Controller {
 	}
 	
 	
-	public function upleavecredit(){
-		$data['content'] = 'upleaves';
+	public function testpage(){
+		$data['content'] = 'test';
 		
 		if($this->user!=false){
-			if(isset($_POST) && !empty($_POST)){
-				$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('regDate'=>$_POST['regDate'], 'empStatus'=>'regular'));
+			if(isset($_POST) && !empty($_POST)){			
+				if($_POST['shift']==0){
+					$c = '09:00pm - 06:00am Mon-Fri';
+				}else{
+					$c = '07:00am - 04:00pm Mon-Fri';
+				}
+				$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('shift'=>$c));
+				echo $c;
+				exit;
 			}
-			$data['staffs'] = $this->staffM->getQueryResults('staffs', '*, CONCAT(lname," ",fname) AS name', '1', '', 'lname');
-			$data['staffsPT'] = $this->staffM->getPTQueryResults('eData', 'eData.*, sFirst, sLast, active, CONCAT(sLast," ",sFirst) AS name', '1', 'LEFT JOIN staff ON username=u', 'sLast');
+			$data['staffs'] = $this->staffM->getQueryResults('staffs', '*, CONCAT(lname," ",fname) AS name', 'shift=""', '', 'lname');
+			/* $data['staffsPT'] = $this->staffM->getPTQueryResults('eData', 'eData.*, sFirst, sLast, active, CONCAT(sLast," ",sFirst) AS name', '1', 'LEFT JOIN staff ON username=u', 'sLast'); */
 		}
 		$this->load->view('includes/template', $data);	
 	}

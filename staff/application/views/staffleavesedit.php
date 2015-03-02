@@ -23,12 +23,11 @@
 					if($start<date('Y-m-d H:i')){
 						$ccc = false;
 					}
-				}
-				
+				}	
 			}
 			
 			if($row->iscancelled==0 && 
-				(($row->leaveType<4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
+				(($row->leaveType!=4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
 				($row->leaveType==4 && $ccc==true))
 			){
 				echo '<button id="canceThisRequest">Cancel</button>';
@@ -47,7 +46,7 @@
 	</tr>
 	<tr>
 		<td width="30%">Leave Type</td>
-		<td><?= $leaveTypeArr[$row->leaveType] ?></td>
+		<td><b><i><?= $leaveTypeArr[$row->leaveType] ?></i></b></td>
 	</tr>
 	<tr>
 		<td><?= (($row->leaveType==4)?'Start Date and Time of Absence':'Leave Start') ?></td>
@@ -86,23 +85,8 @@
 ?>
 	<tr>
 		<td>Reason</td>
-		<td><?= $row->reason ?></td>
+		<td><?= (($row->leaveType==5)?$this->staffM->ordinal($row->reason).' child':$row->reason) ?></td>
 	</tr>
-<?php
-	if($row->supDocs!=''){
-		echo '<tr>';
-		echo '<td>Supporting Documents</td>';
-		echo '<td>';
-		$ina = explode('|', $row->supDocs);
-		foreach($ina AS $n):
-			if($n!='' && file_exists(UPLOADS.'leaves/'.$n)){
-				echo '<a href="'.$this->config->base_url().UPLOADS.'leaves/'.$n.'"><img src="'.$this->config->base_url().'css/images/document-icon.png"/></a>&nbsp;&nbsp;&nbsp;';
-			}				
-		endforeach;
-		echo '</td>';
-		echo '</tr>';
-	}
-?>
 	<tr>
 		<td>Date Requested</td>
 		<td><?= date('F d, Y h:i a', strtotime($row->date_requested)) ?></td>
@@ -125,6 +109,35 @@
 		<td>Department</td>
 		<td><?= $row->dept ?></td>
 	</tr>
+<?php if($row->leaveType==2 || $row->leaveType==3 || $row->leaveType==5){ ?>
+	<tr>
+		<td>Supporting Documents</td>
+		<td>
+	<?php		
+		$ama = explode('|', $row->supDocs);			
+		foreach($ama AS $a):
+			if(strpos($a, 'upDocDV++')!==false){
+				$a = str_replace('upDocDV++','', $a);
+				echo '<div><a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$a.'"><button>View file</button></a>';
+			}else if($a!='' && file_exists(UPLOADS.'leaves/'.$a)){
+				echo '<div><a href="'.$this->config->base_url().UPLOADS.'leaves/'.$a.'"><button>View file</button></a>';
+				
+				$belongto = explode('_',$a);
+				if($belongto[1]==$this->user->empID)
+					echo '&nbsp;&nbsp;&nbsp;<a href="javascript:void(0);" onClick="removeDoc(\''.$a.'\', this)">Remove</a>';
+				echo '</div>';
+			}			
+		endforeach;
+		if(count($ama)>1) echo '<br/>';
+	?>
+		<a id="addfile" href="javascript:void(0)">+ Add Supporting Document</a>
+			<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
+				<input type="file" name="supDocs" id="supDocs" class="hidden"/>
+				<input type="hidden" name="submitType" value="uploadSD"/>
+			</form>
+		</td>
+	</tr>
+<?php } ?>
 	<tr>
 		<td>View Leave File</td>
 		<td><a href="<?= $this->config->base_url() ?>leavepdf/<?= $row->leaveID ?>/" onClick="displaypleasewait();"><img src="<?= $this->config->base_url() ?>css/images/pdf-icon.png"/></a></td>
@@ -178,12 +191,12 @@
 	
 	if($row->empStatus=='probationary'){
 		echo '<tr style="color:red;"><td colspan=2>Employee status is <b>probationary</b>.</td></tr>';
-	}else if($row->leaveCredits==0 && $row->leaveType!=4){
+	}else if($row->leaveCredits==0 && $row->leaveType!=4 && $row->leaveType!=5){
 		echo '<tr style="color:red;"><td colspan=2>No more available leave credits with pay for '.$row->fname.'. You can either <b>"approve without pay"</b> or <b>"disapprove"</b> and let him/her file for an offset.</td></tr>';
-	}else if($row->hrapprover==0 && $lc > $row->leaveCredits && $row->leaveType!=4){
+	}else if($row->hrapprover==0 && $lc > $row->leaveCredits && $row->leaveType!=4 && $row->leaveType!=5){
 		echo '<tr style="color:red;"><td colspan=2>Requested number of days leave is more than the remaining leave credits. You can either <b>"approve without pay"</b> or <b>"disapprove"</b> the request and let '.$row->fname.' file 2 separate leaves for with and without pay.</td></tr>';
 	}
-	if(!file_exists(UPLOAD_DIR . $this->user->username.'/signature.png')){
+	if(!file_exists(UPLOAD_DIR . $this->user->username.'/signature.png') && ($row->approverID==0 || $row->hrapprover==0)){
 		echo '<form id="formUpload" action="'.$this->config->base_url().'upsignature/" method="POST" enctype="multipart/form-data">';
 		echo '<tr>
 				<td class="errortext" width="40%">No signature on file.<br/>Please upload signature first before approving leave. Signature must be transparent png file.</td>
@@ -221,17 +234,20 @@
 		if($row->iscancelled==0 && (in_array('full', $this->myaccess) || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
 			echo '<form action="" method="POST" onSubmit="return validateIS();">';
 			echo '<tr>
-					<td>Please check one:</td>
+					<td>Please check one:';
+					if($row->leaveType==5){
+						echo '<br/><span class="colorgray">Paternity Leaves cannot be without pay.</span>';
+					}
+				echo  '</td>
 					<td>';
-				if($row->leaveType==4){
-					echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-					echo '<input type="radio" name="approve" value="3" '.$disabled.' '.(($row->status=='3')?'checked':"").'> Disapproved';
-				}else{
-					if($lc <= $row->leaveCredits && $row->empStatus=='regular')	
-						echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved with Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-					echo '<input type="radio" name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<input type="radio" name="approve" value="3" '.$disabled.' '.(($row->status=='3')?'checked':"").'> Disapproved';
-				}
+					
+				if($row->empStatus=='regular' && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5)))
+					echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved '.(($row->leaveType!=4)?'With Pay':'').'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+				if($row->leaveType!=4 && $row->leaveType!=5)
+					echo '<input type="radio" name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved Without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+				
+				echo '<input type="radio" name="approve" value="3" '.$disabled.' '.(($row->status=='3')?'checked':"").'> Disapproved';
+					
 				echo '</td>
 				</tr>';
 			echo '<tr>
@@ -279,17 +295,22 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	}else if($row->iscancelled==0 && count(array_intersect($this->myaccess,array('full','hr')))>0){
 ?>
 	<form action="" method="POST" onSubmit="return validateHR();">	
-<?php if($row->leaveType!=4){ ?>
 	<tr>
 		<td>Change approval status</td>
 		<td>
 			<select id="status" name="status" class="forminput">
-				<option value="1" <? if($row->status==1){ echo 'selected="selected"'; } ?>>Approved w/ pay</option>
-				<option value="2" <? if($row->status==2){ echo 'selected="selected"'; } ?>>Approved w/o pay</option>
-				<option value="3" <? if($row->status==3){ echo 'selected="selected"'; } ?>>Disapproved</option>
+			<?php
+				echo '<option value="1" '.(($row->status==1)?'selected="selected"':'').'>Approved with pay</option>';
+				
+			if($row->leaveType!=5 && $row->leaveType!=4)
+				echo '<option value="2" '.(($row->status==2)?'selected="selected"':'').'>Approved without pay</option>';
+				
+				echo '<option value="3" '.(($row->status==3)?'selected="selected"':'').'>Disapproved</option>';
+			?>
 			</select>
 		</td>
 	</tr>
+<?php if($row->leaveType!=4 && $row->leaveType!=5){ ?>
 	<tr class="hidedisapprove">
 		<td>Number of Leave Credits to Deduct<br/>
 			<input type="hidden" id="current" value="<?= $row->leaveCredits ?>"/>
@@ -297,23 +318,12 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			<i style="color:#333;">Total Remaining Leave Credits: <b id="totalleave"><?= $row->leaveCredits - $row->leaveCreditsUsed ?></b></i>
 		</td>
 		<td><input type="text" id="leaveCreditsUsed" name="leaveCreditsUsed" value="<?= $row->leaveCreditsUsed ?>" class="forminput"/></td>
-	</tr>
-<?php }else{ ?>
-		<tr>
-			<td>Change approval status</td>
-			<td>
-				<select id="status" name="status" class="forminput">
-					<option value="1" <? if($row->status==1){ echo 'selected="selected"'; } ?>>Approved w/ pay</option>
-					<option value="2" <? if($row->status==2){ echo 'selected="selected"'; } ?>>Approved w/o pay</option>
-					<option value="3" <? if($row->status==3){ echo 'selected="selected"'; } ?>>Disapproved</option>
-				</select>
-			</td>
-		</tr>
-<?php } ?>		
+	</tr>		
+<?php } ?>
 	<tr class="hidedisapprove">
 		<td>Updates</td>
 		<td>
-			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?>/>Leave Credits is correct<br/>
+			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?> <?= (($row->leaveType==4 || $row->leaveType==5)?'class="hidden" checked':'')?>/><?= (($row->leaveType!=4 && $row->leaveType!=5)?'Leave Credits is correct<br/>':'')?>
 			<input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox" <?= $disabled ?>/>PayrollHero schedule updated
 		</td>
 	</tr>
@@ -439,6 +449,14 @@ echo '</table>';
 			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
 		});
 		
+		$('#addfile').click(function(){
+			$('#supDocs').trigger('click');
+		});
+		$('#supDocs').change(function(){
+			displaypleasewait();
+			$('#pfformi').submit();				
+		});
+		
 	});
 	
 	function validateIS(){
@@ -517,6 +535,15 @@ echo '</table>';
 		}else{
 			displaypleasewait();
 			return true;
+		}
+	}
+	
+	function removeDoc(f, d){
+		if(confirm('Are you sure you want to remove this file?')){
+			$(d).html('<?= '<img src="'.$this->config->base_url().'css/images/small_loading.gif" style="width:20px;"/>' ?>');
+			$.post('<?= $this->config->item('career_uri') ?>',{submitType:'removeDoc', fname:f}, function(f){				
+				$(d).parent('div').hide();
+			});
 		}
 	}
 	

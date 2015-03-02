@@ -178,37 +178,50 @@
 	</table>
 	
 	<table class="tableInfo" id="personalfiletbl">
-		<tr class="trlabel"><td colspan=5>Personal File <? if(!in_array("exec", $this->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?></td></tr>
+		<tr class="trlabel"><td colspan=6>Personal File <? if(!in_array("exec", $this->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?></td></tr>
 		<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
 			<input type="file" name="pfilei" id="pfilei" class="hidden"/>
 			<input type="hidden" name="submitType" value="uploadPF"/>
 		</form>
 	<?php
 		if(count($pfUploaded)==0){
-			echo '<tr><td colspan=5>No files uploaded.</td></tr>';
+			echo '<tr><td colspan=6>No files uploaded.</td></tr>';
 		}else{
 			echo '<tr class="trhead">
-					<td width="20%">Date Uploaded</td>
-					<td width="30%">Uploaded By</td>
-					<td width="30%">Document Name</td>					
-					<td width="15%">View/Download File</td>
-					<td width="5%"><br/></td>
+					<td>Date Uploaded</td>
+					<td>Uploaded By</td>								
+					<td>Document Name</td>
+					<td width="35px"><br/></td>
+					<td width="35px"><br/></td>
+					<td width="25px"><br/></td>
 				</tr>';
 			foreach($pfUploaded AS $p){
 				echo '<tr>';
 				echo '<td>'.date('d M Y', strtotime($p->dateUploaded)).'</td>';
-				echo '<td>'.$p->uploader.'</td>';
-				echo '<td>'.$p->fileName.'</td>';
-				if(strpos($p->fileName,'.jpg') !== false || strpos($p->fileName,'.gif') !== false || strpos($p->fileName,'.png') !== false || strpos($p->fileName,'.pdf') !== false)
-					echo '<td align="center"><a class="iframe" href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a></td>';
-				else
-					echo '<td align="center"><a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a></td>';
-				
+				echo '<td>'.$p->uploader.'</td>';				
+				echo '<td>
+					<span class="upClass_'.$p->upID.'">'.(($p->docName!='')?$p->docName:$p->fileName).'</span>
+					<input id="uploadDoc_'.$p->upID.'" type="text" value="'.(($p->docName!='')?$p->docName:$p->fileName).'" class="forminput hidden uploadDoc'.$p->upID.'"/>
+				</td>';
+				echo '<td align="right">
+						<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.')" class="cpointer upClass_'.$p->upID.'"/>
+						<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
+						 <img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+					</td>';
+				echo '<td>';
+					if(strpos($p->fileName,'.jpg') !== false || strpos($p->fileName,'.gif') !== false || strpos($p->fileName,'.png') !== false || strpos($p->fileName,'.pdf') !== false)
+						echo '<a class="iframe" href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a>';
+					else
+						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';
+				echo '</td>';
+								
 				if($this->user->empID==$p->uploadedBy){
 					echo '<td><img src="'.$this->config->base_url().'css/images/delete-icon.png" style="cursor:pointer;" onClick="delFile('.$p->upID.', \''.$p->fileName.'\')"/></td>';
 				}else{
 					echo '<td><br/></td>';
 				}
+				
+				echo '</div></td>';
 				echo '</tr>';
 			}
 		}
@@ -216,7 +229,7 @@
 	?>
 		
 		<tr><td colspan=4><br/></td></tr>
-		<tr class="trlabel"><td colspan=5>Performance Track Records</td></tr>
+		<tr class="trlabel"><td colspan=6>Performance Track Records</td></tr>
 	<?php
 		trDisplay4('Action', 'Date Submitted by Manager', 'Date approved by second level manager', 'Date acknowledged by employee');
 	?>
@@ -658,6 +671,23 @@
 			$('#myNotes').append(notes);
 			$(t).addClass('hidden');
 		});
+	}
+	
+	function editUploadDoc(id, v=0){
+		if(v==1){
+			$('#uploadDocimg'+id).show();
+			$('button.uploadDoc'+id).hide();
+			$.post('<?= $this->config->item('career_uri') ?>', {submitType:'editUploadName', upID:id, docName: $('#uploadDoc_'+id).val() }, 
+			function(){
+				$('span.upClass_'+id).html($('#uploadDoc_'+id).val());
+				$('.uploadDoc'+id).hide();
+				$('.upClass_'+id).show();
+				$('#uploadDocimg'+id).hide();
+			});
+		}else{
+			$('.uploadDoc'+id).show();
+			$('.upClass_'+id).hide();
+		}
 	}
 			
 </script>

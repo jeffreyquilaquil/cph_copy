@@ -96,6 +96,10 @@ class Staffmodel extends CI_Model {
 		$this->db->update($table, $data);
 	}
 	
+	function updateConcat($table, $where=1, $field, $fieldvalue){
+		$this->staffM->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.$fieldvalue.'") WHERE '.$where.'');
+	}
+	
 	
 	function getLoggedUser(){ 
 		$uid = $this->session->userdata('uid');		

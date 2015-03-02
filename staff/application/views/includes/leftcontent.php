@@ -62,8 +62,8 @@ if($this->user!=false && count($row)>0){
 	
 	if(count(array_intersect($this->myaccess, array('full', 'hr')))>0 || $this->user->level>0 || $this->user->is_supervisor==1){
 ?>
-	<div class="wrapper-box cpointer">
-		<b id="sendEmailDiv">Send Email to Staff</b>
+	<div class="wrapper-box">
+		<b id="sendEmailDiv" class="cpointer">Send Email to Staff</b>
 		<input type="text" id="filter" value="" style="width:95%" class="hidden padding5px" placeholder="Employee's Name"/>
 		<div class="staffEmails hidden" style="background-color:#fff; color:#000;"></div>
 		
