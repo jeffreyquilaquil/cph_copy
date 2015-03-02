@@ -349,8 +349,8 @@ class Staffmodel extends CI_Model {
 		   */
 		 
 
-		$subject = $subject.' to-'.$to;
-		$to = 'ludivina.marinas@tatepublishing.net';
+		//$subject = $subject.' to-'.$to;
+		//$to = 'ludivina.marinas@tatepublishing.net';
 		
 		
 		$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:14px;">'.$body.'</div>';

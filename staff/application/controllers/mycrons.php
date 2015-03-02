@@ -23,7 +23,7 @@ class MyCrons extends CI_Controller {
 	public function cancelledLeavesUnattended24Hrs(){	
 		$now = time();
 		$date24hours = date('Y-m-d H:i:s', strtotime('-1 day'));
-		$query = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")'); 
+		$query = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3 AND iscancelled=0) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")'); 
 		
 		foreach($query AS $q):
 			if($q->iscancelled==2)
