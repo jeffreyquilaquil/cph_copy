@@ -1404,7 +1404,7 @@ class Staff extends CI_Controller {
 				if($segment2 != ''){
 					$data['content'] = 'staffleavesedit';				
 									
-					$data['row'] = $this->staffM->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+					$data['row'] = $this->staffM->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					
 					$data['leaveHistory'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'"');
 										
@@ -1429,50 +1429,62 @@ class Staff extends CI_Controller {
 							
 								$hrnote = $this->user->name.' <b>'.strtolower($data['leaveStatusArr'][$updateArr['status']]).'</b> '.$data['row']->name.'\'s leave request. This is waiting for your approval. <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">Click here to take HR action</a>.';	
 							}							
-						}else if($_POST['submitType']=='hr'){						
-							if($_POST['status']!=$_POST['oldstatus'])
-								$updateArr['status'] = $_POST['status'];
-							$updateArr['hrapprover'] = $this->user->empID;
-							$updateArr['hrremarks'] = $_POST['remarks'];						
-							$updateArr['hrdateapproved'] = date('Y-m-d');
-							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5)
-								$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];
-															
-							$usernote = 'Updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request';							
-							if($_POST['status']!=$_POST['oldstatus']){
-								$usernote .= ' from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
-								$approvernote = 'Updated '.$data['row']->name.'\'s leave request from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
-								$updateArr['hrremarks'] .= ' - updated '.$data['leaveStatusArr'][$_POST['oldstatus']].' to '.$data['leaveStatusArr'][$_POST['status']];
-							}							
-							$usernote .= '.';
-							
-							$approvernote = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
-							$actby = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
+						}else if($_POST['submitType']=='hr'){	
+							if($_POST['status']==4){ //additional info required
+								$updateArr['iscancelled'] = 4;
+								$addInfo = '<b>'.strtoupper($this->user->username).'</b><br/>
+									Sent: '.date('M d, Y h:i A').'<br/>
+									To: '.ltrim($_POST['toEmail'],',').'<br/>
+									Subject: '.$_POST['subjectEmail'].'<br/><br/>
+									'.$_POST['message'].'<br/><br/>
+									============================================================================================<br/>
+								';
+								$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $_POST['toEmail'], $_POST['subjectEmail'], $_POST['message'], 'CareerPH' );
+								$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$data['row']->leaveID.'"', 'addInfo', $addInfo);
+							}else{
+								if($_POST['status']!=$_POST['oldstatus'])
+									$updateArr['status'] = $_POST['status'];
+								$updateArr['hrapprover'] = $this->user->empID;
+								$updateArr['hrremarks'] = $_POST['remarks'];						
+								$updateArr['hrdateapproved'] = date('Y-m-d');
+								if($data['row']->leaveType!=4 && $data['row']->leaveType!=5)
+									$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];
+																
+								$usernote = 'Updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request';							
+								if($_POST['status']!=$_POST['oldstatus']){
+									$usernote .= ' from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
+									$approvernote = 'Updated '.$data['row']->name.'\'s leave request from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
+									$updateArr['hrremarks'] .= ' - updated '.$data['leaveStatusArr'][$_POST['oldstatus']].' to '.$data['leaveStatusArr'][$_POST['status']];
+								}							
+								$usernote .= '.';
 								
-							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5){
-								$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
+								$approvernote = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
+								$actby = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
+									
+								if($data['row']->leaveType!=4 && $data['row']->leaveType!=5){
+									$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
+								}
+								
+								if($data['row']->status==2 || (isset($_POST['status']) && $_POST['status']==2)){
+									$eMsg = '<p>Hi,</p>
+											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' is Approved without Pay for the following dates:</p>
+											<p>
+												Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
+												End of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).'<br/>
+												Total Number of Hours: '.$data['row']->totalHours.'
+											</p>
+											<p>Thank you.</p>
+											<p><br/></p>
+											<p>Best Regards,</p>
+											<p>'.$this->user->name.'</p>
+										';
+									$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Leave Approved Without Pay', $eMsg, 'CareerPH Auto-Email');
+								}
+								
+								$uEmail = '<p>Hi '.$data['row']->fname.',</p>
+										<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
+								$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Leave Request', $uEmail, 'CareerPH Auto-Email');
 							}
-							
-							if($data['row']->status==2 || (isset($_POST['status']) && $_POST['status']==2)){
-								$eMsg = '<p>Hi,</p>
-										<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' is Approved without Pay for the following dates:</p>
-										<p>
-											Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
-											End of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).'<br/>
-											Total Number of Hours: '.$data['row']->totalHours.'
-										</p>
-										<p>Thank you.</p>
-										<p><br/></p>
-										<p>Best Regards,</p>
-										<p>'.$this->user->name.'</p>
-									';
-								$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Leave Approved Without Pay', $eMsg, 'CareerPH Auto-Email');
-							}
-							
-							$uEmail = '<p>Hi '.$data['row']->fname.',</p>
-									<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
-							$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Leave Request', $uEmail, 'CareerPH Auto-Email');
-							
 						}else if($_POST['submitType']=='cancel'){
 							$updateArr['cancelReasons'] = $_POST['cancelReasons'];
 							$updateArr['datecancelled'] = date('Y-m-d H:i:s');
@@ -1581,7 +1593,7 @@ class Staff extends CI_Controller {
 					$data['tquery'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status!=3 AND iscancelled=0 AND ((leaveStart <= "'.$dateToday.'" AND leaveEnd >= "'.$dateToday.'") OR (leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%"))'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					$data['imquery'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status=0 AND iscancelled=0'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					$data['imcancelledquery'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'iscancelled=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
-					$data['hrquery'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+					$data['hrquery'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					
 					//for all leaves
 					$data['allpending'] = $this->staffM->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR iscancelled>1)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
@@ -2023,13 +2035,9 @@ class Staff extends CI_Controller {
 		if($this->user!=false){
 			$segment2 = $this->uri->segment(2);
 			$segment3 = $this->uri->segment(3);
-			$data['emailTemplates'] = $this->staffM->getQueryResults('staffCustomEmails', '*', '1');
-				
+							
 			$data['sent'] = false;
-			if(isset($_POST) && !empty($_POST)){				
-				$body = $_POST['message'];
-				$body .= '<br/><br/>---- <i>Message sent from CAREERPH through '.$this->user->name.'<i> ----';
-				
+			if(isset($_POST) && !empty($_POST)){								
 				if($segment3=='fromHR'){
 					$this->staffM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'HR Cebu');
 					$ntexts = 'From: hr.cebu@tatepublishing.net<br/>
@@ -2038,14 +2046,40 @@ class Staff extends CI_Controller {
 								'.$_POST['message'];
 					$this->staffM->addMyNotif($this->user->empID, $ntexts, 5);
 					$this->staffM->addMyNotif($segment2, $ntexts, 5);
-				}else{				
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $body, 'CAREERPH');
+				}else if($segment2=='addinfoleavesubmitted'){
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'CareerPH');
+					
+					$addInfo = '<b>'.strtoupper($this->user->username).'</b><br/>
+									Sent: '.date('M d, Y h:i A').'<br/>
+									To: '.ltrim($_POST['to'],',').'<br/>
+									Subject: '.$_POST['subject'].'<br/><br/>
+									'.$_POST['message'].'<br/><br/>
+									============================================================================================<br/>
+								';
+					$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'CareerPH' );
+					$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$segment3.'"', 'addInfo', $addInfo);							
+				}else{		
+					$body = $_POST['message'];
+					$body .= '<br/><br/>---- <i>Message sent from CareerPH through '.$this->user->name.'<i> ----';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $body, 'CareerPH');
 				}
 				$data['sent'] = true;
-			}
-			
-			if($segment2!=''){
-				$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
+			}else{			
+				$data['subject'] = '';
+				$data['to'] = '';
+				$data['message'] = '';
+				
+				if($segment2=='addinfoleavesubmitted'){
+					$lEmpID = $this->staffM->getSingleField('staffLeaves', 'empID_fk', 'leaveID="'.$segment3.'"');
+					$supID = $this->staffM->getSingleField('staffs', 'supervisor', 'empID="'.$lEmpID.'"');
+					$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$supID.'"');
+					$data['subject'] = 'Additional Information for Leave Application #'.$segment3.' Submitted';
+					$data['to'] = $supEmail.',hr.cebu@tatepublishing.net';
+					$data['message'] = '';
+				
+				}else if($segment2!=''){
+					$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
+				}
 			}
 			
 		}

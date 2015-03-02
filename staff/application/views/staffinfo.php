@@ -271,7 +271,14 @@
 					<td>'.date('M d, Y h:i a', strtotime($t->leaveStart)).'</td>
 					<td>'.date('M d, Y h:i a', strtotime($t->leaveEnd)).'</td>
 					<td align="center">'.$t->totalHours.' hours</td>
-					<td>'.$this->staffM->getLeaveStatusText($t->status, $t->iscancelled).'</td>
+					<td>';
+					
+					if($t->iscancelled==4){
+						echo '<a href="'.$this->config->base_url().'sendemail/addinfoleavesubmitted/'.$t->leaveID.'/'.'" class="iframe">'.$this->staffM->getLeaveStatusText($t->status, $t->iscancelled).'<br/>Click here to confirm submission of required information</a>';
+					}else{
+						echo $this->staffM->getLeaveStatusText($t->status, $t->iscancelled);
+					}
+				echo '</td>
 					<td><a class="iframe" href="'.$this->config->base_url().'leavepdf/'.$t->leaveID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 					<td><a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$t->leaveID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
 				</tr>

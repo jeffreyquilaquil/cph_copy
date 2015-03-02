@@ -63,8 +63,12 @@ require "includes/header.php";
 						endforeach;
 						$xxx = rtrim($xxx,',');
 						
-						$pQuery = $db->selectQuery('staffs', 'username, CONCAT(lname,", ",fname) AS name', 'active=1 AND username NOT IN ('.$xxx.') ORDER BY lname');
-						foreach($pQuery AS $u):
+						$cQuery = $db->selectQuery('staffs', 'username, CONCAT(lname,", ",fname) AS name', 'active=1 AND username NOT IN ('.$xxx.') ORDER BY lname');
+						$pQuery = $ptDb->selectQuery('staff', 'username, CONCAT(sLast,", ",sFirst) AS name', 'active="Y" AND username NOT IN ('.$xxx.') ORDER BY sLast');
+						
+						$result = array_merge($cQuery, $pQuery);
+												
+						foreach($result AS $u):
 							echo '<option value="'.$u['username'].'">'.$u['name'].'</option>';
 						endforeach;
 					?>

@@ -26,7 +26,7 @@
 				}	
 			}
 			
-			if($row->iscancelled==0 && 
+			if(($row->iscancelled==0 || $row->iscancelled==4)&& 
 				(($row->leaveType!=4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
 				($row->leaveType==4 && $ccc==true))
 			){
@@ -231,7 +231,7 @@
 			</tr>';	
 		}
 	}else{
-		if($row->iscancelled==0 && (in_array('full', $this->myaccess) || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
+		if(($row->iscancelled==0 || $row->iscancelled==4)&& (in_array('full', $this->myaccess) || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
 			echo '<form action="" method="POST" onSubmit="return validateIS();">';
 			echo '<tr>
 					<td>Please check one:';
@@ -263,7 +263,7 @@
 					</td>
 				</tr>';		
 			echo '</form>';
-		}else if($row->iscancelled==0){
+		}else if($row->iscancelled==0 || $row->iscancelled==4){
 			echo '<tr><td colspan=2>Pending Immediate Supervisor\'s approval</td></tr>';
 		}		
 	}
@@ -274,7 +274,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	<tr><td colspan=2><br/></td></tr>
 	
 	<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Department</h3></td></tr>
-<?php if($row->dateApproved=='0000-00-00' && $row->iscancelled==0){ 
+<?php if($row->dateApproved=='0000-00-00' && ($row->iscancelled==0 || $row->iscancelled==4)){ 
 		echo '<tr><td colspan=2>Pending Supervisor\'s Approval</td></tr>';
 	}else if($row->hrdateapproved!='0000-00-00'){
 		$hrName = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->hrapprover.'"');
@@ -292,7 +292,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 				<td>'.$row->hrremarks.'</td>
 			</tr>';	
 		}
-	}else if($row->iscancelled==0 && count(array_intersect($this->myaccess,array('full','hr')))>0){
+	}else if(($row->iscancelled==0 || $row->iscancelled==4) && count(array_intersect($this->myaccess,array('full','hr')))>0){
 ?>
 	<form action="" method="POST" onSubmit="return validateHR();">	
 	<tr>
@@ -306,6 +306,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 				echo '<option value="2" '.(($row->status==2)?'selected="selected"':'').'>Approved without pay</option>';
 				
 				echo '<option value="3" '.(($row->status==3)?'selected="selected"':'').'>Disapproved</option>';
+				echo '<option value="4" '.(($row->status==4)?'selected="selected"':'').'>Additional Information Required</option>';
 			?>
 			</select>
 		</td>
@@ -326,13 +327,45 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?> <?= (($row->leaveType==4 || $row->leaveType==5)?'class="hidden" checked':'')?>/><?= (($row->leaveType!=4 && $row->leaveType!=5)?'Leave Credits is correct<br/>':'')?>
 			<input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox" <?= $disabled ?>/>PayrollHero schedule updated
 		</td>
-	</tr>
-	<tr>
+	</tr>	
+	<tr class="trremarks">
 		<td>Remarks:</td>
 		<td>
 			<textarea id="hrremarks" name="remarks" class="forminput" <?= $disabled ?>></textarea>
 		</td>
 	</tr>
+	
+	
+	<tr class="sendEmail hidden">
+		<td colspan=2><b>Send Email</b></td>
+	</tr>	
+	<tr class="sendEmail hidden">
+		<td>Subject</td>
+		<td><input name="subjectEmail" type="text" class="forminput" value="Additional Information is Required to Process Leave Request"/></td>
+	</tr>
+	<tr class="sendEmail hidden">
+		<td>To</td>
+		<td>
+			<input type="hidden" name="toEmail" value=""/>
+			<input type="text" class="forminput toEmail" value="<?= $row->email ?>"/><br/>
+			<input type="text" class="forminput toEmail" value="<?= $row->supEmail ?>"/><br/>
+			<input type="text" class="forminput toEmail" value="<?= 'hr.cebu@tatepublishing.net' ?>"/><br/>
+			<input type="button" id="addEmailBox" value="Add"/>
+		</td>
+	</tr>
+	<tr class="sendEmail hidden">
+		<td>Message</td>
+		<td>
+			<textarea name="message" id="message" class="mceEditor" style="height:160px;">
+				<p>Hello,</p>
+				<p>Additional information is required to process your leave request:<br/>
+				Please upload supporting documents:</p>
+				<p><a href="<?= $this->config->base_url().'staffinfo/'.$row->username.'/#personalfiletbl' ?>">Click Here to Upload Documents to Your Staff Page</a><br/>
+				After uploading the required documents, send confirmation to hr.cebu@tatepublishing.net</p>		
+			</textarea>
+		</td>
+	</tr>
+	
 	<tr>
 		<td><br/></td>
 		<td>
@@ -342,18 +375,23 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		</td>
 	</tr>
 	</form>
-<?php }else if($row->iscancelled==0){
+<?php }else if($row->iscancelled==0 || $row->iscancelled==4){
 		echo '<tr><td colspan=2>No Access.</td></tr>';
 } ?>	
 	<tr><td colspan=2><br/></td></tr>
 
-<?php } ?>	
+<?php } 
+	if(!empty($row->addInfo)){
+		echo '<tr bgcolor="#eee"><td colspan=2><h3>Additional Information Required</h3></td></tr>';
+		echo '<tr><td colspan=2>'.$row->addInfo.'</td></tr>';
+	}
+?>	
 
-<tr class="trhead trcdetails <?= (($row->iscancelled==0)?'hidden':'') ?>">
+<tr class="trhead trcdetails <?= (($row->iscancelled==0 || $row->iscancelled==4)?'hidden':'') ?>">
 	<td colspan=2><center id="canceldetails">CANCEL DETAILS</center></td>
 </tr>
 <?php
-	if($row->iscancelled!=0 && $row->datecancelled!= '0000-00-00 00:00:00'){
+	if($row->iscancelled!=0 && $row->iscancelled!=4 && $row->datecancelled!= '0000-00-00 00:00:00'){
 		echo '<tr><td>Date cancelled</td><td>'.date('F d, Y H:i', strtotime($row->datecancelled)).'</td></tr>';
 		echo '<tr><td>Reason</td><td>'.$row->cancelReasons.'</td></tr>';
 		
@@ -402,8 +440,24 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 
 echo '</table>';
 } ?>
+<script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
-	$(function(){ 
+	$(function(){
+		tinymce.init({
+			mode : "specific_textareas",
+			editor_selector : "mceEditor",
+			menubar : false,
+			relative_urls: false,
+			convert_urls: false,
+			remove_script_host : false,
+			plugins: [
+				"link",
+				"code",
+				"table"
+			],
+			toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code"
+		});
+		
 		$('#fileToUpload').change(function(){
 			$('#formUpload').submit();
 		});	
@@ -417,19 +471,28 @@ echo '</table>';
 				
 		});
 
-		$('#status').change(function(){
-			$('.hidedisapprove').removeClass('hidden');
-			if($(this).val()==1){
-				$('#leaveCreditsUsed').val('<?= $lc ?>');
-			}else if($(this).val()==3){
+		$('#status').change(function(){			
+			if($(this).val()==4){
+				$('.sendEmail').removeClass('hidden');
+				$('.trremarks').addClass('hidden');
 				$('.hidedisapprove').addClass('hidden');
-				$('#leaveCreditsUsed').val(0);
+				$('input[type="submit"]').val('Submit & Send');
 			}else{
-				$('#leaveCreditsUsed').val(0);
-			}	
-			
-			$('#remaining').val(parseFloat($('#current').val())-parseFloat($('#leaveCreditsUsed').val()));		
-			$('#totalleave').html($('#remaining').val());	
+				$('.sendEmail').addClass('hidden');
+				$('.hidedisapprove').removeClass('hidden');
+				if($(this).val()==1){
+					$('#leaveCreditsUsed').val('<?= $lc ?>');
+				}else if($(this).val()==3){
+					$('.hidedisapprove').addClass('hidden');
+					$('#leaveCreditsUsed').val(0);
+				}else{
+					$('#leaveCreditsUsed').val(0);
+				}	
+				
+				$('#remaining').val(parseFloat($('#current').val())-parseFloat($('#leaveCreditsUsed').val()));		
+				$('#totalleave').html($('#remaining').val());	
+				$('input[type="submit"]').val('Submit');
+			}
 		});
 		
 		$('#leaveCreditsUsed').blur(function(){
@@ -457,6 +520,10 @@ echo '</table>';
 			$('#pfformi').submit();				
 		});
 		
+		$('#addEmailBox').click(function(){
+			$('<input type="text" class="forminput toEmail" value=""/><br/>').insertBefore('#addEmailBox');
+		});
+		
 	});
 	
 	function validateIS(){
@@ -476,15 +543,34 @@ echo '</table>';
 	
 	function validateHR(){
 		validtxt = '';
-				
-		if($('#status').val()!=3 && ($('#HR_leave_credits_updated:checked').length==0 || $('#HR_payrollhero_updated:checked').length==0)){
-			validtxt += '- Please check all checkboxes.\n';
-		}
-		if($('#status').val()!=$('#oldstatus').val() && $('#hrremarks').val()==''){
-			validtxt += '- Remarks should not be empty when changing approve status.\n';
-		}		
-		if($('#remaining').val()<0){
-			validtxt += '- Total leave credits is below 0.';
+		emF = true;
+		var emailPattern = /^[\w\-\.\+]+\@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
+		
+		if($('#status').val()==4){
+			$('.toEmail').each(function(){
+				eMs = $('input[name="toEmail"]').val();
+				if($(this).val()!=''){
+					if(emailPattern.test($(this).val())==false) emF = false;
+					else $('input[name="toEmail"]').val(eMs+','+$(this).val());
+				}
+			});
+					
+			if(emF==false){
+				validtxt += '- Check email addresses there is an invalid format.\n';
+			}
+			
+			if(tinyMCE.get('message').getContent()=='' || $('input[name="subjectEmail"]').val()=='' || $('input[name="toEmail"]').val()=='' ) 
+				validtxt += '- All fields are required.\n';
+		}else{
+			if($('#status').val()!=3 && ($('#HR_leave_credits_updated:checked').length==0 || $('#HR_payrollhero_updated:checked').length==0)){
+				validtxt += '- Please check all checkboxes.\n';
+			}
+			if($('#status').val()!=$('#oldstatus').val() && $('#hrremarks').val()==''){
+				validtxt += '- Remarks should not be empty when changing approve status.\n';
+			}		
+			if($('#remaining').val()<0){
+				validtxt += '- Total leave credits is below 0.';
+			}
 		}
 		
 		if(validtxt != ''){

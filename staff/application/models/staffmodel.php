@@ -97,7 +97,7 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function updateConcat($table, $where=1, $field, $fieldvalue){
-		$this->staffM->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.$fieldvalue.'") WHERE '.$where.'');
+		$this->staffM->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.addslashes($fieldvalue).'") WHERE '.$where.'');
 	}
 	
 	
@@ -180,7 +180,8 @@ class Staffmodel extends CI_Model {
 						'0' => 'pending approval',
 						'1' => 'approved w/ pay',
 						'2' => 'approved w/o pay',
-						'3' => 'disapproved'
+						'3' => 'disapproved',
+						'4' => 'additional information required'
 					);						
 		}else if($con=='noteType'){
 			$a = array(
@@ -348,8 +349,8 @@ class Staffmodel extends CI_Model {
 		   */
 		 
 
-		//$subject = $subject.' to-'.$to;
-		//$to = 'ludivina.marinas@tatepublishing.net';
+		$subject = $subject.' to-'.$to;
+		$to = 'ludivina.marinas@tatepublishing.net';
 		
 		
 		$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:14px;">'.$body.'</div>';
@@ -1024,6 +1025,8 @@ class Staffmodel extends CI_Model {
 			$status .= ' - <i>Pending Cancel Approval</i>'; 
 		else if($iscancelled==3)
 			$status .= ' - <i>Pending HR Cancel Approval</i>'; 
+		else if($iscancelled==4)
+			$status = 'Additional Information Required'; 
 		
 		return $status;
 	}

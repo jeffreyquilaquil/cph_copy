@@ -26,19 +26,21 @@
 <form action="" method="POST" onSubmit="return validateform()">
 	<tr>
 		<td class="weightbold">Subject</td>
-		<td><input type="text" class="forminput" name="subject" value="" id="subject"/></td>
+		<td><input type="text" class="forminput" name="subject" value="<?= $subject ?>" id="subject"/></td>
 	</tr>
 	<tr>
 		<td class="weightbold">To<br/><i class="weightnormal" style="font-size:10px;">(Separate email addresses with comma)</i></td>
-		<td><input type="text" class="forminput" name="to" value="<?= ((isset($row->email))? $row->email : '') ?>" id="to"/></td>
+		<td><input type="text" class="forminput" name="to" value="<?= $to ?>" id="to"/></td>
 	</tr>
 	<tr>
 		<td class="weightbold">Message</td>
-		<td><textarea name="message" id="message" style="height:160px;"></textarea></td>
+		<td><textarea name="message" id="message" style="height:160px;"><?= $message ?></textarea></td>
 	</tr>
 	<tr>
 		<td><br/></td>
-		<td><input type="submit" value="Send Email"/></td>
+		<td>
+			<input type="submit" value="Send Email"/>
+		</td>
 	</tr>
 </form>
 </table>
