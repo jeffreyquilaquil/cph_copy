@@ -2257,5 +2257,8 @@ class Staff extends CI_Controller {
 		
 	}
 				
-	
+	public function notes(){
+		
+	}
 }
+

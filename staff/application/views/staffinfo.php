@@ -178,69 +178,72 @@
 	</table>
 	
 	<table class="tableInfo" id="personalfiletbl">
-		<tr class="trlabel"><td colspan=5>Personal File <? if(!in_array("exec", $this->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?></td></tr>
-		<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
-			<input type="file" name="pfilei" id="pfilei" class="hidden"/>
-			<input type="hidden" name="submitType" value="uploadPF"/>
-		</form>
+		<tr class="trlabel">
+			<td>
+				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletblData', this)" class="droptext">Show</a>]
+					<? if(!in_array("exec", $this->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
+				<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei" id="pfilei" class="hidden"/>
+					<input type="hidden" name="submitType" value="uploadPF"/>
+				</form>
+			</td>
+		</tr>		
+	</table>
 	<?php
+	echo '<table class="tableInfo hidden" id="personalfiletblData">';
 		if(count($pfUploaded)==0){
-			echo '<tr><td colspan=5>No files uploaded.</td></tr>';
+			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
 		}else{
 			echo '<tr class="trhead">
 					<td>Date Uploaded</td>								
 					<td>Document Name</td>
-					<td width="35px"><br/></td>
-					<td width="35px"><br/></td>
-					<td width="25px"><br/></td>
+					<td width="150px"><br/></td>
 				</tr>';
 			foreach($pfUploaded AS $p){
 				echo '<tr>';
 				echo '<td>'.date('d M Y', strtotime($p->dateUploaded)).'</td>';			
 				echo '<td>
-					<span class="upClass_'.$p->upID.'">'.(($p->docName!='')?$p->docName:$p->fileName).'</span>
-					<input id="uploadDoc_'.$p->upID.'" type="text" value="'.(($p->docName!='')?$p->docName:$p->fileName).'" class="forminput hidden uploadDoc'.$p->upID.'"/>
-				</td>';
-				
-				if($this->user->empID==$p->uploadedBy){
-					echo '<td align="right">
-						<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.')" class="cpointer upClass_'.$p->upID.'"/>
-						<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
-						 <img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+						<span class="upClass_'.$p->upID.'">'.(($p->docName!='')?$p->docName:$p->fileName).'</span>
+						<input id="uploadDoc_'.$p->upID.'" type="text" value="'.(($p->docName!='')?$p->docName:$p->fileName).'" class="forminput hidden uploadDoc'.$p->upID.'"/>
 					</td>';
-				}else{
-					echo '<td><br/></td>';
-				}
+					
+				echo '<td align="right">';
 				
-				echo '<td>';
-					if(strpos($p->fileName,'.jpg') !== false || strpos($p->fileName,'.gif') !== false || strpos($p->fileName,'.png') !== false || strpos($p->fileName,'.pdf') !== false)
+					if(strpos($p->fileName,'.jpg') !== false || strpos($p->fileName,'.gif') !== false || strpos($p->fileName,'.png') !== false || strpos($p->fileName,'.pdf') !== false){
 						echo '<a class="iframe" href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a>';
-					else
+					}else{
 						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';
-				echo '</td>';
-								
-				if($this->user->empID==$p->uploadedBy){
-					echo '<td><img src="'.$this->config->base_url().'css/images/delete-icon.png" style="cursor:pointer;" onClick="delFile('.$p->upID.', \''.$p->fileName.'\')"/></td>';
-				}else{
-					echo '<td><br/></td>';
-				}
+					}
+					
+					if((count(array_intersect($this->myaccess,array('full','hr')))>0)){
+						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.')" class="cpointer upClass_'.$p->upID.'"/>
+							<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
+							<img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>';
+						echo '<img src="'.$this->config->base_url().'css/images/delete-icon.png" style="cursor:pointer;" onClick="delFile('.$p->upID.', \''.$p->fileName.'\')"/>';
+					}
 				
-				echo '</div></td>';
+				echo '</td>';
+				
 				echo '</tr>';
 			}
 		}
-		
+	echo '</table>';
 	
 		/* echo '<tr><td colspan=4><br/></td></tr>';
 		echo '<tr class="trlabel"><td colspan=6>Performance Track Records</td></tr>';
 		trDisplay4('Action', 'Date Submitted by Manager', 'Date approved by second level manager', 'Date acknowledged by employee');
 		echo '<tr><td colspan=4><br/></td></tr>'; */
 	?>
-		
-	</table>
 
-	<table class="tableInfo">
-		<tr class="trlabel"><td colspan=8>Time Off Details <?php if($this->user->empID==$row->empID){ echo '<a class="edit iframe" href="'.$this->config->base_url().'fileleave/">File for a Leave/Offset</a>'; } ?></td></tr>
+	<table class="tableInfo" id="timeOff">
+		<tr class="trlabel">
+			<td>Time Off Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('timeOffData', this)" class="droptext">Show</a>]
+			<?php if($this->user->empID==$row->empID){ echo '<a class="edit iframe" href="'.$this->config->base_url().'fileleave/">File for a Leave/Offset</a>'; } ?>
+			</td>
+		</tr>
+	</table>
+	
+	<table class="tableInfo hidden" id="timeOffData">
 		<tr class="trhead"><td colspan=8>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if(count(array_intersect($this->myaccess,array('full','hr')))>0){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
 		
 		<tr class="toTRclass hidden">
@@ -330,7 +333,9 @@
 	<table class="tableInfo">
 		<tr class="trlabel"><td colspan=4>Attendance Logs</td></tr>
 	</table>
+
 	</div><? //end of tab-1 ?>
+	
 	<div id="tab-2" class="tab-content">
 		<table class="tableInfo">
 			<tr class="trheadnote trlabel"><td>
@@ -702,6 +707,11 @@
 			$('.uploadDoc'+id).show();
 			$('.upClass_'+id).hide();
 		}
+	}
+	
+	function toggleDisplay(id, jun){
+		$(jun).text($(jun).text() == 'Show' ? 'Hide' : 'Show'); 
+		$('#'+id).toggle();
 	}
 			
 </script>

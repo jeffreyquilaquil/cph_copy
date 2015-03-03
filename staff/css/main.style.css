@@ -346,9 +346,13 @@ footer{
 }
 .trlabel a.edit{ color:#fff; float:right; }
 .trlabel a.edit:hover{ color:red; }
+.trlabel a.droptext{ color:#fff; font-weight:normal; font-size:11px; text-decoration:none; }
+.trlabel a.droptext:hover{ color:red; }
 .tableInfo input.forminput{ width:98%; padding:5px; }
 .tableInfo select.forminput{ width:100%; padding:5px; }
 .tableInfo textarea{ width:98%; padding:5px; }
+
+#personalfiletblData tr td img{ vertical-align:middle; }
 
 .xxx ul{ list-style-type: none; position:absolute; background-color:#fff; right:35px; top:0; margin:0; padding:0; width:150px; }
 .xxx li{ border:1px solid #000; padding:5px; }
