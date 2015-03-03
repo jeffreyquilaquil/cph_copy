@@ -26,7 +26,7 @@
 			if($p->dateissued!='0000-00-00')
 				echo '<td align="center"><a class="iframe" href="'.$this->config->base_url().'requestcoe/'.$p->coeID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
 			else
-				echo '<td align="center"><button class="iframe padding5px" href="'.$this->config->base_url().'requestcoe/'.$p->coeID.'/">Generate COE</button></td>';
+				echo '<td align="center"><button class="iframe padding5px" href="'.$this->config->base_url().'requestcoe/'.$p->coeID.'/">Generate Options</button></td>';
 			echo '</tr>';
 		endforeach;
 	}

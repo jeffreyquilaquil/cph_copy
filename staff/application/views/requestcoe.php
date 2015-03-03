@@ -49,6 +49,7 @@ echo '<table class="tableInfo">';
 			<i>Please validate information before clicking Generate button. For discrepancies, update PT first before generating COE. Click <a href="javascript:void(0);" onClick="window.parent.location.href='<?= $this->config->base_url() ?>staffinfo/<?= $row->username ?>/'">here</a> to visit employee's profile.</i><br/>
 			<input type="hidden" name="submitType" value="generate"/>
 			<input type="submit" value="Generate COE" class="padding5px"/>
+			<input type="button" value="Cancel" onClick="cancelCOE(<?= $row->coeID ?>)" class="padding5px"/>
 		</td></tr>
 	<?php } ?>
 	</form>
@@ -63,6 +64,18 @@ echo '<table class="tableInfo">';
 			return false;
 		}else{
 			return true;
+		}
+	}
+	
+	function cancelCOE(id){ 
+		$('<img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>" width="25px"/>').insertAfter('input[value=Cancel]');
+		if(confirm('Are you sure you want to cancel this request? \nIf yes, please send a message after cancelling this request.')){
+			$.post('<?= $this->config->item('career_uri') ?>', {submitType:'cancelRequest', coeID:id}, 
+			function(){
+				alert('Request has been cancelled.');
+				parent.$.colorbox.close();
+				parent.location.reload();
+			});
 		}
 	}
 </script>

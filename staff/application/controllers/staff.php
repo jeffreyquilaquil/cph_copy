@@ -1975,20 +1975,29 @@ class Staff extends CI_Controller {
 		
 		if($this->user!=false){
 			if($this->uri->segment(2)!=''){
-				$coeID = $this->uri->segment(2);
-				$data['toupdate'] = true;
-				$data['row'] = $this->staffM->getSingleInfo('staffCOE', 'staffCOE.*, CONCAT(fname," ",lname) AS name, newPositions.title, startDate, endDate, sal, allowance, fname, username, empStatus, notesforHR', 'coeID="'.$coeID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
-				if($data['row']->dateissued!='0000-00-00'){
-					$this->generatecoe($coeID);
-				}
-				
-				if(isset($_POST) && !empty($_POST)){
-					if($_POST['submitType']=='generate'){
-						$this->staffM->updateQuery('staffCOE', array('coeID'=>$coeID), array('issuedby'=>$this->user->empID, 'dateissued'=>date('Y-m-d'), 'status'=>'1'));
+				if(count(array_intersect($this->myaccess,array('full','hr')))==0){
+					$data['access'] = false;
+				}else{				
+					$coeID = $this->uri->segment(2);
+					$data['toupdate'] = true;
+					$data['row'] = $this->staffM->getSingleInfo('staffCOE', 'staffCOE.*, CONCAT(fname," ",lname) AS name, newPositions.title, startDate, endDate, sal, allowance, fname, username, empStatus, notesforHR', 'coeID="'.$coeID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+					if($data['row']->dateissued!='0000-00-00'){
 						$this->generatecoe($coeID);
-						$this->staffM->addMyNotif($data['row']->empID_fk, $this->user->name.' generated the COE you requested. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 0, 1);
-						$this->staffM->addMyNotif($this->user->empID, 'You generated COE for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 5);
 					}
+					
+					if(isset($_POST) && !empty($_POST)){
+						if($_POST['submitType']=='generate'){
+							$this->staffM->updateQuery('staffCOE', array('coeID'=>$coeID), array('issuedby'=>$this->user->empID, 'dateissued'=>date('Y-m-d'), 'status'=>'1'));
+							$this->generatecoe($coeID);
+							$this->staffM->addMyNotif($data['row']->empID_fk, $this->user->name.' generated the COE you requested. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 0, 1);
+							$this->staffM->addMyNotif($this->user->empID, 'You generated COE for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 5);
+						}else if($_POST['submitType']=='cancelRequest'){
+							$this->staffM->updateQuery('staffCOE', array('coeID'=>$_POST['coeID']), array('status'=>2));
+							$this->staffM->addMyNotif($data['row']->empID_fk, 'Cancelled your COE request last '.date('F d, Y', strtotime($data['row']->daterequested)).' for '.$data['row']->purpose.'.', 0, 1);
+							$this->staffM->addMyNotif($this->user->empID, 'Cancelled COE request of '.$data['row']->name, 5);
+							exit;
+						}
+					}				
 				}				
 			}else{
 				$data['toupdate'] = false;
@@ -1999,7 +2008,7 @@ class Staff extends CI_Controller {
 					$this->staffM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
-						<p>This is an automatic notification that employee '.$this->user->name.' has requested for a COE. Please click <a href="'.$this->config->base_url().'generatecoe/'.$id.'/">here</a> to generate the COE.</p>
+						<p>This is an automatic notification that employee '.$this->user->name.' has requested for a COE. Please click <a href="'.$this->config->base_url().'requestcoe/'.$id.'/">here</a> to generate the COE.</p>
 						<p>For HR, pleave validate information in the COE. In the event of any information discrepancy, please update PT.</p>
 						<p style="color:red;">Refrain from manually editing the COE.</p>
 						<p>Once validated, printed, and signed, click "Send email" button on Manage COE page to send and email to employee to claim their employment certificate in HR Office.</p>
