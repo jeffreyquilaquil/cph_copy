@@ -348,10 +348,10 @@ class Staffmodel extends CI_Model {
 		   * body = email body
 		   */
 		 
-
-		if(isset($this->config->item('toEmail'))){
+		$toEmail = $this->config->item('toEmail');
+		if($toEmail !='' ){
 			$subject = $subject.' to-'.$to;
-			$to = $this->config->item('toEmail');
+			$to = $toEmail;
 		}
 		
 		
