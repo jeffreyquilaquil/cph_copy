@@ -378,9 +378,8 @@
 			<tr class="traddnote hidden"><td><br/></td></tr>
 		</table>
 		
-		<div id="myNotes"></div>
-		<div id="loadingNotes" style="text-align:center; width:100%; padding-top:20px;"><img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/></div>
-		
+		<div id="loadImg" style="text-align:center; margin-top:20px;"><img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/></div>
+		<iframe id="iframeNotes" src="<?= $this->config->base_url().'notes/'.$row->empID.'/' ?>" frameBorder="0" style="width:100%; height:500px;" onLoad="document.getElementById('loadImg').style.display='none';"></iframe>
 	</div>	
 
 <?php } ?>
@@ -425,11 +424,11 @@
 		
 		$('#nselection').change(function(){
 			v = $(this).val();
-			$('.nnotes').removeClass('hidden');
+				$('iframe#iframeNotes').contents().find('.nnotes').removeClass('hidden');
 			if(v!=''){
 				for(i=0; i<=5; i++){
 					if(v!=i)
-						$('.nstat_'+i).addClass('hidden');
+						$('iframe#iframeNotes').contents().find('.nstat_'+i).addClass('hidden');
 				}
 			}
 		});
@@ -668,26 +667,7 @@
 		$('.'+fld+'show').removeClass('hidden');
 		$('#'+fld+'upb').removeClass('hidden');
 	}
-	
-	function getNotes(empID, username){
-		$.post('<?= $this->config->base_url().'myNotes/' ?>',{empID:empID, username:username}, 
-		function(notes){
-			$('#myNotes').html(notes);
-			$('#loadingNotes').addClass('hidden');
-			$('#getNotes').removeAttr('onClick');
-		});		
-	}
-	
-	function addGetNotes(empID, username, halo, t){
-		$(t).html('<img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/>');
-		$(t).removeAttr('onClick');
-		$.post('<?= $this->config->base_url().'myNotes/' ?>',{empID:empID, username:username, halo:halo}, 
-		function(notes){
-			$('#myNotes').append(notes);
-			$(t).addClass('hidden');
-		});
-	}
-	
+		
 	function editUploadDoc(id, v=0){
 		if(v==1){
 			if($('#uploadDoc_'+id).val()==''){

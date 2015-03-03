@@ -14,6 +14,9 @@ class Staff extends CI_Controller {
 			$this->myaccess = explode(',',$this->user->access);
 		}
 		else $this->myaccess = array();
+		
+		/* error_reporting(E_ALL);
+		ini_set('display_errors', 1); */
 	}
 		
 	public function index(){
@@ -2258,7 +2261,13 @@ class Staff extends CI_Controller {
 	}
 				
 	public function notes(){
+		$data['content'] = 'notes';
+		$empID = $this->uri->segment(2);
+		$username = $this->staffM->getSingleField('staffs', 'username', 'empID="'.$empID.'"');
+				
+		$data['myNotes'] = $this->staffM->mergeMyNotes($empID, $username);		
 		
+		$this->load->view('includes/templatenone', $data);
 	}
 }
 

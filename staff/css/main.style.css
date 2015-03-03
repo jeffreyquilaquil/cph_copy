@@ -6,6 +6,11 @@ body {
 	font-size: 12px;
 	color: #ffffff;
 	background: #250d0b url(images/bg-body.jpg) top repeat-x;
+} 
+
+body.templatenone{
+	color: #000;
+	background: #fff;
 }
 
 p{ 

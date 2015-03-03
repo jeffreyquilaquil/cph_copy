@@ -1163,9 +1163,8 @@ class Staffmodel extends CI_Model {
 		array_multisort($volume, SORT_DESC, $notesArr);
 		
 		return $notesArr;		
-	}   
+	}  
 	
-		
 	
 }
 
