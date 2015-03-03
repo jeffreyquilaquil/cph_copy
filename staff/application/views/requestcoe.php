@@ -28,7 +28,8 @@ echo '<table class="tableInfo">';
 	
 	<form action="" method="POST" onSubmit="return validateForm()">
 	<?php if($toupdate==false){ ?>
-		<tr><td>Purpose of the Request</td><td><textarea class="forminput" name="note"></textarea></td></tr>
+		<tr><td>Purpose of the Request</td><td><textarea class="forminput" name="purpose"></textarea></td></tr>
+		<tr><td>Note for HR</td><td><textarea class="forminput" name="notesforHR"></textarea></td></tr>
 		<tr><td><br/></td><td><input type="hidden" name="submitType" value="request"/><input type="submit" value="Request" class="padding5px"/></td></tr>
 	<?php }else if($toupdate==true && count(array_intersect($this->myaccess,array('full','hr')))>0){ 
 			if($row->endDate!='0000-00-00'){
@@ -41,6 +42,7 @@ echo '<table class="tableInfo">';
 			
 			echo '<tr><td>Date Requested</td><td class="weightbold">'.date('F d, Y', strtotime($row->daterequested)).'</td></tr>';			
 			echo '<tr><td>Purpose of Request</td><td class="weightbold">'.$row->purpose.'</td></tr>';
+			echo '<tr><td>Note to HR</td><td class="weightbold">'.$row->notesforHR.'</td></tr>';
 			echo '<tr><td>Date of Issuance</td><td class="weightbold">'.date('F d, Y').'</td></tr>';
 	?>		
 		<tr><td><br/></td><td>
@@ -56,7 +58,7 @@ echo '<table class="tableInfo">';
 
 <script type="text/javascript">
 	function validateForm(){
-		if($('input[type=submit]').val()=='Request' && $('textarea[name=note]').val().length==0){
+		if($('input[type=submit]').val()=='Request' && $('textarea[name=purpose]').val().length==0){
 			alert('Purpose of request is empty.');
 			return false;
 		}else{
