@@ -2079,6 +2079,7 @@ class Staff extends CI_Controller {
 				
 				}else if($segment2!=''){
 					$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
+					$data['to'] = $data['row']->email;
 				}
 			}
 			
