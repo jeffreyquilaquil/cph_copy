@@ -133,8 +133,8 @@
 				
 			echo '<tr class="pdetailstr pdetailslast hidden"><td colspan=2><i>Please upload documents on My Info page > Personal File to support the request.</i></td></tr>';			
 			echo '<tr class="pdetailslast hidden">
-					<td colspan=2>
-						<button id="pbtnsubmit">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'pdetails\')">Cancel</button>
+					<td colspan=2 align="right">
+						<button id="pbtnsubmit" class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'pdetails\')" class="padding5px">Cancel</button>
 					</td>
 				</tr>';
 		?>
@@ -169,8 +169,8 @@
 				echo $this->staffM->displayInfo('jdetails', 'sal', $row->sal, true, 'Ex. 10,000.00', 'hidden');
 			
 			echo '<tr class="jdetailslast hidden">
-					<td colspan=2>
-						<button id="jbtnsubmit">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'jdetails\')">Cancel</button>
+					<td colspan=2 align="right">
+						<button id="jbtnsubmit"  class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'jdetails\')" class="padding5px">Cancel</button>
 					</td>
 				</tr>';		
 		?>
