@@ -1977,14 +1977,14 @@ class Staff extends CI_Controller {
 			if($this->uri->segment(2)!=''){
 				$coeID = $this->uri->segment(2);
 				$data['toupdate'] = true;
-				$data['row'] = $this->staffM->getSingleInfo('staffCOE', 'staffCOE.*, CONCAT(fname," ",lname) AS name, newPositions.title, startDate, endDate, sal, fname, username, empStatus', 'coeID="'.$coeID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+				$data['row'] = $this->staffM->getSingleInfo('staffCOE', 'staffCOE.*, CONCAT(fname," ",lname) AS name, newPositions.title, startDate, endDate, sal, allowance, fname, username, empStatus', 'coeID="'.$coeID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 				if($data['row']->dateissued!='0000-00-00'){
 					$this->generatecoe($coeID);
 				}
 				
 				if(isset($_POST) && !empty($_POST)){
 					if($_POST['submitType']=='generate'){
-						$this->staffM->updateQuery('staffCOE', array('coeID'=>$coeID), array('issuedby'=>$this->user->empID, 'dateissued'=>date('Y-m-d', strtotime($_POST['dateissued'])), 'status'=>'1'));
+						$this->staffM->updateQuery('staffCOE', array('coeID'=>$coeID), array('issuedby'=>$this->user->empID, 'dateissued'=>date('Y-m-d'), 'status'=>'1'));
 						$this->generatecoe($coeID);
 						$this->staffM->addMyNotif($data['row']->empID_fk, $this->user->name.' generated the COE you requested. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 0, 1);
 						$this->staffM->addMyNotif($this->user->empID, 'You generated COE for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'requestcoe/'.$coeID.'/" class="iframe">here</a> to view the file.', 5);
@@ -1995,7 +1995,7 @@ class Staff extends CI_Controller {
 				$data['row'] = $this->user;
 				$data['prevRequests'] = $this->staffM->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
-					$id = $this->staffM->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'additionalNote'=>$_POST['note'], 'daterequested'=>date('Y-m-d H:i:s')));
+					$id = $this->staffM->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['note'], 'daterequested'=>date('Y-m-d H:i:s')));
 					$this->staffM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
@@ -2016,7 +2016,7 @@ class Staff extends CI_Controller {
 	}
 	
 	public function generatecoe($id){	
-		$row = $this->staffM->getSingleInfo('staffCOE', 'coeID, dateissued, empID, CONCAT(fname, " ",lname) AS name, newPositions.title, startDate, endDate, sal AS salary, empStatus', 'coeID="'.$id.'"', 'LEFT JOIN staffs ON empID_fk=empID LEFT JOIN newPositions ON posID=position');
+		$row = $this->staffM->getSingleInfo('staffCOE', 'coeID, dateissued, purpose, empID, CONCAT(fname, " ",lname) AS name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'coeID="'.$id.'"', 'LEFT JOIN staffs ON empID_fk=empID LEFT JOIN newPositions ON posID=position');
 		
 		$this->staffM->genCOEpdf($row);
 		

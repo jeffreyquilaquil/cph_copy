@@ -243,6 +243,7 @@ class Staffmodel extends CI_Model {
 		else if($f=='sal') $v = 'Salary';
 		else if($f=='active') $v = 'Is Active';
 		else if($f=='leaveCredits') $v = 'Leave Credits';
+		else if($f=='allowance') $v = 'Monthly Allowance';
 		
 		return $v;
 	}
@@ -984,23 +985,31 @@ class Staffmodel extends CI_Model {
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
-		$pdf->SetFont('Arial','B',10);
-		$pdf->setXY(103, 156);
+		$pdf->SetFont('Arial','B',14);
+		$pdf->setXY(95, 91);
 		$pdf->Write(0, $row->name);
-		$pdf->setXY(103, 163);
+		$pdf->setXY(95, 100);
+		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
+		$pdf->setXY(95, 109);
 		$pdf->Write(0, $row->title);
-		$pdf->setXY(103, 170);
-		$pdf->Write(0, ucfirst($row->empStatus));
-		$pdf->setXY(103, 177);
-		$pdf->Write(0, date('F d, Y', strtotime($row->startDate)));
 		
-		$pdf->setXY(103, 184);
-		$pdf->Write(0, (($row->endDate=='0000-00-00')?'N/A':date('F d, Y', strtotime($row->endDate))));
-		$pdf->setXY(103, 191);
-		$pdf->Write(0, 'Php '.$row->salary);
+		$sal = (double)str_replace(',','',$row->salary);
+		$allowance = (double)str_replace(',','',$row->allowance);
 		
-		$pdf->setXY(90, 232);
-		$pdf->Write(0, date('F d, Y', strtotime($row->dateissued)));
+		$pdf->setXY(125, 127);
+		$pdf->Write(0, number_format(($sal*12),2));
+		$pdf->setXY(127, 137);
+		$pdf->Write(0, number_format(($allowance*12),2));
+		$pdf->setXY(125, 155);
+		$pdf->Write(0, number_format((($sal*12)+($allowance*12)),2));
+		
+		$pdf->SetFont('Arial','B',12);
+		$pdf->setXY(10, 177);
+		$pdf->MultiCell(180, 15, $row->purpose,0,'C',false);	
+		
+		$pdf->setXY(95, 205);
+		$pdf->Write(0, date('F d, Y',strtotime($row->dateissued)));
+		
 		
 		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
 	}

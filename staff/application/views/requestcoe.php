@@ -13,7 +13,7 @@
 echo '<table class="tableInfo">';	
 
 	if(isset($prevRequests) && count($prevRequests)>0){
-		echo '<tr><td colspan=2><b>Previous Generated COE</b></td></tr>';
+		echo '<tr class="trhead"><td colspan=2><b>Previous Generated COE</b></td></tr>';
 		foreach($prevRequests AS $p):
 			echo '<tr><td>Issued last '.date('F d, Y', strtotime($p->dateissued)).'</td><td><a href="'.$this->config->base_url().'requestcoe/'.$p->coeID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td></tr>';
 		endforeach;
@@ -25,22 +25,42 @@ echo '<table class="tableInfo">';
 	<tr><td>Current Position Title</td><td class="weightbold"><?= $row->title ?></td></tr>
 	<tr><td>Employee Status</td><td class="weightbold"><?= ucfirst($row->empStatus) ?></td></tr>
 	<tr><td>Hire Date</td><td class="weightbold"><?= date('F d, Y',strtotime($row->startDate)) ?></td></tr>
-	<tr><td>Separation Date</td><td class="weightbold"><?= (($row->endDate=='0000-00-00')?'N/A':date('F d, Y', strtotime($row->endDate))) ?></td></tr>	
-	<tr><td>Monthly Basic Salary</td><td class="weightbold"><?= 'Php '.$row->sal ?></td></tr>
 	
-	<form action="" method="POST">
+	<form action="" method="POST" onSubmit="return validateForm()">
 	<?php if($toupdate==false){ ?>
-		<tr><td>Note to HR</td><td><textarea class="forminput" name="note"></textarea></td></tr>
-		<tr><td><br/></td><td><input type="hidden" name="submitType" value="request"/><input type="submit" value="Request COE"/></td></tr>
-	<?php }else if($toupdate==true && count(array_intersect($this->myaccess,array('full','hr')))>0){ ?>
-		<tr><td>Date of Issuance</td><td><input type="text" name="dateissued" class="forminput datepick" value="<?= date('F d, Y') ?>"/></td></tr>
+		<tr><td>Purpose of the Request</td><td><textarea class="forminput" name="note"></textarea></td></tr>
+		<tr><td><br/></td><td><input type="hidden" name="submitType" value="request"/><input type="submit" value="Request" class="padding5px"/></td></tr>
+	<?php }else if($toupdate==true && count(array_intersect($this->myaccess,array('full','hr')))>0){ 
+			if($row->endDate!='0000-00-00'){
+				echo '<tr><td>Separation Date</td><td class="weightbold">'.date('F d, Y',strtotime($row->endDate)).'</td></tr>';
+			}
+			$sal = (double)str_replace(',','',$row->sal);
+			$allowance = (double)str_replace(',','',$row->allowance);
+			echo '<tr><td>Annual Salary</td><td class="weightbold">Php '.number_format(($sal*12),2).' <span class="weightnormal">(Php '.number_format($sal,2).' Monthly)</span></td></tr>';			
+			echo '<tr><td>Annual Allowance</td><td class="weightbold">Php '.number_format(($allowance*12), 2).' <span class="weightnormal">(Php '.number_format($allowance,2).' Monthly)</span></td></tr>';
+			
+			echo '<tr><td>Date Requested</td><td class="weightbold">'.date('F d, Y', strtotime($row->daterequested)).'</td></tr>';			
+			echo '<tr><td>Purpose of Request</td><td class="weightbold">'.$row->purpose.'</td></tr>';
+			echo '<tr><td>Date of Issuance</td><td class="weightbold">'.date('F d, Y').'</td></tr>';
+	?>		
 		<tr><td><br/></td><td>
 			<i>Please validate information before clicking Generate button. For discrepancies, update PT first before generating COE. Click <a href="javascript:void(0);" onClick="window.parent.location.href='<?= $this->config->base_url() ?>staffinfo/<?= $row->username ?>/'">here</a> to visit employee's profile.</i><br/>
 			<input type="hidden" name="submitType" value="generate"/>
-			<input type="submit" value="Generate COE" onClick="displaypleasewait();"/>
+			<input type="submit" value="Generate COE" class="padding5px"/>
 		</td></tr>
 	<?php } ?>
 	</form>
 	
 </table>
 <?php } ?>
+
+<script type="text/javascript">
+	function validateForm(){
+		if($('input[type=submit]').val()=='Request' && $('textarea[name=note]').val().length==0){
+			alert('Purpose of request is empty.');
+			return false;
+		}else{
+			return true;
+		}
+	}
+</script>

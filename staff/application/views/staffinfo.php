@@ -163,10 +163,13 @@
 		}
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);
-			if(count(array_intersect($this->myaccess,array('full','hr')))>0)
+			if(count(array_intersect($this->myaccess,array('full','hr')))>0){
 				echo $this->staffM->displayInfo('jdetails', 'sal', $row->sal, true, 'Ex. 10,000.00');
-			else
+				echo $this->staffM->displayInfo('jdetails', 'allowance', $row->allowance, true, 'Ex. 2,500.00');
+			}else{
 				echo $this->staffM->displayInfo('jdetails', 'sal', $row->sal, true, 'Ex. 10,000.00', 'hidden');
+				echo $this->staffM->displayInfo('jdetails', 'allowance', $row->allowance, true, 'Ex. 2,500.00', 'hidden');
+			}
 			
 			echo '<tr class="jdetailslast hidden">
 					<td colspan=2 align="right">
@@ -216,7 +219,7 @@
 					}
 					
 					if((count(array_intersect($this->myaccess,array('full','hr')))>0)){
-						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.')" class="cpointer upClass_'.$p->upID.'"/>
+						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.', 0)" class="cpointer upClass_'.$p->upID.'"/>
 							<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
 							<img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>';
 						echo '<img src="'.$this->config->base_url().'css/images/delete-icon.png" style="cursor:pointer;" onClick="delFile('.$p->upID.', \''.$p->fileName.'\')"/>';
@@ -331,7 +334,7 @@
 <?php } ?>
 
 	<table class="tableInfo">
-		<tr class="trlabel"><td colspan=4>Attendance Logs</td></tr>
+		<?php //echo '<tr class="trlabel"><td colspan=4>Attendance Logs</td></tr>' ?>
 	</table>
 
 	</div><? //end of tab-1 ?>
@@ -584,6 +587,7 @@
 					endDate:$('#endDate').val(),
 					accessEndDate:$('#accessEndDate').val(),
 					sal:$('#sal').val(),
+					allowance:$('#allowance').val(),
 					active:$('#active').val()
 				},function(){
 					location.reload();
@@ -668,7 +672,7 @@
 		$('#'+fld+'upb').removeClass('hidden');
 	}
 		
-	function editUploadDoc(id, v=0){
+	function editUploadDoc(id, v){
 		if(v==1){
 			if($('#uploadDoc_'+id).val()==''){
 				alert('Document Name is empty.');
