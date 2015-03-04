@@ -44,8 +44,8 @@ if($edit==''){
 								
 								if($r->isJob==1 && $r->fieldname!='accessEndDate' && $r->fieldname!='endDate')
 									echo '<li><a href="'.$this->config->base_url().'generatecis/'.$r->empID_fk.'/'.$r->updateID.'/" class="iframe">Generate CIS</a></li>';
-								else
-									echo '<li><a href="javascript:void(0)" onClick="stars(\'Update\', '.$r->updateID.', \''.$r->empID_fk.'\', \''.$r->fieldname.'\', \''.$r->fieldvalue.'\')">Approve Request</a></li>';
+								
+							echo '<li><a href="javascript:void(0)" onClick="stars(\'Update\', '.$r->updateID.', \''.$r->empID_fk.'\', \''.$r->fieldname.'\', \''.$r->fieldvalue.'\')">Approve Request</a></li>';
 							
 							echo 	'<li><a class="iframe" href="'.$this->config->base_url().'staffupdated/addnote/'.$r->updateID.'/">Add Note</a></li>
 									<li><a class="iframe" href="'.$this->config->base_url().'supportingdocs/'.$r->empID_fk.'/">Supporting Documents</a></li>
