@@ -13,7 +13,7 @@
 echo '<table class="tableInfo">';	
 
 	if(isset($prevRequests) && count($prevRequests)>0){
-		echo '<tr class="trhead"><td colspan=2><b>Previous Generated COE</b></td></tr>';
+		echo '<tr class="trhead"><td colspan=2>Previous Generated COE</td></tr>';
 		foreach($prevRequests AS $p):
 			echo '<tr><td>Issued last '.date('F d, Y', strtotime($p->dateissued)).'</td><td><a href="'.$this->config->base_url().'requestcoe/'.$p->coeID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td></tr>';
 		endforeach;

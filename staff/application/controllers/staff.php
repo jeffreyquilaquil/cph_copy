@@ -2214,54 +2214,6 @@ class Staff extends CI_Controller {
 		$disp .= '</table>';
 		echo $disp;		
 	}
-	
-	public function myNotes(){
-		$myNotes = $this->staffM->mergeMyNotes($_POST['empID'], $_POST['username']);
-		
-		echo '<table class="tableInfo">';
-		if(count($myNotes)==0){
-			echo '<tr><td>No notes.</td></tr>';
-		}else{
-			if(isset($_POST['halo'])){
-				$h = $_POST['halo'];
-				$hEnd = $_POST['halo'] + 15;
-			}else{
-				$h = 0;
-				$hEnd = 15;
-			}
-		
-			for($cnt=$h; $cnt<$hEnd && $cnt<count($myNotes); $cnt++){
-				$m = $myNotes[$cnt];
-				if($m['access']=='' || $m['access']=='assoc' || 
-					$m['access']=='full' && (count(array_intersect($this->myaccess,array('full','hr')))>0) ||
-					$m['access']=='exec' && $this->user->is_supervisor==1
-				){
-					echo '<tr class="nnotes nstat_'.$m['type'].'" valign="top">';					
-					if($m['from']=='careerPH')
-						$img = $this->config->base_url().'uploads/staffs/'.$m['username'].'/'.$m['username'].'.jpg';					
-					
-					if($m['from']=='pt' || ($m['from']=='careerPH' && !(@file_get_contents($img, 0, NULL, 0, 1))))
-						$img = 'http://staffthumbnails.s3.amazonaws.com/'.$m['username'].'.jpg';
-										
-					if(!(@file_get_contents($img, 0, NULL, 0, 1))) $img = $this->config->base_url().'css/images/logo.png';
-					
-					
-					
-					echo '<td class="nTD"><img src="'.$img.'" width="60px"/></td>';
-					
-					if($m['from']=='careerPH') echo '<td><b>'.$m['name'].'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$m['note'].'<br/><br/></td>';
-					else echo '<td>'.$m['note'].'</td>';	
-					echo '</tr>';
-				}
-			}
-			
-		}
-		echo '</table>';
-		if(isset($cnt) && $cnt<count($myNotes)){
-			echo '<div style="cursor:pointer; text-align:center; padding:5px; border:1px solid #ccc;" onClick="addGetNotes('.$_POST['empID'].', \''.$_POST['username'].'\', '.$cnt.', this);"><b>Load More...</b></div>';
-		}
-		
-	}
 				
 	public function notes(){
 		$data['content'] = 'notes';
@@ -2272,5 +2224,44 @@ class Staff extends CI_Controller {
 		
 		$this->load->view('includes/templatenone', $data);
 	}
+	
+	public function others(){
+		$data['content'] = 'others';
+		
+		$this->load->view('includes/template', $data);
+	}
+	
+	public function addnewposition(){
+		$data['content'] = 'addnewposition';
+		if(isset($_POST) && !empty($_POST)){
+			if($_POST['submitType']=='grpdepts'){
+				$query = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT '.$_POST['newtype'].' FROM newPositions WHERE '.$_POST['oldtype'].'="'.$_POST['tval'].'"');
+				echo '<option></option>';
+				foreach($query AS $q):
+					echo '<option value="'.$q->$_POST['newtype'].'">'.$q->$_POST['newtype'].'</option>';
+				endforeach;
+				exit;
+			}else if($_POST['submitType']=='addposition'){
+				unset($_POST['submitType']);
+				$_POST['user'] = $this->user->username;
+				$this->staffM->insertQuery('newPositions', $_POST);
+				$this->staffM->addMyNotif($this->user->empID, 'Added new position "<b>'.$_POST['title'].'</b>" for '.$_POST['org'].'> '.$_POST['dept'].'> '.$_POST['grp'].'> '.$_POST['subgrp'].'.', 5);
+				$data['added'] = $_POST['title'];
+			}
+		}
+	
+		$data['org'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT org FROM newPositions');
+		$data['orgLevel'] = $this->staffM->getSQLQueryArrayResults('SELECT * FROM orgLevel');
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function allpositions(){
+		$data['content'] = 'allpositions';
+		
+		$data['positions'] = $this->staffM->getQueryResults('newPositions', 'posID, title, `desc`, active, orgLevel_fk, levelName, org, dept, grp, subgrp', '1', 'LEFT JOIN orgLevel ON orgLevel_fk=levelID', 'org, dept, grp, subgrp, title');
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
 }
 
