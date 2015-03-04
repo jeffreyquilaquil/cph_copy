@@ -2228,7 +2228,7 @@ class Staff extends CI_Controller {
 	public function others(){
 		$data['content'] = 'others';
 		
-		$this->load->view('includes/template', $data);
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function addnewposition(){

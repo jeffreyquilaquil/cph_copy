@@ -48,7 +48,7 @@
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE</a></li>';
 						echo '<li '.(($content=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Manage Schedules</a></li>';
 					}	
-					echo '<li '.(($content=='others')?'class="current"':'').'><a href="'.$this->config->base_url().'others/">Other Pages</a></li>';					
+					echo '<li '.(($content=='others')?'class="current"':'').'><a class="iframe" href="'.$this->config->base_url().'others/">Other Pages</a></li>';					
 						
 					echo '</ul>';
 				echo '</li>';

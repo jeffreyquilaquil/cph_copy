@@ -1,3 +1,4 @@
+<a class="iframe" href="<?= $this->config->base_url().'addnewposition/' ?>"><button style="float:right;" class="padding5px">Add New Position</button></a>
 <h2>List of All Positions</h2>
 <hr/>
 <table class="tableInfo">
