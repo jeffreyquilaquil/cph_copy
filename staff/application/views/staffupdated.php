@@ -31,8 +31,12 @@ if($edit==''){
 					<td>'.$r->$f.'</td>
 					<td style="color:red;">';
 					
-					if($r->fieldname=='title') echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$r->fieldvalue.'"');
-					else echo $r->fieldvalue;
+					if($r->fieldname=='title')
+						echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$r->fieldvalue.'"');
+					else if($r->fieldname=='supervisor')
+						echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$r->fieldvalue.'"');
+					else 
+						echo $r->fieldvalue;
 					
 				echo '</td>
 					<td>'.date('d M Y, h:i a', strtotime($r->daterequested)).'</td>

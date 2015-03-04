@@ -248,7 +248,7 @@ class Staff extends CI_Controller {
 					if(isset($_POST) && !empty($_POST)){
 						if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails'){
 							if($_POST['submitType']=='jdetails'){
-								$orig = $this->staffM->getSQLQueryArrayResults('SELECT office, startDate, supervisor, title AS title2, position AS title, empStatus, regDate, endDate, accessEndDate, shift, sal, staffs.active FROM staffs LEFT JOIN newPositions ON posID=position WHERE empID="'.$_POST['empID'].'" LIMIT 1');
+								$orig = $this->staffM->getSQLQueryArrayResults('SELECT office, startDate, supervisor, title AS title2, position AS title, empStatus, regDate, endDate, accessEndDate, shift, sal, allowance, staffs.active FROM staffs LEFT JOIN newPositions ON posID=position WHERE empID="'.$_POST['empID'].'" LIMIT 1');
 							}else{	
 								$orig = $this->staffM->getSQLQueryArrayResults('SELECT lname, fname, mname, suffix, pemail, address, city, country, zip, phone1, phone2, bdate, gender, maritalStatus, spouse, dependents, sss, tin, philhealth, hdmf, skype, google FROM staffs WHERE empID="'.$_POST['empID'].'" LIMIT 1');
 							}
@@ -2165,13 +2165,7 @@ class Staff extends CI_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
-	
-	public function downloadforms(){
-		$data['content'] = 'downloadforms';
 		
-		$this->load->view('includes/template', $data);	
-	}
-	
 	public function generatecode(){
 		$data['content'] = 'generatecode';
 		

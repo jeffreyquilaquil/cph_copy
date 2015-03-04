@@ -1096,14 +1096,14 @@ class Staffmodel extends CI_Model {
 						if($fld=='supervisor'){
 							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'is_supervisor=1', '', 'fname ASC');
 						}else if($fld=='title'){
-							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', 'active=1', '', 'title ASC');
+							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', '1', '', 'title ASC');
 						}
 						
 						if($fld=='supervisor' || $fld=='title'){							
 							foreach($aRR AS $va):
 								if( $v==$va->id || ($fld=='title' && $v==$va->val)) $vvalue=$va->val;
-															
-								if(($va->active==1 || $va->id==$v) && ($fld=='title' || $fld=='supervisor')){								
+								
+								if(($va->active==1 || $v==$vvalue) && ($fld=='title' || $fld=='supervisor')){								
 									$disp .= '<option value="'.$va->id.'" '.(( $v==$va->id || ($fld=='title' && $v==$va->val)) ? 'selected="selected"' : '').'>';
 									if($fld=='title') $disp .= $va->val.' ('.$va->org.' > '.$va->dept.' > '.$va->grp.' > '.$va->subgrp.')';
 									else $disp .= $va->val;
