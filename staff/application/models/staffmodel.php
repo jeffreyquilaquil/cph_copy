@@ -192,6 +192,11 @@ class Staffmodel extends CI_Model {
 						'disciplinary'=>4,
 						'actions'=>5
 					);
+		}else if($con=='office'){
+			$a = array(
+						'PH-Cebu'=>'PH-Cebu',
+						'US-OKC'=>'US-OKC'
+					);
 		}
 		
 		return $a;
@@ -228,19 +233,21 @@ class Staffmodel extends CI_Model {
 		else if($f=='startDate') $v = 'Start Date';
 		else if($f=='idNum') $v = 'Payroll ID';
 		else if($f=='supervisor') $v = 'Supervisor';
-		else if($f=='department') $v = 'Department'; 
+		else if($f=='department') $v = 'Department';
 		else if($f=='grp') $v = 'Group'; 
 		else if($f=='dept') $v = 'Department';
-		else if($f=='title') $v = 'Position Title';
+		else if($f=='title' || $f=='position') $v = 'Position Title';
 		else if($f=='skype') $v = 'Skype Account';
 		else if($f=='google') $v = 'Google Account';
 		else if($f=='endDate') $v = 'Separation Date';
 		else if($f=='accessEndDate') $v = 'Access End Date';
 		else if($f=='fulltime') $v = 'Full-Time';
 		else if($f=='empStatus') $v = 'Employee Status';
-		else if($f=='regDate') $v = 'Regularization Date';
+		else if($f=='regDate') $v = 'Regularization Date'; 
+		else if($f=='separationDate') $v = 'SeparationDate Date';  
+		else if($f=='evalDate') $v = 'Evaluation Date';  
 		else if($f=='levelName') $v = 'Org Level';
-		else if($f=='sal') $v = 'Salary';
+		else if($f=='sal' || $f=='salary') $v = 'Salary';
 		else if($f=='active') $v = 'Is Active';
 		else if($f=='leaveCredits') $v = 'Leave Credits';
 		else if($f=='allowance') $v = 'Monthly Allowance';
@@ -654,8 +661,10 @@ class Staffmodel extends CI_Model {
 		}
 		if(isset($changes->salary)){
 			$cval[$cnum][0] = 'Change in Basic Salary';
-			$cval[$cnum][1] = 'Php '.number_format($changes->salary->c,2);
-			$cval[$cnum][2] = 'Php '.number_format($changes->salary->n,2);
+			$cval[$cnum][1] = 'Php '.number_format((int)str_replace(',','',$changes->salary->c),2);
+			$cval[$cnum][2] = 'Php '.number_format((int)str_replace(',','',$changes->salary->n),2);  
+			//$cval[$cnum][1] = 'Php '.number_format($changes->salary->c,2);
+			//$cval[$cnum][2] = 'Php '.number_format($changes->salary->n,2);
 			$cnum++;
 			
 			$cval[$cnum][0] = 'Justification for salary adjustment:';
@@ -907,7 +916,11 @@ class Staffmodel extends CI_Model {
 				<td class="weightnormal">Type</td>
 				<td class="weightnormal">'.(($status==3)?'Previous':'Current').' Info</td>
 				<td class="weightnormal">New Info</td>
-			</tr>';	
+			</tr>';
+		if($status==1){
+			$disp .= '<tr><td colspan=3><i>These are approved CIS but not yet the effective date.</i></td></tr>';
+		}
+		
 		if(count($info)==0){
 			$disp .= '<tr><td class="weightnormal" colspan=10>No pending CIS.</td></tr>';
 		}else{
@@ -932,7 +945,7 @@ class Staffmodel extends CI_Model {
 					$cnt++;
 				}
 				if(isset($c->salary)){
-					$arr[$cnt][0] = 'Basic Salary'; $arr[$cnt][1] = 'Php'.$c->salary->c; $arr[$cnt][2] = 'Php'.$c->salary->n;
+					$arr[$cnt][0] = 'Basic Salary'; $arr[$cnt][1] = 'Php '.number_format(str_replace(',','',$c->salary->c),2); $arr[$cnt][2] = 'Php '.number_format(str_replace(',','',$c->salary->n),2);
 					$arr[$cnt][3] = $c->salary->com;
 					$cnt++;	
 				}
@@ -963,12 +976,15 @@ class Staffmodel extends CI_Model {
 				$disp .= '</td>';
 				$disp .= '<td>'.$a->supName.'</td>';
 				$disp .= '<td>'.$a->prepby.'</td>';
-				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'cispdf/'.$a->cisID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
-			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d'))
+				
+			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d')){
+				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/CIS_'.$a->cisID.'.pdf"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
 				$disp .= '<td><br/></td>';
-			else
+			}else{
+				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'cispdf/'.$a->cisID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
 				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'updatecis/'.$a->cisID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>';
 				$disp .= '</tr>';
+			}
 			endforeach; 
 		}
 		$disp .= '</table>';
@@ -1090,14 +1106,14 @@ class Staffmodel extends CI_Model {
 					<td width="30%">'.$this->defineField($fld).'</td>
 					<td>';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
 							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'is_supervisor=1', '', 'fname ASC');
 						}else if($fld=='title'){
 							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', '1', '', 'title ASC');
-						}
+						}						
 						
 						if($fld=='supervisor' || $fld=='title'){							
 							foreach($aRR AS $va):

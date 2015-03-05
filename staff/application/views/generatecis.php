@@ -28,7 +28,9 @@ if($updated==false && count($row)>0){
 			<option value=""></option>
 			<?php
 			foreach($departments AS $d):
-				echo '<option value="'.$d->posID.'|'.$d->title.'" '.((isset($wonka->fieldname) && $wonka->fieldname=='title' && $d->posID==$wonka->fieldvalue)?'selected':'').'>'.$d->title.' of ('.$d->org.'-'.$d->dept.'-'.$d->grp.'-'.$d->subgrp.')</option>';
+				if($d->title!=$row->title && $d->active==1){
+					echo '<option value="'.$d->posID.'|'.$d->title.'" '.((isset($wonka->fieldname) && $wonka->fieldname=='title' && $d->posID==$wonka->fieldvalue)?'selected':'').'>'.$d->title.' of ('.$d->org.'-'.$d->dept.'-'.$d->grp.'-'.$d->subgrp.')</option>';
+				}
 			endforeach;
 			?>
 			</select>		
@@ -42,7 +44,17 @@ if($updated==false && count($row)>0){
 	</tr>
 	<tr class="troffice hidden">
 		<td width="40%"><?= ucfirst($row->office) ?></td>
-		<td><input type="text" name="office" id="valoffice" class="forminput"/></td>
+		<td>
+			<select name="office" id="valoffice" class="forminput">
+				<option value=""></option>
+			<?php
+				$otype = $this->staffM->definevar('office');
+				foreach($otype AS $o):
+					echo '<option value="'.$o.'">'.$o.'</option>';
+				endforeach;
+			?>
+			</select>
+		</td>
 	</tr>
 	<!-------------------------------				SHIFT			---------->
 	<tr class="trshift trblank hidden"><td colspan=2><br/></td></tr>
@@ -80,7 +92,7 @@ if($updated==false && count($row)>0){
 		<td>Select new basic salary</td>
 	</tr>
 	<tr class="trsalary hidden">
-		<td width="40%">Php <?= $row->sal ?></td>
+		<td width="40%">Php <?= number_format(str_replace(',','',$row->sal),2) ?></td>
 		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00"/></td>
 	</tr>
 	<tr class="trsalary hidden">
@@ -126,7 +138,7 @@ if($updated==false && count($row)>0){
 	</tr>
 	<!-------------------------------				CHANGE			---------->
 	<tr class="trchange trblank hidden"><td colspan=2><br/></td></tr>
-	<tr class="trlabel trchange hidden">
+	<tr class="trlabel trchange treffdate hidden">
 		<td width="40%">Effective date of this change<br/><i class="weightnormal">Note that the changes requested cannot be implemented until the CIS is fully signed.</i></td>
 		<td><input type="text" class="forminput datepick" value="<?= date('F d, Y') ?>" name="effectiveDate" id="effectiveDate"/></td>
 	</tr>
@@ -171,6 +183,8 @@ if($updated==false && count($row)>0){
 		}else{
 			$('#effectiveDate').val('<?= date('F d, Y') ?>');
 		}
+		
+		
 
 		$('input[type=checkbox]').each(function(){
 			if( this.checked ) v = true;
@@ -178,10 +192,19 @@ if($updated==false && count($row)>0){
 		
 		if(v==true) $('.trchange').removeClass('hidden');
 		else $('.trchange').addClass('hidden');	
+		
+		if($('#empstatus').is(':checked')){
+			$('.treffdate').addClass('hidden');
+		}
+		
 	}
 	
 	function validateform(){
 		err = true;
+		if($('#empstatus').is(':checked')){
+			$('#effectiveDate').val($('#regDate').val());
+		}
+		
 		if($('#effectiveDate').val()=='') err = false;
 		else{
 			$('input[type=checkbox]').each(function(){
@@ -244,8 +267,8 @@ echo '<table class="tableInfo">';
 	}		
 	if(isset($changes->shift)){
 		echo '<tr class="trhead"><td colspan=2>Change in Shift Schedule</td></tr>';
-		echo '<tr><td width="30%">Current Info</td><td>'.$this->staffM->convertshift($changes->shift->c).'</td></tr>';
-		echo '<tr><td width="30%">New Info</td><td class="errortext">'.$this->staffM->convertshift($changes->shift->n).'</td></tr>';
+		echo '<tr><td width="30%">Current Info</td><td>'.$changes->shift->c.'</td></tr>';
+		echo '<tr><td width="30%">New Info</td><td class="errortext">'.$changes->shift->n.'</td></tr>';
 		echo '<tr><td colspan=2><br/></td></tr>';
 	}
 	if(isset($changes->supervisor)){
@@ -256,8 +279,8 @@ echo '<table class="tableInfo">';
 	}
 	if(isset($changes->salary)){
 		echo '<tr class="trhead"><td colspan=2>Change in Basic Salary</td></tr>';
-		echo '<tr><td width="30%">Current Info</td><td>Php '.$changes->salary->c.'</td></tr>';
-		echo '<tr><td width="30%">New Info</td><td class="errortext">Php '.$changes->salary->n.'</td></tr>';
+		echo '<tr><td width="30%">Current Info</td><td>Php '.number_format(str_replace(',','',$changes->salary->c),2).'</td></tr>';
+		echo '<tr><td width="30%">New Info</td><td class="errortext">Php '.number_format(str_replace(',','',$changes->salary->n),2).'</td></tr>';
 		echo '<tr><td width="30%">Justification for salary adjustment</td><td class="errortext">'.$changes->salary->com.'</td></tr>';
 		echo '<tr><td colspan=2><br/></td></tr>';
 	}
@@ -279,8 +302,8 @@ echo '<table class="tableInfo">';
 		echo '<tr><td colspan=2><br/></td></tr>';		
 	}
 	
-	if($row->signedDoc!='' && file_exists(UPLOADS.'/CIS/'.$row->signedDoc)){
-		echo '<tr><td>Signed Document</td><td><a href="'.$this->config->base_url().UPLOADS.'/CIS/'.$row->signedDoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a><input type="hidden" value="1" id="signed"/></td></tr>';		
+	if($row->signedDoc!='' && file_exists(UPLOADS.'CIS/'.$row->signedDoc)){
+		echo '<tr><td>Signed Document</td><td><a href="'.$this->config->base_url().UPLOADS.'CIS/'.$row->signedDoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a><input type="hidden" value="1" id="signed"/></td></tr>';		
 	}else{
 		echo '<tr><td>Upload signed document</td>
 			<td><input type="hidden" value="0" id="signed"/>
@@ -293,9 +316,9 @@ echo '<table class="tableInfo">';
 	
 	if($row->status==0){
 		echo '<tr><td>Approval</td><td><input type="radio" name="approval" value="1" checked> Approve&nbsp;&nbsp;&nbsp;<input type="radio" name="approval" value="2"> Disapprove</td></tr>';
-		echo '<tr id="efftr"><td>Effective date of this change</td><td><input type="text" value="'.(($row->effectivedate>=date('Y-m-d'))?date('F d, Y',strtotime($row->effectivedate)):'').'" name="effectivedate" id="effectivedate" class="forminput datepick"/></td></tr>';
+		echo '<tr id="efftr"><td>Effective date of this change</td><td><input type="text" value="'.date('F d, Y', strtotime($row->effectivedate)).'" name="effectivedate" id="effectivedate" class="forminput datepick"/></td></tr>';
 		echo '<tr><td>Reason for approve/disapprove</td><td><textarea class="forminput" name="reason" id="reason"></textarea></td></tr>';	
-		echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()"/></td></tr>';
+		echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()" class="btnclass"/></td></tr>';
 	}else{
 		echo '<tr class="trhead"><td colspan=2>Details</td></tr>';
 		echo '<tr><td>Status</td><td class="errortext">';

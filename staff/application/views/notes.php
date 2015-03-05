@@ -24,7 +24,7 @@
 				
 				echo '<td class="nTD" width="70px"><img src="'.$img.'" width="60px"/></td>';
 				
-				if($m['from']=='careerPH') echo '<td><b>'.$m['name'].'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$m['note'].'<br/><br/></td>';
+				if($m['from']=='careerPH') echo '<td><b>'.(($m['name']=='')?'CareerPH':$m['name']).'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$m['note'].'<br/><br/></td>';
 				else echo '<td>'.$m['note'].'</td>';	
 				echo '</tr>';
 			}

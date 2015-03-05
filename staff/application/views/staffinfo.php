@@ -53,7 +53,7 @@
 
 	<ul class="tabs" style="text-align:right;">
 		<li class="tab-link current" data-tab="tab-1">Info</li>
-		<li class="tab-link" data-tab="tab-2" id="getNotes" onClick="getNotes('<?= $row->empID ?>', '<?= $row->username ?>');">Notes</li>
+		<li class="tab-link" data-tab="tab-2">Notes</li>
 	</ul>
 	
 	<div id="tab-1" class="tab-content current">
@@ -400,7 +400,7 @@
 			],
 			toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code"
 		});
-
+			
 		$('.pdetailshide').addClass('hidden');
 		$('.jdetailshide').addClass('hidden');
 				

@@ -12,4 +12,17 @@
 <body class="templatenone">
 	<?php $this->load->view($content); ?>
 </body>
+<script type="text/javascript">
+	$(function(){
+		$('a').click(function(e){
+			e.preventDefault();
+			if($(this).hasClass('iframe')){
+				parent.$.colorbox({href:$(this).attr('href'), iframe:true, open:true, width:"990px", height:"600px"});
+			}else{
+				parent.window.location.href=$(this).attr('href');
+			}
+			
+		});
+	});
+</script>
 </html>
