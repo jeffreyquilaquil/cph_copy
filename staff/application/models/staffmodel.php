@@ -636,14 +636,14 @@ class Staffmodel extends CI_Model {
 		}		
 		if(isset($changes->office)){
 			$cval[$cnum][0] = 'Change in Office Branch';
-			$cval[$cnum][1] = strtoupper($changes->office->c);
+			$cval[$cnum][1] = (($changes->office->c!='')?strtoupper($changes->office->c):'None');
 			$cval[$cnum][2] = strtoupper($changes->office->n);
 			$cnum++;
-		}		
+		}	
 		if(isset($changes->shift)){
-			$cval[$cnum][0] = 'Change in Shift Schedule';			
-			$cval[$cnum][1] = $this->staffM->convertshift($changes->shift->c); 
-			$cval[$cnum][2] = $this->staffM->convertshift($changes->shift->n); 
+			$cval[$cnum][0] = 'Change in Shift Schedule';
+			$cval[$cnum][1] = (($changes->shift->c!='')?$changes->shift->c:'None');
+			$cval[$cnum][2] = $changes->shift->n;
 			$cnum++;
 		}
 		if(isset($changes->supervisor)){
@@ -654,8 +654,8 @@ class Staffmodel extends CI_Model {
 		}
 		if(isset($changes->salary)){
 			$cval[$cnum][0] = 'Change in Basic Salary';
-			$cval[$cnum][1] = 'Php '.$changes->salary->c;
-			$cval[$cnum][2] = 'Php '.$changes->salary->n;
+			$cval[$cnum][1] = 'Php '.number_format($changes->salary->c,2);
+			$cval[$cnum][2] = 'Php '.number_format($changes->salary->n,2);
 			$cnum++;
 			
 			$cval[$cnum][0] = 'Justification for salary adjustment:';
@@ -924,9 +924,9 @@ class Staffmodel extends CI_Model {
 					$cnt++;
 				}
 				if(isset($c->shift)){
-					$arr[$cnt][0] = 'Shift Schedule'; $arr[$cnt][1] = $this->staffM->convertshift($c->shift->c); $arr[$cnt][2] = $this->staffM->convertshift($c->shift->n);
+					$arr[$cnt][0] = 'Shift Schedule'; $arr[$cnt][1] = strtoupper($c->shift->c); $arr[$cnt][2] = strtoupper($c->shift->n);
 					$cnt++;
-				}
+				}				
 				if(isset($c->supervisor)){
 					$arr[$cnt][0] = 'Immediate Supervisor'; $arr[$cnt][1] = $c->supervisor->c; $arr[$cnt][2] = $c->supervisor->n;
 					$cnt++;

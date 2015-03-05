@@ -1775,7 +1775,7 @@ class Staff extends CI_Controller {
 				
 			$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name, title, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
 						
-			if(isset($_POST) && !empty($_POST)){			
+			if(isset($_POST) && !empty($_POST)){
 				$updatetext = array();
 				$updateArr = array();
 				if(!empty($_POST['position'])){
@@ -1796,14 +1796,14 @@ class Staff extends CI_Controller {
 									);
 				}
 				
-				if(!empty($_POST['dayfrom']) && !empty($_POST['dayto']) && !empty($_POST['timestarts']) && !empty($_POST['timeends'])){
-					$updateArr['shift'] = date('H:s',strtotime($_POST['timestarts'])).'|'.date('H:s',strtotime($_POST['timeends'])).' '.$_POST['dayfrom'].'-'.$_POST['dayto'];
+				if(!empty($_POST['shift'])){					
+					$updateArr['shift'] = $_POST['shift'];
 					$updatetext['shift'] = array(
 										'c' => $data['row']->shift,
-										'n' => date('H:s',strtotime($_POST['timestarts'])).'|'.date('H:s',strtotime($_POST['timeends'])).' '.$_POST['dayfrom'].'-'.$_POST['dayto']
+										'n' => $_POST['shift']
 									);
 				}
-				
+								
 				if(!empty($_POST['supervisor'])){
 					$s = explode('|',$_POST['supervisor']);
 					$updateArr['supervisor'] = $s[0];
