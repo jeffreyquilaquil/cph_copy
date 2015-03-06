@@ -31,7 +31,7 @@ if($edit==''){
 					<td>';
 						if($f=='sal' || $f=='allowance')
 							echo 'Php '.$r->$f;
-						else if($f=='bankAccnt')
+						else if($f=='bankAccnt' || $f=='hmoNumber')
 							echo $this->staffM->decryptText($r->$f);
 						else
 							echo $r->$f;
@@ -45,7 +45,7 @@ if($edit==''){
 						echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$r->fieldvalue.'"');
 					else if($r->fieldname=='sal' || $r->fieldname=='allowance')
 						echo 'Php '.$r->fieldvalue;
-					else if($r->fieldname=='bankAccnt')
+					else if($r->fieldname=='bankAccnt' || $r->fieldname=='hmoNumber')
 						echo $this->staffM->decryptText($r->fieldvalue);
 					else
 						echo $r->fieldvalue;

@@ -252,6 +252,7 @@ class Staffmodel extends CI_Model {
 		else if($f=='leaveCredits') $v = 'Leave Credits';
 		else if($f=='allowance') $v = 'Monthly Allowance';
 		else if($f=='bankAccnt') $v = 'Payroll Bank Account Number';
+		else if($f=='hmoNumber') $v = 'HMO Policy Number ';
 		
 		return $v;
 	}
@@ -303,16 +304,16 @@ class Staffmodel extends CI_Model {
 		unset($new['empID']);
 		unset($new['submitType']);
 		$updated = array();
-		if(count($orig)==1){			
+		if(count($orig)>0){			
 			foreach($new AS $k=>$v):
 				if($k=='bdate' || $k=='startDate' || $k=='endDate' || $k=='accessEndDate' || $k=='regDate'){
 					if($v=='') $v = '0000-00-00';
 					else $v = date('Y-m-d', strtotime($v));
-				}else if($k=='bankAccnt'){
+				}else if($k=='bankAccnt' || $k=='hmoNumber'){
 					$v = $this->staffM->encryptText($v);
 				}
 				
-				if($v != $orig[0]->$k)
+				if($v != $orig[$k])
 					$updated[$k] = $v;
 			endforeach;			
 		}
@@ -962,8 +963,8 @@ class Staffmodel extends CI_Model {
 				
 				$disp .= '<tr class="maintr">';
 				$disp .= '<td><a href="'.$this->config->base_url().'staffinfo/'.$a->username.'/">'.$a->name.'</a></td>';
-				$disp .= '<td>'.date('M.d.Y', strtotime($a->datefiled)).'</td>';
-				$disp .= '<td>'.date('M.d.Y', strtotime($a->effectivedate)).'</td>';
+				$disp .= '<td>'.date('d M Y', strtotime($a->datefiled)).'</td>';
+				$disp .= '<td>'.date('d M Y', strtotime($a->effectivedate)).'</td>';
 				$disp .= '<td colspan=3>';
 					$disp .= '<table class="tableInfo">';
 					for($i=0; $i<$cnt; $i++){
@@ -1137,11 +1138,11 @@ class Staffmodel extends CI_Model {
 						}						
 						$disp .= '</select>';
 					}else{
-						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.(($fld=='bankAccnt')?$this->staffM->decryptText($v):$v).'" id="'.$fld.'">';
+						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.(($fld=='bankAccnt' || $fld=='hmoNumber')?$this->staffM->decryptText($v):$v).'" id="'.$fld.'">';
 					}	
 					$disp .= '<span class="'.$c.'fld">';					
 						if($fld=='sal' || $fld=='allowance') $disp .= 'Php '.$vvalue;
-						else if($fld=='bankAccnt') $disp .= $this->staffM->decryptText($vvalue);
+						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($vvalue);
 						else $disp .= $vvalue;	
 					$disp .= '</span>';
 				}else{

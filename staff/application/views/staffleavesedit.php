@@ -26,9 +26,10 @@
 				}	
 			}
 			
-			if(($row->iscancelled==0 || $row->iscancelled==4)&& 
+			if(($row->iscancelled==0 || $row->iscancelled==4) && 
 				(($row->leaveType!=4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
-				($row->leaveType==4 && $ccc==true))
+				($row->leaveType==4 && $ccc==true)) &&
+				$row->status!=3
 			){
 				echo '<button id="canceThisRequest">Cancel</button>';
 			}
@@ -387,13 +388,15 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	}
 ?>	
 
-<tr class="trhead trcdetails <?= (($row->iscancelled==0 || $row->iscancelled==4)?'hidden':'') ?>">
+<tr class="trhead trcdetails <?= (($row->canceldata=='')?'hidden':'') ?>">
 	<td colspan=2><center id="canceldetails">CANCEL DETAILS</center></td>
 </tr>
 <?php
 	if($row->iscancelled!=0 && $row->iscancelled!=4 && $row->datecancelled!= '0000-00-00 00:00:00'){
 		echo '<tr><td>Date cancelled</td><td>'.date('F d, Y H:i', strtotime($row->datecancelled)).'</td></tr>';
-		echo '<tr><td>Reason</td><td>'.$row->cancelReasons.'</td></tr>';
+	}
+	if($row->canceldata!=''){
+		echo '<tr><td>Reason</td><td>'.$row->cancelReasons.'</td></tr>';	
 		
 		$potter = array_reverse(explode('^_^', $row->canceldata));
 		if(count($potter)>0){
@@ -403,29 +406,29 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			endforeach;
 			echo '</td></tr>';
 		}
-		
-		if($this->user->empID == $row->approverID && $row->iscancelled==2){
-			echo '<form action="" method="POST" onSubmit="return validatecapprover();">';
-			echo '<tr><td><br/></td><td><input type="radio" name="capprover" value="1"> Approve &nbsp;&nbsp;&nbsp;<input type="radio" name="capprover" value="0"> Disapprove</td></tr>';
-			echo '<tr id="disapprovecanceltr" class="hidden"><td>Note:</td><td><input type="text" class="forminput" id="disnote" name="disnote"/></td></tr>';
-			echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelApprover"/> <input type="submit" value="Submit"/></td></tr>';
-			echo '</form>';
-		}
-		
-		if($row->iscancelled==3 && count(array_intersect($this->myaccess,array('full','hr')))>0){
-			echo '<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Cancel Approval</h3></td></tr>';
-			echo '<tr><td>Current leave credits</td><td>'.$row->leaveCredits.'</td></tr>';
-			echo '<tr><td>Leave credits deducted</td><td>'.$row->leaveCreditsUsed.'</td></tr>';
-			echo '<form action="" method="POST" onSubmit="return validateHRcancel();">';	
-			echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="leaveCredits" value="'.($row->leaveCredits + $row->leaveCreditsUsed).'" class="forminput"/></td></tr>';							
-			echo '<tr><td>Update</td><td><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox"/>PayrollHero schedule updated</td></tr>';
-			echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelHRapprove"/> <input type="submit" value="Submit"/></td></tr>';
-			echo '</form>';
-		}
+	}
+	
+	if($this->user->empID == $row->approverID && $row->iscancelled==2){
+		echo '<form action="" method="POST" onSubmit="return validatecapprover();">';
+		echo '<tr><td><br/></td><td><input type="radio" name="capprover" value="1"> Approve &nbsp;&nbsp;&nbsp;<input type="radio" name="capprover" value="0"> Disapprove</td></tr>';
+		echo '<tr id="disapprovecanceltr" class="hidden"><td>Note:</td><td><input type="text" class="forminput" id="disnote" name="disnote"/></td></tr>';
+		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelApprover"/> <input type="submit" value="Submit"/></td></tr>';
+		echo '</form>';
+	}
+	
+	if($row->iscancelled==3 && count(array_intersect($this->myaccess,array('full','hr')))>0){
+		echo '<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Cancel Approval</h3></td></tr>';
+		echo '<tr><td>Current leave credits</td><td>'.$row->leaveCredits.'</td></tr>';
+		echo '<tr><td>Leave credits deducted</td><td>'.$row->leaveCreditsUsed.'</td></tr>';
+		echo '<form action="" method="POST" onSubmit="return validateHRcancel();">';	
+		echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="leaveCredits" value="'.($row->leaveCredits + $row->leaveCreditsUsed).'" class="forminput"/></td></tr>';							
+		echo '<tr><td>Update</td><td><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox"/>PayrollHero schedule updated</td></tr>';
+		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelHRapprove"/> <input type="submit" value="Submit"/></td></tr>';
+		echo '</form>';
 	}
 	
 	if($row->status > 0){
-		echo '<tr class="trcdetails hidden"><td colspan="2"><i>Leave cancellation will still require immediate supervisor approval. Unattended requests will automatically be disapproved if no action from immediate supervisor within 24 hours from the submission of the request.</i></td></tr>';
+		echo '<tr class="trcdetails hidden"><td colspan="2"><i>Leave cancellation will still require immediate supervisor approval.</i></td></tr>';
 	}		
 	echo '
 		<form action="" method="POST" onSubmit="return validateCancel();" class="trcdetails hidden">

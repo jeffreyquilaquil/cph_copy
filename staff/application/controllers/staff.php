@@ -236,24 +236,20 @@ class Staff extends CI_Controller {
 				
 				if($page=='myinfo'){
 					$data['backlink'] = 'myinfo/';
-					$segment2 = $this->uri->segment(2);	
-					$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName', 'username="'.$this->user->username.'"', 'LEFT JOIN newPositions ON posID=position');
+					$uname = $this->user->username;
 				}else{
 					$data['backlink'] = 'staffinfo/'.$this->uri->segment(2).'/';
-					$segment2 = $this->uri->segment(3);				
-					$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName', 'username="'.$this->uri->segment(2).'"', 'LEFT JOIN newPositions ON posID=position');
+					$uname = $this->uri->segment(2);
 				}
-
+				
+				$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title AS title2, position AS title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, levelName', 'username="'.$uname.'"', 'LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON orgLevel_fk=levelID');
+				
 				if(count($data['row']) > 0){				
-					if(isset($_POST) && !empty($_POST)){
+					if(isset($_POST) && !empty($_POST)){					
 						if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
-							if($_POST['submitType']=='jdetails'){
-								$orig = $this->staffM->getSQLQueryArrayResults('SELECT office, startDate, supervisor, title AS title2, position AS title, empStatus, regDate, endDate, accessEndDate, shift, staffs.active FROM staffs LEFT JOIN newPositions ON posID=position WHERE empID="'.$_POST['empID'].'" LIMIT 1');
-							}else{	
-								$orig = $this->staffM->getSQLQueryArrayResults('SELECT lname, fname, mname, suffix, pemail, address, city, country, zip, phone1, phone2, bdate, gender, maritalStatus, spouse, dependents, sss, tin, philhealth, hdmf, skype, google, sal, allowance, bankAccnt FROM staffs WHERE empID="'.$_POST['empID'].'" LIMIT 1');
-							}
+							$orig = (array)$data['row'];
 							
-							$what2update = $this->staffM->compareResults($_POST, $orig);									
+							$what2update = $this->staffM->compareResults($_POST, $orig);							
 							if(count($what2update) >0){
 								if(count(array_intersect($this->myaccess,array('full','hr','finance')))==0){								
 										$upNote = 'You requested an update for:<br/>';
@@ -269,12 +265,12 @@ class Staff extends CI_Controller {
 											if($k!='empStatus')
 												$this->staffM->insertQuery('staffUpdated', $r);
 											
-											$o = $orig[0]->$k;
+											$o = $orig[$k];
 											if($o=='') $o = 'none';
 																						
 											if($k=='title')
-												$upNote .= $this->staffM->defineField($k).' from <i>'.$orig[0]->title2.'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u><br/>';
-											else if($k=='bankAccnt')
+												$upNote .= $this->staffM->defineField($k).' from <i>'.$orig[title2].'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u><br/>';
+											else if($k=='bankAccnt' || $k=='hmoNumber')
 												$upNote .= $this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($o).'</i> to <u>'.$this->staffM->decryptText($val).'</u><br/>';
 											else
 												$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';
@@ -297,6 +293,7 @@ class Staff extends CI_Controller {
 									if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
 									if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
 									if(isset($_POST['bankAccnt'])) $_POST['bankAccnt'] = $this->staffM->encryptText($_POST['bankAccnt']);
+									if(isset($_POST['hmoNumber'])) $_POST['hmoNumber'] = $this->staffM->encryptText($_POST['hmoNumber']);
 									
 									$this->staffM->updateQuery('staffs', array('empID'=>$empID), $_POST);
 									
@@ -363,11 +360,11 @@ class Staff extends CI_Controller {
 																		
 									foreach($what2update AS $k=>$val):
 										if($k=='title')
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[0]->title2.'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u>';
-										else if($k=='bankAccnt')
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($orig[0]->$k).'</i> to <u>'.$this->staffM->decryptText($val).'</u>';
+											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[title2].'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u>';
+										else if($k=='bankAccnt' || $k=='hmoNumber')
+											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($orig[$k]).'</i> to <u>'.$this->staffM->decryptText($val).'</u>';
 										else
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[0]->$k.'</i> to <u>'.$val.'</u>';
+											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[$k].'</i> to <u>'.$val.'</u>';
 										
 									endforeach;
 									$this->staffM->addMyNotif($empID, $upNote, 0, 1);
@@ -516,7 +513,7 @@ class Staff extends CI_Controller {
 															
 					$ntext = 'Approved update request and information details has been updated to:<br/>';
 					$ntext .= $this->staffM->defineField($_POST['fieldN']).' - ';
-					if($_POST['fieldN']=='bankAccnt') 
+					if($_POST['fieldN']=='bankAccnt' || $_POST['fieldN']=='hmoNumber') 
 						$ntext .= $this->staffM->decryptText($_POST['fieldV']);
 					else if($_POST['fieldN']=='sal' || $_POST['fieldN']=='allowance') 
 						$ntext .= 'Php '.$_POST['fieldV'];
@@ -1354,7 +1351,7 @@ class Staff extends CI_Controller {
 					if(isset($_POST['code']) && !empty($_POST['code']) && isset($code) && count($code)>0){
 						$insArr['code'] = $_POST['code'];
 						$this->staffM->updateQuery('staffCodes', array('codeID'=>$code->codeID), array('usedBy'=>$this->user->empID, 'dateUsed'=>date('Y-m-d H:i:s'), 'type'=>'Leave', 'status'=>2));
-						$this->staffM->addMyNotif($code->generatedBy, $this->user->name.' used your generated code '.$_POST['code'].' for filing leave.', 0, 1);
+						$this->staffM->addMyNotif($code->generatedBy, $this->user->name.' used your generated code <b>'.$_POST['code'].'</b> for filing leave.', 0, 1);
 					}
 					
 					if(isset($_POST['fromUploaded']) && !empty($_POST['fromUploaded']))
@@ -1379,10 +1376,10 @@ class Staff extends CI_Controller {
 									
 					$leaveTypeArr = $this->staffM->definevar('leaveType');
 					//add notes to employee
-					$this->staffM->addMyNotif($this->user->empID, 'You filed '.$leaveTypeArr[$_POST['leaveType']].' for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Click <a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$insID.'/">here</a> for details.', 3);
+					$this->staffM->addMyNotif($this->user->empID, 'Filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Click <a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$insID.'/">here</a> for details.', 3);
 					
-					//add notes to supervisors					
-					$ntexts = $this->user->name.' files '.$leaveTypeArr[$_POST['leaveType']].' for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page, view <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">leave details page</a> or click <a href="'.$this->config->base_url().'leavepdf/'.$insID.'/" class="iframe"> here</a> to view the file.';
+					//add note to supervisors					
+					$ntexts = $this->user->name.' filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page or click <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">here</a> to view leave details and approve.';
 						
 					$superID = $this->staffM->getStaffSupervisorsID($this->user->empID);
 					for($s=0; $s<count($superID); $s++){
@@ -1440,13 +1437,13 @@ class Staff extends CI_Controller {
 							$updateArr['dateApproved'] = date('Y-m-d');	
 							if($data['row']->leaveType!=4 && $data['row']->leaveType!=5)
 								$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];	
-														
-							$usernote = $this->user->name.' <b>'.strtolower($data['leaveStatusArr'][$updateArr['status']]).'</b> your leave request.';
-							$actby = 'You <b>'.strtolower($data['leaveStatusArr'][$updateArr['status']]).'</b> '.$data['row']->name.'\'s leave request.';
+																
+							$usernote = '<b>'.ucfirst(strtolower($data['leaveStatusArr'][$updateArr['status']])).'</b> your leave request.';
+							$actby = '<b>'.ucfirst(strtolower($data['leaveStatusArr'][$updateArr['status']])).'</b> '.$data['row']->name.'\'s leave request.';
 							if($updateArr['status']!=3){
 								$usernote .= ' This is waiting for HR approval.';
 							
-								$hrnote = $this->user->name.' <b>'.strtolower($data['leaveStatusArr'][$updateArr['status']]).'</b> '.$data['row']->name.'\'s leave request. This is waiting for your approval. <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">Click here to take HR action</a>.';	
+								$hrnote = '<b>'.ucfirst(strtolower($data['leaveStatusArr'][$updateArr['status']])).'</b> '.$data['row']->name.'\'s leave request. This is waiting for your approval. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to take HR action.';	
 							}							
 						}else if($_POST['submitType']=='hr'){	
 							if($_POST['status']==4){ //additional info required
@@ -1473,7 +1470,7 @@ class Staff extends CI_Controller {
 								if($_POST['status']!=$_POST['oldstatus']){
 									$usernote .= ' from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
 									$approvernote = 'Updated '.$data['row']->name.'\'s leave request from <b>'.$data['leaveStatusArr'][$_POST['oldstatus']].'</b> to <b>'.$data['leaveStatusArr'][$_POST['status']].'</b>';
-									$updateArr['hrremarks'] .= ' - updated '.$data['leaveStatusArr'][$_POST['oldstatus']].' to '.$data['leaveStatusArr'][$_POST['status']];
+									$updateArr['hrremarks'] .= ' - <i>updated '.$data['leaveStatusArr'][$_POST['oldstatus']].' to '.$data['leaveStatusArr'][$_POST['status']].'</i>';
 								}							
 								$usernote .= '.';
 								
@@ -1484,7 +1481,7 @@ class Staff extends CI_Controller {
 									$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
 								}
 								
-								if($data['row']->status==2 || (isset($_POST['status']) && $_POST['status']==2)){
+								if(isset($_POST['status']) && $_POST['status']==2){
 									$eMsg = '<p>Hi,</p>
 											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' is Approved without Pay for the following dates:</p>
 											<p>
@@ -1513,10 +1510,10 @@ class Staff extends CI_Controller {
 								$canceldata = '^_^Cancelled: '.$this->user->username.'|'.date('Y-m-d H:i:s');	
 							}else{
 								$updateArr['iscancelled'] = 2;
-								$approvernote = $this->user->name.' <b>cancelled</b> the leave requested. Please approve cancel request or else it will automatically disapprove if no action from you within 24 hours from the submission of the request.';
+								$approvernote = $this->user->name.' <b>cancelled</b> the leave requested. Please approve cancel request.';
 								$canceldata = '^_^Pending Cancelled for IS: '.$this->user->username.'|'.date('Y-m-d H:i:s');	
 							}
-							$actby = 'Cancelled your leave request. ';
+							$actby = '<b>Cancelled</b> leave request. ';
 						}else if($_POST['submitType']=='cancelApprover'){							
 							if($_POST['capprover']==1){
 								$usernote = $this->user->name.' <b>approved</b> your cancel request';	
@@ -1534,10 +1531,9 @@ class Staff extends CI_Controller {
 							}else{
 								$updateArr['iscancelled'] = 0;	
 								$usernote = '<b>Disapproved</b> your cancel request.<br/> Reason: '.$_POST['disnote'].'<br/>';
-								$updateArr['cancelReasons'] = '';
 								$updateArr['datecancelled'] = '0000-00-00 00:00:00';
-								$canceldata = '^_^Disapproved cancel request: '.$this->user->username.'|'.date('Y-m-d H:i:s');
-								$actby = 'You disapproved '.$data['row']->name.'\'s cancel leave request. ';
+								$canceldata = '^_^Disapproved cancel request: '.$this->user->username.'|'.date('Y-m-d H:i:s').'<br/><i>Note: '.$_POST['disnote'].'</i>';
+								$actby = 'Disapproved '.$data['row']->name.'\'s cancel leave request. ';
 							}
 						}else if($_POST['submitType']=='cancelHRapprove'){	
 							$updateArr['iscancelled'] = 1;	
@@ -1564,7 +1560,7 @@ class Staff extends CI_Controller {
 							exit;
 						}						
 						
-						$addnote = ' Check <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">leave details page</a> or click <a class="iframe" href="'.$this->config->base_url().'leavepdf/'.$data['row']->leaveID.'/">here</a> to view the file.';
+						$addnote = ' Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to view leave details.';
 							
 						if(!empty($usernote))
 							$this->staffM->addMyNotif($data['row']->empID_fk, $usernote.$addnote, 0, 1);
@@ -1577,7 +1573,7 @@ class Staff extends CI_Controller {
 							$hrStaffs = $this->staffM->getHRStaffID();
 							for($hr=0; $hr<count($hrStaffs); $hr++){
 								if($hrStaffs[$hr] != $this->user->empID)
-									$this->staffM->addMyNotif($hrStaffs[$hr], $hrnote.$addnote, 0, 1);
+									$this->staffM->addMyNotif($hrStaffs[$hr], $hrnote, 0, 1);
 							}
 						}
 						

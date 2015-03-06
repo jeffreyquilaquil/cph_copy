@@ -37,7 +37,7 @@
 			}
 			
 			if($this->user->access!='' || $this->user->level>0 || $this->user->is_supervisor==1){
-				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage my Staff</a>';
+				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
 					if(count(array_intersect($this->myaccess,array('full','hr')))>0){

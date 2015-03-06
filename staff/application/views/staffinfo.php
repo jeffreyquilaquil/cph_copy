@@ -68,10 +68,13 @@
 			echo '<tr>
 					<td>'.$this->staffM->defineField($u->fieldname).'</td><td>';
 					
-				if($u->fieldname=='title') echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$u->fieldvalue.'"');
+				if($u->fieldname=='title') 
+					echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$u->fieldvalue.'"');
+				else if($u->fieldname=='supervisor')
+					echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$u->fieldvalue.'"');
 				else{
 					if($u->fieldname=='sal' || $u->fieldname=='allowance') echo 'Php '.$u->fieldvalue;
-					else if($u->fieldname=='bankAccnt') echo $this->staffM->decryptText($u->fieldvalue);
+					else if($u->fieldname=='bankAccnt' || $u->fieldname=='hmoNumber') echo $this->staffM->decryptText($u->fieldvalue);
 					else echo $u->fieldvalue;
 				}				
 				
@@ -217,6 +220,7 @@
 		echo $this->staffM->displayInfo('cdetails', 'sal', $this->staffM->convertNumFormat($row->sal), true, 'Ex. 10,000.00');
 		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->staffM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
 		echo $this->staffM->displayInfo('cdetails', 'bankAccnt', $row->bankAccnt, true);	
+		echo $this->staffM->displayInfo('cdetails', 'hmoNumber', $row->hmoNumber, true);	
 		echo '<tr class="cdetailslast hidden">
 				<td colspan=2 align="right">
 					<button id="cbtnsubmit" class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'cdetails\')" class="padding5px">Cancel</button>
@@ -547,6 +551,7 @@
 			var tinpattern = new RegExp(/^[0-9]{3}-[0-9]{3}-[0-9]{3}-[0-9]{4}$/); 
 			var phpattern = new RegExp(/^[0-9]{2}-[0-9]{9}-[0-9]{1}$/);  
 			var hdmfpattern = new RegExp(/^[0-9]{4}-[0-9]{4}-[0-9]{4}$/);
+			var emailpattern = new RegExp(/^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i);			
 			
 			if($('#lname').val()==''){ validText += '\t- Last Name is empty.\n'; valid = false; }
 			if($('#fname').val()==''){ validText += '\t- First Name is empty.\n'; valid = false; }
@@ -565,6 +570,10 @@
 			}
 			if($('#hdmf').val() != '' &&  hdmfpattern.test($('#hdmf').val())==false){
 				validText += '\t- HDMF Invalid\n';
+				valid = false;	
+			}
+			if($('#pemail').val() != '' &&  emailpattern.test($('#pemail').val())==false){
+				validText += '\t- Email address is invalid\n';
 				valid = false;	
 			}
 			
@@ -647,7 +656,8 @@
 				empID:'<?= $row->empID ?>',
 				sal:$('#sal').val(),
 				allowance:$('#allowance').val(),
-				bankAccnt:$('#bankAccnt').val()
+				bankAccnt:$('#bankAccnt').val(),
+				hmoNumber:$('#hmoNumber').val()
 			},function(){
 				location.reload();
 			});
