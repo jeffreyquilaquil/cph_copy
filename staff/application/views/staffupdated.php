@@ -28,14 +28,26 @@ if($edit==''){
 				<tr>
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$r->username.'/">'.$r->fname.' '.$r->lname.'</a></td>
 					<td>'.$this->staffM->defineField($r->fieldname).'</td>
-					<td>'.$r->$f.'</td>
+					<td>';
+						if($f=='sal' || $f=='allowance')
+							echo 'Php '.$r->$f;
+						else if($f=='bankAccnt')
+							echo $this->staffM->decryptText($r->$f);
+						else
+							echo $r->$f;
+						
+					echo '</td>
 					<td style="color:red;">';
 					
 					if($r->fieldname=='title')
 						echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$r->fieldvalue.'"');
 					else if($r->fieldname=='supervisor')
 						echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$r->fieldvalue.'"');
-					else 
+					else if($r->fieldname=='sal' || $r->fieldname=='allowance')
+						echo 'Php '.$r->fieldvalue;
+					else if($r->fieldname=='bankAccnt')
+						echo $this->staffM->decryptText($r->fieldvalue);
+					else
 						echo $r->fieldvalue;
 					
 				echo '</td>
@@ -220,7 +232,7 @@ if($edit==''){
 	
 	function stars(type, id, emp, f, fv){
 		displaypleasewait();
-		$.post("<?= $this->config->base_url() ?>staffupdated/",{
+		$.post("<?= $this->config->item('career_uri') ?>",{
 			submitType:type,
 			updateID:id,
 			empID:emp,

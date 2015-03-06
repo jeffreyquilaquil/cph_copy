@@ -55,7 +55,7 @@ if($this->user!=false && count($row)>0){
 		}
 				
 		if(in_array('full',$this->myaccess))
-			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Admin Settings</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
 	
 	echo '</ul>';	
 	echo '</center>';

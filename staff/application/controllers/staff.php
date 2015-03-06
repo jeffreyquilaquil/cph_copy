@@ -246,23 +246,24 @@ class Staff extends CI_Controller {
 
 				if(count($data['row']) > 0){				
 					if(isset($_POST) && !empty($_POST)){
-						if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails'){
+						if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
 							if($_POST['submitType']=='jdetails'){
-								$orig = $this->staffM->getSQLQueryArrayResults('SELECT office, startDate, supervisor, title AS title2, position AS title, empStatus, regDate, endDate, accessEndDate, shift, sal, allowance, staffs.active FROM staffs LEFT JOIN newPositions ON posID=position WHERE empID="'.$_POST['empID'].'" LIMIT 1');
+								$orig = $this->staffM->getSQLQueryArrayResults('SELECT office, startDate, supervisor, title AS title2, position AS title, empStatus, regDate, endDate, accessEndDate, shift, staffs.active FROM staffs LEFT JOIN newPositions ON posID=position WHERE empID="'.$_POST['empID'].'" LIMIT 1');
 							}else{	
-								$orig = $this->staffM->getSQLQueryArrayResults('SELECT lname, fname, mname, suffix, pemail, address, city, country, zip, phone1, phone2, bdate, gender, maritalStatus, spouse, dependents, sss, tin, philhealth, hdmf, skype, google FROM staffs WHERE empID="'.$_POST['empID'].'" LIMIT 1');
+								$orig = $this->staffM->getSQLQueryArrayResults('SELECT lname, fname, mname, suffix, pemail, address, city, country, zip, phone1, phone2, bdate, gender, maritalStatus, spouse, dependents, sss, tin, philhealth, hdmf, skype, google, sal, allowance, bankAccnt FROM staffs WHERE empID="'.$_POST['empID'].'" LIMIT 1');
 							}
 							
-							$what2update = $this->staffM->compareResults($_POST, $orig);					
+							$what2update = $this->staffM->compareResults($_POST, $orig);									
 							if(count($what2update) >0){
-								if(count(array_intersect($this->myaccess,array('full','hr')))==0){								
+								if(count(array_intersect($this->myaccess,array('full','hr','finance')))==0){								
 										$upNote = 'You requested an update for:<br/>';
 										foreach($what2update AS $k=>$val):
 											$r['empID_fk'] = $_POST['empID'];
-											$r['fieldname'] = $k;
-											$r['fieldvalue'] = $val;
+											$r['fieldname'] = $k;											
+											$r['fieldvalue'] = $val;											
 											$r['daterequested'] = date('Y-m-d H:i:s');
-											if($_POST['submitType']=='jdetails') $r['isJob'] = 1;
+											$r['isJob'] = 0;
+											if($_POST['submitType']=='jdetails' || ($_POST['submitType']=='cdetails' && $k=='sal')) $r['isJob'] = 1;
 											if($k=='endDate') $r['notes'] = 'Requested by: '.$this->user->name;
 											
 											if($k!='empStatus')
@@ -270,9 +271,11 @@ class Staff extends CI_Controller {
 											
 											$o = $orig[0]->$k;
 											if($o=='') $o = 'none';
-											
+																						
 											if($k=='title')
 												$upNote .= $this->staffM->defineField($k).' from <i>'.$orig[0]->title2.'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u><br/>';
+											else if($k=='bankAccnt')
+												$upNote .= $this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($o).'</i> to <u>'.$this->staffM->decryptText($val).'</u><br/>';
 											else
 												$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';
 										endforeach;
@@ -293,6 +296,7 @@ class Staff extends CI_Controller {
 									if(isset($_POST['endDate']) && $_POST['endDate']!='') $_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
 									if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
 									if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
+									if(isset($_POST['bankAccnt'])) $_POST['bankAccnt'] = $this->staffM->encryptText($_POST['bankAccnt']);
 									
 									$this->staffM->updateQuery('staffs', array('empID'=>$empID), $_POST);
 									
@@ -352,17 +356,19 @@ class Staff extends CI_Controller {
 									}
 																	
 							
-									if($submitType=='jdetails')
-										$upNote = $this->user->name.' updated your job details:';
-									else
-										$upNote = $this->user->name.' updated your personal details:';
+									if($submitType=='jdetails') $upNote = 'Job details';
+									else if($submitType=='cdetails') $upNote = 'Compensation details';
+									else $upNote = 'Personal details';
+									$upNote .= ' has been updated to:';
 																		
 									foreach($what2update AS $k=>$val):
-										if($k=='title'){
+										if($k=='title')
 											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[0]->title2.'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u>';
-										}else{
+										else if($k=='bankAccnt')
+											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($orig[0]->$k).'</i> to <u>'.$this->staffM->decryptText($val).'</u>';
+										else
 											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[0]->$k.'</i> to <u>'.$val.'</u>';
-										}
+										
 									endforeach;
 									$this->staffM->addMyNotif($empID, $upNote, 0, 1);
 								}
@@ -501,20 +507,25 @@ class Staff extends CI_Controller {
 		if(count(array_intersect($this->myaccess,array('full','hr')))==0){
 			$data['access'] = false;
 		}else if($this->user!=false){		
-			if(isset($_POST) && !empty($_POST)){
-				$note = $this->staffM->getSingleField('staffUpdated', 'notes', 'updateID='.$_POST['updateID']);
-				if($note!=''){
-					$note .= '<br/><hr/>';
-				}
-				$note .= '['.date('Y-m-d H:i').'] '.$this->user->username.': ';
-				
+			if(isset($_POST) && !empty($_POST)){				
 				if($_POST['submitType']=='Update'){
 					$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
-					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>1, 'notes'=>$note.'<i>request approved and changed</i>'));
-										
-					$ntext = $this->user->name.' approved your personal details update request: '.$this->staffM->defineField($_POST['fieldN']).' - '.$_POST['fieldV'];
+					$addNote = '['.date('Y-m-d H:i').'] '.$this->user->username.': <i>request approved and changed</i><br/>';
+					$this->staffM->updateConcat('staffUpdated', 'updateID="'.$_POST['updateID'].'"', 'notes', $addNote);
+					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>1));
+															
+					$ntext = 'Approved update request and information details has been updated to:<br/>';
+					$ntext .= $this->staffM->defineField($_POST['fieldN']).' - ';
+					if($_POST['fieldN']=='bankAccnt') 
+						$ntext .= $this->staffM->decryptText($_POST['fieldV']);
+					else if($_POST['fieldN']=='sal' || $_POST['fieldN']=='allowance') 
+						$ntext .= 'Php '.$_POST['fieldV'];
+					else 
+						$ntext .= $_POST['fieldV'];
+					
 					$this->staffM->addMyNotif($_POST['empID'], $ntext, 0, 1);
 					
+					//deactivate PT and careerPH if access end date and separation date is set and date is before today
 					if(($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate') && $_POST['fieldV']<=date('Y-m-d') && $_POST['fieldV']!='0000-00-00'){
 						$uInfo = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'username="'.$this->staffM->getSingleField('staffs', 'username', 'empID="'.$_POST['empID'].'"').'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');						
 						if(count($uInfo)>0){										
@@ -1122,7 +1133,7 @@ class Staff extends CI_Controller {
 			$id = $this->uri->segment(2);
 			$data['updated'] = '';
 			if(isset($_POST) && !empty($_POST)){
-			
+				$atext = '';
 				if($_POST['submitType']=='accesstype'){
 					$actext = '';
 					if(isset($_POST['access'])){
@@ -1133,10 +1144,15 @@ class Staff extends CI_Controller {
 					
 					$this->staffM->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					$data['updated'] = 'Access type successfully submitted.';
+					$atext = 'Updated access type to '.rtrim($actext,',');
+				}else if($_POST['submitType']=='isSup'){
+					$this->staffM->updateQuery('staffs', array('empID'=>$id), array('is_supervisor' => $_POST['is_supervisor']));
+					$atext = 'Updated supervisor type to '.$_POST['is_supervisor'];
 				}
+				$this->staffM->addMyNotif($this->user->empID, $atext, 5);
 			}
 			
-			$data['row'] = $this->staffM->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name', 'empID="'.$id.'"');
+			$data['row'] = $this->staffM->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name, is_supervisor', 'empID="'.$id.'"');
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);
@@ -1854,8 +1870,8 @@ class Staff extends CI_Controller {
 					$wonka = $this->staffM->getSingleInfo('staffUpdated', 'empID_fk, fieldname, fieldvalue, CONCAT(fname," ",lname) AS name', 'updateID="'.$this->uri->segment(3).'"', 'LEFT JOIN staffs ON empID=empID_fk');
 					if(count($wonka)>0){
 						$this->staffM->updateQuery('staffUpdated', array('updateID'=>$this->uri->segment(3)), array('status'=>3));
-						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->staffM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>. Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
-						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->staffM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>. Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
+						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->staffM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
+						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->staffM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
 					}
 				}else{
 					$this->staffM->addMyNotif($this->user->empID, 'Generated CIS for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'cispdf/'.$insid.'/" class="iframe">here</a> to view file.', 5);
@@ -2122,7 +2138,6 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	
 	public function testpage(){
 		$data['content'] = 'test';
 		
@@ -2215,7 +2230,6 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-			
 	public function getStaffEmails(){	
 		$condition = '';
 		if($this->user->access==''){

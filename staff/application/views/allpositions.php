@@ -36,15 +36,7 @@
 ?>
 </table>
 
-<script type="text/javascript">
-	$(function(){
-		/* $('.trbd').hover(function(){
-			$(this).find(".ddesc").show();
-		}).mouseout(function () {
-			$(this).find(".ddesc").hide();
-		}); */
-	});
-	
+<script type="text/javascript">	
 	function showDesc(id){
 		$('#ddesc'+id).show();
 	}

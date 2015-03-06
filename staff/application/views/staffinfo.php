@@ -55,8 +55,10 @@
 		<li class="tab-link current" data-tab="tab-1">Info</li>
 		<li class="tab-link" data-tab="tab-2">Notes</li>
 	</ul>
-	
+
+<!----------------------- START OF TAB 1 ----------------------->		
 	<div id="tab-1" class="tab-content current">
+<!----------------------- PENDING UPDATED DETAILS ----------------------->		
 	<?php
 	if($current == 'myinfo' && count($updatedVal)>0){ ?>
 	<table class="tableInfo" style="background-color:#fffaaa;">
@@ -67,7 +69,11 @@
 					<td>'.$this->staffM->defineField($u->fieldname).'</td><td>';
 					
 				if($u->fieldname=='title') echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$u->fieldvalue.'"');
-				else echo $u->fieldvalue;
+				else{
+					if($u->fieldname=='sal' || $u->fieldname=='allowance') echo 'Php '.$u->fieldvalue;
+					else if($u->fieldname=='bankAccnt') echo $this->staffM->decryptText($u->fieldvalue);
+					else echo $u->fieldvalue;
+				}				
 				
 			echo '</td><td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
 					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$this->staffM->defineField($u->fieldname).'\', \''.$u->fieldvalue.'\')"></td>
@@ -76,71 +82,88 @@
 		echo '<tr><td colspan=4><br/></td></tr></table>';
 	} 
 ?>
-	
+<!----------------------- PERSONAL DETAILS ----------------------->			
 		<table class="tableInfo" style="position:relative;">
-		<tr class="trlabel" id="pdetails"><td colspan=2>Personal Details <?php if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){ ?><a href="javascript:void(0)" class="edit" onClick="reqUpdate('pdetails')" id="pdetailsupb"><?= ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'') ?>Update</a><?php } ?>
-		<div style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">			
-		<?php 
-			$ptimg = 'http://staffthumbnails.s3.amazonaws.com/'.$row->username.'.jpg';
-			if(!(@file_get_contents($ptimg, 0, NULL, 0, 1)))
-				$ptimg = $this->config->base_url().'css/images/logo.png';
-			echo '<a href="'.$ptimg.'" class="imgiframe" title="PT profile picture"/><img src="'.$ptimg.'" width="80px"></a><br/>';
+		<?php 		
+		echo '<tr class="trlabel" id="pdetails">';
+		echo '<td colspan=2>Personal Details ';		
+			if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){
+				echo '<a href="javascript:void(0)" class="edit" onClick="reqUpdate(\'pdetails\')" id="pdetailsupb">';
+				echo ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'');
+				echo 'Update</a>';
+			}
 			
-			if(count(array_intersect($this->myaccess,array('full','hr')))>0){ 
-				echo '<a href="javascript:void(0)" id="updatePTpic">Update</a>';
-				echo '<form id="PTpform" action="" method="POST" enctype="multipart/form-data">';
-				echo '<input type="file" name="PTpicture" id="PTpicture" class="hidden"/>';
-				echo '<input type="hidden" name="submitType" value="uploadPTpicture"/>';
-				echo '</form>';
-			}		
-		?>
-		</div>
-		</td></tr>
-		<?php		
-			echo $this->staffM->displayInfo('pdetails', 'username', $row->username, false);
-			echo $this->staffM->displayInfo('pdetails', 'lname', $row->lname, true);
-			echo $this->staffM->displayInfo('pdetails', 'fname', $row->fname, true);
-			echo $this->staffM->displayInfo('pdetails', 'mname', $row->mname, true);
-			echo $this->staffM->displayInfo('pdetails', 'suffix', $row->suffix, true);
-			echo $this->staffM->displayInfo('pdetails', 'pemail', $row->pemail, true);
-			
-			echo $this->staffM->displayInfo('pdetails', 'address1', $row->address.' '.$row->city.' '.$row->country.', '.$row->zip, true,'','pdetailsshow'); 
-			echo $this->staffM->displayInfo('pdetails', 'address', $row->address, true,'','pdetailshide');
-			echo $this->staffM->displayInfo('pdetails', 'city', $row->city, true,'','pdetailshide');
-			echo $this->staffM->displayInfo('pdetails', 'country', $row->country, true,'','pdetailshide');
-			echo $this->staffM->displayInfo('pdetails', 'zip', $row->zip, true,'','pdetailshide');
-			
-			echo $this->staffM->displayInfo('pdetails', 'phone', rtrim($row->phone1.', '.$row->phone2,', '), true,'','pdetailsshow');
-			echo $this->staffM->displayInfo('pdetails', 'phone1', $row->phone1, true,'','pdetailshide');
-			echo $this->staffM->displayInfo('pdetails', 'phone2', $row->phone2, true,'','pdetailshide');
-						
-			echo $this->staffM->displayInfo('pdetails', 'bdate', (($row->bdate!='0000-00-00')? date('F d, Y',strtotime($row->bdate)) : ''), true);
-			echo $this->staffM->displayInfo('pdetails', 'gender', $row->gender, true);
-			echo $this->staffM->displayInfo('pdetails', 'maritalStatus', ucfirst($row->maritalStatus), true);
-			
-			echo $this->staffM->displayInfo('pdetails', 'spouse', ucfirst($row->spouse), true);			
-			echo $this->staffM->displayInfo('pdetails', 'dependents', ucfirst($row->dependents), true);			
-					
-			echo $this->staffM->displayInfo('pdetails', 'sss', $row->sss, true,'00-0000000-0');
-			echo $this->staffM->displayInfo('pdetails', 'tin', $row->tin, true,'000-000-000-0000');
-			echo $this->staffM->displayInfo('pdetails', 'philhealth', $row->philhealth, true,'00-000000000-0');
-			echo $this->staffM->displayInfo('pdetails', 'hdmf', $row->hdmf, true,'0000-0000-0000');
-			
-			echo $this->staffM->displayInfo('pdetails', 'email', $row->email, false);
-			echo $this->staffM->displayInfo('pdetails', 'skype', $row->skype, true);
-			echo $this->staffM->displayInfo('pdetails', 'google', $row->google, true);
-			
+			echo '<div style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">';
+				$ptimg = 'http://staffthumbnails.s3.amazonaws.com/'.$row->username.'.jpg';
+				if(!(@file_get_contents($ptimg, 0, NULL, 0, 1)))
+					$ptimg = $this->config->base_url().'css/images/logo.png';
+				echo '<a href="'.$ptimg.'" class="imgiframe" title="PT profile picture"/><img src="'.$ptimg.'" width="80px"></a><br/>';
 				
-			echo '<tr class="pdetailstr pdetailslast hidden"><td colspan=2><i>Please upload documents on My Info page > Personal File to support the request.</i></td></tr>';			
-			echo '<tr class="pdetailslast hidden">
-					<td colspan=2 align="right">
-						<button id="pbtnsubmit" class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'pdetails\')" class="padding5px">Cancel</button>
-					</td>
-				</tr>';
+				if(count(array_intersect($this->myaccess,array('full','hr')))>0){ 
+					echo '<a href="javascript:void(0)" id="updatePTpic">Update</a>';
+					echo '<form id="PTpform" action="" method="POST" enctype="multipart/form-data">';
+					echo '<input type="file" name="PTpicture" id="PTpicture" class="hidden"/>';
+					echo '<input type="hidden" name="submitType" value="uploadPTpicture"/>';
+					echo '</form>';
+				}
+			echo '</div>';		
+		echo '</td></tr>';		
+		
+		echo $this->staffM->displayInfo('pdetails', 'username', $row->username, false);
+		echo $this->staffM->displayInfo('pdetails', 'lname', $row->lname, true);
+		echo $this->staffM->displayInfo('pdetails', 'fname', $row->fname, true);
+		echo $this->staffM->displayInfo('pdetails', 'mname', $row->mname, true);
+		echo $this->staffM->displayInfo('pdetails', 'suffix', $row->suffix, true);
+		echo $this->staffM->displayInfo('pdetails', 'pemail', $row->pemail, true);
+		
+		echo $this->staffM->displayInfo('pdetails', 'address1', $row->address.' '.$row->city.' '.$row->country.', '.$row->zip, true,'','pdetailsshow'); 
+		echo $this->staffM->displayInfo('pdetails', 'address', $row->address, true,'','pdetailshide');
+		echo $this->staffM->displayInfo('pdetails', 'city', $row->city, true,'','pdetailshide');
+		echo $this->staffM->displayInfo('pdetails', 'country', $row->country, true,'','pdetailshide');
+		echo $this->staffM->displayInfo('pdetails', 'zip', $row->zip, true,'','pdetailshide');
+		
+		echo $this->staffM->displayInfo('pdetails', 'phone', rtrim($row->phone1.', '.$row->phone2,', '), true,'','pdetailsshow');
+		echo $this->staffM->displayInfo('pdetails', 'phone1', $row->phone1, true,'','pdetailshide');
+		echo $this->staffM->displayInfo('pdetails', 'phone2', $row->phone2, true,'','pdetailshide');
+					
+		echo $this->staffM->displayInfo('pdetails', 'bdate', (($row->bdate!='0000-00-00')? date('F d, Y',strtotime($row->bdate)) : ''), true);
+		echo $this->staffM->displayInfo('pdetails', 'gender', $row->gender, true);
+		echo $this->staffM->displayInfo('pdetails', 'maritalStatus', ucfirst($row->maritalStatus), true);
+		
+		echo $this->staffM->displayInfo('pdetails', 'spouse', ucfirst($row->spouse), true);			
+		echo $this->staffM->displayInfo('pdetails', 'dependents', ucfirst($row->dependents), true);			
+				
+		echo $this->staffM->displayInfo('pdetails', 'sss', $row->sss, true,'00-0000000-0');
+		echo $this->staffM->displayInfo('pdetails', 'tin', $row->tin, true,'000-000-000-0000');
+		echo $this->staffM->displayInfo('pdetails', 'philhealth', $row->philhealth, true,'00-000000000-0');
+		echo $this->staffM->displayInfo('pdetails', 'hdmf', $row->hdmf, true,'0000-0000-0000');
+		
+		echo $this->staffM->displayInfo('pdetails', 'email', $row->email, false);
+		echo $this->staffM->displayInfo('pdetails', 'skype', $row->skype, true);
+		echo $this->staffM->displayInfo('pdetails', 'google', $row->google, true);
+		
+			
+		echo '<tr class="pdetailstr pdetailslast hidden"><td colspan=2><i>Please upload documents on My Info page > Personal File to support the request.</i></td></tr>';			
+		echo '<tr class="pdetailslast hidden">
+				<td colspan=2 align="right">
+					<button id="pbtnsubmit" class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'pdetails\')" class="padding5px">Cancel</button>
+				</td>
+			</tr>';
 		?>
 		<tr><td colspan=2><br/></td></tr>
-		<tr class="trlabel" id="jdetails"><td colspan=2>Job Details <?php if($this->user->access!='exec'){ ?><a href="javascript:void(0)" class="edit" onClick="reqUpdate('jdetails')" id="jdetailsupb"><?= ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'') ?>Update</a><? } ?></td></tr>
-		<?php	
+		
+<!----------------------- JOB DETAILS ----------------------->			
+		<?php			
+		echo '<tr class="trlabel" id="jdetails">';
+		echo '<td colspan=2>Job Details ';		
+			if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){
+				echo '<a href="javascript:void(0)" class="edit" onClick="reqUpdate(\'jdetails\')" id="jdetailsupb">';
+				echo ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'');
+				echo 'Update</a>';
+			}
+		echo '</td></tr>';
+		
+		
 			if(count(array_intersect($this->myaccess,array('full','hr')))>0){
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, true);
 				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, true);
@@ -163,14 +186,7 @@
 		}
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);
-			if(count(array_intersect($this->myaccess,array('full','hr')))>0){
-				echo $this->staffM->displayInfo('jdetails', 'sal', $row->sal, true, 'Ex. 10,000.00');
-				echo $this->staffM->displayInfo('jdetails', 'allowance', $row->allowance, true, 'Ex. 2,500.00');
-			}else{
-				echo $this->staffM->displayInfo('jdetails', 'sal', $row->sal, true, 'Ex. 10,000.00', 'hidden');
-				echo $this->staffM->displayInfo('jdetails', 'allowance', $row->allowance, true, 'Ex. 2,500.00', 'hidden');
-			}
-			
+									
 			echo '<tr class="jdetailslast hidden">
 					<td colspan=2 align="right">
 						<button id="jbtnsubmit"  class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'jdetails\')" class="padding5px">Cancel</button>
@@ -179,11 +195,38 @@
 		?>
 		<tr><td colspan=2><br/></td></tr>
 	</table>
-	
+<!----------------------- COMPENSATION DETAILS ----------------------->	
+<?php 
+	if(count(array_intersect($this->myaccess,array('full','hr','finance')))>0 || $this->user->empID=$row->empID){
+	echo '<table class="tableInfo" id="compensationtbl">';
+		echo '<tr class="trlabel" id="cdetails">';
+		echo '<td colspan=2>Compensation Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay(\'compensationtbl\', this)" class="droptext">Show</a>]';		
+			if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr','finance')))>0)){
+				echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'cdetails\')" id="cdetailsupb">';
+				echo ((count(array_intersect($this->myaccess,array('full','hr','finance')))==0)?'Request an ':'');
+				echo 'Update</a>';
+			}
+		echo '</td></tr>';
+	echo '</table>';	
+?>			
+	<table class="tableInfo hidden" id="compensationtblData">
+	<?php	
+		echo $this->staffM->displayInfo('cdetails', 'sal', $this->staffM->convertNumFormat($row->sal), true, 'Ex. 10,000.00');
+		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->staffM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
+		echo $this->staffM->displayInfo('cdetails', 'bankAccnt', $row->bankAccnt, true);	
+		echo '<tr class="cdetailslast hidden">
+				<td colspan=2 align="right">
+					<button id="cbtnsubmit" class="padding5px">Submit</button>&nbsp;&nbsp;<button onClick="reqUpdateCancel(\'cdetails\')" class="padding5px">Cancel</button>
+				</td>
+			</tr>';	
+	?>
+	</table>
+<?php } ?>	
+<!----------------------- PERSONAL FILES ----------------------->	
 	<table class="tableInfo" id="personalfiletbl">
 		<tr class="trlabel">
 			<td>
-				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletblData', this)" class="droptext">Show</a>]
+				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletbl', this)" class="droptext">Show</a>]
 					<? if(!in_array("exec", $this->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
 				<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
 					<input type="file" name="pfilei" id="pfilei" class="hidden"/>
@@ -237,18 +280,18 @@
 		trDisplay4('Action', 'Date Submitted by Manager', 'Date approved by second level manager', 'Date acknowledged by employee');
 		echo '<tr><td colspan=4><br/></td></tr>'; */
 	?>
-
+	
+<!----------------------- TIME OFF DETAILS ----------------------->		
 	<table class="tableInfo" id="timeOff">
 		<tr class="trlabel">
-			<td>Time Off Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('timeOffData', this)" class="droptext">Show</a>]
+			<td>Time Off Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('timeOff', this)" class="droptext">Show</a>]
 			<?php if($this->user->empID==$row->empID){ echo '<a class="edit iframe" href="'.$this->config->base_url().'fileleave/">File for a Leave/Offset</a>'; } ?>
 			</td>
 		</tr>
+		<tr class="trhead"><td>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if(count(array_intersect($this->myaccess,array('full','hr')))>0){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
 	</table>
 	
-	<table class="tableInfo hidden" id="timeOffData">
-		<tr class="trhead"><td colspan=8>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if(count(array_intersect($this->myaccess,array('full','hr')))>0){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
-		
+	<table class="tableInfo hidden" id="timeOffData">	
 		<tr class="toTRclass hidden">
 			<td colspan=8>Note to HR:<input type="text" class="forminput" id="noteHR"/></td>
 		</tr>
@@ -338,7 +381,8 @@
 	</table>
 
 	</div><? //end of tab-1 ?>
-	
+<!----------------------- END OF TAB 1 ----------------------->		
+<!----------------------- START OF TAB 2 NOTES ----------------------->		
 	<div id="tab-2" class="tab-content">
 		<table class="tableInfo">
 			<tr class="trheadnote trlabel"><td>
@@ -384,7 +428,7 @@
 		<div id="loadImg" style="text-align:center; margin-top:20px;"><img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/></div>
 		<iframe id="iframeNotes" src="<?= $this->config->base_url().'notes/'.$row->empID.'/' ?>" frameBorder="0" style="width:100%; height:500px;" onLoad="document.getElementById('loadImg').style.display='none';"></iframe>
 	</div>	
-
+<!----------------------- END OF TAB 2 ----------------------->		
 <?php } ?>
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
@@ -586,13 +630,24 @@
 					regDate:$('#regDate').val(),
 					endDate:$('#endDate').val(),
 					accessEndDate:$('#accessEndDate').val(),
-					sal:$('#sal').val(),
-					allowance:$('#allowance').val(),
 					active:$('#active').val()
 				},function(){
 					location.reload();
 				});
 			}
+		});
+		
+		$('#cbtnsubmit').click(function(){			
+			displaypleasewait();
+			$.post("<?= $this->config->item('career_uri') ?>",{
+				submitType:'cdetails',
+				empID:'<?= $row->empID ?>',
+				sal:$('#sal').val(),
+				allowance:$('#allowance').val(),
+				bankAccnt:$('#bankAccnt').val()
+			},function(){
+				location.reload();
+			});
 		});
 		
 		$('#tosendtoHR').click(function(){
@@ -694,8 +749,11 @@
 	}
 	
 	function toggleDisplay(id, jun){
-		$(jun).text($(jun).text() == 'Show' ? 'Hide' : 'Show'); 
-		$('#'+id).toggle();
+		$('#'+id+'Data').toggle(0, function(){
+			$(jun).text($(jun).text() == 'Show' ? 'Hide' : 'Show'); 
+			if(id=="compensationtbl")
+				$('#'+id+' a.edit').toggleClass("hidden");
+		});
 	}
 			
 </script>

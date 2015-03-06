@@ -12,7 +12,7 @@ if($updated==false && count($row)>0){
 		<input type="checkbox" id="isup"> Immediate Supervisor <br/>
 	<?php if($row->endDate!='0000-00-00'){ ?><input type="checkbox" id="enddate"> Separation Date <br/><? } ?>
 		<input type="checkbox" id="empstatus" <? if(isset($wonka->fieldname) && $wonka->fieldname=='regDate'){ echo 'checked'; } ?>> Employment Status / Regularization Date <br/>
-		<input type="checkbox" id="salary"> Basic Salary
+		<input type="checkbox" id="salary" <? if(isset($wonka->fieldname) && $wonka->fieldname=='sal'){ echo 'checked'; } ?>> Basic Salary <br/>
 	</td></tr>
 <form action="" method="POST" onSubmit="return validateform();">
 	<!-------------------------------			TITLE				---------->
@@ -93,7 +93,7 @@ if($updated==false && count($row)>0){
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Php <?= number_format(str_replace(',','',$row->sal),2) ?></td>
-		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00"/></td>
+		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldvalue))?$wonka->fieldvalue:'')?>"/></td>
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Enter justification (<i>this is required</i>)</td>
