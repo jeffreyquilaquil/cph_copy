@@ -35,27 +35,15 @@ if($edit==''){
 							echo $this->staffM->decryptText($r->$f);
 						else if($f=='levelID_fk')
 							echo $r->levelName;
+						else if($f=='terminationType')
+							echo $this->staffM->infoTextVal($f, $r->$f);
 						else
 							echo $r->$f;
 						
 					echo '</td>
-					<td style="color:red;">';
+					<td style="color:red;">'.$this->staffM->infoTextVal($r->fieldname, $r->fieldvalue).'</td>';
 					
-					if($r->fieldname=='title')
-						echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$r->fieldvalue.'"');
-					else if($r->fieldname=='supervisor')
-						echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$r->fieldvalue.'"');
-					else if($r->fieldname=='levelID_fk')
-						echo $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$r->fieldvalue.'"');
-					else if($r->fieldname=='sal' || $r->fieldname=='allowance')
-						echo 'Php '.$r->fieldvalue;
-					else if($r->fieldname=='bankAccnt' || $r->fieldname=='hmoNumber')
-						echo $this->staffM->decryptText($r->fieldvalue);
-					else
-						echo $r->fieldvalue;
-					
-				echo '</td>
-					<td>'.date('d M Y, h:i a', strtotime($r->daterequested)).'</td>
+				echo '<td>'.date('d M Y, h:i a', strtotime($r->daterequested)).'</td>
 					<td>'.$r->notes.'</td>
 					<td>
 						<ul class="dropmenu">

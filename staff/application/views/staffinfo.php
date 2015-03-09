@@ -66,22 +66,10 @@
 		<tr class="trhead"><td>Fields</td><td>Details</td><td>Date Update Requested</td><td><br/></td></tr>
 <?php	foreach($updatedVal AS $u){
 			echo '<tr>
-					<td>'.$this->staffM->defineField($u->fieldname).'</td><td>';
-					
-				if($u->fieldname=='title') 
-					echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$u->fieldvalue.'"');
-				else if($u->fieldname=='supervisor')
-					echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$u->fieldvalue.'"');
-				else if($u->fieldname=='levelID_fk')
-					echo $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$u->fieldvalue.'"');
-				else{
-					if($u->fieldname=='sal' || $u->fieldname=='allowance') echo 'Php '.$u->fieldvalue;
-					else if($u->fieldname=='bankAccnt' || $u->fieldname=='hmoNumber') echo $this->staffM->decryptText($u->fieldvalue);
-					else echo $u->fieldvalue;
-				}				
-				
-			echo '</td><td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
-					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$this->staffM->defineField($u->fieldname).'\', \''.$u->fieldvalue.'\')"></td>
+					<td>'.$this->staffM->defineField($u->fieldname).'</td>';
+				echo '<td>'.$this->staffM->infoTextVal($u->fieldname, $u->fieldvalue).'</td>';
+				echo '<td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
+					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$u->fieldname.'\', \''.$u->fieldvalue.'\')"></td>
 				</tr>';
 		} 
 		echo '<tr><td colspan=4><br/></td></tr></table>';
@@ -192,10 +180,9 @@
 			echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);
 			
 			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
-		
-			if(count(array_intersect($this->myaccess,array('full','hr')))>0 || $this->user->level>0){
-				echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
-			}
+			echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
+			echo $this->staffM->displayInfo('jdetails', 'terminationType', $row->terminationType, true);
+			
 			
 									
 			echo '<tr class="jdetailslast hidden">

@@ -264,7 +264,7 @@ class Staff extends CI_Controller {
 											$r['daterequested'] = date('Y-m-d H:i:s');
 											$r['isJob'] = 0;
 											
-											if(($_POST['submitType']=='jdetails' && $k!='levelID_fk') || ($_POST['submitType']=='cdetails' && $k=='sal')) 
+											if(($_POST['submitType']=='jdetails' && !in_array($k, array('levelID_fk','terminationType'))) || ($_POST['submitType']=='cdetails' && $k=='sal')) 
 												$r['isJob'] = 1;
 												
 											if($k=='endDate') $r['notes'] = 'Requested by: '.$this->user->name;
@@ -274,22 +274,20 @@ class Staff extends CI_Controller {
 											
 											if($k=='title'){
 												$o = $orig['title2'];
-												$val = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"');
 											}else if($k=='supervisor'){
 												$o = $orig['supName'];
-												$val = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$val.'"');
 											}else if($k=='levelID_fk'){
 												$o = $orig['levelName'];
-												$val = $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$val.'"');
+											}else if($k=='terminationType'){
+												$o = $this->staffM->infoTextVal($k, $orig[$k]);
 											}else if($k=='bankAccnt' || $k=='hmoNumber'){
 												$o = $this->staffM->decryptText($orig[$k]);
-												$val = $this->staffM->decryptText($val);
 											}else{
 												$o = $orig[$k];
 												if($o=='') $o = 'none';
 											}
 											
-											$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';			
+											$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';			
 										endforeach;
 										$upNote .= 'This needs HR approval. Please upload documents on Personal File on My Info page to support the request.';
 										$this->staffM->addMyNotif($_POST['empID'], $upNote);								
@@ -377,22 +375,18 @@ class Staff extends CI_Controller {
 									foreach($what2update AS $k=>$val):
 										if($k=='title'){
 											$o = $orig['title2'];
-											$val = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"');
 										}else if($k=='supervisor'){
 											$o = $orig['supName'];
-											$val = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$val.'"');
 										}else if($k=='levelID_fk'){
 											$o = $orig['levelName'];
-											$val = $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$val.'"');
 										}else if($k=='bankAccnt' || $k=='hmoNumber'){
 											$o = $this->staffM->decryptText($orig[$k]);
-											$val = $this->staffM->decryptText($val);
 										}else{
 											$o = $orig[$k];
 											if($o=='') $o = 'none';
 										}
 										
-										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';
+										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
 									endforeach;
 									$this->staffM->addMyNotif($empID, $upNote, 0, 1);
 								}
@@ -462,9 +456,8 @@ class Staff extends CI_Controller {
 							
 							exit;
 						}else if($_POST['submitType']=='cancelRequest'){					
-							$this->staffM->addMyNotif($data['row']->empID, 'You cancelled your update field request: '.$_POST['fld'].' - '.$_POST['fname'], 5);
-							$this->db->where('updateID', $_POST['updateID']);
-							$this->db->delete('staffUpdated'); 
+							$this->staffM->addMyNotif($data['row']->empID, 'Cancelled update field request:<br/>'.$this->staffM->defineField($_POST['fld']).' - '.$this->staffM->infoTextVal($_POST['fld'], $_POST['fname']), 5);
+							$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>5));
 							exit;
 						}else if($_POST['submitType']=='uLeaveC'){
 							$ins['empID_fk'] = $this->user->empID;
@@ -544,18 +537,7 @@ class Staff extends CI_Controller {
 															
 					$ntext = 'Approved update request.<br/>Information details has been updated to:<br/>';
 					$ntext .= $this->staffM->defineField($_POST['fieldN']).' - ';
-					if($_POST['fieldN']=='bankAccnt' || $_POST['fieldN']=='hmoNumber') 
-						$ntext .= $this->staffM->decryptText($_POST['fieldV']);
-					else if($_POST['fieldN']=='sal' || $_POST['fieldN']=='allowance') 
-						$ntext .= 'Php '.$_POST['fieldV'];
-					else if($_POST['fieldN']=='supervisor')
-						$ntext .= $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$_POST['fieldV'].'"');
-					else if($_POST['fieldN']=='title')
-						$ntext .= $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$_POST['fieldV'].'"');
-					else if($_POST['fieldN']=='levelID_fk')
-						$ntext .= $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$_POST['fieldV'].'"');
-					else 
-						$ntext .= $_POST['fieldV'];
+					$ntext .= $this->staffM->infoTextVal($_POST['fieldN'], $_POST['fieldV']);
 											
 					$this->staffM->addMyNotif($_POST['empID'], $ntext, 0, 1);
 					

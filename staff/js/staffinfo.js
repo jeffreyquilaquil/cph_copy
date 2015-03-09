@@ -206,7 +206,8 @@ $(function () {
 				endDate:$('#endDate').val(),
 				accessEndDate:$('#accessEndDate').val(),
 				active:$('#active').val(),
-				levelID_fk:$('#levelID_fk').val()
+				levelID_fk:$('#levelID_fk').val(),
+				terminationType:$('#terminationType').val()
 			},function(){
 				location.reload();
 			});

@@ -197,6 +197,14 @@ class Staffmodel extends CI_Model {
 						'PH-Cebu'=>'PH-Cebu',
 						'US-OKC'=>'US-OKC'
 					);
+		}else if($con=='terminationType'){
+			$a = array(
+						'0'=>'',
+						'1'=>'Voluntary (Resignation)',
+						'2'=>'Involuntary (Just Cause - AWOL)',
+						'3'=>'Involuntary (End of Probationary Employment)',
+						'4'=>'Involuntary (Just Cause)'
+					);
 		}
 		
 		return $a;
@@ -252,7 +260,8 @@ class Staffmodel extends CI_Model {
 		else if($f=='leaveCredits') $v = 'Leave Credits';
 		else if($f=='allowance') $v = 'Monthly Allowance';
 		else if($f=='bankAccnt') $v = 'Payroll Bank Account Number';
-		else if($f=='hmoNumber') $v = 'HMO Policy Number ';
+		else if($f=='hmoNumber') $v = 'HMO Policy Number';
+		else if($f=='terminationType') $v = 'Termination Reason';
 		
 		return $v;
 	}
@@ -1108,7 +1117,7 @@ class Staffmodel extends CI_Model {
 					<td width="30%">'.$this->defineField($fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk', 'terminationType'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
@@ -1230,6 +1239,31 @@ class Staffmodel extends CI_Model {
 
 		return $output;		
     }
+	
+	function infoTextVal($type, $tval){
+		$was = '';
+		
+		if($type=='title') 
+			$was = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$tval.'"');
+		else if($type=='supervisor')
+			$was = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$tval.'"');
+		else if($type=='levelID_fk')
+			$was = $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$tval.'"');
+		else if($type=='terminationType'){
+			$tarr = $this->staffM->definevar('terminationType');
+			$was = $tarr[$tval];
+		}else if($type=='sal' || $type=='allowance')
+			$was = 'Php '.$tval;
+		else if($type=='bankAccnt' || $type=='hmoNumber') 
+			$was = $this->staffM->decryptText($tval);
+		else 
+			$was = $tval;
+			
+		if($was=='')
+			$was = '<i>none</i>';
+			
+		return $was;		
+	}
 	
 }
 
