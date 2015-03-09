@@ -187,14 +187,16 @@
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);			
 			echo $this->staffM->displayInfo('jdetails', 'department', $row->department, false);
 			echo $this->staffM->displayInfo('jdetails', 'title', $row->title, true);			
-			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);				
-			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
-		
-		if(count(array_intersect($this->myaccess,array('full','hr')))>0 || $this->user->level>0){
-			echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
-		}
+			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);	
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);
+			
+			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
+		
+			if(count(array_intersect($this->myaccess,array('full','hr')))>0 || $this->user->level>0){
+				echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
+			}
+			
 									
 			echo '<tr class="jdetailslast hidden">
 					<td colspan=2 align="right">
