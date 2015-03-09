@@ -176,7 +176,7 @@ class Staff extends CI_Controller {
 				$condition = 'staffs.office="PH-Cebu"';
 				if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
 				else $condition .= 'AND staffs.active=1';
-			
+							
 				if($this->user->access==''){
 					$ids = '';
 					$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
@@ -208,7 +208,7 @@ class Staff extends CI_Controller {
 				}
 				
 				if($condition=='') $condition='1';
-				
+			
 				$data['query'] = $this->staffM->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
 			}
 		}
