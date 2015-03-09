@@ -25,6 +25,13 @@ if(isset($_SESSION['u'])){
 if(isset($_POST['submit'])){
 	$result = $ptDb->selectSingleQueryArray("staff", array("username","sFirst","sLast"), "username='{$_POST['username']}' AND password=MD5('{$_POST['password']}')");
 	
+	if($result==''){
+		$result = $db->selectSingleQueryArray("staffs", array("username","fname","lname"), "username='{$_POST['username']}' AND password=MD5('{$_POST['password']}')");
+	}
+	
+	
+	//$result = $db->selectSingleQueryArray("staff", array("username","sFirst","sLast"), "username='{$_POST['username']}' AND password=MD5('{$_POST['password']}')");
+	
 	if(is_array($result) && sizeof($result) != 0 && in_array($result['username'],$authorized)){
 		$_SESSION['u'] = $result['username'];
 		header("Location: recruitment-manager.php");

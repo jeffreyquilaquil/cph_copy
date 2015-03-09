@@ -33,6 +33,8 @@ if($edit==''){
 							echo 'Php '.$r->$f;
 						else if($f=='bankAccnt' || $f=='hmoNumber')
 							echo $this->staffM->decryptText($r->$f);
+						else if($f=='levelID_fk')
+							echo $r->levelName;
 						else
 							echo $r->$f;
 						
@@ -43,6 +45,8 @@ if($edit==''){
 						echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$r->fieldvalue.'"');
 					else if($r->fieldname=='supervisor')
 						echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$r->fieldvalue.'"');
+					else if($r->fieldname=='levelID_fk')
+						echo $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$r->fieldvalue.'"');
 					else if($r->fieldname=='sal' || $r->fieldname=='allowance')
 						echo 'Php '.$r->fieldvalue;
 					else if($r->fieldname=='bankAccnt' || $r->fieldname=='hmoNumber')

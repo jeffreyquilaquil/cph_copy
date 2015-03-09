@@ -54,7 +54,7 @@ $username = $db->selectSingleQuery("pt_users", "username", "md5(username) = '".$
 if(empty($username) && isset($_SESSION['u']))
 	$username = $_SESSION['u'];
 
-if(empty($username)){
+if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 	echo 'Sorry, you do not have access to this page.';
 }else{
 

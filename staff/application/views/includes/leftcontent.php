@@ -47,11 +47,14 @@ if($this->user!=false && count($row)>0){
 		}
 		if($content=='staffinfo' && (count(array_intersect($this->myaccess, array('full', 'hr')))>0 && $this->user->username != $row->username || ($this->user->level>0 || $this->user->is_supervisor==1))){
 			echo '<li><a href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/" class="iframe">Issue NTE</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';	
+			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'schedules/">Schedules</a></li>';				
 		}
 		if($content!='staffinfo' && (count(array_intersect($this->myaccess, array('full', 'hr')))>0 || $this->user->level>0 || $this->user->is_supervisor==1)){
 			echo '<li><a href="'.$this->config->base_url().'generatecode/" class="iframe">Generate Code</a></li>';		
+		}
+		if(count(array_intersect($this->myaccess, array('full', 'hr')))>0 || $this->user->level>0 || $this->user->is_supervisor==1){
+			echo '<li><a href="'.$this->config->item('career_url').'/jobrequisition.php" target="_blank">Request for Job Requisition</a></li>';	
 		}
 				
 		if(in_array('full',$this->myaccess))

@@ -246,7 +246,7 @@ class Staffmodel extends CI_Model {
 		else if($f=='regDate') $v = 'Regularization Date'; 
 		else if($f=='separationDate') $v = 'SeparationDate Date';  
 		else if($f=='evalDate') $v = 'Evaluation Date';  
-		else if($f=='levelName') $v = 'Org Level';
+		else if($f=='levelName' || $f=='levelID_fk') $v = 'Org Level';
 		else if($f=='sal' || $f=='salary') $v = 'Salary';
 		else if($f=='active') $v = 'Is Active';
 		else if($f=='leaveCredits') $v = 'Leave Credits';
@@ -1106,22 +1106,24 @@ class Staffmodel extends CI_Model {
 		
 		$disp = '<tr class="'.$c.'tr '.$showhide.'">
 					<td width="30%">'.$this->defineField($fld).'</td>
-					<td>';
+					<td class="td'.$fld.'">';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
 							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'is_supervisor=1', '', 'fname ASC');
 						}else if($fld=='title'){
 							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', '1', '', 'title ASC');
+						}else if($fld=='levelID_fk'){
+							$aRR = $this->getQueryResults('orgLevel', 'levelID AS id, levelName AS val, 1 AS active', '1');
 						}						
 						
-						if($fld=='supervisor' || $fld=='title'){							
+						if($fld=='supervisor' || $fld=='title' || $fld=='levelID_fk'){							
 							foreach($aRR AS $va):
 								if( $v==$va->id || ($fld=='title' && $v==$va->val)) $vvalue=$va->val;
 								
-								if(($va->active==1 || $v==$vvalue) && ($fld=='title' || $fld=='supervisor')){								
+								if($va->active==1 || $v==$vvalue){								
 									$disp .= '<option value="'.$va->id.'" '.(( $v==$va->id || ($fld=='title' && $v==$va->val)) ? 'selected="selected"' : '').'>';
 									if($fld=='title') $disp .= $va->val.' ('.$va->org.' > '.$va->dept.' > '.$va->grp.' > '.$va->subgrp.')';
 									else $disp .= $va->val;

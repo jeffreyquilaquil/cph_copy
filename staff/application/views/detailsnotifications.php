@@ -8,7 +8,11 @@ if(count($row)==0){
 foreach($row AS $r):
 ?>
 	<div class="notifdiv" id="n<?= $r->notifID ?>" style="background-color:#ddd">
-		<?= '['.date('d M Y h:i a', strtotime($r->dateissued)).'] <br/>'.$r->ntexts ?>
+	<?php
+		if($r->nName!='') echo '<b>'.$r->nName.'</b> ';
+		else echo '<b>CareerPH</b> ';
+		echo '['.date('d M Y h:i a', strtotime($r->dateissued)).'] <br/>'.$r->ntexts
+	?>
 		<br/><br/>
 		<input type="button" value="Acknowledge" onClick="removeNotif('<?= $r->notifID ?>');"/>
 	</div>

@@ -63,6 +63,10 @@ class Staff extends CI_Controller {
 		if(isset($gg->empID)){
 			$this->session->set_userdata('uid',$gg->empID);
 			$this->session->set_userdata('u',md5($gg->username.'dv'));
+			
+			session_start();
+			$_SESSION['u'] = $gg->username; 
+			
 			header("Location:".$_SERVER['HTTP_REFERER']);
 			exit;
 		}else{
@@ -242,7 +246,7 @@ class Staff extends CI_Controller {
 					$uname = $this->uri->segment(2);
 				}
 				
-				$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title AS title2, position AS title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, levelName', 'username="'.$uname.'"', 'LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON orgLevel_fk=levelID');
+				$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title AS title2, position AS title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, levelName', 'username="'.$uname.'"', 'LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=levelID_fk');
 				
 				if(count($data['row']) > 0){				
 					if(isset($_POST) && !empty($_POST)){					
@@ -259,21 +263,34 @@ class Staff extends CI_Controller {
 											$r['fieldvalue'] = $val;											
 											$r['daterequested'] = date('Y-m-d H:i:s');
 											$r['isJob'] = 0;
-											if($_POST['submitType']=='jdetails' || ($_POST['submitType']=='cdetails' && $k=='sal')) $r['isJob'] = 1;
+											
+											if(($_POST['submitType']=='jdetails' && $k!='levelID_fk') || ($_POST['submitType']=='cdetails' && $k=='sal')) 
+												$r['isJob'] = 1;
+												
 											if($k=='endDate') $r['notes'] = 'Requested by: '.$this->user->name;
 											
 											if($k!='empStatus')
 												$this->staffM->insertQuery('staffUpdated', $r);
 											
-											$o = $orig[$k];
-											if($o=='') $o = 'none';
 																						
-											if($k=='title')
-												$upNote .= $this->staffM->defineField($k).' from <i>'.$orig[title2].'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u><br/>';
-											else if($k=='bankAccnt' || $k=='hmoNumber')
-												$upNote .= $this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($o).'</i> to <u>'.$this->staffM->decryptText($val).'</u><br/>';
-											else
-												$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';
+											if($k=='title'){
+												$o = $orig['title2'];
+												$val = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"');
+											}else if($k=='supervisor'){
+												$o = $orig['supName'];
+												$val = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$val.'"');
+											}else if($k=='levelID_fk'){
+												$o = $orig['levelName'];
+												$val = $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$val.'"');
+											}else if($k=='bankAccnt' || $k=='hmoNumber'){
+												$o = $this->staffM->decryptText($orig[$k]);
+												$val = $this->staffM->decryptText($val);
+											}else{
+												$o = $orig[$k];
+												if($o=='') $o = 'none';
+											}
+											
+											$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';			
 										endforeach;
 										$upNote .= 'This needs HR approval. Please upload documents on Personal File on My Info page to support the request.';
 										$this->staffM->addMyNotif($_POST['empID'], $upNote);								
@@ -506,20 +523,30 @@ class Staff extends CI_Controller {
 		}else if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST)){				
 				if($_POST['submitType']=='Update'){
-					$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
+					if($_POST['fieldN']=='title')
+						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('position' => $_POST['fieldV']));
+					else
+						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
+					
 					$addNote = '['.date('Y-m-d H:i').'] '.$this->user->username.': <i>request approved and changed</i><br/>';
 					$this->staffM->updateConcat('staffUpdated', 'updateID="'.$_POST['updateID'].'"', 'notes', $addNote);
 					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>1));
 															
-					$ntext = 'Approved update request and information details has been updated to:<br/>';
+					$ntext = 'Approved update request.<br/>Information details has been updated to:<br/>';
 					$ntext .= $this->staffM->defineField($_POST['fieldN']).' - ';
 					if($_POST['fieldN']=='bankAccnt' || $_POST['fieldN']=='hmoNumber') 
 						$ntext .= $this->staffM->decryptText($_POST['fieldV']);
 					else if($_POST['fieldN']=='sal' || $_POST['fieldN']=='allowance') 
 						$ntext .= 'Php '.$_POST['fieldV'];
+					else if($_POST['fieldN']=='supervisor')
+						$ntext .= $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$_POST['fieldV'].'"');
+					else if($_POST['fieldN']=='title')
+						$ntext .= $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$_POST['fieldV'].'"');
+					else if($_POST['fieldN']=='levelID_fk')
+						$ntext .= $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$_POST['fieldV'].'"');
 					else 
 						$ntext .= $_POST['fieldV'];
-					
+											
 					$this->staffM->addMyNotif($_POST['empID'], $ntext, 0, 1);
 					
 					//deactivate PT and careerPH if access end date and separation date is set and date is before today
@@ -578,7 +605,7 @@ class Staff extends CI_Controller {
 				}
 			}		
 			if($data['edit']==''){
-				$data['row'] = $this->staffM->getQueryResults('staffUpdated', 'staffUpdated.*, staffs.*, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, (SELECT title FROM newPositions WHERE newPositions.posID=staffs.position AND position!=0 LIMIT 1) AS title', 'status=0 AND isJob<2', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['row'] = $this->staffM->getQueryResults('staffUpdated', 'staffUpdated.*, staffs.*, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, (SELECT title FROM newPositions WHERE newPositions.posID=staffs.position AND position!=0 LIMIT 1) AS title, levelName', 'status=0 AND isJob<2', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN orgLevel ON levelID=levelID_fk');
 				$data['rowLeave'] = $this->staffM->getQueryResults('staffUpdated', 'staffUpdated.*, staffs.*', 'status=0 AND isJob=2', 'LEFT JOIN staffs ON empID=empID_fk');
 			}else if($data['edit']=='disapprove'){
 				$data['row'] = $this->staffM->getSingleInfo('staffUpdated', '*', 'updateID='.$data['updateID']);
@@ -1142,9 +1169,6 @@ class Staff extends CI_Controller {
 					$this->staffM->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					$data['updated'] = 'Access type successfully submitted.';
 					$atext = 'Updated access type to '.rtrim($actext,',');
-				}else if($_POST['submitType']=='isSup'){
-					$this->staffM->updateQuery('staffs', array('empID'=>$id), array('is_supervisor' => $_POST['is_supervisor']));
-					$atext = 'Updated supervisor type to '.$_POST['is_supervisor'];
 				}
 				$this->staffM->addMyNotif($this->user->empID, $atext, 5);
 			}
@@ -1163,7 +1187,7 @@ class Staff extends CI_Controller {
 				exit;
 			}
 			
-			$data['row'] = $this->staffM->getQueryResults('staffMyNotif', '*', 'isNotif=1 AND empID_fk="'.$this->user->empID.'"', '', 'nstatus DESC, notifID DESC');
+			$data['row'] = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=sID AND sID!=0) AS nName', 'isNotif=1 AND empID_fk="'.$this->user->empID.'"', '', 'nstatus DESC, notifID DESC');
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);

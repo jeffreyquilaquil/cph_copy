@@ -15,6 +15,10 @@
 	<script src="<?= $this->config->base_url() ?>js/jquery.dataTables.js" type="text/javascript"></script>
 	<script src="<?= $this->config->base_url() ?>js/jquery.datetimepicker.js" type="text/javascript"></script>
 	<script src="<?= $this->config->base_url() ?>js/jquery.colorbox.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		BASEURL = '<?= $this->config->base_url() ?>';
+		CAREERURI = '<?= $this->config->item('career_uri') ?>';
+	</script>
 </head>
 <body>
 <div id="container" style="position:relative;">
