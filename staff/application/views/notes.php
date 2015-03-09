@@ -5,10 +5,10 @@
 	}else{		
 		for($cnt=0; $cnt<count($myNotes); $cnt++){
 			$m = $myNotes[$cnt];
-			if($m['access']=='' || $m['access']=='assoc' || 
-				$m['access']=='full' && (count(array_intersect($this->myaccess,array('full','hr')))>0) ||
-				$m['access']=='exec' && $this->user->is_supervisor==1
-			){
+			/* if($m['access']=='' || $m['access']=='assoc' || 
+				$m['access']=='full' || (count(array_intersect($this->myaccess,array('full','hr')))>0) ||
+				$m['access']=='exec'
+			){ */
 				echo '<tr class="nnotes nstat_'.$m['type'].'" valign="top">';	
 
 				$img = UPLOAD_DIR.$m['username'].'/'.$m['username'].'.jpg';	
@@ -27,7 +27,7 @@
 				if($m['from']=='careerPH') echo '<td><b>'.(($m['name']=='')?'CareerPH':$m['name']).'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$m['note'].'<br/><br/></td>';
 				else echo '<td>'.$m['note'].'</td>';	
 				echo '</tr>';
-			}
+			//}
 		}
 		
 	}

@@ -4,7 +4,7 @@
 <ul class="tabs">
 <?php
 	$current = 'tab-1';
-	if($this->user->level>0 || $this->user->is_supervisor==1 || count(array_intersect($this->myaccess,array('full','hr')))>0){
+	if($this->user->level>0 || count(array_intersect($this->myaccess,array('full','hr')))>0){
 		echo '<li class="tab-link current" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
 		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) ).')</li>';
 	}

@@ -23,7 +23,7 @@ class Timecard extends CI_Controller {
 		$data['content'] = 'timecard';	
 			
 		if($this->user!=false){		
-			if($this->user->access=='' && $this->user->level==0 && $this->user->is_supervisor==0){
+			if($this->user->access=='' && $this->user->level==0){
 				$data['access'] = false;
 			}else{	
 				if(isset($_POST) && !empty($_POST) && isset($_POST['submitType'])){
@@ -36,7 +36,7 @@ class Timecard extends CI_Controller {
 							foreach($_POST['assign'] AS $a):
 								$ids .= $a.',';
 							endforeach;
-							$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=newPositions.orgLevel_fk', 'lname');
+							$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
 						}
 					}				
 				}
@@ -79,7 +79,7 @@ class Timecard extends CI_Controller {
 			}
 		}
 										
-		return $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=newPositions.orgLevel_fk', 'lname');
+		return $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
 	}
 	
 	

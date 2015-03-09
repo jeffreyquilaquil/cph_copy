@@ -47,7 +47,7 @@
 					<td>'.$td4.'</td>
 				</tr>';
 		}	
-	if(in_array('hr',$this->myaccess) || $this->user->level>0 || $this->user->is_supervisor==1){
+	if(in_array('hr',$this->myaccess) || $this->user->level>0){
 		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.((in_array('hr',$this->myaccess))?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
 	} ?>
 
@@ -190,7 +190,7 @@
 			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);				
 			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
 		
-		if(count(array_intersect($this->myaccess,array('full','hr')))>0 || $this->user->level>0 || $this->user->is_supervisor==1){
+		if(count(array_intersect($this->myaccess,array('full','hr')))>0 || $this->user->level>0){
 			echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
 		}
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);

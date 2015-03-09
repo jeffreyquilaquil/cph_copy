@@ -149,8 +149,7 @@ class MyCrons extends CI_Controller {
 			$chtext = '';
 			$changes = json_decode($q->dbchanges);
 			if(isset($changes->position)){
-				$level = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
-				if($level>0) $changes->is_supervisor = 1;				
+				$changes->levelID_fk = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
 			}			
 			$this->staffM->updateQuery('staffs', array('empID'=>$q->empID_fk), $changes);	
 			

@@ -105,7 +105,7 @@ class Staffmodel extends CI_Model {
 		$uid = $this->session->userdata('uid');		
 		$ufromPT = $this->session->userdata('ufromPT');		
 		if(!empty($uid)){
-			$query = $this->db->query('SELECT e.*, CONCAT(fname," ",lname) AS name, n.title, n.org, n.dept, n.grp, n.subgrp, n.orgLevel_fk, n.orgLevel_fk AS level FROM staffs e LEFT JOIN newPositions n ON e.position=n.posID WHERE e.empID = "'.$uid.'" AND md5(CONCAT(e.username,"","dv"))="'.$this->session->userdata('u').'"');
+			$query = $this->db->query('SELECT e.*, CONCAT(fname," ",lname) AS name, n.title, n.org, n.dept, n.grp, n.subgrp, n.orgLevel_fk, e.levelID_fk AS level FROM staffs e LEFT JOIN newPositions n ON e.position=n.posID WHERE e.empID = "'.$uid.'" AND md5(CONCAT(e.username,"","dv"))="'.$this->session->userdata('u').'"');
 			return $query->row();		
 		}else if(!empty($ufromPT)){
 			$query = $this->ptDB->query('SELECT s.username, CONCAT(s.sFirst," ",s.sLast) AS name, s.email, "exec" AS access, 0 AS empID FROM staff s WHERE username="'.$ufromPT.'" AND active="Y"');
@@ -267,14 +267,14 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function getStaffUnder($empID, $level){
-		$query = $this->db->query('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs LEFT JOIN newPositions ON posID=position WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e LEFT JOIN newPositions ON posID=position WHERE orgLevel_fk!=0 AND orgLevel_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+		$query = $this->db->query('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
 		return $query->result();
 	}
 	
 	function checkStaffUnderMe($username){
 		$valid = true;
 		if(md5($username.'dv') != $this->session->userdata('u')){
-			$query = $this->db->query('SELECT username FROM staffs LEFT JOIN newPositions ON posID=position WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e LEFT JOIN newPositions ON posID=position WHERE orgLevel_fk!=0 AND orgLevel_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND username="'.$username.'"');
+			$query = $this->db->query('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND username="'.$username.'"');
 			$row = $query->row();
 			if(!isset($row->username)) $valid = false;
 		}	
@@ -282,7 +282,7 @@ class Staffmodel extends CI_Model {
 	}
 		
 	function checkStaffUnderMeByID($empID){
-		$query = $this->db->query('SELECT empID FROM staffs LEFT JOIN newPositions ON posID=position WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e LEFT JOIN newPositions ON posID=position WHERE orgLevel_fk!=0 AND orgLevel_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND empID="'.$empID.'"');
+		$query = $this->db->query('SELECT empID FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND empID="'.$empID.'"');
 		$r = $query->row();
 		if(isset($r->empID))
 			return true;
@@ -1112,7 +1112,7 @@ class Staffmodel extends CI_Model {
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
-							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'is_supervisor=1', '', 'fname ASC');
+							$aRR = $this->getQueryResults('staffs', 'empID AS id, CONCAT(fname," ",lname) AS val, active', 'levelID_fk>0', '', 'fname ASC');
 						}else if($fld=='title'){
 							$aRR = $this->getQueryResults('newPositions', 'posID AS id, title AS val, org, dept, grp, subgrp, active', '1', '', 'title ASC');
 						}else if($fld=='levelID_fk'){

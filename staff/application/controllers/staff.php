@@ -170,7 +170,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'manageStaff';
 				
 		if($this->user!=false){		
-			if($this->user->access=='' && $this->user->level==0 && $this->user->is_supervisor==0){
+			if($this->user->access=='' && $this->user->level==0){
 				$data['access'] = false;
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
@@ -209,7 +209,7 @@ class Staff extends CI_Controller {
 				
 				if($condition=='') $condition='1';
 				
-				$data['query'] = $this->staffM->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=newPositions.orgLevel_fk', 'lname');
+				$data['query'] = $this->staffM->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
 			}
 		}
 		
@@ -272,7 +272,6 @@ class Staff extends CI_Controller {
 											if($k!='empStatus')
 												$this->staffM->insertQuery('staffUpdated', $r);
 											
-																						
 											if($k=='title'){
 												$o = $orig['title2'];
 												$val = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"');
@@ -373,16 +372,27 @@ class Staff extends CI_Controller {
 									if($submitType=='jdetails') $upNote = 'Job details';
 									else if($submitType=='cdetails') $upNote = 'Compensation details';
 									else $upNote = 'Personal details';
-									$upNote .= ' has been updated to:';
+									$upNote .= ' has been updated to:<br/>';
 																		
 									foreach($what2update AS $k=>$val):
-										if($k=='title')
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[title2].'</i> to <u>'.$this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"').'</u>';
-										else if($k=='bankAccnt' || $k=='hmoNumber')
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$this->staffM->decryptText($orig[$k]).'</i> to <u>'.$this->staffM->decryptText($val).'</u>';
-										else
-											$upNote .= '<br/>'.$this->staffM->defineField($k).' from <i>'.$orig[$k].'</i> to <u>'.$val.'</u>';
+										if($k=='title'){
+											$o = $orig['title2'];
+											$val = $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$val.'"');
+										}else if($k=='supervisor'){
+											$o = $orig['supName'];
+											$val = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS n', 'empID="'.$val.'"');
+										}else if($k=='levelID_fk'){
+											$o = $orig['levelName'];
+											$val = $this->staffM->getSingleField('orgLevel', 'levelName', 'levelID="'.$val.'"');
+										}else if($k=='bankAccnt' || $k=='hmoNumber'){
+											$o = $this->staffM->decryptText($orig[$k]);
+											$val = $this->staffM->decryptText($val);
+										}else{
+											$o = $orig[$k];
+											if($o=='') $o = 'none';
+										}
 										
+										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$val.'</u><br/>';
 									endforeach;
 									$this->staffM->addMyNotif($empID, $upNote, 0, 1);
 								}
@@ -1173,7 +1183,7 @@ class Staff extends CI_Controller {
 				$this->staffM->addMyNotif($this->user->empID, $atext, 5);
 			}
 			
-			$data['row'] = $this->staffM->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name, is_supervisor', 'empID="'.$id.'"');
+			$data['row'] = $this->staffM->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name', 'empID="'.$id.'"');
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);
@@ -1197,7 +1207,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'nteissued';
 		
 		if($this->user!=false){
-			if($this->user->access=='' && $this->user->level==0 && $this->user->is_supervisor==0){
+			if($this->user->access=='' && $this->user->level==0){
 				$data['access'] = false;
  			}else{		
 				$data['nte'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
@@ -1436,7 +1446,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'staffleaves';
 				
 		if($this->user!=false){
-			if($this->user->access=='' && $this->user->level==0 && $segment2=='' && $this->user->is_supervisor==0){
+			if($this->user->access=='' && $this->user->level==0 && $segment2==''){
 				$data['access'] = false;
 			}else{
 				$data['leaveTypeArr'] = $this->staffM->definevar('leaveType');
@@ -1448,7 +1458,7 @@ class Staff extends CI_Controller {
 					
 					$data['leaveHistory'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'"');
 										
-					if($this->user->access=='' && $this->user->level==0 && $this->user->is_supervisor==0 && $this->user->empID != $data['row']->empID_fk)
+					if($this->user->access=='' && $this->user->level==0 && $this->user->empID != $data['row']->empID_fk)
 						$data['access'] = false;
 				
 					if(isset($_POST) && !empty($_POST)){
@@ -1902,7 +1912,7 @@ class Staff extends CI_Controller {
 			
 			if(count($data['row'])>0){
 				$data['departments'] = $this->staffM->getQueryResults('newPositions', 'posID, title, org, dept, grp, subgrp, active', '1', '', 'title');
-				$data['supervisorsArr'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'orgLevel_fk>0', 'LEFT JOIN newPositions ON posID=position', 'fname');
+				$data['supervisorsArr'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'levelID_fk>0', '', 'fname');
 				$data['salaryArr'] = $this->staffM->getQueryResults('salaryRange', '*', '1');
 			}
 			
@@ -1932,8 +1942,7 @@ class Staff extends CI_Controller {
 						
 						$changes = json_decode($data['row']->dbchanges);												
 						if(isset($changes->position)){
-							$level = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
-							if($level>0) $changes->is_supervisor = 1;				
+							$changes->levelID_fk = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');			
 						}						
 						$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), $changes);
 						

@@ -1,7 +1,7 @@
 <h2>Generate Code</h2>
 <hr/>
 <?php 
-	if(count(array_intersect($this->myaccess,array('full','hr')))==0 && $this->user->level==0 && $this->user->is_supervisor==0){
+	if(count(array_intersect($this->myaccess,array('full','hr')))==0 && $this->user->level==0){
 		echo 'You do not have permission to access this page.';
 	}else{
 ?>
