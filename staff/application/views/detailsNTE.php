@@ -149,7 +149,7 @@
 	}
 
 	if(
-		$row->status==0 || ($row->status==1 && count(array_intersect($this->myaccess,array('full','hr')))>0 && $row->empID_fk!=$this->user->empID)
+		$row->status==0 || ($row->status==1 && $this->accessFullHR==true && $row->empID_fk!=$this->user->empID)
 	){
 ?>
 	<tr>
@@ -160,7 +160,7 @@
 		<td colspan=2>
 	<?php 
 		if($this->user->access!='')
-		if(count(array_intersect($this->myaccess,array('full','hr')))>0){
+		if($this->accessFullHR==true){
 			echo '<button id="generateC">Generate CAR</button>';
 		}else{
 			echo 'CAR not yet generated.';

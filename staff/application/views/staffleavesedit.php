@@ -232,7 +232,7 @@
 			</tr>';	
 		}
 	}else{
-		if(($row->iscancelled==0 || $row->iscancelled==4)&& (in_array('full', $this->myaccess) || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
+		if(($row->iscancelled==0 || $row->iscancelled==4)&& ($this->accessFull==true || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
 			echo '<form action="" method="POST" onSubmit="return validateIS();">';
 			echo '<tr>
 					<td>Please check one:';
@@ -293,7 +293,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 				<td>'.$row->hrremarks.'</td>
 			</tr>';	
 		}
-	}else if(($row->iscancelled==0 || $row->iscancelled==4) && count(array_intersect($this->myaccess,array('full','hr')))>0){
+	}else if(($row->iscancelled==0 || $row->iscancelled==4) && $this->accessFullHR==true){
 ?>
 	<form action="" method="POST" onSubmit="return validateHR();">	
 	<tr>
@@ -416,7 +416,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '</form>';
 	}
 	
-	if($row->iscancelled==3 && count(array_intersect($this->myaccess,array('full','hr')))>0){
+	if($row->iscancelled==3 && $this->accessFullHR==true){
 		echo '<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Cancel Approval</h3></td></tr>';
 		echo '<tr><td>Current leave credits</td><td>'.$row->leaveCredits.'</td></tr>';
 		echo '<tr><td>Leave credits deducted</td><td>'.$row->leaveCreditsUsed.'</td></tr>';

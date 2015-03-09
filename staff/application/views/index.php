@@ -1,7 +1,7 @@
 <? //middle-wrapper ?>
 <div id="middle-wrapper">
 	<div id="wrapper-index-mbody">
-	<?php if(count(array_intersect($this->myaccess,array('full','hr')))>0){ ?>
+	<?php if($this->accessFullHR==true){ ?>
 		<div id="clbtn">
 			<button id="createAnn">Create New</button>&nbsp;&nbsp;<button id="editAnn">Edit</button>
 			<div><?= $announcement ?></div>

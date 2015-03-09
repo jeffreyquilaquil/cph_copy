@@ -47,8 +47,8 @@
 					<td>'.$td4.'</td>
 				</tr>';
 		}	
-	if(in_array('hr',$this->myaccess) || $this->user->level>0){
-		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.((in_array('hr',$this->myaccess))?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
+	if($this->accessHR==true || $this->user->level>0){
+		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.(($this->accessHR==true)?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
 	} ?>
 
 	<ul class="tabs" style="text-align:right;">
@@ -66,10 +66,22 @@
 		<tr class="trhead"><td>Fields</td><td>Details</td><td>Date Update Requested</td><td><br/></td></tr>
 <?php	foreach($updatedVal AS $u){
 			echo '<tr>
-					<td>'.$this->staffM->defineField($u->fieldname).'</td>';
-				echo '<td>'.$this->staffM->infoTextVal($u->fieldname, $u->fieldvalue).'</td>';
-				echo '<td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
-					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$u->fieldname.'\', \''.$u->fieldvalue.'\')"></td>
+					<td>'.$this->staffM->defineField($u->fieldname).'</td><td>';
+					
+				if($u->fieldname=='title') 
+					echo $this->staffM->getSingleField('newPositions', 'title', 'posID="'.$u->fieldvalue.'"');
+				else if($u->fieldname=='supervisor')
+					echo $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$u->fieldvalue.'"');
+				else if($u->fieldname=='levelID_fk')
+					echo $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$u->fieldvalue.'"');
+				else{
+					if($u->fieldname=='sal' || $u->fieldname=='allowance') echo 'Php '.$u->fieldvalue;
+					else if($u->fieldname=='bankAccnt' || $u->fieldname=='hmoNumber') echo $this->staffM->decryptText($u->fieldvalue);
+					else echo $u->fieldvalue;
+				}				
+				
+			echo '</td><td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
+					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$this->staffM->defineField($u->fieldname).'\', \''.$u->fieldvalue.'\')"></td>
 				</tr>';
 		} 
 		echo '<tr><td colspan=4><br/></td></tr></table>';
@@ -80,9 +92,9 @@
 			<?php 		
 			echo '<tr class="trlabel" id="pdetails">';
 			echo '<td colspan=2>Personal Details ';		
-				if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){
+				if(($current=='myinfo' || $this->accessFullHR==true)){
 					echo '<a href="javascript:void(0)" class="edit" onClick="reqUpdate(\'pdetails\')" id="pdetailsupb">';
-					echo ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'');
+					echo (($this->accessFullHR==false)?'Request an ':'');
 					echo 'Update</a>';
 				}
 				
@@ -92,7 +104,7 @@
 						$ptimg = $this->config->base_url().'css/images/logo.png';
 					echo '<a href="'.$ptimg.'" class="imgiframe" title="PT profile picture"/><img src="'.$ptimg.'" width="80px"></a><br/>';
 					
-					if(count(array_intersect($this->myaccess,array('full','hr')))>0){ 
+					if($this->accessFullHR==true){ 
 						echo '<a href="javascript:void(0)" id="updatePTpic">Update</a>';
 						echo '<form id="PTpform" action="" method="POST" enctype="multipart/form-data">';
 						echo '<input type="file" name="PTpicture" id="PTpicture" class="hidden"/>';
@@ -151,21 +163,22 @@
 		echo '<table class="tableInfo" id="jobtbl">';
 			echo '<tr class="trlabel" id="jdetails">';
 			echo '<td colspan=2>Job Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay(\'jobtbl\', this)" class="droptext">Show</a>]';		
-				if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr')))>0)){
+				if(($current=='myinfo' || $this->accessFullHR==true)){
 					echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'jdetails\')" id="jdetailsupb">';
-					echo ((count(array_intersect($this->myaccess,array('full','hr')))==0)?'Request an ':'');
+					echo (($this->accessFullHR==false)?'Request an ':'');
 					echo 'Update</a>';
 				}
 			echo '</td></tr>';
 		echo '</table>';
 		
 		echo '<table class="tableInfo hidden" id="jobtblData">';		
-			if(count(array_intersect($this->myaccess,array('full','hr')))>0){
+			if($this->accessFullHR==true){
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, true);
 				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, true);
 				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), true);
 			}else{
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, false);
+				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, false);
 				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), false);
 			}
 			
@@ -175,15 +188,14 @@
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);			
 			echo $this->staffM->displayInfo('jdetails', 'department', $row->department, false);
 			echo $this->staffM->displayInfo('jdetails', 'title', $row->title, true);			
-			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);	
+			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);				
+			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
+		
+		if($this->accessFullHR==true || $this->user->level>0){
+			echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
+		}
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);
-			
-			echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
-			echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
-			echo $this->staffM->displayInfo('jdetails', 'terminationType', $row->terminationType, true);
-			
-			
 									
 			echo '<tr class="jdetailslast hidden">
 					<td colspan=2 align="right">
@@ -195,13 +207,13 @@
 	</table>
 <!----------------------- COMPENSATION DETAILS ----------------------->	
 <?php 
-	if(count(array_intersect($this->myaccess,array('full','hr','finance')))>0 || $this->user->empID=$row->empID){
+	if($this->accessFullHRFinance==true || $this->user->empID=$row->empID){
 	echo '<table class="tableInfo" id="compensationtbl">';
 		echo '<tr class="trlabel" id="cdetails">';
 		echo '<td colspan=2>Compensation Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay(\'compensationtbl\', this)" class="droptext">Show</a>]';		
-			if(($current=='myinfo' || count(array_intersect($this->myaccess,array('full','hr','finance')))>0)){
+			if($current=='myinfo' || $this->accessFullHR==true){
 				echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'cdetails\')" id="cdetailsupb">';
-				echo ((count(array_intersect($this->myaccess,array('full','hr','finance')))==0)?'Request an ':'');
+				echo (($this->accessFullHR==false)?'Request an ':'');
 				echo 'Update</a>';
 			}
 		echo '</td></tr>';
@@ -260,7 +272,7 @@
 						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';
 					}
 					
-					if((count(array_intersect($this->myaccess,array('full','hr')))>0)){
+					if($this->accessFullHR==true){
 						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.', 0)" class="cpointer upClass_'.$p->upID.'"/>
 							<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
 							<img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>';
@@ -287,7 +299,7 @@
 			<?php if($this->user->empID==$row->empID){ echo '<a class="edit iframe" href="'.$this->config->base_url().'fileleave/">File for a Leave/Offset</a>'; } ?>
 			</td>
 		</tr>
-		<tr class="trhead"><td>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID && (count(array_intersect($this->myaccess,array('full','hr')))==0)){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if(count(array_intersect($this->myaccess,array('full','hr')))>0){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
+		<tr class="trhead"><td>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID && $this->accessFullHR==false){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if($this->accessFullHR==true){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
 		
 		<tr class="toTRclass hidden">
 			<td colspan=8>Note to HR:<input type="text" class="forminput" id="noteHR"/></td>

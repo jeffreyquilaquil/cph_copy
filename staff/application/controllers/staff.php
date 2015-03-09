@@ -10,10 +10,20 @@ class Staff extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->user = $this->staffM->getLoggedUser();
-		if($this->user!=false){
-			$this->myaccess = explode(',',$this->user->access);
-		}
+		if($this->user!=false) $this->myaccess = explode(',',$this->user->access);		
 		else $this->myaccess = array();
+		
+		$this->accessFull = false;
+		$this->accessHR = false;
+		$this->accessFinance = false;
+		$this->accessFullHR = false;
+		$this->accessFullHRFinance = false;
+		
+		if(in_array('full', $this->myaccess)) $this->accessFull = true;
+		if(in_array('hr', $this->myaccess)) $this->accessHR = true;
+		if(in_array('finance', $this->myaccess)) $this->accessFinance = true;		
+		if(count(array_intersect($this->myaccess,array('full','hr'))) > 0) $this->accessFullHR = true;
+		if(count(array_intersect($this->myaccess,array('full','hr','finance'))) > 0) $this->accessFullHRFinance = true;
 		
 		/* error_reporting(E_ALL);
 		ini_set('display_errors', 1); */
@@ -254,8 +264,8 @@ class Staff extends CI_Controller {
 							$orig = (array)$data['row'];
 							
 							$what2update = $this->staffM->compareResults($_POST, $orig);							
-							if(count($what2update) >0){
-								if(count(array_intersect($this->myaccess,array('full','hr','finance')))==0){								
+							if(count($what2update) >0){																
+								if($this->myaccess=='' || $this->accessFullHR==false){
 										$upNote = 'You requested an update for:<br/>';
 										foreach($what2update AS $k=>$val):
 											$r['empID_fk'] = $_POST['empID'];
@@ -383,8 +393,8 @@ class Staff extends CI_Controller {
 											$o = $this->staffM->decryptText($orig[$k]);
 										}else{
 											$o = $orig[$k];
-											if($o=='') $o = 'none';
 										}
+										if($o=='') $o = 'none';
 										
 										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
 									endforeach;
@@ -521,7 +531,7 @@ class Staff extends CI_Controller {
 		$data['updateID'] = $this->uri->segment(3);
 		$data['success'] = false;
 	
-		if(count(array_intersect($this->myaccess,array('full','hr')))==0){
+		if($this->accessFullHR==false){
 			$data['access'] = false;
 		}else if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST)){				
@@ -1143,7 +1153,7 @@ class Staff extends CI_Controller {
 	public function adminsettings(){
 		$data['content'] = 'adminsettings';
 		
-		if(!in_array('full',$this->myaccess)){
+		if($this->accessFull==false){
 			$data['access'] = false;
 		}else if($this->user!=false){	
 			$id = $this->uri->segment(2);
@@ -2007,7 +2017,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'staffcis';
 				
 		if($this->user!=false){		
-			if(count(array_intersect($this->myaccess,array('full','hr')))==0){
+			if($this->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['pending'] = $this->staffM->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
@@ -2024,7 +2034,7 @@ class Staff extends CI_Controller {
 		
 		if($this->user!=false){
 			if($this->uri->segment(2)!=''){
-				if(count(array_intersect($this->myaccess,array('full','hr')))==0){
+				if($this->accessFullHR==false){
 					$data['access'] = false;
 				}else{				
 					$coeID = $this->uri->segment(2);
@@ -2054,7 +2064,7 @@ class Staff extends CI_Controller {
 				$data['prevRequests'] = $this->staffM->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
 					$id = $this->staffM->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>$_POST['notesforHR'], 'daterequested'=>date('Y-m-d H:i:s')));
-					$this->staffM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
+					$this->staffM->addMyNotif($this->user->empID, 'Requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
 						<p>This is an automatic notification that employee '.$this->user->name.' has requested for a COE. Please click <a href="'.$this->config->base_url().'requestcoe/'.$id.'/">here</a> to generate the COE.</p>

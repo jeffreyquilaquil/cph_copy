@@ -40,7 +40,7 @@
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
-					if(count(array_intersect($this->myaccess,array('full','hr')))>0){
+					if($this->accessFullHR==true){
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Staff CIS</a></li>';
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Info Update Requests</a></li>';
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE</a></li>';
@@ -58,7 +58,7 @@
 				
 			}
 			
-			if(count(array_intersect($this->myaccess, array('full', 'hr')))>0){
+			if($this->accessFullHR==true){
 				echo '<li '.(($content=='CAREERPH')?'class="current"':'').'><a href="'.$this->config->item('career_url').'/" target="_blank">CAREERPH</a>';
 				echo '<ul class="dropdown">';
 					echo '<li><a href="/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';

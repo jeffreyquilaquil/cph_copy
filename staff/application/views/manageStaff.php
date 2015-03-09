@@ -80,7 +80,7 @@
 							<li><a href="'.$this->config->base_url().'staffinfo/'.trim($row->username).'/" target="_blank">Visit Page</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>';
-						if(count(array_intersect($this->myaccess,array('full')))>0){
+						if($this->accessFull==true){
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>';
 						}
 							

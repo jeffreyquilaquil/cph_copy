@@ -1150,10 +1150,10 @@ class Staffmodel extends CI_Model {
 						$disp .= '</select>';
 					}else{
 						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.(($fld=='bankAccnt' || $fld=='hmoNumber')?$this->staffM->decryptText($v):$v).'" id="'.$fld.'">';
-					}	
+					}
 					$disp .= '<span class="'.$c.'fld">';					
 						if($fld=='sal' || $fld=='allowance') $disp .= 'Php '.$vvalue;
-						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($vvalue);
+						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($v);
 						else $disp .= $vvalue;	
 					$disp .= '</span>';
 				}else{
@@ -1226,7 +1226,7 @@ class Staffmodel extends CI_Model {
 		return $output;		
     }
 	
-	function decryptText($text){		
+	function decryptText($text){
 		$output = false;
 
 		$encrypt_method = "AES-256-CBC";
