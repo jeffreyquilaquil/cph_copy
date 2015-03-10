@@ -247,7 +247,7 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 		<tr class="trlabel">
 			<td>
 				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletbl', this)" class="droptext">Show</a>]
-					<? if(!in_array("exec", $this->user->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
 				<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
 					<input type="file" name="pfilei" id="pfilei" class="hidden"/>
 					<input type="hidden" name="submitType" value="uploadPF"/>
