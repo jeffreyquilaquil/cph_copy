@@ -1,7 +1,7 @@
 <h2>Generate Code</h2>
 <hr/>
 <?php 
-	if($this->accessFullHR==false && $this->user->level==0){
+	if($this->user->accessFullHR==false && $this->user->level==0){
 		echo 'You do not have permission to access this page.';
 	}else{
 ?>

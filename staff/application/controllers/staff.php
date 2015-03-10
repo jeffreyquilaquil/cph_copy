@@ -10,21 +10,8 @@ class Staff extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->user = $this->staffM->getLoggedUser();
-		if($this->user!=false) $this->myaccess = explode(',',$this->user->access);		
-		else $this->myaccess = array();
-		
-		$this->accessFull = false;
-		$this->accessHR = false;
-		$this->accessFinance = false;
-		$this->accessFullHR = false;
-		$this->accessFullHRFinance = false;
-		
-		if(in_array('full', $this->myaccess)) $this->accessFull = true;
-		if(in_array('hr', $this->myaccess)) $this->accessHR = true;
-		if(in_array('finance', $this->myaccess)) $this->accessFinance = true;		
-		if(count(array_intersect($this->myaccess,array('full','hr'))) > 0) $this->accessFullHR = true;
-		if(count(array_intersect($this->myaccess,array('full','hr','finance'))) > 0) $this->accessFullHRFinance = true;
-		
+		$this->staffM->getUserAccess();
+					
 		/* error_reporting(E_ALL);
 		ini_set('display_errors', 1); */
 	}
@@ -241,286 +228,284 @@ class Staff extends CI_Controller {
     public function staffpage($page){
 		$data['content'] = 'staffinfo'; 
 				
-		if($this->user!=false){	
-			if($page=='staffinfo' && $this->user->access=='' && $this->staffM->checkStaffUnderMe($this->uri->segment(2))==false){
-				$data['access'] = false;
-			}else{		
-				$data['column'] = 'withLeft';
-				$data['current'] = $page;
-				
-				if($page=='myinfo'){
-					$data['backlink'] = 'myinfo/';
-					$uname = $this->user->username;
-				}else{
-					$data['backlink'] = 'staffinfo/'.$this->uri->segment(2).'/';
-					$uname = $this->uri->segment(2);
-				}
-				
-				$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title AS title2, position AS title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, levelName', 'username="'.$uname.'"', 'LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=levelID_fk');
-				
-				if(count($data['row']) > 0){				
-					if(isset($_POST) && !empty($_POST)){					
-						if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
-							$orig = (array)$data['row'];
-							
-							$what2update = $this->staffM->compareResults($_POST, $orig);							
-							if(count($what2update) >0){																
-								if($this->myaccess=='' || $this->accessFullHR==false){
-										$upNote = 'You requested an update for:<br/>';
-										foreach($what2update AS $k=>$val):
-											$r['empID_fk'] = $_POST['empID'];
-											$r['fieldname'] = $k;											
-											$r['fieldvalue'] = $val;											
-											$r['daterequested'] = date('Y-m-d H:i:s');
-											$r['isJob'] = 0;
-											
-											if(($_POST['submitType']=='jdetails' && !in_array($k, array('levelID_fk','terminationType'))) || ($_POST['submitType']=='cdetails' && $k=='sal')) 
-												$r['isJob'] = 1;
-												
-											if($k=='endDate') $r['notes'] = 'Requested by: '.$this->user->name;
-											
-											if($k!='empStatus')
-												$this->staffM->insertQuery('staffUpdated', $r);
-											
-											if($k=='title'){
-												$o = $orig['title2'];
-											}else if($k=='supervisor'){
-												$o = $orig['supName'];
-											}else if($k=='levelID_fk'){
-												$o = $orig['levelName'];
-											}else if($k=='terminationType'){
-												$o = $this->staffM->infoTextVal($k, $orig[$k]);
-											}else if($k=='bankAccnt' || $k=='hmoNumber'){
-												$o = $this->staffM->decryptText($orig[$k]);
-											}else{
-												$o = $orig[$k];
-												if($o=='') $o = 'none';
-											}
-											
-											$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';			
-										endforeach;
-										$upNote .= 'This needs HR approval. Please upload documents on Personal File on My Info page to support the request.';
-										$this->staffM->addMyNotif($_POST['empID'], $upNote);								
-								}else{
-									$empID = $_POST['empID'];
-									$submitType = $_POST['submitType'];
-									
-									unset($_POST['empID']);
-									unset($_POST['submitType']);
-									
-									if(isset($_POST['endDate']) && $_POST['endDate']=='Not yet set') $_POST['endDate'] = '0000-00-00';
-									if(isset($_POST['title'])){ $_POST['position'] = $_POST['title']; unset($_POST['title']); }
-													
-									if(isset($_POST['bdate']) && $_POST['bdate']!='') $_POST['bdate'] = date('Y-m-d', strtotime($_POST['bdate']));
-									if(isset($_POST['startDate']) && $_POST['startDate']!='') $_POST['startDate'] = date('Y-m-d', strtotime($_POST['startDate']));
-									if(isset($_POST['endDate']) && $_POST['endDate']!='') $_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
-									if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
-									if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
-									if(isset($_POST['bankAccnt'])) $_POST['bankAccnt'] = $this->staffM->encryptText($_POST['bankAccnt']);
-									if(isset($_POST['hmoNumber'])) $_POST['hmoNumber'] = $this->staffM->encryptText($_POST['hmoNumber']);
-									
-									$this->staffM->updateQuery('staffs', array('empID'=>$empID), $_POST);
-									
-									if((isset($what2update['endDate']) && $what2update['endDate']!='0000-00-00' && $what2update['endDate']<=date('Y-m-d')) || 
-										(isset($what2update['accessEndDate']) && $what2update['accessEndDate']!='0000-00-00' && $what2update['accessEndDate']<=date('Y-m-d'))
-									){									
-										$uInfo = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$empID.'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
-										if(count($uInfo)>0){										
-											//set PT and careerph user inactive
-											$this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-											$this->staffM->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$empID.'"');
-											
-											//send email
-											$ebody = '<p><b>Employee Separation Notice:</b></p>';
-											$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
-											
-											$ebody .= '<p>';
-											$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
-											
-											if(isset($what2update['accessEndDate']) || $uInfo->accessEndDate!='0000-00-00') 
-												$ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($_POST['accessEndDate'])).'</b><br/>';											
-											if(isset($what2update['endDate']) || $uInfo->endDate!='0000-00-00')
-												$ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($_POST['endDate'])).'</b><br/>';	
-											
-											$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
-											$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
-											$ebody .= '</p>';											
-											
-											$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
-											
-											$ebody .= '<p>Thanks!</p>';
-												
-											$this->staffM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
-										}
-									}
-									
-									if(isset($what2update['active'])){
-										if($what2update['active']==1) $this->staffM->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
-										else $this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
-										
-										$abody = '<p>Hi,</p>';
-										
-										if($what2update['active']==1){
-											$subject = 'ACTIVATED PT USER';
-											$abody .= $this->user->name.' ACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
-										}else{
-											$subject = 'DEACTIVATED PT USER';
-											$abody .= $this->user->name.' DEACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
-										}
-										
-										$abody .= '<p><br/></p>
-												<p>Thanks!</p>
-												<p>CAREERPH</p>';
-										
-										$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
-										$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
-									}
-																	
-							
-									if($submitType=='jdetails') $upNote = 'Job details';
-									else if($submitType=='cdetails') $upNote = 'Compensation details';
-									else $upNote = 'Personal details';
-									$upNote .= ' has been updated to:<br/>';
-																		
+		if($this->user!=false){			
+			$data['column'] = 'withLeft';
+			$data['current'] = $page;
+			
+			if($page=='myinfo'){
+				$data['backlink'] = 'myinfo/';
+				$uname = $this->user->username;
+			}else{
+				$data['backlink'] = 'staffinfo/'.$this->uri->segment(2).'/';
+				$uname = $this->uri->segment(2);
+			}
+			
+			$data['row'] = $this->staffM->getSingleInfo('staffs', 'staffs.*, CONCAT(staffs.fname," ",staffs.lname) AS name, title AS title2, position AS title, dept AS department, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, levelName', 'username="'.$uname.'"', 'LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=levelID_fk');
+			
+			if(count($data['row']) > 0){				
+				if(isset($_POST) && !empty($_POST)){					
+					if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
+						$orig = (array)$data['row'];
+						
+						$what2update = $this->staffM->compareResults($_POST, $orig);							
+						if(count($what2update) >0){
+							if($this->user->accessFullHR==false){
+									$upNote = 'You requested an update for:<br/>';
 									foreach($what2update AS $k=>$val):
+										$r['empID_fk'] = $_POST['empID'];
+										$r['fieldname'] = $k;											
+										$r['fieldvalue'] = $val;											
+										$r['daterequested'] = date('Y-m-d H:i:s');
+										$r['isJob'] = 0;
+										
+										if(($_POST['submitType']=='jdetails' && !in_array($k, array('levelID_fk','terminationType'))) || ($_POST['submitType']=='cdetails' && $k=='sal')) 
+											$r['isJob'] = 1;
+											
+										if($k=='endDate') $r['notes'] = 'Requested by: '.$this->user->name;
+										
+										if($k!='empStatus')
+											$this->staffM->insertQuery('staffUpdated', $r);
+										
 										if($k=='title'){
 											$o = $orig['title2'];
 										}else if($k=='supervisor'){
 											$o = $orig['supName'];
 										}else if($k=='levelID_fk'){
 											$o = $orig['levelName'];
+										}else if($k=='terminationType'){
+											$o = $this->staffM->infoTextVal($k, $orig[$k]);
 										}else if($k=='bankAccnt' || $k=='hmoNumber'){
 											$o = $this->staffM->decryptText($orig[$k]);
 										}else{
 											$o = $orig[$k];
+											if($o=='') $o = 'none';
 										}
-										if($o=='') $o = 'none';
 										
-										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
+										$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';			
 									endforeach;
-									$this->staffM->addMyNotif($empID, $upNote, 0, 1);
-								}
-							}
-							exit;
-						}else if($_POST['submitType']=='addnote'){
-							$this->staffM->addMyNotif($_POST['empID_fk'], $_POST['ntexts'], $_POST['ntype']);
-						}else if($_POST['submitType']=='uploadPF'){	
-							$err = '';
-							if(empty($_FILES['pfilei']['name'])){
-								$err = 'No file uploaded.';
-							}else if(strlen($_FILES['pfilei']['name'])>100){
-								$err = 'Filename is too long. Please upload filename less than 100 characters.';
-							}
-							
-							if($err!=''){
-								echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
+									$upNote .= 'This needs HR approval. Please upload documents on Personal File on My Info page to support the request.';
+									$this->staffM->addMyNotif($_POST['empID'], $upNote);								
 							}else{
-								$filename = $_FILES['pfilei']['name'];
-								$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
-								$ddArr = array();
-								for($d=0; $d<count($dd); $d++){
-									$ddArr[] = $dd[$d]->fileName;
-								}
+								$empID = $_POST['empID'];
+								$submitType = $_POST['submitType'];
 								
-								if(in_array($filename, $ddArr)){
-									$filename = date('YmdHis').'_'.$filename;
-								}
-							
-								$dir = UPLOAD_DIR.$data['row']->username;
-                                if (!file_exists($dir)) {
-                                    # $data['dir'] doesn't have value 
-                                    # replace with $dir
-									mkdir($dir, 0755, true);
-									chmod($dir.'/', 0777);
-								}
+								unset($_POST['empID']);
+								unset($_POST['submitType']);
 								
-								move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$filename);
-								$pIns['empID_fk'] = $data['row']->empID;
-								$pIns['uploadedBy'] = $this->user->empID;
-								$pIns['fileName'] = $filename;
-								$pIns['dateUploaded'] = date('Y-m-d H:i:s');
-								$this->staffM->insertQuery('staffUploads', $pIns);
+								if(isset($_POST['endDate']) && $_POST['endDate']=='Not yet set') $_POST['endDate'] = '0000-00-00';
+								if(isset($_POST['title'])){ $_POST['position'] = $_POST['title']; unset($_POST['title']); }
+												
+								if(isset($_POST['bdate']) && $_POST['bdate']!='') $_POST['bdate'] = date('Y-m-d', strtotime($_POST['bdate']));
+								if(isset($_POST['startDate']) && $_POST['startDate']!='') $_POST['startDate'] = date('Y-m-d', strtotime($_POST['startDate']));
+								if(isset($_POST['endDate']) && $_POST['endDate']!='') $_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
+								if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
+								if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
+								if(isset($_POST['bankAccnt'])) $_POST['bankAccnt'] = $this->staffM->encryptText($_POST['bankAccnt']);
+								if(isset($_POST['hmoNumber'])) $_POST['hmoNumber'] = $this->staffM->encryptText($_POST['hmoNumber']);
 								
-								//add notifications
-								$ciframe = '';
-								if(strpos($filename,'.jpg') !== false || strpos($filename,'.png') !== false || strpos($filename,'.gif') !== false || strpos($filename,'.pdf') !== false){
-									$ciframe = 'class="iframe"';
-								}
-								if($data['row']->empID==$this->user->empID){
-									$this->staffM->addMyNotif($this->user->empID, 'You uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>');
-								}else{
-									$ttxt = $this->user->name.' uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>';
-									$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
-								}							
-							}
-						}else if($_POST['submitType']=='delFile'){
-							$this->staffM->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('isDeleted' => 1, 'deletedBy'=>$this->user->empID, 'dateDeleted'=>date('Y-m-d H:i:s')));
-
-							//add notifications
-							if($data['row']->empID==$this->user->empID){
-								$this->staffM->addMyNotif($this->user->empID, 'You deleted the file '.$_POST['fileName'], 5);
-							}else{
-								$ttxt = $this->user->name.' deleted the file '.$_POST['fileName'];
-								$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
-							}
-							
-							exit;
-						}else if($_POST['submitType']=='cancelRequest'){					
-							$this->staffM->addMyNotif($data['row']->empID, 'Cancelled update field request:<br/>'.$this->staffM->defineField($_POST['fld']).' - '.$this->staffM->infoTextVal($_POST['fld'], $_POST['fname']), 5);
-							$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>5));
-							exit;
-						}else if($_POST['submitType']=='uLeaveC'){
-							$ins['empID_fk'] = $this->user->empID;
-							$ins['notes'] = $_POST['note'];
-							$ins['daterequested'] = date('Y-m-d H:i:s');
-							$ins['isJob'] = 2;
-							$this->staffM->insertQuery('staffUpdated', $ins);
-							$this->staffM->addMyNotif($this->user->empID, 'You requested to recheck your leave credits.<br/>Your note:'.$_POST['note'], 5);
-							exit;
-						}else if($_POST['submitType']=='editleavecredits'){
-							$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('leaveCredits'=>$_POST['newleavecredits']));
-							$this->staffM->addMyNotif($_POST['empID'], $this->user->name.' updated your leave credits from '.$_POST['oldleavecredit'].' to '.$_POST['newleavecredits'].'.', 0, 1);
-							
-							if($this->user->empID!=$_POST['empID']){
-								$this->staffM->addMyNotif($this->user->empID, 'You updated leave credits of '.$_POST['empName'].' from '.$_POST['oldleavecredit'].' to '.$_POST['newleavecredits'].'.', 5, 0);
-							}
-							exit;
-						}else if($_POST['submitType']=='uploadPTpicture'){
-							require_once('includes/S3.php');
-							$file = $_FILES ['PTpicture']['tmp_name'];
-							$bucket = 'staffthumbnails';  
-							$s3 = new S3(AWSACCESSKEY, AWSSECRETKEY);
-							
-							$this->staffM->photoResizer($file, $file, $width = 150, $height = 150, $quality = 70, false);
-															   
-							$input = S3::inputFile($file);
-							$new_name = $data['row']->username.'.jpg';
-							
-							if(S3::getObjectInfo($bucket, $new_name))
-								S3::deleteObject($bucket, $new_name);
-							S3::putObject($input, $bucket, $new_name, S3::ACL_PUBLIC_READ);	
-									
-							header("Cache-Control: no-cache, must-revalidate"); 
-							header('Location:'.$_SERVER['REQUEST_URI']);
-							exit;
-						}else if($_POST['submitType']=='editUploadName'){
-							$this->staffM->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('docName'=>$_POST['docName']));
-							exit;
-						}
-					} //end of POST not empty
-				
-					$data['leaveTypeArr'] = $this->staffM->definevar('leaveType');
-					$data['leaveStatusArr'] = $this->staffM->definevar('leaveStatus');
-					$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'"','', 'date_requested DESC');
-					$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
-					
-					$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'staffUploads.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE uploadedBy=empID) AS uploader', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
+								$this->staffM->updateQuery('staffs', array('empID'=>$empID), $_POST);
+								
+								if((isset($what2update['endDate']) && $what2update['endDate']!='0000-00-00' && $what2update['endDate']<=date('Y-m-d')) || 
+									(isset($what2update['accessEndDate']) && $what2update['accessEndDate']!='0000-00-00' && $what2update['accessEndDate']<=date('Y-m-d'))
+								){									
+									$uInfo = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$empID.'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
+									if(count($uInfo)>0){										
+										//set PT and careerph user inactive
+										$this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
+										$this->staffM->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$empID.'"');
+										
+										//send email
+										$ebody = '<p><b>Employee Separation Notice:</b></p>';
+										$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
+										
+										$ebody .= '<p>';
+										$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
+										
+										if(isset($what2update['accessEndDate']) || $uInfo->accessEndDate!='0000-00-00') 
+											$ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($_POST['accessEndDate'])).'</b><br/>';											
+										if(isset($what2update['endDate']) || $uInfo->endDate!='0000-00-00')
+											$ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($_POST['endDate'])).'</b><br/>';	
+										
+										$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
+										$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
+										$ebody .= '</p>';											
+										
+										$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
+										
+										$ebody .= '<p>Thanks!</p>';
 											
-					if($page=='myinfo'){
-						$data['updatedVal'] = $this->staffM->getQueryResults('staffUpdated', '*', 'empID_fk="'.$data['row']->empID.'" AND status=0', 'timestamp');
+										$this->staffM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
+									}
+								}
+								
+								if(isset($what2update['active'])){
+									if($what2update['active']==1) $this->staffM->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
+									else $this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
+									
+									$abody = '<p>Hi,</p>';
+									
+									if($what2update['active']==1){
+										$subject = 'ACTIVATED PT USER';
+										$abody .= $this->user->name.' ACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
+									}else{
+										$subject = 'DEACTIVATED PT USER';
+										$abody .= $this->user->name.' DEACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
+									}
+									
+									$abody .= '<p><br/></p>
+											<p>Thanks!</p>
+											<p>CAREERPH</p>';
+									
+									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
+									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
+								}
+																
+						
+								if($submitType=='jdetails') $upNote = 'Job details';
+								else if($submitType=='cdetails') $upNote = 'Compensation details';
+								else $upNote = 'Personal details';
+								$upNote .= ' has been updated to:<br/>';
+																	
+								foreach($what2update AS $k=>$val):
+									if($k=='title'){
+										$o = $orig['title2'];
+									}else if($k=='supervisor'){
+										$o = $orig['supName'];
+									}else if($k=='levelID_fk'){
+										$o = $orig['levelName'];
+									}else if($k=='bankAccnt' || $k=='hmoNumber'){
+										$o = $this->staffM->decryptText($orig[$k]);
+									}else{
+										$o = $orig[$k];
+										if($o=='') $o = 'none';
+									}
+									
+									$upNote .= $this->staffM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
+								endforeach;
+								$this->staffM->addMyNotif($empID, $upNote, 0, 1);
+							}
+						}
+						exit;
+					}else if($_POST['submitType']=='addnote'){
+						$this->staffM->addMyNotif($_POST['empID_fk'], $_POST['ntexts'], $_POST['ntype']);
+					}else if($_POST['submitType']=='uploadPF'){	
+						$err = '';
+						if(empty($_FILES['pfilei']['name'])){
+							$err = 'No file uploaded.';
+						}else if(strlen($_FILES['pfilei']['name'])>100){
+							$err = 'Filename is too long. Please upload filename less than 100 characters.';
+						}
+						
+						if($err!=''){
+							echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
+						}else{
+							$filename = $_FILES['pfilei']['name'];
+							$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
+							$ddArr = array();
+							for($d=0; $d<count($dd); $d++){
+								$ddArr[] = $dd[$d]->fileName;
+							}
+							
+							if(in_array($filename, $ddArr)){
+								$filename = date('YmdHis').'_'.$filename;
+							}
+						
+							$dir = UPLOAD_DIR.$data['row']->username;
+							if (!file_exists($dir)) {
+								# $data['dir'] doesn't have value 
+								# replace with $dir
+								mkdir($dir, 0755, true);
+								chmod($dir.'/', 0777);
+							}
+							
+							move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$filename);
+							$pIns['empID_fk'] = $data['row']->empID;
+							$pIns['uploadedBy'] = $this->user->empID;
+							$pIns['fileName'] = $filename;
+							$pIns['dateUploaded'] = date('Y-m-d H:i:s');
+							$this->staffM->insertQuery('staffUploads', $pIns);
+							
+							//add notifications
+							$ciframe = '';
+							if(strpos($filename,'.jpg') !== false || strpos($filename,'.png') !== false || strpos($filename,'.gif') !== false || strpos($filename,'.pdf') !== false){
+								$ciframe = 'class="iframe"';
+							}
+							if($data['row']->empID==$this->user->empID){
+								$this->staffM->addMyNotif($this->user->empID, 'You uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>');
+							}else{
+								$ttxt = $this->user->name.' uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>';
+								$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
+							}							
+						}
+					}else if($_POST['submitType']=='delFile'){
+						$this->staffM->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('isDeleted' => 1, 'deletedBy'=>$this->user->empID, 'dateDeleted'=>date('Y-m-d H:i:s')));
+
+						//add notifications
+						if($data['row']->empID==$this->user->empID){
+							$this->staffM->addMyNotif($this->user->empID, 'You deleted the file '.$_POST['fileName'], 5);
+						}else{
+							$ttxt = $this->user->name.' deleted the file '.$_POST['fileName'];
+							$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
+						}
+						
+						exit;
+					}else if($_POST['submitType']=='cancelRequest'){					
+						$this->staffM->addMyNotif($data['row']->empID, 'Cancelled update field request:<br/>'.$this->staffM->defineField($_POST['fld']).' - '.$this->staffM->infoTextVal($_POST['fld'], $_POST['fname']), 5);
+						$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>5));
+						exit;
+					}else if($_POST['submitType']=='uLeaveC'){
+						$ins['empID_fk'] = $this->user->empID;
+						$ins['notes'] = $_POST['note'];
+						$ins['daterequested'] = date('Y-m-d H:i:s');
+						$ins['isJob'] = 2;
+						$this->staffM->insertQuery('staffUpdated', $ins);
+						$this->staffM->addMyNotif($this->user->empID, 'You requested to recheck your leave credits.<br/>Your note:'.$_POST['note'], 5);
+						exit;
+					}else if($_POST['submitType']=='editleavecredits'){
+						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('leaveCredits'=>$_POST['newleavecredits']));
+						$this->staffM->addMyNotif($_POST['empID'], $this->user->name.' updated your leave credits from '.$_POST['oldleavecredit'].' to '.$_POST['newleavecredits'].'.', 0, 1);
+						
+						if($this->user->empID!=$_POST['empID']){
+							$this->staffM->addMyNotif($this->user->empID, 'You updated leave credits of '.$_POST['empName'].' from '.$_POST['oldleavecredit'].' to '.$_POST['newleavecredits'].'.', 5, 0);
+						}
+						exit;
+					}else if($_POST['submitType']=='uploadPTpicture'){
+						require_once('includes/S3.php');
+						$file = $_FILES ['PTpicture']['tmp_name'];
+						$bucket = 'staffthumbnails';  
+						$s3 = new S3(AWSACCESSKEY, AWSSECRETKEY);
+						
+						$this->staffM->photoResizer($file, $file, $width = 150, $height = 150, $quality = 70, false);
+														   
+						$input = S3::inputFile($file);
+						$new_name = $data['row']->username.'.jpg';
+						
+						if(S3::getObjectInfo($bucket, $new_name))
+							S3::deleteObject($bucket, $new_name);
+						S3::putObject($input, $bucket, $new_name, S3::ACL_PUBLIC_READ);	
+								
+						header("Cache-Control: no-cache, must-revalidate"); 
+						header('Location:'.$_SERVER['REQUEST_URI']);
+						exit;
+					}else if($_POST['submitType']=='editUploadName'){
+						$this->staffM->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('docName'=>$_POST['docName']));
+						exit;
 					}
-				}				
-			}
+				} //end of POST not empty
+			
+				$data['leaveTypeArr'] = $this->staffM->definevar('leaveType');
+				$data['leaveStatusArr'] = $this->staffM->definevar('leaveStatus');
+				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'"','', 'date_requested DESC');
+				$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
+				
+				$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'staffUploads.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE uploadedBy=empID) AS uploader', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
+				$data['isUnderMe'] = $this->staffM->checkStaffUnderMe($data['row']->username);
+										
+				if($page=='myinfo'){
+					$data['updatedVal'] = $this->staffM->getQueryResults('staffUpdated', '*', 'empID_fk="'.$data['row']->empID.'" AND status=0', 'timestamp');
+				}
+			}				
+			
 		}
 		$this->load->view('includes/template', $data);	
 	}
@@ -531,7 +516,7 @@ class Staff extends CI_Controller {
 		$data['updateID'] = $this->uri->segment(3);
 		$data['success'] = false;
 	
-		if($this->accessFullHR==false){
+		if($this->user->accessFullHR==false){
 			$data['access'] = false;
 		}else if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST)){				
@@ -1153,7 +1138,7 @@ class Staff extends CI_Controller {
 	public function adminsettings(){
 		$data['content'] = 'adminsettings';
 		
-		if($this->accessFull==false){
+		if($this->user->accessFull==false){
 			$data['access'] = false;
 		}else if($this->user!=false){	
 			$id = $this->uri->segment(2);
@@ -2017,7 +2002,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'staffcis';
 				
 		if($this->user!=false){		
-			if($this->accessFullHR==false){
+			if($this->user->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['pending'] = $this->staffM->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
@@ -2034,7 +2019,7 @@ class Staff extends CI_Controller {
 		
 		if($this->user!=false){
 			if($this->uri->segment(2)!=''){
-				if($this->accessFullHR==false){
+				if($this->user->accessFullHR==false){
 					$data['access'] = false;
 				}else{				
 					$coeID = $this->uri->segment(2);
@@ -2064,7 +2049,7 @@ class Staff extends CI_Controller {
 				$data['prevRequests'] = $this->staffM->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
 					$id = $this->staffM->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>$_POST['notesforHR'], 'daterequested'=>date('Y-m-d H:i:s')));
-					$this->staffM->addMyNotif($this->user->empID, 'Requested for a Certificate of Employment.', 5);
+					$this->staffM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
 						<p>This is an automatic notification that employee '.$this->user->name.' has requested for a COE. Please click <a href="'.$this->config->base_url().'requestcoe/'.$id.'/">here</a> to generate the COE.</p>
@@ -2270,6 +2255,17 @@ class Staff extends CI_Controller {
 		endforeach;
 		$disp .= '</table>';
 		echo $disp;		
+	}
+	
+	public function getAllStaffsForSearch(){
+		$query = $this->staffM->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name', 'office!="US-OKC"');
+		$disp = '<button id="cboxClose" type="button" style="top:27px; right:8px;" onClick="$(\'.staffSearch\').addClass(\'hidden\'); $(\'#filter2\').val(\'\');">close</button>';
+		$disp .= '<table class="tableInfo" style="text-align:left;">';
+		foreach($query AS $q):
+			$disp .= '<tr class="cpointer"><td onClick="visitStaffPage(\''.$q->username.'\')">'.$q->name.'</td></tr>';
+		endforeach;
+		$disp .= '</table>';
+		echo $disp;	
 	}
 				
 	public function notes(){

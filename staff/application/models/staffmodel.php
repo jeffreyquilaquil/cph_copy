@@ -114,6 +114,25 @@ class Staffmodel extends CI_Model {
 			return false;
 		}
 	}
+	
+	function getUserAccess(){		
+		if($this->user!=false) $this->user->myaccess = explode(',',$this->user->access);
+		else $this->user->myaccess = array();
+		
+		$this->user->accessFull = false;
+		$this->user->accessHR = false;
+		$this->user->accessFinance = false;
+		$this->user->accessFullHR = false;
+		$this->user->accessFullFinance = false;
+		$this->user->accessFullHRFinance = false;
+			
+		if(in_array('full', $this->user->myaccess)) $this->user->accessFull = true;
+		if(in_array('hr', $this->user->myaccess)) $this->user->accessHR = true;
+		if(in_array('finance', $this->user->myaccess)) $this->user->accessFinance = true;
+		if(count(array_intersect($this->user->myaccess,array('full','hr')))>0) $this->user->accessFullHR = true;
+		if(count(array_intersect($this->user->myaccess,array('full','finance')))>0) $this->user->accessFullFinance = true;
+		if(count(array_intersect($this->user->myaccess,array('full','hr','finance')))>0) $this->user->accessFullHRFinance = true;		
+	}
 	 	
 	function checklogged($username, $pw){
 		return $query = $this->db->query('SELECT empID, username, password FROM staffs WHERE active = 1 AND username = "'.$username.'" AND password = "'.md5($pw).'" LIMIT 1');
@@ -933,7 +952,7 @@ class Staffmodel extends CI_Model {
 		}
 		
 		if(count($info)==0){
-			$disp .= '<tr><td class="weightnormal" colspan=10>No pending CIS.</td></tr>';
+			$disp .= '<tr><td class="weightnormal" colspan=10>None.</td></tr>';
 		}else{
 			foreach($info AS $a):
 				$c = json_decode($a->changes);
@@ -1150,10 +1169,10 @@ class Staffmodel extends CI_Model {
 						$disp .= '</select>';
 					}else{
 						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.(($fld=='bankAccnt' || $fld=='hmoNumber')?$this->staffM->decryptText($v):$v).'" id="'.$fld.'">';
-					}
+					}	
 					$disp .= '<span class="'.$c.'fld">';					
 						if($fld=='sal' || $fld=='allowance') $disp .= 'Php '.$vvalue;
-						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($v);
+						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($vvalue);
 						else $disp .= $vvalue;	
 					$disp .= '</span>';
 				}else{
@@ -1226,7 +1245,7 @@ class Staffmodel extends CI_Model {
 		return $output;		
     }
 	
-	function decryptText($text){
+	function decryptText($text){		
 		$output = false;
 
 		$encrypt_method = "AES-256-CBC";

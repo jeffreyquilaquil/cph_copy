@@ -4,7 +4,7 @@
 <ul class="tabs">
 <?php
 	$current = 'tab-1';
-	if($this->user->level>0 || $this->accessFullHR==true){
+	if($this->user->level>0 || $this->user->accessFullHR==true){
 		echo '<li class="tab-link current" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
 		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) ).')</li>';
 	}

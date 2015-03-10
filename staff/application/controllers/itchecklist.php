@@ -10,20 +10,7 @@ class Itchecklist extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->user = $this->staffM->getLoggedUser();
-		if($this->user!=false) $this->myaccess = explode(',',$this->user->access);		
-		else $this->myaccess = array();
-		
-		$this->accessFull = false;
-		$this->accessHR = false;
-		$this->accessFinance = false;
-		$this->accessFullHR = false;
-		$this->accessFullHRFinance = false;
-		
-		if(in_array('full', $this->myaccess)) $this->accessFull = true;
-		if(in_array('hr', $this->myaccess)) $this->accessHR = true;
-		if(in_array('finance', $this->myaccess)) $this->accessFinance = true;		
-		if(count(array_intersect($this->myaccess,array('full','hr'))) > 0) $this->accessFullHR = true;
-		if(count(array_intersect($this->myaccess,array('full','hr','finance'))) > 0) $this->accessFullHRFinance = true;		
+		$this->staffM->getUserAccess();		
 	}
 		
 	public function index(){

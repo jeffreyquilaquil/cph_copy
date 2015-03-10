@@ -31,7 +31,7 @@ echo '<table class="tableInfo">';
 		<tr><td>Purpose of the Request</td><td><textarea class="forminput" name="purpose"></textarea></td></tr>
 		<tr><td>Note for HR</td><td><textarea class="forminput" name="notesforHR"></textarea></td></tr>
 		<tr><td><br/></td><td><input type="hidden" name="submitType" value="request"/><input type="submit" value="Request" class="padding5px"/></td></tr>
-	<?php }else if($toupdate==true && $this->accessFullHR==true){ 
+	<?php }else if($toupdate==true && $this->user->accessFullHR==true){ 
 			if($row->endDate!='0000-00-00'){
 				echo '<tr><td>Separation Date</td><td class="weightbold">'.date('F d, Y',strtotime($row->endDate)).'</td></tr>';
 			}

@@ -1,7 +1,7 @@
 <? //middle-wrapper ?>
 <div id="middle-wrapper">
 	<div id="wrapper-index-mbody">
-	<?php if($this->accessFullHR==true){ ?>
+	<?php if($this->user->accessFullHR==true){ ?>
 		<div id="clbtn">
 			<button id="createAnn">Create New</button>&nbsp;&nbsp;<button id="editAnn">Edit</button>
 			<div><?= $announcement ?></div>

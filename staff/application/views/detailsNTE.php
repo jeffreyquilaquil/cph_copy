@@ -149,7 +149,7 @@
 	}
 
 	if(
-		$row->status==0 || ($row->status==1 && $this->accessFullHR==true && $row->empID_fk!=$this->user->empID)
+		$row->status==0 || ($row->status==1 && $this->user->accessFullHR==true && $row->empID_fk!=$this->user->empID)
 	){
 ?>
 	<tr>
@@ -159,8 +159,7 @@
 	<tr id="gencartr">
 		<td colspan=2>
 	<?php 
-		if($this->user->access!='')
-		if($this->accessFullHR==true){
+		if($this->user->accessFullHR==true){
 			echo '<button id="generateC">Generate CAR</button>';
 		}else{
 			echo 'CAR not yet generated.';
