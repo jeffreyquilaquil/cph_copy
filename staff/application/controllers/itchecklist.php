@@ -10,7 +10,7 @@ class Itchecklist extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->staffM->getUserAccess();		
+		$this->access = $this->staffM->getUserAccess();		
 	}
 		
 	public function index(){
