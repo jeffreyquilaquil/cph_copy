@@ -104,7 +104,6 @@ if(isset($_POST) AND !empty($_POST)){
 					'email' => $_POST['email'],
 					'gender' => strtoupper(substr($hire['gender'],0, 1)),
 					'idNum' => $_POST['payroll'],
-					'title' => $hire['title'],
 					'position' => $hire['position'],
 					'supervisor' => $db->selectSingleQuery('staffs','empID', 'CONCAT( fname,  " ", lname ) =  "'.$jobReq['supervisor'].'"'),
 					'startDate' => date('Y-m-d', strtotime($startD)),
