@@ -4,7 +4,7 @@
 	
 	if($this->session->userdata('testing')==true){
 		echo $this->user->name.' '.$this->user->empID.'<br/>';
-		print_r($this->user->myaccess);
+		print_r($this->access->myaccess);
 		echo '
 		<form action="'.$this->config->base_url().'hello/" method="POST">
 			<b>Change logged in user</b><br/>
