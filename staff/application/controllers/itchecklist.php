@@ -68,7 +68,7 @@ class Itchecklist extends CI_Controller {
 									<p>Thanks!</p>
 									<p>CAREERPH</p>
 								';
-							$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
+							$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
 							
 							echo 'Status in careerph and PT has been change to "ACTIVE"';
 						}
