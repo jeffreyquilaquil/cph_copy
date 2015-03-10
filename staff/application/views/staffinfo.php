@@ -47,13 +47,13 @@
 					<td>'.$td4.'</td>
 				</tr>';
 		}	
-	if($this->user->accessHR==true || $this->user->level>0){
-		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.(($this->user->accessHR==true)?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
+	if($this->access->accessHR==true || $this->user->level>0){
+		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.(($this->access->accessHR==true)?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
 	} 
 	
 	echo '<ul class="tabs" style="text-align:right;">';
 	echo '<li class="tab-link current" data-tab="tab-1">Info</li>';	
-	if($current=='myinfo' || $this->user->accessFullHR==true || $isUnderMe==true){
+	if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
 		echo '<li class="tab-link" data-tab="tab-2">Notes</li>';	
 	}
 	echo '</ul>';	
@@ -84,9 +84,9 @@
 			<?php 		
 			echo '<tr class="trlabel" id="pdetails">';
 			echo '<td colspan=2>Personal Details ';		
-				if($this->user->accessFullHR==true || $current=='myinfo'){
+				if($this->access->accessFullHR==true || $current=='myinfo'){
 					echo '<a href="javascript:void(0)" class="edit" onClick="reqUpdate(\'pdetails\')" id="pdetailsupb">';
-					echo (($this->user->accessFullHR==false)?'Request an ':'');
+					echo (($this->access->accessFullHR==false)?'Request an ':'');
 					echo 'Update</a>';
 				}
 				
@@ -96,7 +96,7 @@
 						$ptimg = $this->config->base_url().'css/images/logo.png';
 					echo '<a href="'.$ptimg.'" class="imgiframe" title="PT profile picture"/><img src="'.$ptimg.'" width="80px"></a><br/>';
 					
-					if($this->user->accessFullHR==true){ 
+					if($this->access->accessFullHR==true){ 
 						echo '<a href="javascript:void(0)" id="updatePTpic">Update</a>';
 						echo '<form id="PTpform" action="" method="POST" enctype="multipart/form-data">';
 						echo '<input type="file" name="PTpicture" id="PTpicture" class="hidden"/>';
@@ -112,7 +112,7 @@
 			echo $this->staffM->displayInfo('pdetails', 'mname', $row->mname, true);
 			echo $this->staffM->displayInfo('pdetails', 'suffix', $row->suffix, true);
 			
-			if($this->user->empID==$row->empID || $this->user->accessFullHR==true){
+			if($this->user->empID==$row->empID || $this->access->accessFullHR==true){
 				echo $this->staffM->displayInfo('pdetails', 'pemail', $row->pemail, true);			
 				echo $this->staffM->displayInfo('pdetails', 'address1', $row->address.' '.$row->city.' '.$row->country.', '.$row->zip, true,'','pdetailsshow'); 
 				echo $this->staffM->displayInfo('pdetails', 'address', $row->address, true,'','pdetailshide');
@@ -153,23 +153,23 @@
 			echo '<tr class="trlabel" id="jdetails">';
 			echo '<td colspan=2>Job Details &nbsp;&nbsp;&nbsp;';
 			
-			if($current=='myinfo' || $this->user->accessFullHR==true)
+			if($current=='myinfo' || $this->access->accessFullHR==true)
 				echo '[<a href="javascript:void(0);" onClick="toggleDisplay(\'jobtbl\', this)" class="droptext">Show</a>]';	
 				
-				if($current=='myinfo' || $this->user->accessFullHR==true){
+				if($current=='myinfo' || $this->access->accessFullHR==true){
 					echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'jdetails\')" id="jdetailsupb">';
-					echo (($this->user->accessFullHR==false)?'Request an ':'');
+					echo (($this->access->accessFullHR==false)?'Request an ':'');
 					echo 'Update</a>';
 				}
 			echo '</td></tr>';
 		echo '</table>';
 		
-		if($current=='myinfo' || $this->user->accessFullHR==true)
+		if($current=='myinfo' || $this->access->accessFullHR==true)
 			echo '<table class="tableInfo hidden" id="jobtblData">';	
 		else
 			echo '<table class="tableInfo" id="jobtblData">';	
 			
-			if($this->user->accessFullHR==true){
+			if($this->access->accessFullHR==true){
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, true);
 				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, true);
 				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), true);
@@ -182,7 +182,7 @@
 			
 			echo $this->staffM->displayInfo('jdetails', 'shift', $row->shift, true, 'Ex. 07:00am - 04:00pm Mon-Fri');
 			
-			if($this->user->empID==$row->empID || $this->user->accessFullHR==true || $isUnderMe==true){
+			if($this->user->empID==$row->empID || $this->access->accessFullHR==true || $isUnderMe==true){
 				echo $this->staffM->displayInfo('jdetails', 'startDate', (($row->startDate!='0000-00-00')? date('F d, Y',strtotime($row->startDate)) : ''), true);
 			}
 			
@@ -192,7 +192,7 @@
 			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);	
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			
-			if($current=='myinfo' || $this->user->accessFullHR==true || $isUnderMe==true){
+			if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
 				echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);			
 				echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
 				echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
@@ -211,13 +211,13 @@
 
 <!----------------------- COMPENSATION DETAILS ----------------------->	
 <?php 
-	if($this->user->accessFullHRFinance==true || $current=='myinfo' || $isUnderMe==true){
+	if($this->access->accessFullHRFinance==true || $current=='myinfo' || $isUnderMe==true){
 	echo '<table class="tableInfo" id="compensationtbl">';
 		echo '<tr class="trlabel" id="cdetails">';
 		echo '<td colspan=2>Compensation Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay(\'compensationtbl\', this)" class="droptext">Show</a>]';		
-			if($current=='myinfo' || $this->user->accessFullHR==true){
+			if($current=='myinfo' || $this->access->accessFullHR==true){
 				echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'cdetails\')" id="cdetailsupb">';
-				echo (($this->user->accessFullHR==false)?'Request an ':'');
+				echo (($this->access->accessFullHR==false)?'Request an ':'');
 				echo 'Update</a>';
 			}
 		echo '</td></tr>';
@@ -228,7 +228,7 @@
 		echo $this->staffM->displayInfo('cdetails', 'sal', $this->staffM->convertNumFormat($row->sal), true, 'Ex. 10,000.00');
 		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->staffM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
 		
-		if($this->user->accessFullHRFinance==true || $current=='myinfo'){
+		if($this->access->accessFullHRFinance==true || $current=='myinfo'){
 			echo $this->staffM->displayInfo('cdetails', 'bankAccnt', $row->bankAccnt, true);	
 			echo $this->staffM->displayInfo('cdetails', 'hmoNumber', $row->hmoNumber, true);
 		}
@@ -240,7 +240,7 @@
 	?>
 	</table>
 <?php } 
-if($current=='myinfo' || $this->user->accessFullHR==true){
+if($current=='myinfo' || $this->access->accessFullHR==true){
 ?>	
 <!----------------------- PERSONAL FILES ----------------------->	
 	<table class="tableInfo" id="personalfiletbl">
@@ -281,7 +281,7 @@ if($current=='myinfo' || $this->user->accessFullHR==true){
 						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';
 					}
 					
-					if($this->user->accessFullHR==true){
+					if($this->access->accessFullHR==true){
 						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.', 0)" class="cpointer upClass_'.$p->upID.'"/>
 							<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
 							<img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>';
@@ -301,7 +301,7 @@ if($current=='myinfo' || $this->user->accessFullHR==true){
 		echo '<tr><td colspan=4><br/></td></tr>'; */
 }
 
-if($this->user->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
+if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 ?>	
 <!----------------------- TIME OFF DETAILS ----------------------->		
 	<table class="tableInfo" id="timeOff">
@@ -310,7 +310,7 @@ if($this->user->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<?php if($this->user->empID==$row->empID){ echo '<a class="edit iframe" href="'.$this->config->base_url().'fileleave/">File for a Leave/Offset</a>'; } ?>
 			</td>
 		</tr>
-		<tr class="trhead"><td>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID && $this->user->accessFullHR==false){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if($this->user->accessFullHR==true){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
+		<tr class="trhead"><td>Available Leave Credits : <?= $row->leaveCredits ?><?php if($this->user->empID==$row->empID && $this->access->accessFullHR==false){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="rupdateTO">Request HR to Recheck Leave Credits</a>'; } if($this->access->accessFullHR==true){ echo '&nbsp;&nbsp;&nbsp;<a class="edit" href="javascript:void(0)" id="updateLC">Update</a>';} ?></td></tr>
 		
 		<tr class="toTRclass hidden">
 			<td colspan=8>Note to HR:<input type="text" class="forminput" id="noteHR"/></td>

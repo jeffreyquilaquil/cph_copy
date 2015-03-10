@@ -115,23 +115,26 @@ class Staffmodel extends CI_Model {
 		}
 	}
 	
-	function getUserAccess(){		
-		if($this->user!=false) $this->user->myaccess = explode(',',$this->user->access);
-		else $this->user->myaccess = array();
+	function getUserAccess(){			
+		$access = new stdClass;
+		$access->accessFull = false;
+		$access->accessHR = false;
+		$access->accessFinance = false;
+		$access->accessFullHR = false;
+		$access->accessFullFinance = false;
+		$access->accessFullHRFinance = false;
 		
-		$this->user->accessFull = false;
-		$this->user->accessHR = false;
-		$this->user->accessFinance = false;
-		$this->user->accessFullHR = false;
-		$this->user->accessFullFinance = false;
-		$this->user->accessFullHRFinance = false;
-			
-		if(in_array('full', $this->user->myaccess)) $this->user->accessFull = true;
-		if(in_array('hr', $this->user->myaccess)) $this->user->accessHR = true;
-		if(in_array('finance', $this->user->myaccess)) $this->user->accessFinance = true;
-		if(count(array_intersect($this->user->myaccess,array('full','hr')))>0) $this->user->accessFullHR = true;
-		if(count(array_intersect($this->user->myaccess,array('full','finance')))>0) $this->user->accessFullFinance = true;
-		if(count(array_intersect($this->user->myaccess,array('full','hr','finance')))>0) $this->user->accessFullHRFinance = true;		
+		if($this->user!=false){
+			$access->myaccess = explode(',',$this->user->access);
+			if(in_array('full', $access->myaccess)) $access->accessFull = true;
+			if(in_array('hr', $access->myaccess)) $access->accessHR = true;
+			if(in_array('finance', $access->myaccess)) $access->accessFinance = true;
+			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
+			if(count(array_intersect($access->myaccess,array('full','finance')))>0) $access->accessFullFinance = true;
+			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;	
+		}
+		
+		return $access;
 	}
 	 	
 	function checklogged($username, $pw){

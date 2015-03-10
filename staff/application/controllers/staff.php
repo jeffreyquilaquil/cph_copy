@@ -10,7 +10,7 @@ class Staff extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->staffM->getUserAccess();
+		$this->access = $this->staffM->getUserAccess();
 					
 		/* error_reporting(E_ALL);
 		ini_set('display_errors', 1); */
@@ -249,7 +249,7 @@ class Staff extends CI_Controller {
 						
 						$what2update = $this->staffM->compareResults($_POST, $orig);							
 						if(count($what2update) >0){
-							if($this->user->accessFullHR==false){
+							if($this->access->accessFullHR==false){
 									$upNote = 'You requested an update for:<br/>';
 									foreach($what2update AS $k=>$val):
 										$r['empID_fk'] = $_POST['empID'];
@@ -515,8 +515,8 @@ class Staff extends CI_Controller {
 		$data['edit'] = $this->uri->segment(2);
 		$data['updateID'] = $this->uri->segment(3);
 		$data['success'] = false;
-	
-		if($this->user->accessFullHR==false){
+							
+		if($this->access->accessFullHR==false){
 			$data['access'] = false;
 		}else if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST)){				
@@ -1138,7 +1138,7 @@ class Staff extends CI_Controller {
 	public function adminsettings(){
 		$data['content'] = 'adminsettings';
 		
-		if($this->user->accessFull==false){
+		if($this->access->accessFull==false){
 			$data['access'] = false;
 		}else if($this->user!=false){	
 			$id = $this->uri->segment(2);
@@ -2002,7 +2002,7 @@ class Staff extends CI_Controller {
 		$data['content'] = 'staffcis';
 				
 		if($this->user!=false){		
-			if($this->user->accessFullHR==false){
+			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['pending'] = $this->staffM->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
@@ -2019,7 +2019,7 @@ class Staff extends CI_Controller {
 		
 		if($this->user!=false){
 			if($this->uri->segment(2)!=''){
-				if($this->user->accessFullHR==false){
+				if($this->access->accessFullHR==false){
 					$data['access'] = false;
 				}else{				
 					$coeID = $this->uri->segment(2);

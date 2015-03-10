@@ -45,19 +45,19 @@ if($this->user!=false && count($row)>0){
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request COE</a></li>';
 		}
-		if($content=='staffinfo' && ($this->user->accessFullHR==true && $this->user->username != $row->username || $this->user->level>0)){
+		if($content=='staffinfo' && ($this->access->accessFullHR==true && $this->user->username != $row->username || $this->user->level>0)){
 			echo '<li><a href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/" class="iframe">Issue NTE</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'schedules/">Schedules</a></li>';				
 		}
-		if($content!='staffinfo' && ($this->user->accessFullHR==true || $this->user->level>0)){
+		if($content!='staffinfo' && ($this->access->accessFullHR==true || $this->user->level>0)){
 			echo '<li><a href="'.$this->config->base_url().'generatecode/" class="iframe">Generate Code</a></li>';		
 		}
-		if($this->user->accessFullHR==true || $this->user->level>0){
+		if($this->access->accessFullHR==true || $this->user->level>0){
 			echo '<li><a href="'.$this->config->item('career_url').'/jobrequisition.php" target="_blank">Request for Job Requisition</a></li>';	
 		}
 				
-		if($this->user->accessFull==true)
+		if($this->access->accessFull==true)
 			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
 	
 	echo '</ul>';	

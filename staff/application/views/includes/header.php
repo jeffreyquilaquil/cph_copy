@@ -40,13 +40,13 @@
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
-					if($this->user->accessFullHR==true){
+					if($this->access->accessFullHR==true){
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Staff CIS</a></li>';
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Info Update Requests</a></li>';
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE</a></li>';
 						echo '<li '.(($content=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Manage Schedules</a></li>';
 					}
-					if($this->user->accessFinance==false){
+					if($this->access->accessFinance==false){
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">NTE Issued</a></li>';
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Staff Leaves</a></li>';
 						echo '<li '.(($content=='others')?'class="current"':'').'><a class="iframe" href="'.$this->config->base_url().'others/">Other Pages</a></li>';
@@ -58,7 +58,7 @@
 				
 			}
 			
-			if($this->user->accessFullHR==true){
+			if($this->access->accessFullHR==true){
 				echo '<li '.(($content=='CAREERPH')?'class="current"':'').'><a href="'.$this->config->item('career_url').'/" target="_blank">CAREERPH</a>';
 				echo '<ul class="dropdown">';
 					echo '<li><a href="/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
