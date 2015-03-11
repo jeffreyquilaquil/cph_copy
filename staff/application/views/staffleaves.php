@@ -8,7 +8,7 @@
 		echo '<li class="tab-link current" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
 		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) ).')</li>';
 	}
-	if($this->accessFullHR==true){
+	if($this->access->accessFullHR==true){
 		if($this->user->access=='hr')
 			$current = 'tab-3';		
 		echo '<li class="tab-link '.(($this->user->access=='hr')?'current':'').'" data-tab="tab-3">Pending HR\'s Approval ('.count($hrquery).')</li>';
