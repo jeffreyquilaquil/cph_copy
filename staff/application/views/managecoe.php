@@ -1,7 +1,7 @@
 <h2>Manage Certificate of Employment Requests</h2>
 <hr/>
 <ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">Pending COE Requests</li>
+	<li class="tab-link current" data-tab="tab-1">Pending COE Requests (<?= count($pending) ?>)</li>
 	<li class="tab-link" data-tab="tab-2">Generated Requests</li>
 </ul>
 <div id="tab-1" class="tab-content current">	

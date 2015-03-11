@@ -13,8 +13,8 @@ class Staff extends CI_Controller {
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
 				
-		/* error_reporting(E_ALL);
-		ini_set('display_errors', 1); */
+		 error_reporting(E_ALL);
+		ini_set('display_errors', 1); 
 	}
 		
 	public function index(){
@@ -1605,7 +1605,7 @@ class Staff extends CI_Controller {
 						}
 						exit; 
 					}
-				}else{
+				}else{	
 					$condition = '';
 					if($this->user->access==''){
 						$ids = '';

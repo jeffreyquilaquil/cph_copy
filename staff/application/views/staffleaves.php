@@ -5,7 +5,7 @@
 <?php
 	$current = 'tab-1';
 	if($this->user->level>0 || $this->access->accessFullHR==true){
-		echo '<li class="tab-link current" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
+		echo '<li class="tab-link '.(($this->user->access!='hr')?'current':'').'" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
 		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) ).')</li>';
 	}
 	if($this->access->accessFullHR==true){
@@ -14,7 +14,7 @@
 		echo '<li class="tab-link '.(($this->user->access=='hr')?'current':'').'" data-tab="tab-3">Pending HR\'s Approval ('.count($hrquery).')</li>';
 	}
 	
-	echo '<li class="tab-link" data-tab="tab-4">All Leaves ('.(count($allpending) + count($allapproved) + count($allapprovedNopay) + count($alldisapproved) + count($allcancelled)).')</li>';
+	echo '<li class="tab-link" data-tab="tab-4">All Leaves ('.(count($allpending) + count($allapproved) + count($allapprovedNopay) + count($alldisapproved) + count($allcancelled)).')</li>';	
 ?>
 </ul>
 
@@ -23,7 +23,7 @@
 <?php if(count($tquery)==0){
 	echo 'None.';
 }else{ 
-	echo $this->staffM->leaveTableDisplay($tquery);
+	echo $this->staffM->leaveTableDisplay($tquery, 'tquery');
 } ?>
 </div>
 
@@ -34,12 +34,12 @@
 }else{ 
 	if(count($imquery)>0){
 		echo '<h3>Pending Leaves for Approval</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($imquery);
+		echo $this->staffM->leaveTableDisplay($imquery, 'imquery');
 		echo '<br/><br/>';
 	}
 	if(count($imcancelledquery)>0){
 		echo '<h3>Pending Cancelled Leaves for Approval</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($imcancelledquery);
+		echo $this->staffM->leaveTableDisplay($imcancelledquery, 'imcancelledquery');
 		echo '<br/><br/>';
 	}
 	
@@ -51,7 +51,7 @@
 <?php if(count($hrquery)==0){
 	echo 'No pending leaves for approval.';
 }else{ 
-	echo $this->staffM->leaveTableDisplay($hrquery);
+	echo $this->staffM->leaveTableDisplay($hrquery, 'hrquery');
 } ?>
 </div>
 
@@ -61,30 +61,36 @@
 	echo 'No leaves on file.';
 }else{ 
 	if(count($allpending)>0){
-		echo '<h3>All Pending Leaves for Approval</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($allpending);
+		echo '<div class="cpointer" onClick="showTbl(\'allpending\', this)"><h3>All Pending Leaves for Approval ('.count($allpending).')  <a class="fs11px">[show]</a></h3><hr/></div>';
+		echo $this->staffM->leaveTableDisplay($allpending, 'allpending');
 		echo '<br/><br/>';
 	}
 	if(count($allapproved)>0){
-		echo '<h3>All Approved WITH Pay Leaves</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($allapproved);
+		echo '<div class="cpointer" onClick="showTbl(\'allapproved\', this)"><h3>All Approved WITH Pay Leaves ('.count($allapproved).')  <a class="fs11px">[show]</a></h3><hr/></div>';
+		echo $this->staffM->leaveTableDisplay($allapproved, 'allapproved');
 		echo '<br/><br/>';
 	}
 	if(count($allapprovedNopay)>0){
-		echo '<h3>All Approved WITHOUT Pay Leaves</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($allapprovedNopay);
+		echo '<div class="cpointer" onClick="showTbl(\'allapprovedNopay\', this)"><h3>All Approved WITHOUT Pay Leaves ('.count($allapprovedNopay).')  <a class="fs11px">[show]</a></h3><hr/></div>';
+		echo $this->staffM->leaveTableDisplay($allapprovedNopay, 'allapprovedNopay');
 		echo '<br/><br/>';
 	}
 	if(count($alldisapproved)>0){
-		echo '<h3>All Disapproved Leaves</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($alldisapproved);
+		echo '<div class="cpointer" onClick="showTbl(\'alldisapproved\', this)"><h3>All Disapproved Leaves ('.count($alldisapproved).')  <a class="fs11px">[show]</a></h3><hr/></div>';
+		echo $this->staffM->leaveTableDisplay($alldisapproved, 'alldisapproved');
 		echo '<br/><br/>';
 	}
 	if(count($allcancelled)>0){
-		echo '<h3>All Cancelled Leaves</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($allcancelled);
+		echo '<div class="cpointer" onClick="showTbl(\'allcancelled\', this)"><h3>All Cancelled Leaves ('.count($allcancelled).')  <a class="fs11px">[show]</a></h3><hr/></div>';
+		echo $this->staffM->leaveTableDisplay($allcancelled, 'allcancelled');
 		echo '<br/><br/>';
 	}
 	
 } ?>
 </div>
+<script type="text/javascript">
+	function showTbl(tbl, p){
+		$('#tbl'+tbl).toggleClass('hidden');
+		$(p).find('a').text($(p).find('a').text() == '[show]' ? '[hide]' : '[show]'); 
+	}
+</script>

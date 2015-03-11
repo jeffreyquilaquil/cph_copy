@@ -1098,9 +1098,11 @@ class Staffmodel extends CI_Model {
 		return $status;
 	}
 	
-	function leaveTableDisplay($rQuery){
+	function leaveTableDisplay($rQuery, $type){		
 		$leaveTypeArr = $this->staffM->definevar('leaveType');
-		$disp = '<table class="tableInfo fs11px">
+		$yellowArr = array('imquery', 'imcancelledquery', 'allpending');
+		$hideArr = array('allpending', 'allapproved', 'allapprovedNopay', 'alldisapproved', 'allcancelled');
+		$disp = '<table class="tableInfo fs11px '.((in_array($type,$hideArr))?'hidden':'').'" id="tbl'.$type.'">
 				<thead>
 					<tr>
 						<th>Leave ID</th>
@@ -1115,14 +1117,18 @@ class Staffmodel extends CI_Model {
 						<th><br/></th>
 					</tr>
 				</thead>';
-				
+						
 		foreach($rQuery AS $row){
-			$disp .= '<tr>
-					<td>'.$row->leaveID.'</td>
+			if(in_array($type, $yellowArr) && $this->access->accessFull==true && $this->user->empID==$row->supervisor)
+				$disp .= '<tr bgcolor="yellow">';
+			else
+				$disp .= '<tr>';	
+				
+			$disp .= '<td>'.$row->leaveID.'</td>
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->name.'</a></td>
 					<td>'.$leaveTypeArr[$row->leaveType].'</td>
-					<td>'.date('M d, Y h:i a', strtotime($row->leaveStart)).'</td>
-					<td>'.date('M d, Y h:i a', strtotime($row->leaveEnd)).'</td>
+					<td>'.date('d M y h:i a', strtotime($row->leaveStart)).'</td>
+					<td>'.date('d M y h:i a', strtotime($row->leaveEnd)).'</td>
 					<td>'.$row->dept.'</td>
 					<td>'.$row->approverName.'</td>
 					<td>'.$row->hrName.'</td>
@@ -1132,6 +1138,7 @@ class Staffmodel extends CI_Model {
 			';
 		}
 		$disp .= '</table>';
+				
 		return $disp;
 	}
 	
@@ -1294,6 +1301,39 @@ class Staffmodel extends CI_Model {
 			$was = '<i>none</i>';
 			
 		return $was;		
+	}
+	
+	function countResults($type){
+		$cnt = 0;
+		if($type=='cis'){
+			$cnt = $this->staffM->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0');
+		}else if($type=='updateRequest'){
+			$cnt = $this->staffM->getSingleField('staffUpdated', 'COUNT(updateID) AS cnt', 'status=0');
+		}else if($type=='pendingCOE'){
+			$cnt = $this->staffM->getSingleField('staffCOE', 'COUNT(coeID) AS cnt', 'status=0');
+		}else if($type=='staffLeaves'){
+			if($this->access->accessFull==true){
+				$query = $this->db->query('SELECT COUNT(leaveID) AS cnt FROM staffLeaves LEFT JOIN staffs ON empID=empID_fk WHERE status=0 AND iscancelled=0 AND supervisor="'.$this->user->empID.'" LIMIT 1');
+				$r = $query->row();
+				$cnt = $r->cnt;
+			}else{
+				$ids = '';
+				$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				
+				if($ids!=''){
+					$cnt = $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', 'status=0 AND iscancelled=0 AND empID_fk IN ('.rtrim($ids,',').')');
+				}
+			}
+			
+			if($this->access->accessHR==true){
+				$cnt += $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
+			}
+		}
+		
+		return $cnt;
 	}
 	
 }
