@@ -37,11 +37,17 @@ echo '<table class="tableInfo">';
 			}
 			$sal = (double)str_replace(',','',$row->sal);
 			$allowance = (double)str_replace(',','',$row->allowance);
-			echo '<tr><td>Annual Salary</td><td class="weightbold">Php '.number_format(($sal*12),2).' <span class="weightnormal">(Php '.number_format($sal,2).' Monthly)</span></td></tr>';			
+			echo '<tr><td>Annual Salary</td><td class="weightbold">Php '.number_format(($sal*12),2).' <span class="weightnormal">(Php '.number_format($sal,2).' Monthly) (Excluding 13th month pay)</span></td></tr>';			
 			echo '<tr><td>Annual Allowance</td><td class="weightbold">Php '.number_format(($allowance*12), 2).' <span class="weightnormal">(Php '.number_format($allowance,2).' Monthly)</span></td></tr>';
 			
 			echo '<tr><td>Date Requested</td><td class="weightbold">'.date('F d, Y', strtotime($row->daterequested)).'</td></tr>';			
 			echo '<tr><td>Purpose of Request</td><td class="weightbold">'.$row->purpose.'</td></tr>';
+			
+			echo '<tr style="background-color:#ccc;"><td>Edit Purpose of Request</td>
+				<td><input type="text" name="editpurpose" class="forminput"/><br/>
+				<i style="color:#555;">If empty "Purpose of Request" submitted by employee will appear on the generated form.</i>
+				</td></tr>';
+			
 			echo '<tr><td>Note to HR</td><td class="weightbold">'.$row->notesforHR.'</td></tr>';
 			echo '<tr><td>Date of Issuance</td><td class="weightbold">'.date('F d, Y').'</td></tr>';
 	?>		

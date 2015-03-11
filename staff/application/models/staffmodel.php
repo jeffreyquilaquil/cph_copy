@@ -1061,11 +1061,14 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',12);
 		$pdf->setXY(10, 177);
-		$pdf->MultiCell(180, 15, $row->purpose,0,'C',false);	
+		$pdf->MultiCell(180, 15, ((!empty($row->purposeEdited))?$row->purposeEdited:$row->purpose),0,'C',false);	
 		
-		$pdf->setXY(95, 205);
+		$pdf->setXY(87, 205);
 		$pdf->Write(0, date('F d, Y',strtotime($row->dateissued)));
 		
+		$pdf->SetFont('Arial','',10);
+		$pdf->setXY(151, 127);
+		$pdf->Write(0, '(Excluding 13th month pay)');
 		
 		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
 	}
@@ -1120,7 +1123,7 @@ class Staffmodel extends CI_Model {
 						
 		foreach($rQuery AS $row){
 			if(in_array($type, $yellowArr) && $this->access->accessFull==true && $this->user->empID==$row->supervisor)
-				$disp .= '<tr bgcolor="yellow">';
+				$disp .= '<tr style="background-color:yellow;">';
 			else
 				$disp .= '<tr>';	
 				
