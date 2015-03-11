@@ -102,14 +102,19 @@ class Staffmodel extends CI_Model {
 	
 	
 	function getLoggedUser(){ 
-		$uid = $this->session->userdata('uid');		
-		$ufromPT = $this->session->userdata('ufromPT');		
-		if(!empty($uid)){
-			$query = $this->db->query('SELECT e.*, CONCAT(fname," ",lname) AS name, n.title, n.org, n.dept, n.grp, n.subgrp, n.orgLevel_fk, e.levelID_fk AS level FROM staffs e LEFT JOIN newPositions n ON e.position=n.posID WHERE e.empID = "'.$uid.'" AND md5(CONCAT(e.username,"","dv"))="'.$this->session->userdata('u').'"');
-			return $query->row();		
-		}else if(!empty($ufromPT)){
-			$query = $this->ptDB->query('SELECT s.username, CONCAT(s.sFirst," ",s.sLast) AS name, s.email, "exec" AS access, 0 AS empID FROM staff s WHERE username="'.$ufromPT.'" AND active="Y"');
-			return $query->row();	
+		$uName = '';
+		if(isset($_SESSION['u'])) $uName = $_SESSION['u'];
+		
+		if(!empty($uName)){
+			$queryDB = $this->db->query('SELECT e.*, CONCAT(fname," ",lname) AS name, n.title, n.org, n.dept, n.grp, n.subgrp, n.orgLevel_fk, e.levelID_fk AS level FROM staffs e LEFT JOIN newPositions n ON e.position=n.posID WHERE md5(CONCAT(e.username,"","dv"))="'.$uName.'" OR e.username="'.$uName.'"');
+			$row = $queryDB->row();	
+			if(count($row)==0){
+				$queryDB = $this->ptDB->query('SELECT s.username, CONCAT(s.sFirst," ",s.sLast) AS name, s.email, "exec" AS access, 0 AS empID, 0 AS level FROM staff s WHERE username="'.$uName.'" AND active="Y"');
+				$row = $queryDB->row();	
+			}
+			
+			if(count($row)>0) return $row;
+			else return false;	
 		}else{
 			return false;
 		}
@@ -120,6 +125,7 @@ class Staffmodel extends CI_Model {
 		$access->accessFull = false;
 		$access->accessHR = false;
 		$access->accessFinance = false;
+		$access->accessExec = false;
 		$access->accessFullHR = false;
 		$access->accessFullFinance = false;
 		$access->accessFullHRFinance = false;
@@ -129,6 +135,7 @@ class Staffmodel extends CI_Model {
 			if(in_array('full', $access->myaccess)) $access->accessFull = true;
 			if(in_array('hr', $access->myaccess)) $access->accessHR = true;
 			if(in_array('finance', $access->myaccess)) $access->accessFinance = true;
+			if(in_array('exec', $access->myaccess)) $access->accessExec = true;
 			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
 			if(count(array_intersect($access->myaccess,array('full','finance')))>0) $access->accessFullFinance = true;
 			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;	
@@ -1192,7 +1199,7 @@ class Staffmodel extends CI_Model {
 		$notesArr = array();
 		$noteType = $this->staffM->definevar('noteType');
 		$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
-		$ptNotes = $this->staffM->getPTQueryResults('eNotes', 'eNotes.*, eData.u', 'u="'.$username.'"', 'LEFT JOIN eData ON eKey=eNoteOwner', 'eNoteStamp DESC');
+		$ptNotes = $this->staffM->getPTQueryResults('eNotes', 'eNotes.*, eData.u, "" AS userSID', 'u="'.$username.'"', 'LEFT JOIN eData ON eKey=eNoteOwner', 'eNoteStamp DESC');
 		
 		foreach($myNotes AS $m):
 			$notesArr[] = array(
@@ -1203,7 +1210,8 @@ class Staffmodel extends CI_Model {
 				'username' => $m->username,
 				'name' => $m->name,
 				'type' => $m->ntype,
-				'access' => $m->accesstype
+				'access' => $m->accesstype,
+				'exec' => $m->userSID
 			);
 		endforeach;
 		
@@ -1216,10 +1224,11 @@ class Staffmodel extends CI_Model {
 				'staffID' => 0,
 				'username' => $p->username,
 				'type' => ((isset($noteType[$p->category]))?$noteType[$p->category]:0),
-				'access' => $p->permissions
+				'access' => $p->permissions,
+				'exec' => $p->userSID
 			);
 		endforeach;
-				
+						
 		foreach ($notesArr as $key => $row) {
 			$volume[$key]  = $row['timestamp'];
 		}

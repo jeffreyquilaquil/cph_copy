@@ -8,10 +8,11 @@ class Staff extends CI_Controller {
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
 		$this->load->model('Staffmodel', 'staffM');	
 		date_default_timezone_set("Asia/Manila");
+		session_start();
 		
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
-					
+				
 		/* error_reporting(E_ALL);
 		ini_set('display_errors', 1); */
 	}
@@ -61,7 +62,7 @@ class Staff extends CI_Controller {
 			$this->session->set_userdata('uid',$gg->empID);
 			$this->session->set_userdata('u',md5($gg->username.'dv'));
 			
-			session_start();
+			//session_start();
 			$_SESSION['u'] = $gg->username; 
 			
 			header("Location:".$_SERVER['HTTP_REFERER']);
