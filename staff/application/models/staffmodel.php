@@ -1100,7 +1100,7 @@ class Staffmodel extends CI_Model {
 	
 	function leaveTableDisplay($rQuery){
 		$leaveTypeArr = $this->staffM->definevar('leaveType');
-		$disp = '<table class="tableInfo">
+		$disp = '<table class="tableInfo fs11px">
 				<thead>
 					<tr>
 						<th>Leave ID</th>

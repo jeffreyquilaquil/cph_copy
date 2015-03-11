@@ -11,7 +11,7 @@ class Schedules extends CI_Controller {
 		$this->db = $this->load->database('default', TRUE);					
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->staffM->getUserAccess();
+		$this->access = $this->staffM->getUserAccess();
 	} 
 	
 	public function index(){
