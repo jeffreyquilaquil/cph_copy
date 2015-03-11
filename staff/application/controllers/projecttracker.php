@@ -25,7 +25,7 @@ class Projecttracker extends CI_Controller {
 	}
 	
 	public function getAllUsers(){	
-		$query = $this->staffM->getQueryArrayResults('staffs', 'office, username, CONCAT(fname," ",lname) AS n, address AS ad, city AS c, country AS s, zip AS z, email, phone1 AS p1, phone2 AS p2, date_format(bdate, "%b %d, %y") AS bd, dept AS edeptname, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supName, levelName AS postype, startDate AS sd, endDate AS eD, if(fulltime=1, "Y", "N") AS ft, maritalStatus AS md, "Y" AS dd, "Y" AS li, "Y" AS hi, spouse AS sp, dependents AS dp, title, shift, sss AS sss, tin, hdmf,gender, if(staffs.active=1, "Y", "N") AS active', 'office="PH-Cebu"', 'LEFT JOIN newPositions ON position=posID LEFT JOIN orgLevel ON levelID_fk=levelID');	
+		$query = $this->staffM->getQueryArrayResults('staffs', 'office, username, CONCAT(fname," ",lname) AS n, address AS ad, city AS c, country AS s, zip AS z, email, phone1 AS p1, phone2 AS p2, date_format(bdate, "%b %d, %y") AS bd, dept AS edeptname, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supName, levelName AS postype, startDate AS sd, endDate AS eD, if(fulltime=1, "Y", "N") AS ft, maritalStatus AS md, "Y" AS dd, "Y" AS li, "Y" AS hi, spouse AS sp, dependents AS dp, title, shift, sss AS sss, tin, hdmf,gender, if(staffs.active=1, "Y", "N") AS active, companyNumber AS directPhone, extn AS directPhoneExt', 'office="PH-Cebu"', 'LEFT JOIN newPositions ON position=posID LEFT JOIN orgLevel ON levelID_fk=levelID');	
 
 		$knees = array();
 		foreach($query AS $q):
