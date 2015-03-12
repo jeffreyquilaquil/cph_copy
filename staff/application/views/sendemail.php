@@ -24,6 +24,13 @@
 		</td>
 	</tr>-->
 <form action="" method="POST" onSubmit="return validateform()">
+	<tr <?= (($this->access->accessHR==false)?'class="hidden"':'')?>>
+		<td class="weightbold">From<br/><a id="sendfromHR" class="fs11px cpointer">[Click here to send from HR]</a></td>
+		<td>
+			<input type="text" class="forminput" name="from" value="<?= $this->user->email ?>" id="from"/>
+			<input type="hidden" name="fromName" value="<?= $this->user->name ?>"/>
+		</td>
+	</tr>
 	<tr>
 		<td class="weightbold">Subject</td>
 		<td><input type="text" class="forminput" name="subject" value="<?= $subject ?>" id="subject"/></td>
@@ -58,6 +65,11 @@ $(function () {
 			$('#subject').val('');
 		}
 	});
+	
+	$('#sendfromHR').click(function(){
+		$('#from').val('hr.cebu@tatepublishing.net');
+		$('input[name=fromName]').val('HR Cebu');
+	});
 });
 tinymce.init({
 	selector: "textarea",	
@@ -72,7 +84,7 @@ tinymce.init({
 
 function validateform(){
 	validtxt = '';
-	if($('#subject').val()=='' || $('#to').val()=='' || tinyMCE.get('message').getContent()==''){
+	if($('#from').val()=='' || $('#subject').val()=='' || $('#to').val()=='' || tinyMCE.get('message').getContent()==''){
 		validtxt = 'Please input all fields\n';
 		alert(validtxt);
 		return false;

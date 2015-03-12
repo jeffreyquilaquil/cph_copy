@@ -78,6 +78,7 @@
 					<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
 						<ul class="dropleft">
 							<li><a href="'.$this->config->base_url().'staffinfo/'.trim($row->username).'/" target="_blank">Visit Page</a></li>
+							<li><a href="'.$this->config->base_url().'sendEmail/'.$row->empID.'/" class="iframe2">Send Email</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>';
 						if($this->access->accessFull==true){

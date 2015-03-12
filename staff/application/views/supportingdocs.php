@@ -2,7 +2,7 @@
 <hr/>
 <?php
 if(count($docs)==0){
-	echo '<p>No files uploaded. Click <a href="'.$this->config->base_url().'sendEmail/'.$this->uri->segment(2).'/">here</a> to send email.</p>';
+	echo '<p>No file uploaded. Click <a href="'.$this->config->base_url().'sendEmail/'.$this->uri->segment(2).'/">here</a> to send email.</p>';
 }else{ ?>
 	<table class="tableInfo">
 		<tr class="trhead">

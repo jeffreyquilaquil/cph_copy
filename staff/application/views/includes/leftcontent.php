@@ -40,6 +40,7 @@ if($this->user!=false && count($row)>0){
 	
 	echo '<ul id="leftMenu">';
 		if($this->user->username == $row->username){
+			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
@@ -135,7 +136,7 @@ $(document).ready(function(){
 function sendEmailOpen(id){ 
 	$('#filter').val('');
 	$('.staffEmails').addClass('hidden');
-	window.parent.jQuery.colorbox({href:"<?= $this->config->base_url ().'sendemail/' ?>"+id+"/fromHR/", iframe:true, width:"990px", height:"600px"});
+	window.parent.jQuery.colorbox({href:"<?= $this->config->base_url ().'sendemail/' ?>"+id+"/", iframe:true, width:"990px", height:"600px"});
 }
 
 function visitStaffPage(username){

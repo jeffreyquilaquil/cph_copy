@@ -48,7 +48,7 @@
 				</tr>';
 		}	
 	if($this->access->accessHR==true || $this->user->level>0){
-		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/'.(($this->access->accessHR==true)?'fromHR/':'').'\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
+		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
 	} 
 	
 	echo '<ul class="tabs" style="text-align:right;">';

@@ -2097,32 +2097,34 @@ class Staff extends CI_Controller {
 			$segment3 = $this->uri->segment(3);
 							
 			$data['sent'] = false;
-			if(isset($_POST) && !empty($_POST)){								
-				if($segment3=='fromHR'){
-					$this->staffM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'HR Cebu');
-					$ntexts = 'From: hr.cebu@tatepublishing.net<br/>
-								To: '.$_POST['to'].'<br/>
-								Subject: '.$_POST['subject'].'<br/>
-								'.$_POST['message'];
-					$this->staffM->addMyNotif($this->user->empID, $ntexts, 5);
-					$this->staffM->addMyNotif($segment2, $ntexts, 5);
-				}else if($segment2=='addinfoleavesubmitted'){
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'CareerPH');
-					
+			if(isset($_POST) && !empty($_POST)){
+				$fromName = $_POST['fromName'];
+				$from = $_POST['from'];
+				$to = ltrim($_POST['to'],',');
+				$subject = $_POST['subject'];
+				$message = $_POST['message'];				
+				
+								
+				if($segment2=='addinfoleavesubmitted'){			
 					$addInfo = '<b>'.strtoupper($this->user->username).'</b><br/>
 									Sent: '.date('M d, Y h:i A').'<br/>
-									To: '.ltrim($_POST['to'],',').'<br/>
-									Subject: '.$_POST['subject'].'<br/><br/>
-									'.$_POST['message'].'<br/><br/>
+									To: '.$to.'<br/>
+									Subject: '.$subject.'<br/><br/>
+									'.$message.'<br/><br/>
 									============================================================================================<br/>
 								';
-					$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $_POST['message'], 'CareerPH' );
-					$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$segment3.'"', 'addInfo', $addInfo);							
-				}else{		
-					$body = $_POST['message'];
-					$body .= '<br/><br/>---- <i>Message sent from CareerPH through '.$this->user->name.'<i> ----';
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['to'], $_POST['subject'], $body, 'CareerPH');
-				}
+					$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$segment3.'"', 'addInfo', $addInfo);	
+				}			
+				
+				$message .= '<br/><br/>---- <i style="font-size:11px;">Message sent from CareerPH</i> ----';				
+				$this->staffM->sendEmail($from, $to, $subject, $message, $fromName);
+				
+				$ntexts = 'From: '.$from.'<br/>
+							To: '.$to.'<br/>
+							Subject: '.$subject.'<br/>
+							'.$message;
+				$this->staffM->addMyNotif($this->user->empID, $ntexts, 5);
+								
 				$data['sent'] = true;
 			}else{			
 				$data['subject'] = '';

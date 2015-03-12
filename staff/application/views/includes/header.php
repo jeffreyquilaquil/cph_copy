@@ -23,9 +23,7 @@
 			<li <?php if($content=='index'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>">Homepage</a></li>
 			<li <?php if($current=='myinfo'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>myinfo/">My HR Info</a></li>
 			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
-			<li <?php if($content=='myattendance'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>timecard/">My Timecard and Payroll</a></li>
-			<li><a href="http://employee.tatepublishing.net/department/hr/" target="_blank">Tate Code of Conduct</a></li>
-			
+			<li <?php if($content=='myattendance'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>timecard/">My Timecard and Payroll</a></li>			
 			
 		<?php
 			if($this->user->dept== 'IT'){
