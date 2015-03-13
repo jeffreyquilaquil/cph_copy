@@ -6,7 +6,8 @@ class Timecard extends CI_Controller {
 		parent::__construct();
 		date_default_timezone_set("Asia/Manila");				
 		$this->db = $this->load->database('default', TRUE);	
-		$this->load->model('Staffmodel', 'staffM');			
+		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Textdefinemodel', 'txtM');
 		
 		$this->user = $this->staffM->getLoggedUser();
 		$this->staffM->getUserAccess();		

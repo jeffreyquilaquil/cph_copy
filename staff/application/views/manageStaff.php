@@ -52,7 +52,7 @@
 	<?php
 		echo '<th>Name</th>';
 		for($i=0;$i<count($fvalue);$i++){
-			echo '<th>'.$this->staffM->defineField($fvalue[$i]).'</th>';
+			echo '<th>'.$this->txtM->defineField($fvalue[$i]).'</th>';
 		}
 		echo '<th><br/></th>';
 	?>

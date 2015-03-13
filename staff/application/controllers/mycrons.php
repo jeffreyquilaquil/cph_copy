@@ -5,6 +5,7 @@ class MyCrons extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Textdefinemodel', 'txtM');
 		$this->db = $this->load->database('default', TRUE);	
 		date_default_timezone_set("Asia/Manila");	
 	} 
@@ -160,8 +161,8 @@ class MyCrons extends CI_Controller {
 			$chQuery = json_decode($q->changes);
 			foreach($chQuery AS $k=>$c):
 				if($k!='salary'){
-					$chtext .= 'Previous '.$this->staffM->defineField($k).': '.$c->c.'<br/>';
-					$chtext .= 'New '.$this->staffM->defineField($k).': <b>'.$c->n.'</b><br/>';
+					$chtext .= 'Previous '.$this->txtM->defineField($k).': '.$c->c.'<br/>';
+					$chtext .= 'New '.$this->txtM->defineField($k).': <b>'.$c->n.'</b><br/>';
 				}
 			endforeach;
 				

@@ -7,6 +7,7 @@ class Schedules extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->load->model('Staffmodel', 'staffM');
+		$this->load->model('Textdefinemodel', 'txtM');
 		$this->load->model('Schedulemodel', 'scheduleM');			
 		$this->db = $this->load->database('default', TRUE);					
 		

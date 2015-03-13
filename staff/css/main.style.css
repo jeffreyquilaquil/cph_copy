@@ -356,7 +356,9 @@ footer{
 .trlabel a.droptext{ color:#fff; font-weight:normal; font-size:11px; text-decoration:none; }
 .trlabel a.droptext:hover{ color:red; }
 .tableInfo input.forminput{ width:98%; padding:5px; }
+.tableInfo input.forminput50{ width:48%; padding:5px; }
 .tableInfo select.forminput{ width:100%; padding:5px; }
+.tableInfo select.forminput50{ width:48%; padding:5px; }
 .tableInfo textarea{ width:98%; padding:5px; }
 
 #personalfiletblData tr td img{ vertical-align:middle; }

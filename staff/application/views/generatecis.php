@@ -48,7 +48,7 @@ if($updated==false && count($row)>0){
 			<select name="office" id="valoffice" class="forminput">
 				<option value=""></option>
 			<?php
-				$otype = $this->staffM->definevar('office');
+				$otype = $this->txtM->definevar('office');
 				foreach($otype AS $o):
 					echo '<option value="'.$o.'">'.$o.'</option>';
 				endforeach;
@@ -93,7 +93,7 @@ if($updated==false && count($row)>0){
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Php <?= number_format(str_replace(',','',$row->sal),2) ?></td>
-		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldvalue))?$wonka->fieldvalue:'')?>"/></td>
+		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldname) && $wonka->fieldname=='sal')?$wonka->fieldvalue:'')?>"/></td>
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Enter justification (<i>this is required</i>)</td>
@@ -364,24 +364,18 @@ echo '<table class="tableInfo">';
 	
 	function appdis(){
 		err = '';
+		train = $('input[name=approval]:checked').val();
 		if($('#reason').val()==''){
 			err += 'Reason is empty.\n';
 		}
 		if($('#effectivedate').val()==''){
 			err += 'Effective date is empty.\n';
-		}else{
-			oday = new Date();
-			past = new Date($('#effectivedate').val());
-			if($('#effectivedate').val() != '<?= date('F d, Y') ?>' && past-oday<0){
-				err += 'Effective date is invalid.\n';
-			}
 		}
 		
-		if($('#signed').val()==0) err += 'Please upload signed document.\n';
+		if($('#signed').val()==0 && train==1) err += 'Please upload signed document.\n';
 		
 		if(err!='') alert(err);
 		else{
-			train = $('input[name=approval]:checked').val();
 			if(train==1){
 				if(confirm('Are you sure you want to APPROVE this change in status for <?= $row->name ?>?')){
 					displaypleasewait();
