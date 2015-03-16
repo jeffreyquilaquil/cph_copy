@@ -400,6 +400,48 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 }
 ?>
 
+<!----------------------- PERFORMANCE TRACK RECORDS ----------------------->
+<?php if(count($perfTrackRecords)>0 && ($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true)){ ?>
+	<table class="tableInfo" id="perfTrack">
+		<tr class="trlabel">
+			<td>Performance Track Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('perfTrack', this)" class="droptext">Show</a>]</td>
+		</tr>		
+	</table>
+	<table class="tableInfo hidden" id="perfTrackData">
+		<tr class="trhead">
+			<td>Generated On</td>
+			<td>Evaluation Date</td>
+			<td>Coach</td>
+			<td>Performance Evaluation Result</td>
+			<td>Coaching Form</td>
+			<td>Evaluation Form</td>
+			<td>Acknowledgments</td>
+		</tr>
+	<?php
+		foreach($perfTrackRecords AS $per):
+			echo '<tr>';
+			echo '<td>'.date('M d, Y H:i a', strtotime($per->dateGenerated)).'</td>';
+			echo '<td>'.date('M d, Y', strtotime($per->coachedEval)).'</td>';
+			echo '<td>'.$per->coachedByName.'</td>';
+			if($per->status==0){
+				$dToday = date('Y-m-d');
+				if($per->coachedEval<=$dToday)
+					echo '<td style="background-color:red;">Evaluation Due.<br/>Self-Rating Submitted.<br/>Click <a href="">here</a> to Evaluate</td>';
+				else
+					echo '<td>Coaching Period in Progress</td>';
+			}else{
+				echo '<td>Good (Meets Expectations)</td>';
+			}
+			echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/expectation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+			echo '<td align="center"><a href="" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></td>';
+			echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>';
+			echo '</tr>';
+		endforeach;
+	?>
+	</table>
+<?php } ?>	
+
+	
 	<table class="tableInfo">
 		<?php //echo '<tr class="trlabel"><td colspan=4>Attendance Logs</td></tr>' ?>
 	</table>

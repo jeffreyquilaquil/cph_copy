@@ -7,25 +7,13 @@
 			<td><input type="text" class="forminput datepick" id="coachedDate" value="<?= date('F d, Y') ?>" onBlur="changeEnd();"/></td>
 		</tr>
 		<tr>
-			<td>How long will this coaching period be?</td>
-			<td>
-			<?php
-				echo '<select class="forminput50" id="longVal" onChange="changeEnd();">';
-				for($i=1; $i<=12; $i++){
-					echo '<option value="'.$i.'">'.$i.'</option>';
-				}
-				echo '</select>';
-				echo '&nbsp;&nbsp;';
-				echo '<select class="forminput50" id="longName" onChange="changeEnd();">';
-					echo '<option value="Week">Week</option>';
-					echo '<option value="Month">Month</option>';
-				echo '</select>';
-			?>
-			</td>
+			<td width="40%">When will be the performance evaluation?</td>
+			<td><input type="text" class="forminput datepick" id="coachedEval" value="<?= date('F d, Y', strtotime('+2 weeks')) ?>" onBlur="changeEnd();"/></td>
 		</tr>
+		
 		<tr>
-			<td>When will the performance evaluation be done?</td>
-			<td><input type="text" id="coachedEnd" value="<?= date('F d, Y', strtotime('+1 week')) ?>" class="forminput" disabled="disabled"/></td>
+			<td>How long will this coaching period be?</td>
+			<td><input type="text" id="coachedPeriod" value="2 weeks" class="forminput" disabled="disabled"/></td>
 		</tr>
 		<tr>
 			<td>Who will do the coaching for this employee?</td>
@@ -77,14 +65,14 @@
 		<td>In this page you are to write down up to four specific behaviors or aspect of performance that you need to be corrected.</td>
 	</tr>
 	<tr>
-		<td>In the space below, write down the <b id="numaspect" value="1">first</b> aspect of behaviours or performance that need to be corrected or improved.
-		<textarea class="forminput" rows="4" id="aspect"></textarea>
+		<td>In the space below, write down the <b id="numaspect" value="1">first</b> aspect of behaviours or performance that need to be corrected or improved. <span class="fs11px" style="color:#555; font-style:italic">(Maximum characters: 270)</span>
+		<textarea class="forminput" rows="4" id="aspect" maxlength="270"></textarea>
 		</td>
 	</tr>
 	<tr>
-		<td>What exactly is the specific behaviour or performance level that is expected from the employee?<br/>
+		<td>What exactly is the specific behaviour or performance level that is expected from the employee? <span class="fs11px" style="color:#555; font-style:italic">(Maximum characters: 270)</span><br/>
 			<i style="color:#555;">Avoid writing very vague statements. (e.g instead of "Carl must be more diligent with work.", write "Carl must not miss any one deadline within the coaching period.")</i><br/>
-			<textarea class="forminput" rows="4" id="expected"></textarea>
+			<textarea class="forminput" rows="4" id="expected" maxlength="270"></textarea>
 		</td>
 	</tr>
 	</table>
@@ -109,16 +97,16 @@
 			<td>
 		</tr>
 		<tr>
-			<td><textarea class="forminput" id="support1">I will make sure to provide guidance to <?= $row->name ?> whenever needed.</textarea></td>
+			<td><textarea class="forminput" id="support1" maxlength="270">I will make sure to provide guidance to <?= $row->name ?> whenever needed.</textarea></td>
 		</tr>
 		<tr>
-			<td><textarea class="forminput" id="support2">I will make sure all questions are answered and that I am available whenever the employee needs my assistance.</textarea></td>
+			<td><textarea class="forminput" id="support2" maxlength="270">I will make sure all questions are answered and that I am available whenever the employee needs my assistance.</textarea></td>
 		</tr>
 		<tr>
-			<td><textarea class="forminput" id="support3">I will give feedback as to employee's progress on the goals listed above.</textarea></td>
+			<td><textarea class="forminput" id="support3" maxlength="270">I will give feedback as to employee's progress on the goals listed above.</textarea></td>
 		</tr>
 		<tr id="trsupport4" class="hidden">
-			<td><textarea class="forminput" id="support4"></textarea></td>
+			<td><textarea class="forminput" id="support4" maxlength="270"></textarea></td>
 		</tr>
 	</table>
 		
@@ -128,7 +116,6 @@
 		<button style="padding:5px 150px;" onClick="generateForm();">That's it! Generate the Coaching Form</button>
 	</div>
 </div>
-<script src="<?= $this->config->base_url() ?>js/moment.js" type="text/javascript"></script>
 <script type="text/javascript">
 	var cform2 = [];
 	var cform = {};
@@ -149,39 +136,30 @@
 		});
 	});
 	
-	function changeEnd(){
-		cdate = $('#coachedDate').val();
-		if(cdate!=''){
-			num = $('#longVal').val();
-			ntype = $('#longName').val();
-			
-			cVal = moment(cdate).add(num, ntype).format("MMMM DD, YYYY");
-			$('#coachedEnd').val(cVal);			
-		}else{
-			$('#coachedEnd').val('');
-		}	
-		
-		dName = $('#longName').prop("selected", true).val();
-		if($('#longVal').val()>1)
-			$('#longName option:selected').text(dName+'s');
-		else
-			$('#longName option:selected').text(dName);
-	}
 	
 	function tocoachingdetails(){
-		if($('#coachedDate').val()=='' || $('#areaofimprovementText').val()==''){
+		if($('#coachedDate').val()=='' || $('#coachedEval').val()=='' || $('#areaofimprovementText').val()==''){
 			alert('All fields are required.');
 		}else{
-			//assigning values to global variable
-			cform['coachedDate'] = $('#coachedDate').val();
-			cform['coachedPeriod'] = $('#longVal').val()+' '+$('#longName').val();
-			cform['coachedEnd'] = $('#coachedEnd').val();
-			cform['whocoached'] = $('#whocoached').val();
-			cform['areaofimprovement'] = $('#areaofimprovementText').val();
-				
-			//proceed to form 2
-			$('#form1').addClass('hidden');
-			$('#form2').removeClass('hidden');
+		
+			var start = new Date($('#coachedDate').val());
+			var eval = new Date($('#coachedEval').val());
+			var timeDiff = Math.abs(eval.getTime() - start.getTime());
+			var days = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+			if(days<14){
+				alert('Minimum coaching period is 2 weeks.');
+			}else{		
+				//assigning values to global variable
+				cform['coachedDate'] = $('#coachedDate').val();
+				cform['coachedPeriod'] = $('#coachedPeriod').val();
+				cform['coachedEval'] = $('#coachedEval').val();
+				cform['whocoached'] = $('#whocoached').val();
+				cform['areaofimprovement'] = $('#areaofimprovementText').val();
+					
+				//proceed to form 2
+				$('#form1').addClass('hidden');
+				$('#form2').removeClass('hidden');
+			}
 		}
 	}
 	
@@ -199,7 +177,9 @@
 				$('#numaspect').attr('value', newval);
 				$('#numaspect').text(ttext);
 				
-				cform['aspectExpected'+spanval] = $('#aspect').val()+'++||++'+$('#expected').val();
+				
+				aspectExpected = $('#aspect').val()+'++||++'+$('#expected').val();				
+				cform['aspectExpected'+spanval] = aspectExpected.replace(/(\r\n|\n|\r)/gm," ");
 				
 				$('#aspect').val('');
 				$('#expected').val('');	
@@ -214,11 +194,40 @@
 	
 	function nextIM(){
 		spanval = $('#numaspect').attr('value');
-		cform['aspectExpected'+spanval] = $('#aspect').val()+'++||++'+$('#expected').val();
-		
+		aspectExpected = $('#aspect').val()+'++||++'+$('#expected').val();	
+		cform['aspectExpected'+spanval] = aspectExpected.replace(/(\r\n|\n|\r)/gm," ");
+				
 		//proceed to form 3
 		$('#form2').addClass('hidden');
 		$('#form3').removeClass('hidden');
+	}
+	
+	function changeEnd(){
+		start = $('#coachedDate').val();
+		eval = $('#coachedEval').val();
+		
+		if(start!='' && eval!=''){	
+			var hindi = '';
+			var start = new Date(start);
+			var eval = new Date(eval);
+			var timeDiff = Math.abs(eval.getTime() - start.getTime());
+			var days = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+			
+			weeks = Math.floor(days/7);
+			days = days - (weeks*7);
+			if(weeks==1) hindi += weeks+' week';
+			else if(weeks>1) hindi += weeks+' weeks';
+						
+			if(days>0){
+				if(hindi!='') hindi+= ' and ';
+				if(days==1) hindi += days+ ' day';
+				else if(days>1) hindi += days+ ' days';
+			}
+			
+			$('#coachedPeriod').val(hindi);			
+		}else{
+			$('#coachedPeriod').val('');
+		}
 	}
 	
 	function generateForm(){
@@ -226,12 +235,15 @@
 			alert('All fields are required.');
 		}else{
 			for(v=1; v<=4; v++){
-				cform['support'+v] = $('#support'+v).val();
+				thisval = $('#support'+v).val();
+				cform['support'+v] = thisval.replace(/(\r\n|\n|\r)/gm," ");
 			}
-						
+			
+			
+			displaypleasewait();
 			$.post('<?= $this->config->item('career_uri') ?>',{cform}, 
-			function(){
-				alert('Coaching form has been generated.');
+			function(d){
+				location.href='<?= $this->config->base_url().'coachingform/expectation/' ?>'+d+'/';
 			});
 		}		
 	}

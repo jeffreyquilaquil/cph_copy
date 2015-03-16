@@ -301,7 +301,7 @@ class Staffmodel extends CI_Model {
 				
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile('includes/pdftemplates/leave_form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'leave_form.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
@@ -395,7 +395,7 @@ class Staffmodel extends CI_Model {
 				
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile('includes/pdftemplates/Offset_Form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'Offset_Form.pdf');
 			
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
@@ -510,7 +510,7 @@ class Staffmodel extends CI_Model {
 				
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile('includes/pdftemplates/CIS_Form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'CIS_Form.pdf');
 			
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
@@ -890,7 +890,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile('includes/pdftemplates/COE_form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'COE_form.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
@@ -1191,6 +1191,119 @@ class Staffmodel extends CI_Model {
 		
 		return $cnt;
 	}
+	
+	function createCoachingPDF($row, $type){
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coaching_form.pdf');
+			
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+				
+		$pdf->SetFont('Arial','',10);
+		$pdf->SetTextColor(0, 0, 0);
+		
+		$pdf->setXY(40, 55);
+		$pdf->Write(0, $row->name);
+		$pdf->setXY(35, 60);
+		$pdf->Write(0, $row->title);
+		$pdf->setXY(35, 65.5);
+		$pdf->Write(0, $row->dept);
+		$pdf->setXY(35, 70.5);
+		$pdf->Write(0, $row->reviewer);
+		$pdf->setXY(65, 75.5);
+		$pdf->Write(0, $row->coachedImprovement);
+		
+		if(isset($row->supName)){
+			$pdf->setXY(143, 55);
+			$pdf->Write(0, $row->supName);
+			$pdf->setXY(160, 60);
+			$pdf->Write(0, $row->supTitle);
+		}
+		if(isset($row->sup2ndName)){
+			$pdf->setXY(143, 65.5);
+			$pdf->Write(0, $row->sup2ndName);
+			$pdf->setXY(160, 70.5);
+			$pdf->Write(0, $row->sup2ndTitle);
+		}
+		
+		$pdf->setXY(270, 55);
+		$pdf->Write(0, date('F d, Y',strtotime($row->coachedDate)));
+		$pdf->setXY(270, 60);
+		$pdf->Write(0, date('F d, Y',strtotime($row->coachedEval)));
+		
+		$allAE = explode('--^_^--',$row->coachedAspectExpected);
+		
+		if(isset($allAE[0])){
+			$deta = explode('++||++',$allAE[0]);
+			$pdf->setXY(20, 108);
+			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+			$pdf->setXY(135, 108);
+			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);	
+		}
+		if(isset($allAE[1])){
+			$deta = explode('++||++',$allAE[1]);
+			$pdf->setXY(20, 127);
+			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+			$pdf->setXY(135, 127);
+			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+		}
+		if(isset($allAE[2])){
+			$deta = explode('++||++',$allAE[2]);
+			$pdf->setXY(20, 146);
+			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+			$pdf->setXY(135, 146);
+			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+		}
+		if(isset($allAE[3])){
+			$deta = explode('++||++',$allAE[3]);
+			$pdf->setXY(20, 166);
+			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+			$pdf->setXY(135, 166);
+			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+		}
+		
+		$support = explode('--^_^--',$row->coachedSupport);
+		if(isset($support[0])){
+			$pdf->setXY(248, 108);
+			$pdf->MultiCell(100, 4, $support[0],0,'L',false);
+		}
+		if(isset($support[1])){
+			$pdf->setXY(248, 127);
+			$pdf->MultiCell(100, 4, $support[1],0,'L',false);
+		}
+		if(isset($support[2])){
+			$pdf->setXY(248, 146);
+			$pdf->MultiCell(100, 4, $support[2],0,'L',false);
+		}
+		if(isset($support[3])){
+			$pdf->setXY(248, 166);
+			$pdf->MultiCell(100, 4, $support[3],0,'L',false);
+		}
+		
+		$pdf->AddPage();
+		$tplIdx = $pdf->importPage(2);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->setXY(180, 71);
+		$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
+				
+		/* if(isset($row->supName)){
+			$pdf->setXY(17, 61);
+			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
+		} */
+		/* if(isset($row->sup2ndName)){
+			$pdf->setXY(17, 80);
+			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
+		} */
+		
+		
+		$pdf->Output('coaching.pdf', 'I');
+	}
+	
 	
 }
 

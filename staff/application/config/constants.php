@@ -43,6 +43,8 @@ define('FOPEN_READ_WRITE_CREATE_STRICT',		'x+b');
 
 define('UPLOAD_DIR', 'uploads/staffs/');
 define('UPLOADS', 'uploads/');
+define('PDFTEMPLATES_DIR', 'includes/pdftemplates/');
+
 define('AWSACCESSKEY', 'AKIAIIF24NOON4SDDHSA');
 define('AWSSECRETKEY', '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');
 

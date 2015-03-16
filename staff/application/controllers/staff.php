@@ -14,7 +14,7 @@ class Staff extends CI_Controller {
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
 				
-		 error_reporting(E_ALL);
+		error_reporting(E_ALL);
 		ini_set('display_errors', 1); 
 	}
 		
@@ -175,18 +175,16 @@ class Staff extends CI_Controller {
 				$condition = 'staffs.office="PH-Cebu"';
 				if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
 				else $condition .= 'AND staffs.active=1';
-							
+						
 				if($this->user->access==''){
-					$ids = '';
-					$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+					$ids = '"",'; //empty value for staffs with no under yet
+					$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);						
 					foreach($myStaff AS $m):
 						$ids .= $m->empID.',';
 					endforeach;
 					
-					if($ids!=''){
-						if($condition!='') $condition .= ' AND ';
-						$condition .= 'empID IN ('.rtrim($ids,',').')';		
-					}
+					if($condition!='') $condition .= ' AND ';
+					$condition .= 'empID IN ('.rtrim($ids,',').')';							
 				}
 								
 				$flds = 'CONCAT(fname," ",lname) AS name, ';
@@ -499,6 +497,7 @@ class Staff extends CI_Controller {
 				$data['leaveStatusArr'] = $this->txtM->definevar('leaveStatus');
 				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'"','', 'date_requested DESC');
 				$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
+				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated', 'empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
 				
 				$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'staffUploads.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE uploadedBy=empID) AS uploader', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
 				$data['isUnderMe'] = $this->staffM->checkStaffUnderMe($data['row']->username);
@@ -727,7 +726,7 @@ class Staff extends CI_Controller {
 			
 			$pdf = new FPDI();
 			$pdf->AddPage();
-			$pdf->setSourceFile('includes/pdftemplates/NTE.pdf');
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
 			$tplIdx = $pdf->importPage(1);
 			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 			
@@ -1609,7 +1608,7 @@ class Staff extends CI_Controller {
 				}else{	
 					$condition = '';
 					if($this->user->access==''){
-						$ids = '';
+						$ids = '"",'; //empty value for staffs with no under yet
 						$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
 						foreach($myStaff AS $m):
 							$ids .= $m->empID.',';
@@ -1879,8 +1878,10 @@ class Staff extends CI_Controller {
 					$wonka = $this->staffM->getSingleInfo('staffUpdated', 'empID_fk, fieldname, fieldvalue, CONCAT(fname," ",lname) AS name', 'updateID="'.$this->uri->segment(3).'"', 'LEFT JOIN staffs ON empID=empID_fk');
 					if(count($wonka)>0){
 						$this->staffM->updateQuery('staffUpdated', array('updateID'=>$this->uri->segment(3)), array('status'=>3));
-						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
-						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wonka->fieldvalue.'<br/>Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
+											
+						$wfval = $this->staffM->infoTextVal($wonka->fieldname, $wonka->fieldvalue);
+						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wfval.'<br/>Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
+						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wfval.'<br/>Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
 					}
 				}else{
 					$this->staffM->addMyNotif($this->user->empID, 'Generated CIS for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'cispdf/'.$insid.'/" class="iframe">here</a> to view file.', 5);
@@ -2246,7 +2247,7 @@ class Staff extends CI_Controller {
 	public function getStaffEmails(){	
 		$condition = '';
 		if($this->user->access==''){
-			$ids = '';
+			$ids = '"",'; //empty value for staffs with no under yet
 			$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
 			foreach($myStaff AS $m):
 				$ids .= $m->empID.',';
@@ -2340,7 +2341,7 @@ class Staff extends CI_Controller {
 					$insArr['coachedBy'] = $coached['whocoached'];
 					$insArr['coachedDate'] = date('Y-m-d', strtotime($coached['coachedDate']));
 					$insArr['coachedPeriod'] = $coached['coachedPeriod'];
-					$insArr['coachedEnd'] = date('Y-m-d',strtotime($coached['coachedEnd']));
+					$insArr['coachedEval'] = date('Y-m-d',strtotime($coached['coachedEval']));
 					$insArr['coachedImprovement'] = $coached['areaofimprovement'];
 					
 					$insArr['coachedAspectExpected'] = '';
@@ -2348,28 +2349,71 @@ class Staff extends CI_Controller {
 						if(isset($coached['aspectExpected'.$ae]))
 							$insArr['coachedAspectExpected'] .= $coached['aspectExpected'.$ae].'--^_^--';
 					}
-					$insArr['coachedAspectExpected'] = rtrim($insArr['coachedAspectExpected'], '--^_^--');
+					$insArr['coachedAspectExpected'] = addslashes(rtrim($insArr['coachedAspectExpected'], '--^_^--'));
 					
 					$insArr['coachedSupport'] = '';
 					for($s=1; $s<=4; $s++){
 						if(isset($coached['support'.$s]))
 							$insArr['coachedSupport'] .= $coached['support'.$s].'--^_^--';
 					}
-					$insArr['coachedSupport'] = rtrim($insArr['coachedSupport'], '--^_^--');
-					
-					$this->staffM->insertQuery('staffCoaching', $insArr);
+					$insArr['coachedSupport'] = addslashes(rtrim($insArr['coachedSupport'], '--^_^--'));
+										
+					$insID = $this->staffM->insertQuery('staffCoaching', $insArr);
+					echo $insID;
 					exit;
 				}
 			}
 			
 			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, supervisor', 'empID="'.$id.'"');
 			
-			$data['supervisors'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, title', 'levelID_fk>0 AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'fname ASC');
+			$data['supervisors'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, title', 'staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'fname ASC');
 			$data['areaofimprovementArr'] = $this->txtM->definevar('areaofimprovement');
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
+	
+	public function coachingform(){
+		$type = $this->uri->segment(2);
+		$id = $this->uri->segment(3);
+		
+		if(isset($_POST) && !empty($_POST)){
+			if($_POST['submitType']=='acknowledgeIS'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('dateSupAcknowledged'=>date('Y-m-d')));
+			}else if($_POST['submitType']=='acknowledge2ndSup'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('date2ndMacknowledged'=>date('Y-m-d')));
+			}else if($_POST['submitType']=='acknowledgeEmp'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('dateEmpAcknowledge'=>date('Y-m-d')));
+			}
+			exit;
+		}
+		
+		$row = $this->staffM->getSingleInfo('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, title, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS rname FROM staffs WHERE empID=coachedBy) AS reviewer', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+		if(count($row)>0){
+			$sup = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS supName, title AS supTitle, supervisor AS supSupervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
+			
+			if(count($sup)>0){				
+				$row = (object) array_merge((array) $row, (array) $sup);
+				
+				if(isset($sup->supSupervisor) && $sup->supSupervisor!=0){					
+					$sup2nd = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS sup2ndName, title AS sup2ndTitle', 'empID="'.$sup->supSupervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
+					if(count($sup2nd) > 0)
+						$row = (object) array_merge((array) $row, (array) $sup2nd);
+				}
+			}
+			
+			if($type=='acknowledgment'){
+				$data['content'] = 'coachingacknowledgment';
+				$data['row'] = $row;
+				$this->load->view('includes/templatecolorbox', $data);
+			}else{			
+				$this->staffM->createCoachingPDF($row, $type);
+			}
+		}else{
+			echo 'Sorry, no record for this coaching.';
+		}		
+	}
+	
 	
 }
 

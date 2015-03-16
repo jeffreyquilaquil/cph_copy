@@ -4,13 +4,15 @@ class Timecard extends CI_Controller {
  
 	public function __construct(){
 		parent::__construct();
-		date_default_timezone_set("Asia/Manila");				
-		$this->db = $this->load->database('default', TRUE);	
+		$this->db = $this->load->database('default', TRUE);
 		$this->load->model('Staffmodel', 'staffM');	
-		$this->load->model('Textdefinemodel', 'txtM');
+		$this->load->model('Textdefinemodel', 'txtM');	
+		
+		date_default_timezone_set("Asia/Manila");
+		session_start();
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->staffM->getUserAccess();		
+		$this->access = $this->staffM->getUserAccess();				
 	}
 
 	public function _remap($method){
