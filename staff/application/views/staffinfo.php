@@ -413,9 +413,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<td>Evaluation Date</td>
 			<td>Coach</td>
 			<td>Performance Evaluation Result</td>
-			<td>Coaching Form</td>
-			<td>Evaluation Form</td>
-			<td>Acknowledgments</td>
+			<td>Details</td>
 		</tr>
 	<?php
 		foreach($perfTrackRecords AS $per):
@@ -425,15 +423,19 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			echo '<td>'.$per->coachedByName.'</td>';
 			if($per->status==0){
 				$dToday = date('Y-m-d');
-				if($per->coachedEval<=$dToday)
-					echo '<td style="background-color:red;">Evaluation Due.<br/>Self-Rating Submitted.<br/>Click <a href="">here</a> to Evaluate</td>';
-				else
+				if($per->coachedEval<=$dToday){
+					echo '<td style="background-color:red;">';				
+					echo 'Evaluation Due.<br/>';
+					if($per->selfRating!='')
+						echo 'Self-Rating Submitted.<br/>';
+						
+					echo 'Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$per->coachID.'/" class="iframe" style="color:#660808;">here</a> to Evaluate';
+					echo '</td>';
+				}else
 					echo '<td>Coaching Period in Progress</td>';
 			}else{
 				echo '<td>Good (Meets Expectations)</td>';
 			}
-			echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/expectation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
-			echo '<td align="center"><a href="" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></td>';
 			echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>';
 			echo '</tr>';
 		endforeach;

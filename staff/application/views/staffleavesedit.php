@@ -26,8 +26,8 @@
 				}	
 			}
 			
-			if(($row->iscancelled==0 || $row->iscancelled==4) && 
-				(($row->leaveType!=4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
+			if($row->status<5 && ($row->iscancelled==0 || $row->iscancelled==4) && 
+				(($row->leaveType<4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
 				($row->leaveType==4 && $ccc==true)) &&
 				$row->status!=3
 			){

@@ -69,7 +69,8 @@ class Textdefinemodel extends CI_Model {
 						'1' => 'approved w/ pay',
 						'2' => 'approved w/o pay',
 						'3' => 'disapproved',
-						'4' => 'additional information required'
+						'4' => 'additional information required',
+						'5' => 'deleted'
 					);						
 		}else if($con=='noteType'){
 			$a = array(
@@ -99,6 +100,17 @@ class Textdefinemodel extends CI_Model {
 					1 => 'Attendance/Dependability',
 					2 => 'Safety or Work Environment',
 					3 => 'Conduct or Behavior (Interpersonal Skills)'
+				);
+		}else if($con=='coachingrecommendations'){
+			$a = array(
+					0 => 'Eligible for Regularization',
+					1 => 'End of Probationary Employment',
+					2 => 'NTE for Poor Performance',
+					3 => 'Eligible for continued employment',
+					4 => 'Follow-up with another Coaching',
+					5 => 'Extension of Probationary Period',
+					6 => 'Recommended Transfer',
+					7 => 'Other'
 				);
 		}
 		

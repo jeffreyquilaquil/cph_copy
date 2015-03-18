@@ -117,7 +117,6 @@
 	</div>
 </div>
 <script type="text/javascript">
-	var cform2 = [];
 	var cform = {};
 				
 	$(function(){		
@@ -241,7 +240,8 @@
 			
 			
 			displaypleasewait();
-			$.post('<?= $this->config->item('career_uri') ?>',{cform}, 
+			cform['submitType'] = 'generateC';
+			$.post('<?= $this->config->item('career_uri') ?>',cform, 
 			function(d){
 				location.href='<?= $this->config->base_url().'coachingform/expectation/' ?>'+d+'/';
 			});

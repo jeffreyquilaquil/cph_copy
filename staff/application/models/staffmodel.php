@@ -1200,7 +1200,9 @@ class Staffmodel extends CI_Model {
 		$pdf->AddPage();
 		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coaching_form.pdf');
 			
-		$tplIdx = $pdf->importPage(1);
+		if($type=='evaluation') $tplIdx = $pdf->importPage(3);
+		else $tplIdx = $pdf->importPage(1);
+			
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 				
 		$pdf->SetFont('Arial','',10);
@@ -1235,73 +1237,230 @@ class Staffmodel extends CI_Model {
 		$pdf->setXY(270, 60);
 		$pdf->Write(0, date('F d, Y',strtotime($row->coachedEval)));
 		
-		$allAE = explode('--^_^--',$row->coachedAspectExpected);
+		$allAE = explode('--^_^--',$row->coachedAspectExpected);						
+		if($type=='expectation'){
+			if(isset($allAE[0])){
+				$deta = explode('++||++',$allAE[0]);
+				$pdf->setXY(20, 108);
+				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+				$pdf->setXY(135, 108);
+				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);	
+			}
+			if(isset($allAE[1])){
+				$deta = explode('++||++',$allAE[1]);
+				$pdf->setXY(20, 127);
+				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+				$pdf->setXY(135, 127);
+				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+			}
+			if(isset($allAE[2])){
+				$deta = explode('++||++',$allAE[2]);
+				$pdf->setXY(20, 146);
+				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+				$pdf->setXY(135, 146);
+				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+			}
+			if(isset($allAE[3])){
+				$deta = explode('++||++',$allAE[3]);
+				$pdf->setXY(20, 166);
+				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
+				$pdf->setXY(135, 166);
+				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+			}
+			
+			$support = explode('--^_^--',$row->coachedSupport);
+			if(isset($support[0])){
+				$pdf->setXY(248, 108);
+				$pdf->MultiCell(100, 4, $support[0],0,'L',false);
+			}
+			if(isset($support[1])){
+				$pdf->setXY(248, 127);
+				$pdf->MultiCell(100, 4, $support[1],0,'L',false);
+			}
+			if(isset($support[2])){
+				$pdf->setXY(248, 146);
+				$pdf->MultiCell(100, 4, $support[2],0,'L',false);
+			}
+			if(isset($support[3])){
+				$pdf->setXY(248, 166);
+				$pdf->MultiCell(100, 4, $support[3],0,'L',false);
+			}
 		
-		if(isset($allAE[0])){
-			$deta = explode('++||++',$allAE[0]);
-			$pdf->setXY(20, 108);
-			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-			$pdf->setXY(135, 108);
-			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);	
-		}
-		if(isset($allAE[1])){
-			$deta = explode('++||++',$allAE[1]);
-			$pdf->setXY(20, 127);
-			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-			$pdf->setXY(135, 127);
-			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
-		}
-		if(isset($allAE[2])){
-			$deta = explode('++||++',$allAE[2]);
-			$pdf->setXY(20, 146);
-			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-			$pdf->setXY(135, 146);
-			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
-		}
-		if(isset($allAE[3])){
-			$deta = explode('++||++',$allAE[3]);
-			$pdf->setXY(20, 166);
-			$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-			$pdf->setXY(135, 166);
-			$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
-		}
-		
-		$support = explode('--^_^--',$row->coachedSupport);
-		if(isset($support[0])){
-			$pdf->setXY(248, 108);
-			$pdf->MultiCell(100, 4, $support[0],0,'L',false);
-		}
-		if(isset($support[1])){
-			$pdf->setXY(248, 127);
-			$pdf->MultiCell(100, 4, $support[1],0,'L',false);
-		}
-		if(isset($support[2])){
-			$pdf->setXY(248, 146);
-			$pdf->MultiCell(100, 4, $support[2],0,'L',false);
-		}
-		if(isset($support[3])){
-			$pdf->setXY(248, 166);
-			$pdf->MultiCell(100, 4, $support[3],0,'L',false);
+			//page2
+			$pdf->AddPage();
+			$tplIdx = $pdf->importPage(2);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+					
+			//employee
+			if($row->dateEmpAcknowledge!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->username.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 220, 58, 0);
+				$pdf->setXY(180, 71);
+				$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
+				$pdf->setXY(307, 73);
+				$pdf->Write(0, date('F d, Y',strtotime($row->dateEmpAcknowledge)));
+			}
+			
+			//immediate supervisor
+			if($row->dateSupAcknowledged!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->supUsername.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->supUsername.'/signature.png', 50, 50, 0);
+				$pdf->setXY(15, 61);
+				$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
+				$pdf->setXY(130, 63);
+				$pdf->Write(0, date('F d, Y',strtotime($row->dateSupAcknowledged)));
+			}
+			
+			//second level manager
+			if($row->date2ndMacknowledged!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png', 50, 70, 0);
+				$pdf->setXY(15, 80);
+				$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
+				$pdf->setXY(130, 82);
+				$pdf->Write(0, date('F d, Y',strtotime($row->date2ndMacknowledged)));
+			}
 		}
 		
-		$pdf->AddPage();
-		$tplIdx = $pdf->importPage(2);
-		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-		
-		$pdf->setXY(180, 71);
-		$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
+		if($type=='evaluation'){
+			if(isset($allAE[0])){
+				$deta = explode('++||++',$allAE[0]);
+				$pdf->setXY(23, 136);
+				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
+				$pdf->setXY(150, 136);
+				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+			}
+			if(isset($allAE[1])){
+				$deta = explode('++||++',$allAE[1]);
+				$pdf->setXY(23, 155);
+				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
+				$pdf->setXY(150, 155);
+				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+			}
+			if(isset($allAE[2])){
+				$deta = explode('++||++',$allAE[2]);
+				$pdf->setXY(23, 174);
+				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
+				$pdf->setXY(150, 174);
+				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+			}
+			//ratings
+			$eRating = explode('|', $row->selfRating);
+			if(isset($eRating[0])){
+				$pdf->setXY(288, 145);
+				$pdf->Write(0, $eRating[0]);
+			}
+			if(isset($eRating[1])){
+				$pdf->setXY(288, 165);
+				$pdf->Write(0, $eRating[1]);
+			}
+			if(isset($eRating[2])){
+				$pdf->setXY(288, 182);
+				$pdf->Write(0, $eRating[2]);
+			}
+			
+			$sRating = explode('|', $row->supervisorsRating);
+			if(isset($sRating[0])){
+				$pdf->setXY(330, 145);
+				$pdf->Write(0, $sRating[0]);
+			}
+			if(isset($sRating[1])){
+				$pdf->setXY(330, 165);
+				$pdf->Write(0, $sRating[1]);
+			}
+			if(isset($sRating[2])){
+				$pdf->setXY(330, 182);
+				$pdf->Write(0, $sRating[2]);
+			}
+			
+			//page2
+			$pdf->AddPage();
+			$tplIdx = $pdf->importPage(4);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+			
+			if(isset($allAE[3])){
+				$deta = explode('++||++',$allAE[3]);
+				$pdf->setXY(23, 44);
+				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
+				$pdf->setXY(150, 44);
+				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+			}
+			if(isset($eRating[3])){
+				$pdf->setXY(288, 51);
+				$pdf->Write(0, $eRating[3]);
+			}
+			if(isset($sRating[3])){
+				$pdf->setXY(330, 51);
+				$pdf->Write(0, $sRating[3]);
+			}
+			
+			$erate = 0;
+			$srate = 0;
+			foreach($eRating AS $e):
+				$erate += $e;
+			endforeach;	
+			
+			foreach($sRating AS $s):
+				$srate += $s;
+			endforeach;
+			
+			$eRateAve = $erate/count($allAE);
+			$sRateAve = $srate/count($allAE);
+			
+			if($row->selfRating!='' && $row->supervisorsRating!=''){
+				//averages
+				$pdf->setXY(288, 65);
+				$pdf->Write(0, number_format($eRateAve, 2));
+				$pdf->setXY(330, 65);
+				$pdf->Write(0, number_format($sRateAve, 2));
+				//weighed average
+				$pdf->setXY(288, 72);
+				$pdf->Write(0, number_format(($eRateAve*0.20), 2));
+				$pdf->setXY(330, 72);
+				$pdf->Write(0, number_format(($sRateAve*0.20), 2));
+				//total weighed average
+				$fscore = number_format((($eRateAve*0.20) + ($sRateAve*0.80)), 2);
+				$pdf->setXY(227, 100);
+				$pdf->Write(0, $fscore);
 				
-		/* if(isset($row->supName)){
-			$pdf->setXY(17, 61);
-			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
-		} */
-		/* if(isset($row->sup2ndName)){
-			$pdf->setXY(17, 80);
-			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
-		} */
+				$pdf->setXY(203, 110);
+				$pdf->Write(0, $this->staffM->coachingScore($fscore));
+				
+				//recommendation
+				$recArr = $this->txtM->definevar('coachingrecommendations');
+				$pdf->setXY(290, 103);
+				$pdf->Write(0, $recArr[$row->recommendation]);
+				
+				if($row->effectiveDate!='0000-00-00'){
+					if($row->recommendation==4 || $row->recommendation==5){
+						$pdf->setXY(290, 120);
+						$pdf->Write(0, date('F d, Y', strtotime($row->effectiveDate)));
+					}else{
+						$pdf->setXY(290, 110);
+						$pdf->Write(0, date('F d, Y', strtotime($row->effectiveDate)));
+					}					
+				}
+				
+			}
+		}	
 		
 		
 		$pdf->Output('coaching.pdf', 'I');
+	}
+
+	
+	public function coachingScore($score){
+		$scoretext = '';
+		if($score>=8.00 && $score<=10.00)
+			$scoretext = 'Excellent (Exceeds expectations)';
+		else if($score>=5.00 && $score<=7.99)
+			$scoretext = 'Good (Meets expectations)';
+		else if($score>=3.00 && $score<=4.99)
+			$scoretext = 'Fair (Improvement needed)';
+		else if($score<=2.99)
+			$scoretext = 'Poor (Unsatisfactory)';
+		
+		return $scoretext;
 	}
 	
 	

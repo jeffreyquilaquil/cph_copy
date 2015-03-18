@@ -495,9 +495,9 @@ class Staff extends CI_Controller {
 			
 				$data['leaveTypeArr'] = $this->txtM->definevar('leaveType');
 				$data['leaveStatusArr'] = $this->txtM->definevar('leaveStatus');
-				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'"','', 'date_requested DESC');
+				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'" AND status!=5','', 'date_requested DESC');
 				$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
-				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated', 'empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
+				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, selfRating, supervisorsRating, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated', 'empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
 				
 				$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'staffUploads.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE uploadedBy=empID) AS uploader', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
 				$data['isUnderMe'] = $this->staffM->checkStaffUnderMe($data['row']->username);
@@ -1434,7 +1434,7 @@ class Staff extends CI_Controller {
 									
 					$data['row'] = $this->staffM->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					
-					$data['leaveHistory'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'"');
+					$data['leaveHistory'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5');
 										
 					if($this->user->access=='' && $this->user->level==0 && $this->user->empID != $data['row']->empID_fk)
 						$data['access'] = false;
@@ -2331,8 +2331,9 @@ class Staff extends CI_Controller {
 			$id = $this->uri->segment(2);
 			
 			if(isset($_POST) && !empty($_POST)){
-				if(isset($_POST['cform'])){				
-					$coached = $_POST['cform'];
+				if($_POST['submitType']=='generateC'){	
+					unset($_POST['submitType']);
+					$coached = $_POST;
 					
 					$insArr['generatedBy'] = $this->user->empID;
 					$insArr['dateGenerated'] = date('Y-m-d H:i:s');
@@ -2359,6 +2360,26 @@ class Staff extends CI_Controller {
 					$insArr['coachedSupport'] = addslashes(rtrim($insArr['coachedSupport'], '--^_^--'));
 										
 					$insID = $this->staffM->insertQuery('staffCoaching', $insArr);
+					
+					$empInfo = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, supervisor', 'empID="'.$id.'"');
+					if($empInfo->supervisor!=0){
+						$sup2ndlevel = $this->staffM->getSingleField('staffs', 'supervisor', 'empID="'.$empInfo->supervisor.'"');
+					}
+										
+					
+					$this->staffM->addMyNotif($this->user->empID, 'Generated coaching form for '.$empInfo->name.'. Click <a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$insID.'/" class="iframe">here</a> to view details.', 5, 0); //for coaching generator
+					
+					$ntext = 'Coaching form has been generated to '.$empInfo->name.'. Click <a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$insID.'/" class="iframe">here</a> to view details and acknowledge.';
+					$this->staffM->addMyNotif($id, $ntext, 2, 1); //for employee
+					if($empInfo->supervisor!=0) $this->staffM->addMyNotif($empInfo->supervisor, $ntext, 0, 1); //for immediate supervisor
+					if(isset($sup2ndlevel) && $sup2ndlevel!=0) $this->staffM->addMyNotif($sup2ndlevel, $ntext, 0, 1); //for 2nd level supervisor
+					
+					//you generate coaching but you are not the one who will coach the employee and you are not the immediate supervisor
+					if($this->user->empID!=$insArr['coachedBy'] && $insArr['coachedBy']!=$empInfo->supervisor){
+						$this->staffM->addMyNotif($insArr['coachedBy'], 'Coaching form has been generated for '.$empInfo->name.'. You will be the one to coach him/her. Click <a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$insID.'/" class="iframe">here</a> to view details and acknowledge.', 0, 1);
+					}
+					
+					
 					echo $insID;
 					exit;
 				}
@@ -2378,31 +2399,42 @@ class Staff extends CI_Controller {
 		$id = $this->uri->segment(3);
 		
 		if(isset($_POST) && !empty($_POST)){
-			if($_POST['submitType']=='acknowledgeIS'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('dateSupAcknowledged'=>date('Y-m-d')));
-			}else if($_POST['submitType']=='acknowledge2ndSup'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('date2ndMacknowledged'=>date('Y-m-d')));
-			}else if($_POST['submitType']=='acknowledgeEmp'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('dateEmpAcknowledge'=>date('Y-m-d')));
+			if($_POST['submitType']=='acknowledged'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array($_POST['fld']=>date('Y-m-d')));
+				exit;
+			}else if($_POST['submitType']=='rating'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array($_POST['fld']=>$_POST['rating']));
+				exit;
+			}else if($_POST['submitType']=='recommendations'){
+				$_POST['status'] = 1;
+				$_POST['evaluatedBy'] = $this->user->empID;
+				$_POST['dateEvaluated'] = date('Y-m-d');
+				if(isset($_POST['effectiveDate'])) 
+					$_POST['effectiveDate'] = date('Y-m-d', strtotime($_POST['effectiveDate']));
+				
+				unset($_POST['submitType']);
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), $_POST);
+				exit;
 			}
-			exit;
+			
 		}
 		
-		$row = $this->staffM->getSingleInfo('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, title, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS rname FROM staffs WHERE empID=coachedBy) AS reviewer', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+		$row = $this->staffM->getSingleInfo('staffCoaching', 'staffCoaching.*, username, CONCAT(fname," ",lname) AS name, title, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS rname FROM staffs WHERE empID=coachedBy) AS reviewer', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 		if(count($row)>0){
-			$sup = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS supName, title AS supTitle, supervisor AS supSupervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
+			$sup = $this->staffM->getSingleInfo('staffs', 'username AS supUsername, CONCAT(fname," ",lname) AS supName, title AS supTitle, supervisor AS supSupervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
 			
 			if(count($sup)>0){				
 				$row = (object) array_merge((array) $row, (array) $sup);
 				
 				if(isset($sup->supSupervisor) && $sup->supSupervisor!=0){					
-					$sup2nd = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS sup2ndName, title AS sup2ndTitle', 'empID="'.$sup->supSupervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
+					$sup2nd = $this->staffM->getSingleInfo('staffs', 'username AS sup2ndUsername, CONCAT(fname," ",lname) AS sup2ndName, title AS sup2ndTitle', 'empID="'.$sup->supSupervisor.'"', 'LEFT JOIN newPositions ON posID=position' );
 					if(count($sup2nd) > 0)
 						$row = (object) array_merge((array) $row, (array) $sup2nd);
 				}
 			}
 			
-			if($type=='acknowledgment'){
+			if($type=='acknowledgment' || $type=='evaluate'){
+				$data['type'] = $type;
 				$data['content'] = 'coachingacknowledgment';
 				$data['row'] = $row;
 				$this->load->view('includes/templatecolorbox', $data);
