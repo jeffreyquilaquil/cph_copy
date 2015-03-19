@@ -40,8 +40,12 @@
 		<td><br/></td>
 	</tr>
 </table>
-<input type="submit" value="Submit Selection"/>&nbsp;&nbsp;&nbsp;<a id="sall" href="javascript:void(0)">Select All</a>&nbsp;&nbsp;&nbsp;<a id="dall" href="javascript:void(0)">Deselect All</a>&nbsp;&nbsp;&nbsp;<a id="shide" href="javascript:void(0)">Hide</a>
-<input type="hidden" name="includeinactive" value="<?= ((isset($_POST['includeinactive']) && $_POST['includeinactive']=='on')?'on':'')?>"/>
+	<input type="submit" name="submitType" value="Submit Selection"/>&nbsp;&nbsp;&nbsp;
+	<a id="sall" href="javascript:void(0)">Select All</a>&nbsp;&nbsp;&nbsp;
+	<a id="dall" href="javascript:void(0)">Deselect All</a>&nbsp;&nbsp;&nbsp;
+	<a id="shide" href="javascript:void(0)">Hide</a>&nbsp;&nbsp;&nbsp;
+	<input type="submit" name="submitType" value="Generate Employee Report"/>&nbsp;&nbsp;&nbsp;
+	<input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive'])) ? 'checked':'') ?>/> Include Separated Employees
 </form>
 <hr/><br/>
 </div>
@@ -99,13 +103,8 @@
 $(document).ready(function(){
 	$(".iframe2").colorbox({iframe:true, width:"990px", height:"600px"});
 
-	$('.dTable').dataTable({
-		"dom": 'lf<"toolbar">tip'
-	});	
-	
-	//"dom": '<"toolbar">frtip'
-	$("div.toolbar").html('<br/><br/><br/><form id="turninactive" action="" method="POST"><input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive']) && $_POST['includeinactive']=='on')?'checked':'')?>/> <b>include inactive employees</b></form><br/>');
-	
+	$('.dTable').dataTable();	
+		
 	$('#sall').click(function(){
 		$('input[name=flds\\[\\]]').each(function(){    
 			this.checked = true;    
@@ -123,9 +122,6 @@ $(document).ready(function(){
 	$('#shide').click(function(){
 		$('#ofields').addClass('hidden');
 		$('#dfields').removeClass('hidden');
-	});
-	$('input[name=includeinactive]').click(function(){
-		$('#turninactive').submit();
 	});
 });
 </script>

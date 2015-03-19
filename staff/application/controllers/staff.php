@@ -173,8 +173,6 @@ class Staff extends CI_Controller {
 				$data['access'] = false;
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
-				if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
-				else $condition .= 'AND staffs.active=1';
 						
 				if($this->user->access==''){
 					$ids = '"",'; //empty value for staffs with no under yet
@@ -188,31 +186,84 @@ class Staff extends CI_Controller {
 				}
 								
 				$flds = 'CONCAT(fname," ",lname) AS name, ';
-				if(isset($_POST) && !empty($_POST) && isset($_POST['flds'])){					
-					foreach($_POST['flds'] AS $p):
-						if($p=='title') $flds .= 'newPositions.title, ';
-						else if($p=='active') $flds .= 'staffs.active, ';
-						else if($p=='address') $flds .= 'address, city, country, zip, ';
-						else if($p=='phone') $flds .= 'phone1, phone2, ';
-						else if($p=='supervisor') $flds .= '(SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, ';
-						else $flds .= $p.', ';
-					endforeach;
+				if(isset($_POST) && !empty($_POST) && (isset($_POST['flds']) || $_POST['submitType']=='Generate Employee Report')){									
+					if(isset($_POST['flds'])){
+						foreach($_POST['flds'] AS $p):
+							if($p=='title') $flds .= 'newPositions.title, ';
+							else if($p=='active') $flds .= 'staffs.active, ';
+							else if($p=='address') $flds .= 'address, city, country, zip, ';
+							else if($p=='phone') $flds .= 'phone1, phone2, ';
+							else if($p=='supervisor') $flds .= '(SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, ';
+							else $flds .= $p.', ';
+						endforeach;
+					}
+
+					if(!isset($_POST['includeinactive']))
+						$condition .= ' AND staffs.active=1';
+
+					if($_POST['submitType']=='Generate Employee Report'){
+						$narr = array('lname', 'fname');
+						$flds .= 'staffs.fname, ';
+						$flds .= 'staffs.lname, ';						
+						
+						if(!isset($_POST['flds']) || !in_array('supervisor', $_POST['flds'])){
+							array_push($narr,"supervisor");
+							$flds .= '(SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, ';
+						}
+						if(!isset($_POST['flds']) || !in_array('startDate', $_POST['flds'])){
+							array_push($narr,"startDate");
+							$flds .= 'staffs.startDate, ';
+						}
+						if(!isset($_POST['flds']))
+							$_POST['flds'] = $narr;
+						else
+							$_POST['flds'] = array_merge($narr, $_POST['flds']);
+					}
+					
 					$flds = rtrim($flds,', ');
-					$data['fvalue'] = $_POST['flds'];					
+					$data['fvalue'] = $_POST['flds'];
 				}else{
 					$flds = $flds.'email, newPositions.title, dept';
 					$data['fvalue'] = array('email', 'title', 'dept');
+					$condition .= ' AND staffs.active=1';
 				}
 				
-				if($condition=='') $condition='1';
 			
 				$data['query'] = $this->staffM->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
+				
+				if(isset($_POST) && !empty($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report'){					
+					header("Content-Type: application/xls");    
+					header("Content-Disposition: attachment; filename=staffs.xls");  
+					header("Pragma: no-cache"); 
+					header("Expires: 0");
+					
+					$txt = '';
+					$tab = "\t";
+					for($i=0;$i<count($data['fvalue']);$i++){
+						$txt .= $this->txtM->defineField($data['fvalue'][$i]).$tab;
+					}
+					
+					$txt .= "\r\n";
+					
+					foreach($data['query'] AS $q):
+						for($j=0;$j<count($data['fvalue']);$j++){
+							$txt .= $q->$data['fvalue'][$j];
+							$txt .= $tab;
+						}
+						$txt .= "\r\n";
+					endforeach;
+					
+					echo $txt;
+					exit;
+				}				
 			}
 		}
+		
 		
 		$this->load->view('includes/template', $data);			
 	}
 	
+		
 	public function myinfo(){
 		$this->staffpage('myinfo');		
 	}
@@ -2153,25 +2204,78 @@ class Staff extends CI_Controller {
 	}
 	
 	public function testpage(){
-		$data['content'] = 'test';
+		$data['content'] = 'test';		
 		
-		if($this->user!=false){
-			if(isset($_POST) && !empty($_POST)){			
-				if($_POST['shift']==0){
-					$c = '09:00pm - 06:00am Mon-Fri';
-				}else{
-					$c = '07:00am - 04:00pm Mon-Fri';
+		if(isset($_POST) && !empty($_POST)){
+			if($_POST['submitType']=='update'){
+				$this->staffM->ptdbQuery('UPDATE eData SET dv=1 WHERE eKey="'.$_POST['eKey'].'"');
+			}else if($_POST['submitType']=='insert'){
+				$query = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*', 'eKey="'.$_POST['eKey'].'" LIMIT 1', 'LEFT JOIN eData ON eData.u=staff.username');
+				
+				if(count($query)>0){
+					$u = $query[0];
+					
+					$u = array();
+					foreach($query AS $q):
+						$u['username'] = $q->u;
+						$u['password'] = md5($q->u);
+						$u['fname'] = $q->sFirst;
+						$u['lname'] = $q->sLast;
+						$u['active'] = (($q->active=='Y')?'1':'0');
+						$u['email'] = $q->email;
+						$u['idNum'] = $q->py;
+						/* $u['position'] = $q->sFirst;
+						$u['supervisor'] = $q->sFirst; */
+						$u['startDate'] = $q->sD;
+						$u['endDate'] = $q->eD;
+						$u['accessEndDate'] = $q->eSD;
+						$u['companyNumber'] = $q->phone_line;
+						$u['extn'] = $q->extension;
+						$u['office'] = 'PH-Cebu';
+						$u['empStatus'] = $q->emp_status;
+						$u['regDate'] = $q->reg_date;
+						$u['bdate'] = $q->bD;
+						$u['address'] = $q->ad;
+						$u['city'] = $q->c;
+						$u['country'] = 'PH';
+						$u['zip'] = $q->z;
+						$u['phone1'] = $q->p1;
+						$u['phone2'] = $q->p2;
+						$u['sss'] = $q->SSS;
+						$u['tin'] = $q->TIN;
+						$u['philhealth'] = $q->Philhealth;
+						$u['hdmf'] = $q->HDMF;
+						$u['maritalStatus'] = (($q->md=='Y')?'Married':'Single');
+						$u['spouse'] = $q->sp;
+						$u['dependents'] = $q->dp;
+						$u['skype'] = $q->skype_account;
+						$u['google'] = $q->google_account;
+					endforeach;
 				}
-				$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('shift'=>$c));
-				echo $c;
-				exit;
+				$this->staffM->insertQuery('staffs', $u);
+				$this->staffM->ptdbQuery('UPDATE eData SET dvins=1 WHERE eKey="'.$_POST['eKey'].'"');
 			}
-			$data['staffs'] = $this->staffM->getQueryResults('staffs', '*, CONCAT(lname," ",fname) AS name', 'shift=""', '', 'lname');
-			/* $data['staffsPT'] = $this->staffM->getPTQueryResults('eData', 'eData.*, sFirst, sLast, active, CONCAT(sLast," ",sFirst) AS name', '1', 'LEFT JOIN staff ON username=u', 'sLast'); */
+			exit;
 		}
-		$this->load->view('includes/template', $data);	
+		
+		$seg2 = $this->uri->segment(2);
+		if($seg2=='ptstaffs'){
+			$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*', '1', 'LEFT JOIN eData ON eData.u=staff.username');
+		}else{		
+			$newstaffs = $this->staffM->getQueryResults('staffs', 'username', 1);
+			$arr = array();
+			foreach($newstaffs AS $n):
+				$arr[] = $n->username;
+			endforeach;
+			$data['newstaffs'] = $arr;
+			
+			$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*, (SELECT u FROM eData ee WHERE ee.eKey=eData.sup ) as supName', 'dv=0 AND dvins=1', 'LEFT JOIN eData ON eData.u=staff.username');
+		}
+		
+		$this->load->view('includes/templatenone', $data);	
 	}
 	
+		
 	public function supportingdocs(){
 		$data['content'] = 'supportingdocs';
 		

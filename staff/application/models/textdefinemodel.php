@@ -172,7 +172,7 @@ class Textdefinemodel extends CI_Model {
 		
 		return $v;
 	}
-	
+		
 }
 
 ?>
