@@ -28,8 +28,8 @@
 			echo '<td class="nTD" width="70px"><img src="'.$img.'" width="60px"/></td>';
 			
 			$note = $m['note'];
-			$note = str_replace($this->user->name, 'you', $note);
-			$note = ucfirst($note);
+			/* $note = str_replace($this->user->name, 'you', $note);
+			$note = ucfirst($note); */
 			
 			if($m['from']=='careerPH') echo '<td><b>'.(($m['name']=='')?'CareerPH':$m['name']).'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$note.'<br/><br/></td>';
 			else echo '<td>'.$note.'</td>';	

@@ -173,6 +173,22 @@ class MyCrons extends CI_Controller {
 		echo count($query);
 	}
 	
+	public function coachingEvaluation(){
+		$dtoday = date('Y-m-d');
+		$query = $this->staffM->getQueryResults('staffCoaching', 'coachID, empID_fk, supervisor, selfRating, supervisorsRating', 'coachedEval<="'.$dtoday.'" AND status=0', 'LEFT JOIN staffs ON empID=empID_fk');
+		
+		if(count($query)>0){
+			foreach($query AS $q):
+				if($q->selfRating=='')
+					$this->addMyNotif($q->empID_fk, 'Coaching form is due for evaluation. Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$q->coachID.'/" class="iframe">here</a> to evaluate and provide self-rating.', 0, 1);
+				if($q->supervisor!=0)
+					$this->addMyNotif($q->supervisor, 'Coaching form is due for evaluation. Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$q->coachID.'/" class="iframe">here</a> to evaluate and provide recommendations.', 0, 1);
+			endforeach;			
+		}
+		echo count($query);
+		exit;		
+	}
+	
 	/***** Add notification *****/
 	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0){
 		$insArr['empID_fk'] = $empID;

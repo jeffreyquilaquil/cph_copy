@@ -11,7 +11,12 @@ foreach($row AS $r):
 	<?php
 		if($r->nName!='') echo '<b>'.$r->nName.'</b> ';
 		else echo '<b>CareerPH</b> ';
-		echo '['.date('d M Y h:i a', strtotime($r->dateissued)).'] <br/>'.$r->ntexts
+		
+		$note = $r->ntexts;
+		/* $note = str_replace($this->user->name, 'you', $note);
+		$note = ucfirst($note); */
+		
+		echo '['.date('d M Y h:i a', strtotime($r->dateissued)).'] <br/>'.$note;
 	?>
 		<br/><br/>
 		<input type="button" value="Acknowledge" onClick="removeNotif('<?= $r->notifID ?>');"/>

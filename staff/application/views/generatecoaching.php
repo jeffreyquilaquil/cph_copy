@@ -8,7 +8,12 @@
 		</tr>
 		<tr>
 			<td width="40%">When will be the performance evaluation?</td>
-			<td><input type="text" class="forminput datepick" id="coachedEval" value="<?= date('F d, Y', strtotime('+2 weeks')) ?>" onBlur="changeEnd();"/></td>
+		<?php
+			$segment3 = $this->uri->segment(3);
+			if($segment3!='') $segval = urldecode($segment3);
+			else $segval = date('F d, Y', strtotime('+2 weeks'));
+		?>
+			<td><input type="text" class="forminput datepick" id="coachedEval" value="<?= $segval ?>" onBlur="changeEnd();"/></td>
 		</tr>
 		
 		<tr>
@@ -119,7 +124,8 @@
 <script type="text/javascript">
 	var cform = {};
 				
-	$(function(){		
+	$(function(){
+		changeEnd();
 		$('#whocoached').change(function(){
 			$('#coachedTitle').val($('option:selected', this).attr('data-title'));
 		});

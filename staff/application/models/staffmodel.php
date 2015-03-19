@@ -225,9 +225,12 @@ class Staffmodel extends CI_Model {
 		return $num . 'th';
 	}
 		
-	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0){
+	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0, $sID=''){
 		$insArr['empID_fk'] = $empID;
-		$insArr['sID'] = $this->user->empID;
+		
+		if($sID!='')$insArr['sID'] = $sID;
+		else $insArr['sID'] = $this->user->empID;
+		
 		$insArr['ntexts'] = addslashes($ntexts);
 		$insArr['dateissued'] = date('Y-m-d H:i:s');
 		$insArr['ntype'] = $ntype;
@@ -1163,6 +1166,17 @@ class Staffmodel extends CI_Model {
 		$cnt = 0;
 		if($type=='cis'){
 			$cnt = $this->staffM->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0');
+		}else if($type=='coaching'){
+			$condition = '';
+			if($this->access->accessHR==false){
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
+			}			
+			$cnt = $this->staffM->getSingleField('staffCoaching', 'COUNT(coachID) AS cnt', 'status=0 AND coachedEval<="'.date('Y-m-d').'"'.$condition);
 		}else if($type=='updateRequest'){
 			$cnt = $this->staffM->getSingleField('staffUpdated', 'COUNT(updateID) AS cnt', 'status=0');
 		}else if($type=='pendingCOE'){
@@ -1173,15 +1187,13 @@ class Staffmodel extends CI_Model {
 				$r = $query->row();
 				$cnt = $r->cnt;
 			}else{
-				$ids = '';
+				$ids = '"",'; //empty value for staffs with no under yet
 				$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
 				foreach($myStaff AS $m):
 					$ids .= $m->empID.',';
 				endforeach;
 				
-				if($ids!=''){
-					$cnt = $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', 'status=0 AND iscancelled=0 AND empID_fk IN ('.rtrim($ids,',').')');
-				}
+				$cnt = $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', 'status=0 AND iscancelled=0 AND empID_fk IN ('.rtrim($ids,',').')');
 			}
 			
 			if($this->access->accessHR==true){
@@ -1439,8 +1451,37 @@ class Staffmodel extends CI_Model {
 						$pdf->setXY(290, 110);
 						$pdf->Write(0, date('F d, Y', strtotime($row->effectiveDate)));
 					}					
-				}
-				
+				}				
+			}
+			
+			//employee
+			if($row->evalDateEmpAcknowledge!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->username.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 215, 150, 0);
+				$pdf->setXY(175, 162);
+				$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
+				$pdf->setXY(305, 165);
+				$pdf->Write(0, date('F d, Y',strtotime($row->evalDateEmpAcknowledge)));
+			}
+			
+			//immediate supervisor
+			if($row->evalDateSupAcknowledged!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->supUsername.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->supUsername.'/signature.png', 50, 145, 0);
+				$pdf->setXY(15, 153);
+				$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
+				$pdf->setXY(130, 155);
+				$pdf->Write(0, date('F d, Y',strtotime($row->evalDateSupAcknowledged)));
+			}
+			
+			//second level manager
+			if($row->evalDate2ndMacknowledged!='0000-00-00'){
+				if(file_exists(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png', 50, 163, 0);
+				$pdf->setXY(15, 172);
+				$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
+				$pdf->setXY(130, 174);
+				$pdf->Write(0, date('F d, Y',strtotime($row->evalDate2ndMacknowledged)));
 			}
 		}	
 		
@@ -1462,6 +1503,37 @@ class Staffmodel extends CI_Model {
 		
 		return $scoretext;
 	}
+	
+	public function coachingStatus($row){
+		$stat = '';	
+		if($row->status==0){
+			$dToday = date('Y-m-d');
+			
+			if($row->dateSupAcknowledged=='0000-00-00' || $row->date2ndMacknowledged=='0000-00-00' || $row->dateEmpAcknowledge=='0000-00-00'){
+				$stat .= 'Pending acknowledgement<br/>';				
+			}
+			
+			if($row->coachedEval<=$dToday){
+				$stat .= 'Evaluation Due<br/>';
+				if($row->selfRating!='')
+					$stat .= 'Self-Rating Submitted<br/>';
+				
+				if($row->selfRating=='' || $row->supervisorsRating=='')
+					$stat .= 'Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$row->coachID.'/" class="iframe" style="color:#660808;">here</a> to Evaluate';				
+			}else{
+				$stat .= 'Coaching Period in Progress<br/>';
+			}
+		}else{
+			$stat .= $this->staffM->coachingScore($row->finalRating).'<br/>';
+			if(isset($row->evalDateSupAcknowledged)){
+				if($row->evalDateSupAcknowledged=='0000-00-00' || $row->evalDate2ndMacknowledged=='0000-00-00' || $row->evalDateEmpAcknowledge=='0000-00-00'){
+					$stat .= 'Pending acknowledgement<br/>';				
+				}
+			}
+		}
+		return $stat;	
+	}
+	
 	
 	
 }
