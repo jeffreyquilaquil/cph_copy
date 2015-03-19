@@ -182,11 +182,14 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function getStaffSupervisorsID($id){
-		$supArr = array();
-		$sup = $this->getSingleField('staffs', 'supervisor', 'empID="'.$id.'"');		
-		while($sup !=0){
+		$cnt = 0;
+		$supArr = array();		
+		$sup = $this->getSingleField('staffs', 'supervisor', 'empID="'.$id.'"');	
+		//get supervisors id until 2nd level manager
+		while($sup !=0 && $cnt<2){
 			$supArr[] = $sup;
 			$sup = $this->getSingleField('staffs', 'supervisor', 'empID="'.$sup.'"');
+			$cnt++;
 		}
 		return $supArr;
 	}

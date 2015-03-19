@@ -15,7 +15,7 @@ class Staff extends CI_Controller {
 		$this->access = $this->staffM->getUserAccess();
 				
 		error_reporting(E_ALL);
-		ini_set('display_errors', 1); 
+		ini_set('display_errors', 1); 		
 	}
 		
 	public function index(){
