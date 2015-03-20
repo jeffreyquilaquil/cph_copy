@@ -9,7 +9,8 @@ class Schedules extends CI_Controller {
 		$this->load->model('Staffmodel', 'staffM');
 		$this->load->model('Textdefinemodel', 'txtM');
 		$this->load->model('Schedulemodel', 'scheduleM');			
-		$this->db = $this->load->database('default', TRUE);					
+		$this->db = $this->load->database('default', TRUE);	
+		session_start();		
 		
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();

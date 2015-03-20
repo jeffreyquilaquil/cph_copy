@@ -7,11 +7,12 @@ class Itchecklist extends CI_Controller {
 		$this->db = $this->load->database('default', TRUE);
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
 		$this->load->model('Staffmodel', 'staffM');	
-		$this->load->model('Textdefinemodel', 'txtM');
+		$this->load->model('Textdefinemodel', 'txtM');	
 		date_default_timezone_set("Asia/Manila");
+		session_start();
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->access = $this->staffM->getUserAccess();	
+		$this->access = $this->staffM->getUserAccess();					
 	}
 		
 	public function index(){
