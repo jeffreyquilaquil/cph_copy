@@ -1971,7 +1971,10 @@ class Staff extends CI_Controller {
 						$upArr['status'] = 3;
 						$chtext = '';
 						
-						$changes = json_decode($data['row']->dbchanges);												
+						$changes = json_decode($data['row']->dbchanges);
+
+						if(isset($changes->title)) unset($changes->title);
+											
 						if(isset($changes->position)){
 							$changes->levelID_fk = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');			
 						}						
