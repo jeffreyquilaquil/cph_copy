@@ -326,7 +326,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		<td>Updates</td>
 		<td>
 			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?> <?= (($row->leaveType==4 || $row->leaveType==5)?'class="hidden" checked':'')?>/><?= (($row->leaveType!=4 && $row->leaveType!=5)?'Leave Credits is correct<br/>':'')?>
-			<input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox" <?= $disabled ?>/>PayrollHero schedule updated
+			<span id="paysspan" <?= (($row->status==2)?'class="hidden"':'') ?>><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox" <?= $disabled ?>/>PayrollHero schedule updated</span>
 		</td>
 	</tr>	
 	<tr class="trremarks">
@@ -483,13 +483,16 @@ echo '</table>';
 			}else{
 				$('.sendEmail').addClass('hidden');
 				$('.hidedisapprove').removeClass('hidden');
+				$('#paysspan').removeClass('hidden');
+				
+				$('#leaveCreditsUsed').val(0);
+			
 				if($(this).val()==1){
 					$('#leaveCreditsUsed').val('<?= $lc ?>');
+				}else if($(this).val()==2){
+					$('#paysspan').addClass('hidden');
 				}else if($(this).val()==3){
-					$('.hidedisapprove').addClass('hidden');
-					$('#leaveCreditsUsed').val(0);
-				}else{
-					$('#leaveCreditsUsed').val(0);
+					$('.hidedisapprove').addClass('hidden');					
 				}	
 				
 				$('#remaining').val(parseFloat($('#current').val())-parseFloat($('#leaveCreditsUsed').val()));		
@@ -565,9 +568,12 @@ echo '</table>';
 			if(tinyMCE.get('message').getContent()=='' || $('input[name="subjectEmail"]').val()=='' || $('input[name="toEmail"]').val()=='' ) 
 				validtxt += '- All fields are required.\n';
 		}else{
-			if($('#status').val()!=3 && ($('#HR_leave_credits_updated:checked').length==0 || $('#HR_payrollhero_updated:checked').length==0)){
+			if(($('#status').val()==1 && ($('#HR_leave_credits_updated:checked').length==0 || $('#HR_payrollhero_updated:checked').length==0)) ||
+				($('#status').val()==2 && $('#HR_leave_credits_updated:checked').length==0)
+			){
 				validtxt += '- Please check all checkboxes.\n';
 			}
+			
 			if($('#status').val()!=$('#oldstatus').val() && $('#hrremarks').val()==''){
 				validtxt += '- Remarks should not be empty when changing approve status.\n';
 			}		
