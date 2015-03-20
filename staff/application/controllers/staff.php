@@ -173,7 +173,7 @@ class Staff extends CI_Controller {
 				$data['access'] = false;
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
-						
+										
 				if($this->user->access==''){
 					$ids = '"",'; //empty value for staffs with no under yet
 					$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);						
@@ -186,7 +186,7 @@ class Staff extends CI_Controller {
 				}
 								
 				$flds = 'CONCAT(fname," ",lname) AS name, ';
-				if(isset($_POST) && !empty($_POST) && (isset($_POST['flds']) || $_POST['submitType']=='Generate Employee Report')){									
+				if(isset($_POST['flds']) || (isset($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report')){				
 					if(isset($_POST['flds'])){
 						foreach($_POST['flds'] AS $p):
 							if($p=='title') $flds .= 'newPositions.title, ';
@@ -225,7 +225,9 @@ class Staff extends CI_Controller {
 				}else{
 					$flds = $flds.'email, newPositions.title, dept';
 					$data['fvalue'] = array('email', 'title', 'dept');
-					$condition .= ' AND staffs.active=1';
+					
+					if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
+					else $condition .= 'AND staffs.active=1';
 				}
 				
 			

@@ -4,7 +4,6 @@
 <form action="" method="POST">
 <table width="100%">
 	<tr>
-		<td><input type="checkbox" name="flds[]" value="username" <?= ((in_array('username',$fvalue)) ? 'checked':'') ?> /> Username</td>
 		<td><input type="checkbox" name="flds[]" value="email" <?= ((in_array('email',$fvalue)) ? 'checked':'') ?>/> Company Email</td>
 		<td><input type="checkbox" name="flds[]" value="pemail" <?= ((in_array('pemail',$fvalue)) ? 'checked':'') ?>/> Personal Email</td>
 		<td><input type="checkbox" name="flds[]" value="gender" <?= ((in_array('gender',$fvalue)) ? 'checked':'') ?>/> Gender</td>
@@ -20,7 +19,7 @@
 	<tr>
 		<td><input type="checkbox" name="flds[]" value="startDate" <?= ((in_array('startDate',$fvalue)) ? 'checked':'') ?>/> Start Date</td>
 		<td><input type="checkbox" name="flds[]" value="regDate" <?= ((in_array('regDate',$fvalue)) ? 'checked':'') ?>/> Regularization Date</td>			
-		<td><input type="checkbox" name="flds[]" value="endDate" <?= ((in_array('endDate',$fvalue)) ? 'checked':'') ?>/> End Date</td>
+		<td><input type="checkbox" name="flds[]" value="endDate" <?= ((in_array('endDate',$fvalue)) ? 'checked':'') ?>/> Effective Separation Date</td>
 		<td><input type="checkbox" name="flds[]" value="shift" <?= ((in_array('shift',$fvalue)) ? 'checked':'') ?>/> Shift</td>
 		<td><input type="checkbox" name="flds[]" value="empStatus" <?= ((in_array('empStatus',$fvalue)) ? 'checked':'') ?>/> Employee Status</td>			
 	</tr>
@@ -34,8 +33,8 @@
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="flds[]" value="active" <?= ((in_array('active',$fvalue)) ? 'checked':'') ?>/> Active</td>
-		<td><br/></td>
-		<td><br/></td>
+		<td><input type="checkbox" name="flds[]" value="accessEndDate" <?= ((in_array('accessEndDate',$fvalue)) ? 'checked':'') ?>/> Access End Date</td>
+		<td><input type="checkbox" name="flds[]" value="terminationType" <?= ((in_array('terminationType',$fvalue)) ? 'checked':'') ?>/> Termination Reason</td>
 		<td><br/></td>
 		<td><br/></td>
 	</tr>
@@ -74,6 +73,7 @@
 				else if($fvalue[$i]=='gender') echo (($row->gender=='F')?'Female':'Male');
 				else if($fvalue[$i]=='active') echo (($row->active=='1')?'Yes':'No');
 				else if($fvalue[$i]=='username') echo strtolower($row->$fvalue[$i]);
+				else if($fvalue[$i]=='terminationType') echo $this->staffM->infoTextVal('terminationType', $row->$fvalue[$i]);
 				else echo ucfirst($row->$fvalue[$i]);	
 			echo '</td>';
 		}		
@@ -103,8 +103,22 @@
 $(document).ready(function(){
 	$(".iframe2").colorbox({iframe:true, width:"990px", height:"600px"});
 
-	$('.dTable').dataTable();	
-		
+	$('.dTable').dataTable({
+		"dom": 'lf<"toolbar">tip'
+	});	
+	
+	$("div.toolbar").html('<br/><br/><br/><form id="turninactive" action="" method="POST"><input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive']) && $_POST['includeinactive']=='on')?'checked':'')?>/> <b>include separated employees</b></form><br/>');
+	
+	$('input[name=includeinactive]').click(function(){
+		if($('#ofields').hasClass('hidden'))
+			$('#turninactive').submit();
+			
+		if($(this).is(':checked'))
+			$('input[name=includeinactive]').prop("checked", true);
+		else	
+			$('input[name=includeinactive]').prop("checked", false);
+	});
+	
 	$('#sall').click(function(){
 		$('input[name=flds\\[\\]]').each(function(){    
 			this.checked = true;    
@@ -116,12 +130,14 @@ $(document).ready(function(){
 		});
 	});
 	$('#dispOther').click(function(){
+		$('#turninactive').addClass('hidden');
 		$('#dfields').addClass('hidden');
 		$('#ofields').removeClass('hidden');
 	});
 	$('#shide').click(function(){
 		$('#ofields').addClass('hidden');
 		$('#dfields').removeClass('hidden');
+		$('#turninactive').removeClass('hidden');
 	});
 });
 </script>
