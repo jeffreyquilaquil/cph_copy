@@ -4,6 +4,7 @@
 <form action="" method="POST">
 <table width="100%">
 	<tr>
+		<td><input type="checkbox" name="flds[]" value="username" <?= ((in_array('username',$fvalue)) ? 'checked':'') ?> /> Username</td>
 		<td><input type="checkbox" name="flds[]" value="email" <?= ((in_array('email',$fvalue)) ? 'checked':'') ?>/> Company Email</td>
 		<td><input type="checkbox" name="flds[]" value="pemail" <?= ((in_array('pemail',$fvalue)) ? 'checked':'') ?>/> Personal Email</td>
 		<td><input type="checkbox" name="flds[]" value="gender" <?= ((in_array('gender',$fvalue)) ? 'checked':'') ?>/> Gender</td>
@@ -85,7 +86,7 @@
 							<li><a href="'.$this->config->base_url().'sendEmail/'.$row->empID.'/" class="iframe2">Send Email</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>
-							<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching Form</a></li>';
+							<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching</a></li>';
 						if($this->access->accessFull==true){
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>';
 						}

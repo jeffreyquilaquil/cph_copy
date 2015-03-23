@@ -1030,11 +1030,12 @@ class Staffmodel extends CI_Model {
 							foreach($aRR AS $va):
 								if( $v==$va->id || ($fld=='title' && $v==$va->val)) $vvalue=$va->val;
 								
-								if($va->active==1 || $v==$vvalue){								
+								if($va->active==1 || ($va->active==0 && $v==$va->id)){								
 									$disp .= '<option value="'.$va->id.'" '.(( $v==$va->id || ($fld=='title' && $v==$va->val)) ? 'selected="selected"' : '').'>';
 									if($fld=='title') $disp .= $va->val.' ('.$va->org.' > '.$va->dept.' > '.$va->grp.' > '.$va->subgrp.')';
 									else $disp .= $va->val;
 									
+									$disp .= $va->active.'=='.$vvalue.'=='.$v;
 									$disp .= '</option>';
 								}
 							endforeach;
