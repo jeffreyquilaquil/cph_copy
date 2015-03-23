@@ -1035,7 +1035,6 @@ class Staffmodel extends CI_Model {
 									if($fld=='title') $disp .= $va->val.' ('.$va->org.' > '.$va->dept.' > '.$va->grp.' > '.$va->subgrp.')';
 									else $disp .= $va->val;
 									
-									$disp .= $va->active.'=='.$vvalue.'=='.$v;
 									$disp .= '</option>';
 								}
 							endforeach;
