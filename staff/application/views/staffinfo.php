@@ -294,11 +294,6 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 			}
 		}
 	echo '</table>';
-	
-		/* echo '<tr><td colspan=4><br/></td></tr>';
-		echo '<tr class="trlabel"><td colspan=6>Performance Track Records</td></tr>';
-		trDisplay4('Action', 'Date Submitted by Manager', 'Date approved by second level manager', 'Date acknowledged by employee');
-		echo '<tr><td colspan=4><br/></td></tr>'; */
 }
 
 if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
@@ -413,11 +408,30 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<td>Evaluation Date</td>
 			<td>Coach</td>
 			<td>Performance Evaluation Result</td>
-			<td>Details</td>
+			<td>Coaching Form</td>
+			<td>Eval Form</td>
 		</tr>
 	<?php
-		$dToday = date('Y-m-d');
 		foreach($perfTrackRecords AS $per):
+			echo '<tr>';
+				echo '<td>'.date('M d, Y H:i a', strtotime($per->dateGenerated)).'</td>';
+				echo '<td>'.date('M d, Y', strtotime($per->coachedEval)).'</td>';
+				echo '<td>'.$per->coachedByName.'</td>';
+			$stat = $this->staffM->coachingStatus($per->coachID);
+				if(strpos($stat,'Evaluation Due.') !== false)
+					echo '<td width="200px" bgcolor="#ff3232">'.$stat.'</td>';	
+				else
+					echo '<td width="200px">'.$stat.'</td>';	
+				
+				echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/expectation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+				if($per->status==0) 
+					echo '<td><br/></td>';
+				else
+					echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/evaluation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+			echo '</tr>';
+		endforeach;
+		
+		/* foreach($perfTrackRecords AS $per):
 			echo '<tr>';
 			echo '<td>'.date('M d, Y H:i a', strtotime($per->dateGenerated)).'</td>';
 			echo '<td>'.date('M d, Y', strtotime($per->coachedEval)).'</td>';
@@ -425,7 +439,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			echo '<td '.(($dToday>=$per->coachedEval && $per->status==0)?'style="background-color:red;"':'').'>'.$this->staffM->coachingStatus($per).'</td>';			
 			echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/acknowledgment/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>';
 			echo '</tr>';
-		endforeach;
+		endforeach; */
 	?>
 	</table>
 <?php } ?>	
@@ -480,8 +494,13 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<tr class="traddnote hidden"><td><br/></td></tr>
 		</table>
 		
-		<div id="loadImg" style="text-align:center; margin-top:20px;"><img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>"/></div>
-		<iframe id="iframeNotes" src="<?= $this->config->base_url().'notes/'.$row->empID.'/' ?>" frameBorder="0" style="width:100%; height:500px;" onLoad="document.getElementById('loadImg').style.display='none';"></iframe>
+	<?php
+		//if($this->config->base_url()!='http://careerph.tatepublishing.net/~divi/staff/'){
+			echo '<div id="loadImg" style="text-align:center; margin-top:20px;"><img src="'.$this->config->base_url().'css/images/small_loading.gif"/></div>';
+			echo '<iframe id="iframeNotes" src="'.$this->config->base_url().'notes/'.$row->empID.'/" frameBorder="0" style="width:100%; height:500px;" onLoad="document.getElementById(\'loadImg\').style.display=\'none\';"></iframe>';
+		//}
+	?>		
+		
 	</div>	
 <!----------------------- END OF TAB 2 ----------------------->		
 <?php } ?>

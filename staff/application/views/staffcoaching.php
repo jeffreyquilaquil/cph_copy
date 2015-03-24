@@ -1,11 +1,52 @@
 <h2>Staff Coaching</h2>
 <hr/>
 <ul class="tabs">
-	<li class="tab-link" data-tab="tab-1">In Progress <?= ((count($inprogress)>0)?'('.count($inprogress).')':'') ?></li>
-	<li class="tab-link current" data-tab="tab-2">Pending Evaluations <?= ((count($pending)>0)?'('.count($pending).')':'')?></li>
-	<li class="tab-link" data-tab="tab-3">Done <?= ((count($done)>0)?'('.count($done).')':'')?></li>
+<?php	
+	if($this->access->accessFullHR==true){
+		echo '<li class="tab-link current" data-tab="tab-1">Pending Forms for HR '.((count($inprogress)>0)?'('.count($inprogress).')':'').'</li>';
+	}
+?>
+	<li class="tab-link <?= (($this->access->accessFullHR==false)?'current':'') ?>" data-tab="tab-2">In Progress <?= ((count($inprogress)>0)?'('.count($inprogress).')':'') ?></li>
+	<li class="tab-link" data-tab="tab-3">Pending Evaluations <?= ((count($pending)>0)?'('.count($pending).')':'')?></li>
+	<li class="tab-link" data-tab="tab-4">Done <?= ((count($done)>0)?'('.count($done).')':'')?></li>
 </ul>
-<div id="tab-1" class="tab-content">	
+<div id="tab-1" class="tab-content <?= (($this->access->accessFullHR==false)?'hidden':'current') ?>">	
+<table class="tableInfo">
+	<tr class="trhead">
+		<td>Coach ID</td>
+		<td>Employee's Name</td>
+		<td>Date Generated</td>
+		<td>Coaching Period</td>
+		<td>Coaching Start</td>
+		<td>Evaluation Date</td>
+		<td>Immediate Supervisor</td>		
+		<td>Status</td>
+		<td></td>
+	</tr>
+<?php
+	if(count($forprinting)==0){
+		echo '<tr><td colspan=3>No pending requests.</td></tr>';
+	}else{	
+		foreach($forprinting AS $i):
+			echo '<tr id="tr_'.$i->coachID.'">';
+				echo '<td>'.$i->coachID.'</td>';
+				echo '<td><a href="'.$this->config->base_url().'staffinfo/'.$i->username.'/">'.$i->name.'</a></td>';
+				echo '<td>'.date('F d, Y', strtotime($i->dateGenerated)).'</td>';
+				echo '<td>'.$i->coachedPeriod.'</td>';
+				echo '<td>'.date('F d, Y', strtotime($i->coachedDate)).'</td>';
+				echo '<td>'.date('F d, Y', strtotime($i->coachedEval)).'</td>';
+				echo '<td>'.$i->coachedBy.'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($i->coachID).'</td>';
+				echo '<td><a href="'.$this->config->base_url().'coachingform/hroptions/'.$i->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>';							
+			echo '</tr>';
+		endforeach;
+	}
+?>
+	
+</table>
+</div>
+
+<div id="tab-2" class="tab-content <?= (($this->access->accessFullHR==false)?'current':'') ?>">	
 <table class="tableInfo">
 	<tr class="trhead">
 		<td>Employee's Name</td>
@@ -39,7 +80,7 @@
 </table>
 </div>
 
-<div id="tab-2" class="tab-content current">	
+<div id="tab-3" class="tab-content">	
 <table class="tableInfo">
 	<tr class="trhead">
 		<td>Employee's Name</td>
@@ -64,7 +105,7 @@
 				echo '<td>'.date('F d, Y', strtotime($p->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($p->coachedEval)).'</td>';
 				echo '<td>'.$p->coachedBy.'</td>';
-				echo '<td>'.$this->staffM->coachingStatus($p).'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($p->coachID).'</td>';
 				echo '<td align="center">
 					<a href="'.$this->config->base_url().'coachingform/expectation/'.$p->coachID.'/" class="iframe">
 						<img src="'.$this->config->base_url().'css/images/pdf-icon.png">
@@ -81,9 +122,7 @@
 </table>
 </div>
 
-
-
-<div id="tab-3" class="tab-content">	
+<div id="tab-4" class="tab-content">	
 <table class="tableInfo">
 	<tr class="trhead">
 		<td>Employee's Name</td>
@@ -109,7 +148,7 @@
 				echo '<td>'.date('F d, Y', strtotime($d->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($d->coachedEval)).'</td>';
 				echo '<td>'.$d->coachedBy.'</td>';
-				echo '<td>'.$this->staffM->coachingStatus($d).'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($d->coachID).'</td>';
 				echo '<td align="center">
 					<a href="'.$this->config->base_url().'coachingform/expectation/'.$d->coachID.'/" class="iframe">
 						<img src="'.$this->config->base_url().'css/images/pdf-icon.png">
@@ -130,4 +169,8 @@
 	
 </table>
 </div>
+
+<script type="text/javascript">
+	
+</script>
 

@@ -175,15 +175,19 @@ class MyCrons extends CI_Controller {
 	
 	public function coachingEvaluation(){
 		$dtoday = date('Y-m-d');
-		$query = $this->staffM->getQueryResults('staffCoaching', 'coachID, empID_fk, supervisor, selfRating, supervisorsRating', 'coachedEval<="'.$dtoday.'" AND status=0', 'LEFT JOIN staffs ON empID=empID_fk');
+		$query = $this->staffM->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2)', 'LEFT JOIN staffs ON empID=empID_fk');
 		
 		if(count($query)>0){
 			foreach($query AS $q):
-				if($q->selfRating=='')
-					$this->addMyNotif($q->empID_fk, 'Coaching form is due for evaluation. Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$q->coachID.'/" class="iframe">here</a> to evaluate and provide self-rating.', 0, 1);
-				if($q->supervisor!=0)
-					$this->addMyNotif($q->supervisor, 'Coaching form is due for evaluation. Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$q->coachID.'/" class="iframe">here</a> to evaluate and provide recommendations.', 0, 1);
-			endforeach;			
+				if($q->selfRating==''){
+					$mineEmail = 'Hi,<br/><br/>Your performance evaluation is due on '.date('F d, Y', strtotime($q->coachedEval)).'. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe">here</a> to conduct self-evaluation.<br/><br/>Thanks!';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Evaluate coaching performance', $mineEmail, 'CAREERPH');
+				}
+				if($q->selfRating!='' && $q->supervisor!=0){
+					$supervisorEmail = 'Hi,<br/><br/>The performance evaluation of '.$q->name.' is due on '.date('F d, Y', strtotime($q->coachedEval)).'. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe">here</a> to '.(($q->status==2)?'finalize':'conduct').' evaluation.<br/><br/>Thanks!';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Evaluate coaching performance', $supervisorEmail, 'CAREERPH');
+				}
+			endforeach;	
 		}
 		echo count($query);
 		exit;		

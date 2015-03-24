@@ -1304,37 +1304,7 @@ class Staffmodel extends CI_Model {
 			//page2
 			$pdf->AddPage();
 			$tplIdx = $pdf->importPage(2);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-					
-			//employee
-			if($row->dateEmpAcknowledge!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->username.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 220, 58, 0);
-				$pdf->setXY(180, 71);
-				$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
-				$pdf->setXY(307, 73);
-				$pdf->Write(0, date('F d, Y',strtotime($row->dateEmpAcknowledge)));
-			}
-			
-			//immediate supervisor
-			if($row->dateSupAcknowledged!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->supUsername.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->supUsername.'/signature.png', 50, 50, 0);
-				$pdf->setXY(15, 61);
-				$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
-				$pdf->setXY(130, 63);
-				$pdf->Write(0, date('F d, Y',strtotime($row->dateSupAcknowledged)));
-			}
-			
-			//second level manager
-			if($row->date2ndMacknowledged!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png', 50, 70, 0);
-				$pdf->setXY(15, 80);
-				$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
-				$pdf->setXY(130, 82);
-				$pdf->Write(0, date('F d, Y',strtotime($row->date2ndMacknowledged)));
-			}
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);				
 		}
 		
 		if($type=='evaluation'){
@@ -1441,7 +1411,7 @@ class Staffmodel extends CI_Model {
 				$pdf->setXY(203, 110);
 				$pdf->Write(0, $this->staffM->coachingScore($fscore));
 				
-				//recommendation
+				/* //recommendation
 				$recArr = $this->txtM->definevar('coachingrecommendations');
 				$pdf->setXY(290, 103);
 				$pdf->Write(0, $recArr[$row->recommendation]);
@@ -1454,37 +1424,7 @@ class Staffmodel extends CI_Model {
 						$pdf->setXY(290, 110);
 						$pdf->Write(0, date('F d, Y', strtotime($row->effectiveDate)));
 					}					
-				}				
-			}
-			
-			//employee
-			if($row->evalDateEmpAcknowledge!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->username.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 215, 150, 0);
-				$pdf->setXY(175, 162);
-				$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false);
-				$pdf->setXY(305, 165);
-				$pdf->Write(0, date('F d, Y',strtotime($row->evalDateEmpAcknowledge)));
-			}
-			
-			//immediate supervisor
-			if($row->evalDateSupAcknowledged!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->supUsername.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->supUsername.'/signature.png', 50, 145, 0);
-				$pdf->setXY(15, 153);
-				$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false);
-				$pdf->setXY(130, 155);
-				$pdf->Write(0, date('F d, Y',strtotime($row->evalDateSupAcknowledged)));
-			}
-			
-			//second level manager
-			if($row->evalDate2ndMacknowledged!='0000-00-00'){
-				if(file_exists(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$row->sup2ndUsername.'/signature.png', 50, 163, 0);
-				$pdf->setXY(15, 172);
-				$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false);
-				$pdf->setXY(130, 174);
-				$pdf->Write(0, date('F d, Y',strtotime($row->evalDate2ndMacknowledged)));
+				} */				
 			}
 		}	
 		
@@ -1507,32 +1447,35 @@ class Staffmodel extends CI_Model {
 		return $scoretext;
 	}
 	
-	public function coachingStatus($row){
+	public function coachingStatus($id){
 		$stat = '';	
+		$row = $this->staffM->getSingleInfo('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating', 'coachID="'.$id.'"');
+	
 		if($row->status==0){
-			$dToday = date('Y-m-d');
-			
-			if($row->dateSupAcknowledged=='0000-00-00' || $row->date2ndMacknowledged=='0000-00-00' || $row->dateEmpAcknowledge=='0000-00-00'){
-				$stat .= 'Pending acknowledgement<br/>';				
-			}
-			
-			if($row->coachedEval<=$dToday){
-				$stat .= 'Evaluation Due<br/>';
-				if($row->selfRating!='')
-					$stat .= 'Self-Rating Submitted<br/>';
-				
-				if($row->selfRating=='' || $row->supervisorsRating=='')
-					$stat .= 'Click <a href="'.$this->config->base_url().'coachingform/evaluate/'.$row->coachID.'/" class="iframe" style="color:#660808;">here</a> to Evaluate';				
-			}else{
-				$stat .= 'Coaching Period in Progress<br/>';
-			}
-		}else{
-			$stat .= $this->staffM->coachingScore($row->finalRating).'<br/>';
-			if(isset($row->evalDateSupAcknowledged)){
-				if($row->evalDateSupAcknowledged=='0000-00-00' || $row->evalDate2ndMacknowledged=='0000-00-00' || $row->evalDateEmpAcknowledge=='0000-00-00'){
-					$stat .= 'Pending acknowledgement<br/>';				
+			$today = date('Y-m-d');
+			if($today<$row->coachedEval)	
+				$stat = 'Coaching Period in Progress';
+			else{
+				if($row->selfRating==''){
+					$stat = 'Evaluation Due.';
+					if($this->user->empID==$row->empID_fk) $stat .= ' Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to Evaluate.';
+					else $stat .= ' Notification Sent to employee for Self-Rating.';
+				}else if($row->selfRating!='' && $row->supervisorsRating==''){
+					$stat = 'Evaluation Due.';
+					if($this->user->empID==$row->empID_fk || $this->user->empID!=$row->coachedBy) $stat .= ' Self-Rating submitted. Pending coach evaluation.';
+					else $stat .= ' Self-Rating submitted. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to evaluate.';
 				}
-			}
+			}					
+		}else if($row->status==1){
+			$stat = $this->staffM->coachingScore($row->finalRating);
+		}else if($row->status==2){
+			$stat = 'Feedback Session in Progress';
+			if($this->user->empID==$row->coachedBy)
+				$stat .= '. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to finalize evaluation.';
+		}else if($row->status==3){
+			$stat = 'Coach ratings locked in.';
+			if($row->empID_fk==$this->user->empID)
+				$stat .= ' Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to Acknowledge.';
 		}
 		return $stat;	
 	}
