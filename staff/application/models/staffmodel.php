@@ -1149,8 +1149,8 @@ class Staffmodel extends CI_Model {
 			$was = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$tval.'"');
 		else if($type=='levelID_fk')
 			$was = $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$tval.'"');
-		else if($type=='terminationType' || $type=='taxstatus'){
-			$tarr = $this->txtM->definevar($type);
+		else if($type=='terminationType' || ( $type=='taxstatus' && !empty($tval))){
+			$tarr = $this->txtM->definevar($type); 
 			$was = $tarr[$tval];
 		}else if($type=='sal' || $type=='allowance')
 			$was = 'Php '.$tval;
