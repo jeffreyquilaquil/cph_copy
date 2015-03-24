@@ -112,6 +112,20 @@ class Textdefinemodel extends CI_Model {
 					6 => 'Recommended Transfer',
 					7 => 'Other'
 				);
+		}else if($con=='taxstatus'){
+			$a = array(
+					0 => '',
+					1 => 'Single with No Dependents (S)',
+					2 => 'Single with 1 Qualified Dependent (S1)',
+					3 => 'Single with 2 Qualified Dependents (S2)',
+					4 => 'Single with 3 Qualified Dependents (S3)',
+					5 => 'Single with 4 Qualified Dependents (S4)',
+					6 => 'Married',
+					7 => 'Married with 1 Qualified Dependent (M1)',
+					8 => 'Married with 2 Qualified Dependents (M2)',
+					9 => 'Married with 3 Qualified Dependents (M3)',
+					10 => 'Married with 4 Qualified Dependents (M4)'
+				);
 		}
 		
 		return $a;
@@ -169,6 +183,7 @@ class Textdefinemodel extends CI_Model {
 		else if($f=='bankAccnt') $v = 'Payroll Bank Account Number';
 		else if($f=='hmoNumber') $v = 'HMO Policy Number';
 		else if($f=='terminationType') $v = 'Termination Reason';
+		else if($f=='taxstatus') $v = 'Tax Status';
 		
 		return $v;
 	}

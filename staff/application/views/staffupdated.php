@@ -35,7 +35,7 @@ if($edit==''){
 							echo $this->staffM->decryptText($r->$f);
 						else if($f=='levelID_fk')
 							echo $r->levelName;
-						else if($f=='terminationType')
+						else if($f=='terminationType' || $f=='taxstatus')
 							echo $this->staffM->infoTextVal($f, $r->$f);
 						else
 							echo $r->$f;

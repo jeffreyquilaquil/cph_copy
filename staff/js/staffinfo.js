@@ -222,7 +222,8 @@ $(function () {
 			sal:$('#sal').val(),
 			allowance:$('#allowance').val(),
 			bankAccnt:$('#bankAccnt').val(),
-			hmoNumber:$('#hmoNumber').val()
+			hmoNumber:$('#hmoNumber').val(),
+			taxstatus:$('#taxstatus').val()
 		},function(){
 			location.reload();
 		});

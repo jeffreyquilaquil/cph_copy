@@ -1015,7 +1015,7 @@ class Staffmodel extends CI_Model {
 					<td width="30%">'.$this->txtM->defineField($fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk', 'terminationType'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk', 'terminationType', 'taxstatus'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
@@ -1149,8 +1149,8 @@ class Staffmodel extends CI_Model {
 			$was = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$tval.'"');
 		else if($type=='levelID_fk')
 			$was = $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$tval.'"');
-		else if($type=='terminationType'){
-			$tarr = $this->txtM->definevar('terminationType');
+		else if($type=='terminationType' || $type=='taxstatus'){
+			$tarr = $this->txtM->definevar($type);
 			$was = $tarr[$tval];
 		}else if($type=='sal' || $type=='allowance')
 			$was = 'Php '.$tval;
