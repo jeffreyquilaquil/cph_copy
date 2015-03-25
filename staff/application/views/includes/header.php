@@ -57,7 +57,7 @@
 						echo '<li '.(($content=='others')?'class="current"':'').'><a class="iframe" href="'.$this->config->base_url().'others/">Other Pages</a></li>';
 					}
 					
-					if($access->accessFullHRFinance==true){
+					if($this->access->accessFullHRFinance==true){
 						echo '<li '.(($content=='organizationalchart')?'class="current"':'').'><a href="'.$this->config->base_url().'organizationalchart/">Organizational Chart</a></li>';
 					}
 						
