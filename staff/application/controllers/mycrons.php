@@ -26,14 +26,24 @@ class MyCrons extends CI_Controller {
 		$date24hours = date('Y-m-d H:i:s', strtotime('-1 day'));
 		$query = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3 AND status!=5 AND iscancelled=0) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")'); 
 		
+		
+		
 		foreach($query AS $q):
-			if($q->iscancelled==2)
-				$datediff = $now - strtotime($q->datecancelled);
-			else
-				$datediff = $now - strtotime($q->date_requested);
+			if($q->iscancelled==2) $thedate = $q->datecancelled;
+			else $thedate = $q->date_requested;
+				
+			$datediff = $now - strtotime($thedate);
 			$nutri = floor($datediff/(60*60*24));
 			$grow0 = $this->staffM->getSingleInfo('staffs', 'email, CONCAT(fname," ",lname) AS name, supervisor', 'empID="'.$q->empID_fk.'"');
-						
+			
+			//remove counting for weekends
+			$hisdate = date('Y-m-d', strtotime($thedate));
+			for($i=$nutri; $i>=0; $i--){
+				$d = date('N l', strtotime($thedate.' +'.$i.' day'));				
+				if($d==1 || $d==7)
+					$nutri--;
+			} 
+			
 			$supervisor = '';
 			$supEmail = '';
 			$sup = $grow0->supervisor;
@@ -45,11 +55,8 @@ class MyCrons extends CI_Controller {
 					$supEmail = $grow1->supEmail;
 				}				
 			}
-			echo '<pre>';
-			print_r($q);
-			echo '</pre>';
 			
-			$eBody = '<p>Hi,</p>';
+			/* $eBody = '<p>Hi,</p>';
 			$eBody .= '<p>'.$supervisor.' has not taken action on Leave ID <a href="'.$this->config->base_url().'staffleaves/'.$q->leaveID.'/">#'.$q->leaveID.'</a> within '.($nutri*24).' hours from the time the leave was filed. In the event that '.$supervisor.' is on leave, you as '.(($sup=='')?'HR':'him/her immediate supervisor').' must take action on Leave ID <a href="'.$this->config->base_url().'staffleaves/'.$q->leaveID.'/">#'.$q->leaveID.'</a> otherwise this will be escalated to your immediate supervisor.</p>
 				<p><br/></p>
 				<p>Thank you very much.</p>
@@ -59,7 +66,11 @@ class MyCrons extends CI_Controller {
 				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
 			else
 				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $supEmail, 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
-			
+			 */
+			 
+			echo '<pre>';
+			print_r($q);
+			echo '</pre>';
 		endforeach;		
 		exit;
 	}
