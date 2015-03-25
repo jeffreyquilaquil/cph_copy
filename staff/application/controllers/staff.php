@@ -325,7 +325,7 @@ class Staff extends CI_Controller {
 											$o = $orig['supName'];
 										}else if($k=='levelID_fk'){
 											$o = $orig['levelName'];
-										}else if($k=='terminationType'){
+										}else if($k=='terminationType' || ($k=='taxstatus' && $orig[$k]!='')){
 											$o = $this->staffM->infoTextVal($k, $orig[$k]);
 										}else if($k=='bankAccnt' || $k=='hmoNumber'){
 											$o = $this->staffM->decryptText($orig[$k]);
@@ -2687,6 +2687,25 @@ class Staff extends CI_Controller {
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);	
+	}
+	
+	public function organizationalchart(){
+		$data['content'] = 'organizationalchart';
+		$all = '';
+		
+		$supervisors = $this->staffM->getQueryResults('staffs', 'DISTINCT supervisor');
+		foreach($supervisors AS $s):
+			$emps = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, title, username', 'supervisor="'.$s->supervisor.'" AND staffs.active=1 AND office="PH-Cebu"', 'LEFT JOIN newPositions ON posID=position', 'title ASC');
+			foreach($emps AS $e):
+				$all[$s->supervisor][] = array($e->empID, $e->name, $e->title, $e->username);
+			endforeach;			
+		endforeach;
+		
+		
+		$data['upper'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, title, supervisor', 'levelID_fk="5" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'lname ASC');
+				
+		$data['all'] = $all;		
+		$this->load->view('includes/template', $data);	
 	}
 	
 	

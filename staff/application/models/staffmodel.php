@@ -38,7 +38,7 @@ class Staffmodel extends CI_Model {
 			
 	function getSingleInfo($table, $fields, $where=1, $join='', $orderby=''){
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
-		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." LIMIT 1 ".$orderby);
+		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby." LIMIT 1");
 		return $query->row();
 	}
 	

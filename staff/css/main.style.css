@@ -444,4 +444,15 @@ ul.tabs li.current{
 .attendancetbl .monthtd td{ cursor:pointer; }
 .attendancetbl .monthtd td:hover{ background-color:#e2e2e2; }
 .attendancetbl a{ text-decoration:none; }
+
+.orgchart li{ border:1px solid #ccc; padding:5px; margin:5px;}
+.li_0{ background-color:#b30000; }
+.li_1{ background-color:#ff1919; }
+.li_2{ background-color:#ff3232; }
+.li_3{ background-color:#ff6666; }
+.li_4{ background-color:#ff9999; }
+.li_5{ background-color:#ffcccc; }
+.li_none{ background-color:#fff; }
+.orgchart a{ text-decoration:none; color:#000; }
+.orgchart a:hover{ text-decoration:underline; }
  
