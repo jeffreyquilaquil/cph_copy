@@ -126,6 +126,23 @@ class Textdefinemodel extends CI_Model {
 					9 => 'Married with 3 Qualified Dependents (M3)',
 					10 => 'Married with 4 Qualified Dependents (M4)'
 				);
+		}else if($con=='requiredTest'){
+			$a = array(
+				'iq' => 'IQ Test',
+				'typing' => 'Typing Test',
+				'written' => 'Written Comprehension Test',
+				'pmEmail' => 'PM Email Test',
+				'pressRelease' => 'Press Release Writing Test',
+				'design' => 'Design Test',
+				'editing' => 'Copy Editing Test',
+				'it' => 'IT Test',									
+				'sales' => 'Sales Quiz',				
+				'acqEmail' => 'Acquisitions Email Test',			
+				'pcfTest' => 'PCF Test',		
+				'editingTest' => 'Editing Test',			
+				'sampleAudio' => 'Sample Audio Recording',		
+				'illustrations' => 'Illustrations Test'			
+			);		
 		}
 		
 		return $a;

@@ -1,9 +1,89 @@
+<?php 
+if($page=='details'){
+?>
+<a class="iframe" href="<?= $this->config->base_url().'addnewposition/'.$row->posID.'/' ?>"><button style="float:right;" class="padding5px">Edit Position</button></a>
+<h2>Position Details</h2>
+<hr/>
+<table class="tableInfo">
+	<tr>
+		<td width="30%">Name of Position</td>
+		<td><?= $row->title ?></td>
+	</tr>
+	<tr>
+		<td>Organization</td>
+		<td><?= $row->org ?></td>
+	</tr>
+	<tr>
+		<td>Department</td>
+		<td><?= $row->dept ?></td>
+	</tr>
+	<tr>
+		<td>Group</td>
+		<td><?= $row->grp ?></td>
+	</tr>
+	<tr>
+		<td>Sub-group</td>
+		<td><?= $row->subgrp ?></td>
+	</tr>
+	<tr>
+		<td>Level</td>
+		<td><?= $row->levelName ?></td>
+	</tr>	
+	<tr>
+		<td>Is Active</td>
+		<td><?= (($row->active==0)?'No':'Yes') ?></td>
+	</tr>	
+	<tr>
+		<td>Description</td>
+		<td><?= ((empty($row->desc))?'none':$row->desc) ?></td>
+	</tr>
+	<tr>
+		<td>Required Test</td>
+		<td>
+		<?php
+			if($row->requiredTest==''){
+				echo 'none';
+			}else{
+				$xExplode = explode(',', $row->requiredTest);
+				foreach($xExplode AS $x):
+					echo $txt[$x].'<br/>';
+				endforeach;
+			}
+		?>
+		</td>
+	</tr>
+	<tr>
+		<td>Required Skills</td>
+		<td>
+		<?php
+			if($row->requiredSkills==''){
+				echo 'none';
+			}else{
+				$xExplode = explode('|', $row->requiredSkills);
+				foreach($xExplode AS $x):
+					echo $skills[$x].'<br/>';
+				endforeach;
+			}
+		?>
+		</td>
+	</tr>
+	<tr>
+		<td>Date Created</td>
+		<td><?= (($row->date_created!='0000-00-00 00:00:00')?date('Y-m-d H:i', strtotime($row->date_created)):'') ?></td>
+	</tr>
+	<tr>
+		<td>Created By</td>
+		<td><?= ((!empty($row->user))?$row->user:'') ?></td>
+	</tr>
+</table>
+
+<?php }else{ ?>
 <a class="iframe" href="<?= $this->config->base_url().'addnewposition/' ?>"><button style="float:right;" class="padding5px">Add New Position</button></a>
 <h2>List of All Positions</h2>
 <hr/>
 <table class="tableInfo">
 	<tr class="trhead">
-		<td>Position ID</td>
+		<td>ID</td>
 		<td>Organization</td>
 		<td>Department</td>
 		<td>Group</td>
@@ -11,33 +91,22 @@
 		<td>Title</td>
 		<td>Org Level</td>
 		<td>Status</td>
+		<td><br/></td>
 	</tr>
 <?php
 	foreach($positions AS $p):
 		echo '<tr class="trbd">
-				<td style="position:relative;">'.$p->posID;
-			
-			echo '<div id="ddesc'.$p->posID.'" style="position:absolute; border:1px solid #000; border-radius:10px; width:450px; background-color:#fff; display:none; padding:10px; z-index:99;">
-				<b>'.$p->title.' Description</b><button onClick="$(\'#ddesc'.$p->posID.'\').hide();" style="float:right;">Close</button><hr/>
-				'.nl2br($p->desc).'<br/>
-				<button onClick="$(\'#ddesc'.$p->posID.'\').hide();" style="float:right;">Close</button>
-			</div>';
-				
-		echo 	'</td>
+				<td style="position:relative;">'.$p->posID.'</td>
 				<td>'.$p->org.'</td>
 				<td>'.$p->dept.'</td>
 				<td>'.$p->grp.'</td>
 				<td>'.$p->subgrp.'</td>
-				<td><b>'.$p->title.'</b><br/>'.(($p->desc!='')?'<a onClick="showDesc('.$p->posID.')" class="cpointer"><u>view description</u></a>':'').'</td>
+				<td><b>'.$p->title.'</b></td>
 				<td>'.$p->levelName.'</td>
 				<td>'.(($p->active==1)?'Active':'Inactive').'</td>
+				<td><a href="'.$this->config->base_url().'allpositions/'.$p->posID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon2.png"></a></td>
 			</tr>';
 	endforeach;
 ?>
 </table>
-
-<script type="text/javascript">	
-	function showDesc(id){
-		$('#ddesc'+id).show();
-	}
-</script>
+<?php } ?>

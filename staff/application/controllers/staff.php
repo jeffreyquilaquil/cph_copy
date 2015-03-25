@@ -2415,7 +2415,36 @@ class Staff extends CI_Controller {
 	
 	public function addnewposition(){
 		$data['content'] = 'addnewposition';
-		if(isset($_POST) && !empty($_POST)){
+		$data['page'] = 'add';
+		
+		$pID = $this->uri->segment(2);
+		if($pID!=''){
+			$data['page'] = 'edit';
+			$data['row'] = $this->staffM->getSingleInfo('newPositions', '*', 'posID="'.$pID.'"');
+			$data['depts'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT dept FROM newPositions WHERE org="'.$data['row']->org.'"');
+			$data['grps'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT grp FROM newPositions WHERE dept="'.$data['row']->org.'"');
+			$data['subgrps'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT subgrp FROM newPositions WHERE grp="'.$data['row']->org.'"');
+		}
+		
+		if(isset($_POST) && !empty($_POST)){			
+			if(isset($_POST['rtest'])){ //for required test
+				$_POST['requiredTest'] = '';
+				foreach($_POST['rtest'] AS $p):
+					$_POST['requiredTest'] .= $p.',';
+				endforeach;
+				$_POST['requiredTest'] = rtrim($_POST['requiredTest'], ',');
+				unset($_POST['rtest']);
+			}
+			
+			if(isset($_POST['rskill'])){ //for required skills
+				$_POST['requiredSkills'] = '';
+				foreach($_POST['rskill'] AS $p):
+					$_POST['requiredSkills'] .= $p.'|';
+				endforeach;
+				$_POST['requiredSkills'] = rtrim($_POST['requiredSkills'], '|');
+				unset($_POST['rskill']);
+			}
+		
 			if($_POST['submitType']=='grpdepts'){
 				$query = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT '.$_POST['newtype'].' FROM newPositions WHERE '.$_POST['oldtype'].'="'.$_POST['tval'].'"');
 				echo '<option></option>';
@@ -2426,23 +2455,50 @@ class Staff extends CI_Controller {
 			}else if($_POST['submitType']=='addposition'){
 				unset($_POST['submitType']);
 				$_POST['user'] = $this->user->username;
+				$_POST['date_created'] = date('Y-m-d H:i:s');
 				$this->staffM->insertQuery('newPositions', $_POST);
 				$this->staffM->addMyNotif($this->user->empID, 'Added new position "<b>'.$_POST['title'].'</b>" for '.$_POST['org'].'> '.$_POST['dept'].'> '.$_POST['grp'].'> '.$_POST['subgrp'].'.', 5);
 				$data['added'] = $_POST['title'];
+			}else if($_POST['submitType']=='editposition'){
+				unset($_POST['submitType']);
+				$this->staffM->updateQuery('newPositions', array('posID'=>$pID), $_POST);				
+				$this->staffM->updateConcat('newPositions', 'posID="'.$pID.'"', 'editData', $this->user->username.'|'.date('Y-m-d H:i:s').'-^_^-');
+				
+				//add notification
+				$this->staffM->addMyNotif($this->user->empID, 'Edited position "<b>'.$_POST['title'].'</b>" for '.$_POST['org'].'> '.$_POST['dept'].'> '.$_POST['grp'].'> '.$_POST['subgrp'].'.', 5);
+				$data['edited'] = $_POST['title'];
 			}
 		}
+		
 	
 		$data['org'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT org FROM newPositions');
 		$data['orgLevel'] = $this->staffM->getSQLQueryArrayResults('SELECT * FROM orgLevel');
+		$data['requiredTestArr'] = $this->txtM->definevar('requiredTest');		
+		$data['requiredSkillsArr'] = $this->staffM->getQueryResults('applicantSkills', '*');
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function allpositions(){
 		$data['content'] = 'allpositions';
+		$id = $this->uri->segment(2);
 		
-		$data['positions'] = $this->staffM->getQueryResults('newPositions', 'posID, title, `desc`, active, orgLevel_fk, levelName, org, dept, grp, subgrp', '1', 'LEFT JOIN orgLevel ON orgLevel_fk=levelID', 'org, dept, grp, subgrp, title');
-		
-		$this->load->view('includes/templatecolorbox', $data);
+		if($id!=''){
+			$data['page'] = 'details';
+			$data['row'] = $this->staffM->getSingleInfo('newPositions', '*, levelName', 'posID="'.$id.'"', 'LEFT JOIN orgLevel ON levelID=orgLevel_fk');
+			$data['txt'] = $this->txtM->definevar('requiredTest');
+			$allskills = $this->staffM->getQueryResults('applicantSkills', '*');
+			$sArr = array();
+			foreach($allskills AS $a):
+				$sArr[$a->skillID] = $a->skillName;
+			endforeach;
+			$data['skills'] = $sArr;
+			$this->load->view('includes/templatecolorbox', $data);
+		}else{
+			$data['page'] = 'all';
+			$data['positions'] = $this->staffM->getQueryResults('newPositions', 'posID, title, `desc`, active, orgLevel_fk, levelName, org, dept, grp, subgrp', '1', 'LEFT JOIN orgLevel ON orgLevel_fk=levelID', 'org, dept, grp, subgrp, title');
+			$this->load->view('includes/template', $data);
+		}
 	}
 	
 	public function generatecoaching(){

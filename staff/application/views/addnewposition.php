@@ -1,15 +1,25 @@
-<h2>Add New Position</h2>
-<hr/>
-<?php if(isset($added)){
+<?php 
+	if($page=='edit'){
+		echo '<h2>Edit Position</h2><hr/>';
+	}else{
+		echo '<h2>Add New Position</h2><hr/>';
+	}
+
+if(isset($added)){
 	echo '<p class="errortext">New position "<b>'.$added.'</b>" has been added.</p><hr/>';
-}?>
-<p><i style="color:#555;">Click <a href="<?= $this->config->base_url().'allpositions/' ?>" class="iframe">here</a> to view all positions.</i></p>
+}else if(isset($edited)){
+	echo '<p class="errortext">Position "<b>'.$edited.'</b>" has been edited.</p><hr/>';
+	exit;
+}
+
+?>
+<p><i style="color:#555;">Click <a href="#" onClick="parent.$.fn.colorbox.close(); parent.location='<?= $this->config->base_url().'allpositions/' ?>'">here</a> to view all positions.</i></p>
 <form action="" method="POST" onSubmit="return validateForm();">
 <table class="tableInfo">
 	<tr>
 		<td width="20%">Name of the position</td>
 		<td class="tload" width="25px"></td>
-		<td><input type="text" name="title" class="forminput"/></td>
+		<td><input type="text" name="title" class="forminput" value="<?= ((isset($row->title))?$row->title:'')?>"/></td>
 	</tr>
 	<tr class="trorg">
 		<td class="tlabel">Organization</td>
@@ -20,53 +30,136 @@
 			echo '<option></option>';
 		
 			foreach($org AS $o):
-				echo '<option value="'.$o->org.'">'.$o->org.'</option>';
+				echo '<option value="'.$o->org.'" '.(($page=='edit' && $row->org==$o->org)?'selected="selected"':'').'>'.$o->org.'</option>';
 			endforeach;
 			echo '</select>';
 		?>	
 		</td>
 	</tr>
-	<tr class="trdept hidden">
+	<tr class="trdept <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Department</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="dept" onChange="changeInput('dept', 'grp')"></select></td>
+		<td><select class="forminput" name="dept" onChange="changeInput('dept', 'grp')">
+			<?php
+				if($page=='edit' && isset($depts)){
+					foreach($depts AS $d):
+						echo '<option value="'.$d->dept.'" '.(($row->dept==$d->dept)?'selected="selected"':'').'>'.$d->dept.'</option>';
+					endforeach;
+				}
+			?>
+		</select></td>
 	</tr>
-	<tr class="trgrp hidden">
+	<tr class="trgrp <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Group</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="grp" onChange="changeInput('grp', 'subgrp')"></select></td>
+		<td><select class="forminput" name="grp" onChange="changeInput('grp', 'subgrp')">
+			<?php
+				if($page=='edit' && isset($grps)){
+					foreach($grps AS $g):
+						echo '<option value="'.$g->grp.'" '.(($row->grp==$g->grp)?'selected="selected"':'').'>'.$g->grp.'</option>';
+					endforeach;
+				}
+			?>
+		</select></td>
 	</tr>
-	<tr class="trsubgrp hidden">
+	<tr class="trsubgrp <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Sub-group</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="subgrp"></select></td>
+		<td><select class="forminput" name="subgrp">
+			<?php
+				if($page=='edit' && isset($subgrps)){
+					foreach($subgrps AS $s):
+						echo '<option value="'.$s->subgrp.'" '.(($row->subgrp==$s->subgrp)?'selected="selected"':'').'>'.$s->subgrp.'</option>';
+					endforeach;
+				}
+			?>
+		</select></td>
 	</tr>
-	<tr class="trall hidden">
+	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Level</td>
 		<td class="tload"></td>
 		<td>
 		<?php
 			echo '<select name="orgLevel_fk" class="forminput">';
 			foreach($orgLevel AS $lv):
-				echo '<option value="'.$lv->levelID.'">'.$lv->levelName.'</option>';
+				echo '<option value="'.$lv->levelID.'" '.(($page=='edit' && $row->orgLevel_fk==$lv->levelID)?'selected="selected"':'').'>'.$lv->levelName.'</option>';
 			endforeach;
 			echo '</select>';
 		?>
 		</td>
 	</tr>
-	<tr class="trall hidden">
+	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Job Description</i>
 		</td>
 		<td class="tload"></td>
 		<td>
-			<textarea name="desc" rows="10"></textarea><br/>
+			<textarea name="desc" rows="10"><?= (($page=='edit')?$row->desc:'') ?></textarea><br/>
 			<i style="color:#555;">A position cannot be created without a complete job description. This helps HR find the most suitable candidates, and also will help the respective PHL department in managing the new employee.
 		</td>
 	</tr>
-	<tr class="trall hidden">
+<?php
+	if($page=='edit'){
+		echo '<tr>';
+		echo '<td class="tlabel">Is Active?</td>';
+		echo '<td class="tload"></td>';
+		echo '<td><select name="active" class="forminput">
+			<option value="1" '.(($row->active==1)?'selected="selected"':'').'>Yes</option>
+			<option value="0" '.(($row->active==0)?'selected="selected"':'').'>No</option>
+		</select></td>';
+		echo '</tr>';
+	}
+?>
+	
+	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
+		<td class="tlabel">Required Test</i>
+		</td>
+		<td class="tload"></td>
+		<td>
+		<?php
+			$cr = ceil(count($requiredTestArr)/2);
+			if(isset($row->requiredTest) && !empty($row->requiredTest)) $rTestarr = explode(',', $row->requiredTest);
+			echo '<div style="float:left; width:45%;">';
+			$n=0;
+			foreach($requiredTestArr AS $k=>$r):
+				if($n==$cr) echo '</div><div style="float:left;">';
+				echo '<input type="checkbox" value="'.$k.'" name="rtest[]" '.((isset($rTestarr) && in_array($k, $rTestarr))?'checked':'').'/> '.$r.'<br/>';
+				$n++;
+			endforeach;
+			echo '</div>'
+		?>
+		</td>
+	</tr>	
+	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
+		<td class="tlabel">Required Skills</i>
+		</td>
+		<td class="tload"></td>
+		<td>
+		<?php
+			$cr = ceil(count($requiredSkillsArr)/2);
+			if(isset($row->requiredSkills	) && !empty($row->requiredSkills	)) $rSkillarr = explode('|', $row->requiredSkills	);
+			echo '<div style="float:left; width:45%;">';
+			$n=0;
+			foreach($requiredSkillsArr AS $r):
+				if($n==$cr) echo '</div><div style="float:left;">';
+				echo '<input type="checkbox" value="'.$r->skillID.'" name="rskill[]" '.((isset($rSkillarr) && in_array($r->skillID, $rSkillarr))?'checked':'').'/> '.$r->skillName.'<br/>';
+				$n++;
+			endforeach;
+			echo '</div>'
+		?>
+		</td>
+	</tr>
+
+	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
 		<td colspan=3 align="right">
-			<input type="hidden" name="submitType" value="addposition"/>
-			<input type="submit" value="Add Position" class="padding5px"/>
+		<?php
+			if($page=='edit'){
+				echo '<input type="hidden" name="submitType" value="editposition"/>';
+				echo '<input type="submit" value="Edit Position" class="padding5px"/>';
+			}else{
+				echo '<input type="hidden" name="submitType" value="addposition"/>';
+				echo '<input type="submit" value="Add Position" class="padding5px"/>';
+			}
+		?>
 		</td>
 	</tr>
 </table>
