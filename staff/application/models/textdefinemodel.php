@@ -191,7 +191,7 @@ class Textdefinemodel extends CI_Model {
 	function getEmps($all, $id, $n){
 	$emptxt = '';
 	if(isset($all[$id])){
-		$emptxt .= '<ul class="ul_'.$n.' emp_'.$id.' hidden">';
+		$emptxt .= '<ul class="ul_'.$n.' emp_'.$id.' '.(($n>2)?'uldisp':'').'">';
 		foreach($all[$id] AS $a):
 			if(isset($all[$a[0]])){
 				$emptxt .= '<li class="li_'.$n.'" style="cursor:pointer" onClick="toggleDisplay('.$a[0].')">';
