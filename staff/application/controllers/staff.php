@@ -13,7 +13,7 @@ class Staff extends CI_Controller {
 		
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
-				
+						
 		error_reporting(E_ALL);
 		ini_set('display_errors', 1); 		
 	}
@@ -1413,6 +1413,7 @@ class Staff extends CI_Controller {
 						$insArr['leaveType'] = $_POST['leaveType'];
 					}
 					
+					//update code data if filing leave using codes
 					if(isset($_POST['code']) && !empty($_POST['code']) && isset($code) && count($code)>0){
 						$insArr['code'] = $_POST['code'];
 						$this->staffM->updateQuery('staffCodes', array('codeID'=>$code->codeID), array('usedBy'=>$this->user->empID, 'dateUsed'=>date('Y-m-d H:i:s'), 'type'=>'Leave', 'status'=>2));
@@ -1449,6 +1450,14 @@ class Staff extends CI_Controller {
 					$superID = $this->staffM->getStaffSupervisorsID($this->user->empID);
 					for($s=0; $s<count($superID); $s++){
 						$this->staffM->addMyNotif($superID[$s], $ntexts, 0, 1);
+					}
+					//send email to immediate supervisor
+					$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$this->user->supervisor.'" AND "'.$this->user->supervisor.'"!=0');
+					if(!empty($supEmail)){
+						$msg = '<p>Hi,</p>';
+						$msg .= '<p>'.$this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
+						$msg .= '<p>Thanks!</p>';
+						$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $supEmail, $this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']], $msg, 'CareerPH' );
 					}
 										
 					$data['submitted'] = true;
