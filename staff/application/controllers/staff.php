@@ -15,7 +15,7 @@ class Staff extends CI_Controller {
 		$this->access = $this->staffM->getUserAccess();
 						
 		error_reporting(E_ALL);
-		ini_set('display_errors', 1); 		
+		ini_set('display_errors', 1);
 	}
 		
 	public function index(){
@@ -575,9 +575,11 @@ class Staff extends CI_Controller {
 		}else if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST)){				
 				if($_POST['submitType']=='Update'){
-					if($_POST['fieldN']=='title')
-						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('position' => $_POST['fieldV']));
-					else
+					if($_POST['fieldN']=='title'){
+						//update position and org level
+						$orgLevel = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$_POST['fieldV'].'"');
+						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array('position' => $_POST['fieldV'], 'levelID_fk'=>$orgLevel));
+					}else
 						$this->staffM->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
 					
 					$addNote = '['.date('Y-m-d H:i').'] '.$this->user->username.': <i>request approved and changed</i><br/>';
