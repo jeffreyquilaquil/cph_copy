@@ -1557,6 +1557,12 @@ class Staff extends CI_Controller {
 									$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
 								}
 								
+								//for approval with previous stat additional info 
+								if($_POST['status']!=4 && $data['row']->iscancelled==4){
+									$updateArr['iscancelled'] = 0;	
+								}
+								
+								//send email to accounting if approved without pay
 								if(isset($_POST['status']) && $_POST['status']==2){
 									$eMsg = '<p>Hi,</p>
 											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' is Approved without Pay for the following dates:</p>
@@ -2225,71 +2231,9 @@ class Staff extends CI_Controller {
 	public function testpage(){
 		$data['content'] = 'test';		
 		
-		if(isset($_POST) && !empty($_POST)){
-			if($_POST['submitType']=='update'){
-				$this->staffM->ptdbQuery('UPDATE eData SET dv=1 WHERE eKey="'.$_POST['eKey'].'"');
-			}else if($_POST['submitType']=='insert'){
-				$query = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*', 'eKey="'.$_POST['eKey'].'" LIMIT 1', 'LEFT JOIN eData ON eData.u=staff.username');
-				
-				if(count($query)>0){
-					$u = $query[0];
-					
-					$u = array();
-					foreach($query AS $q):
-						$u['username'] = $q->u;
-						$u['password'] = md5($q->u);
-						$u['fname'] = $q->sFirst;
-						$u['lname'] = $q->sLast;
-						$u['active'] = (($q->active=='Y')?'1':'0');
-						$u['email'] = $q->email;
-						$u['idNum'] = $q->py;
-						/* $u['position'] = $q->sFirst;
-						$u['supervisor'] = $q->sFirst; */
-						$u['startDate'] = $q->sD;
-						$u['endDate'] = $q->eD;
-						$u['accessEndDate'] = $q->eSD;
-						$u['companyNumber'] = $q->phone_line;
-						$u['extn'] = $q->extension;
-						$u['office'] = 'PH-Cebu';
-						$u['empStatus'] = $q->emp_status;
-						$u['regDate'] = $q->reg_date;
-						$u['bdate'] = $q->bD;
-						$u['address'] = $q->ad;
-						$u['city'] = $q->c;
-						$u['country'] = 'PH';
-						$u['zip'] = $q->z;
-						$u['phone1'] = $q->p1;
-						$u['phone2'] = $q->p2;
-						$u['sss'] = $q->SSS;
-						$u['tin'] = $q->TIN;
-						$u['philhealth'] = $q->Philhealth;
-						$u['hdmf'] = $q->HDMF;
-						$u['maritalStatus'] = (($q->md=='Y')?'Married':'Single');
-						$u['spouse'] = $q->sp;
-						$u['dependents'] = $q->dp;
-						$u['skype'] = $q->skype_account;
-						$u['google'] = $q->google_account;
-					endforeach;
-				}
-				$this->staffM->insertQuery('staffs', $u);
-				$this->staffM->ptdbQuery('UPDATE eData SET dvins=1 WHERE eKey="'.$_POST['eKey'].'"');
-			}
-			exit;
-		}
-		
-		$seg2 = $this->uri->segment(2);
-		if($seg2=='ptstaffs'){
-			$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*', '1', 'LEFT JOIN eData ON eData.u=staff.username');
-		}else{		
-			$newstaffs = $this->staffM->getQueryResults('staffs', 'username', 1);
-			$arr = array();
-			foreach($newstaffs AS $n):
-				$arr[] = $n->username;
-			endforeach;
-			$data['newstaffs'] = $arr;
-			
-			$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'sFirst, sLast, office, active, email, eData.*, (SELECT u FROM eData ee WHERE ee.eKey=eData.sup ) as supName', 'dv=0 AND dvins=1', 'LEFT JOIN eData ON eData.u=staff.username');
-		}
+		$data['pages'] = $this->staffM->getPTSQLQueryResults('SELECT pageNum, pageTitle, pageSet, pageHandle FROM `pages` ORDER BY pageTitle LIMIT 500, 50');
+		$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'username, pageAccessCompany,pageAccessMisc,pageAccessAcquisitions,pageAccessEditing,pageAccessDesign,pageAccessDesignStatus,pageAccessIllustrations,pageAccessAudio,pageAccessMusic,pageAccessMarketing,pageAccessProduction,pageAccessPrint,pageAccessPrint2,pageAccessDetailsMods,pageAccessDetailsMods2', 'active="Y"', '', 'username');
+		$data['cstaffs'] = $this->staffM->getQueryResults('staffs', 'username, title, dept, grp, subgrp', '1', 'LEFT JOIN newPositions ON posID=position', 'subgrp, grp, dept');
 		
 		$this->load->view('includes/templatenone', $data);	
 	}

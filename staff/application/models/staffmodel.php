@@ -27,6 +27,11 @@ class Staffmodel extends CI_Model {
 		return $query->result();
 	}
 	
+	function getPTSQLQueryResults($sql){
+		$query = $this->ptDB->query($sql);
+		return $query->result();
+	}
+	
 	function getSingleField($table, $field, $where=1){
 		$query = $this->db->query('SELECT '.$field.' FROM '.$table.' WHERE '.$where.' LIMIT 1');
 		$f = '';
@@ -43,7 +48,7 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function getQueryResults($table, $fields, $where=1, $join='', $orderby=''){
-		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
+		if($orderby!='') $orderby = 'ORDER BY '.$orderby; 
 		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby);
 		return $query->result();
 	}
@@ -52,6 +57,7 @@ class Staffmodel extends CI_Model {
 		$query = $this->db->query($sql);
 		return $query->result();
 	}
+	
 	
 	function getQueryArrayResults($table, $fields, $where=1, $join='', $orderby=''){
 		$arr = array();
