@@ -883,7 +883,7 @@ class Staffmodel extends CI_Model {
 				$disp .= '<td>'.$a->prepby.'</td>';
 				
 			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d')){
-				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/CIS_'.$a->cisID.'.pdf"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
+				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/'.$a->signedDoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
 				$disp .= '<td><br/></td>';
 			}else{
 				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'cispdf/'.$a->cisID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
