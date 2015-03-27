@@ -64,7 +64,7 @@ if($updated==false && count($row)>0){
 	</tr>
 	<tr class="trshift hidden">
 		<td width="40%"> <?= $row->shift ?> </td>
-		<td><input type="text" name="shift" id="valshift" class="forminput" placeholder="07:00am - 04:00pm Mon-Fri"/></td>
+		<td><input type="text" name="shift" id="valshift" class="forminput" value="<?php if(isset($wonka->fieldname) && $wonka->fieldname=='shift'){ echo $wonka->fieldvalue; } ?>" placeholder="07:00am - 04:00pm Mon-Fri"/></td>
 	</tr>
 	<!-------------------------------				ISUP			---------->
 	<tr class="trisup trblank hidden"><td colspan=2><br/></td></tr>
