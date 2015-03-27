@@ -163,7 +163,7 @@ if(isset($_POST) AND !empty($_POST)){
 			<p>Your Tate Publishing ID Number is: '.$_POST['payroll'].'<br/>
 			Your Immediate Supervisor is: '.$jobReq['supervisor'].'</p>
 			<p>On your first day, your immediate supervisor '.$jobReq['supervisor'].' will be waiting to welcome you.</p>
-			<p>To help you be prepared for your first day, please take time to read this page: <a href="http://careerph.tatepublishing.net/welcome.php">http://careerph.tatepublishing.net/welcome.php</a>.</p>		
+			<p>To help you be prepared for your first day, please take time to read this page: <a href="http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/">http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/</a>.</p>		
 			<p>If you have questions, please do not hesitate to call HR at 09173015686 or (032)318-2586. You may also email us at <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>.</p>
 			<p>Once again, congratulations and welcome to the Tate Family!</p>
 			<p>Good Luck and God Bless.</p>
