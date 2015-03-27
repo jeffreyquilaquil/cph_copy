@@ -279,7 +279,7 @@ echo '<table class="tableInfo">';
 	}
 	if(isset($changes->salary)){
 		echo '<tr class="trhead"><td colspan=2>Change in Basic Salary</td></tr>';
-		echo '<tr><td width="30%">Current Info</td><td>Php '.number_format(str_replace(',','',$changes->salary->c),2).'</td></tr>';
+		echo '<tr><td width="30%">Current Info</td><td>Php '.(($changes->salary->c!='')?number_format(str_replace(',','',$changes->salary->c),2):'').'</td></tr>';
 		echo '<tr><td width="30%">New Info</td><td class="errortext">Php '.number_format(str_replace(',','',$changes->salary->n),2).'</td></tr>';
 		echo '<tr><td width="30%">Justification for salary adjustment</td><td class="errortext">'.$changes->salary->com.'</td></tr>';
 		echo '<tr><td colspan=2><br/></td></tr>';
