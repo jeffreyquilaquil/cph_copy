@@ -210,9 +210,9 @@ if($updated==false && count($row)>0){
 			$('input[type=checkbox]').each(function(){
 				id = $(this).attr('id');
 				if( this.checked ){
-					var spattern = new RegExp(/^[0-9]{2}:[0-9]{2}[a-z]{2}\s-\s[0-9]{2}:[0-9]{2}[a-z]{2}\s[a-zA-Z]{3}-[a-zA-Z]{3}$/);
+					//var spattern = new RegExp(/^[0-9]{2}:[0-9]{2}[a-z]{2}\s-\s[0-9]{2}:[0-9]{2}[a-z]{2}\s[a-zA-Z]{3}-[a-zA-Z]{3}$/);
 					
-					if(id=='shift' && $('#valshift').val()!='' && spattern.test($('#valshift').val())==false)
+					if(id=='shift' && $('#valshift').val()=='')
 						err = false;
 					
 					if(id=='empstatus' && $('#regDate').val()=='')
