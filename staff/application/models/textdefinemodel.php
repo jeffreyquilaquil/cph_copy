@@ -92,7 +92,8 @@ class Textdefinemodel extends CI_Model {
 						'1'=>'Voluntary (Resignation)',
 						'2'=>'Involuntary (Just Cause - AWOL)',
 						'3'=>'Involuntary (End of Probationary Employment)',
-						'4'=>'Involuntary (Just Cause)'
+						'4'=>'Involuntary (Just Cause)',
+						'5'=>'Terminated for Just Cause: No Show'
 					);
 		}else if($con=='areaofimprovement'){
 			$a = array(
