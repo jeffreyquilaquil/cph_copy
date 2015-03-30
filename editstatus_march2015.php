@@ -4,7 +4,6 @@
 	date_default_timezone_set("Asia/Manila");
 	setlocale(LC_MONETARY, 'en_US');
 	
-	
 	if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 		echo '<script>window.parent.location = "http://careerph.tatepublishing.net/login.php";</script>';
 		exit();
@@ -125,53 +124,52 @@
 
 			$pdf = new FPDI();
 			$pdf->AddPage();
-			$pdf->setSourceFile('includes/forms/jobOffer2015.pdf');
+			$pdf->setSourceFile('includes/forms/jobOffer.pdf');
 			$tplIdx = $pdf->importPage(1);
 			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-
+			
 			$pdf->SetFont('Arial','',10);
 			$pdf->setTextColor(0, 0, 0);
-
-			$pdf->setXY(24.5, 45);
+			
+			$pdf->setXY(12, 47);
 			$pdf->Write(0, date('F d, Y'));	
-
+			
 			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(24.5, 54);
+			$pdf->setXY(12, 60);
 			$pdf->Write(0, $info['fname'].' '.$info['lname']);	
+			
+			$pdf->setXY(20, 81.8);
+			$pdf->Write(0, $_POST['prefix'].' '.$info['lname']);
+			
+			$sal = (int)$_POST['salary'] * 13;
+			$pdf->setXY(84.5, 109.2);
+			$pdf->Write(0, number_format($sal, 2));
+			
+			$pdf->setXY(105, 120);
+			$pdf->Write(0, number_format((int)$_POST['salary'], 2));
 
-			$pdf->setXY(24.5, 68);
-			$pdf->Write(0, 'Dear '.$_POST['prefix'].' '.$info['lname'].',');
-
-			$pdf->setXY(82, 92);
-			$pdf->Write(4, $_POST['position']);
-
-			$pdf->setXY(82, 100.5);
-			$pdf->Write(0, date('F d, Y',strtotime($_POST['startDate'])));
-
-			$pdf->setXY(82, 106.5);
-			$pdf->Write(0, 'Php '.number_format((int)$_POST['salary'], 2));
-
-			$pdf->setXY(82, 111);
-			$pdf->Write(4, 'Php 325.00 / month');
-			$pdf->setXY(82, 117);
-			$pdf->Write(4, 'Php 1,500.00 / month');
-			$pdf->setXY(82, 123.5);
-			$pdf->Write(4, 'Php 300.00 / month');
-			$pdf->setXY(82, 129.5);
-			$pdf->Write(4, 'Php 125.00 / month');
-			$pdf->setXY(82, 136);
-			$pdf->Write(4, 'Php 250.00 / month');
-			$pdf->setXY(82, 142);
-			$pdf->Write(4, 'Php '.number_format(((int)$_POST['salary']+'2500'),2));
-
+			$pdf->setXY(120, 185.8);
+			$pdf->Write(4, strtoupper($_POST['position']));
+			
 			$pdf->AddPage();
 			$tplIdx = $pdf->importPage(2);
 			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-						
-			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(25, 283.5);
+			
+			$pdf->AddPage();
+			$tplIdx = $pdf->importPage(3);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true); 
+			
+			$pdf->AddPage();
+			$tplIdx = $pdf->importPage(4);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true); 
+			
+			$pdf->SetFont('Arial','',10);
+			$pdf->setXY(18, 195);
 			$pdf->Write(0, strtoupper($info['fname'].' '.$info['lname']));
-
+			
+			$pdf->setXY(43, 206);
+			$pdf->Write(0, $_POST['startDate']);
+			
 			$pdf->Output("uploads/joboffers/JobOffer".$joInsID.".pdf", "F");
 			$pdf->Output($info['lname'].$info['fname']."JobOffer.pdf", "D");
 			
@@ -543,7 +541,7 @@
 										else echo '<tr>';
 										echo '
 												<td>'.$g['offeredBy'].' | <span style="font-size:10px;">'.$g['timestamp'].'</span></td>
-												<td>Php '.$g['offer'].'</td>
+												<td>PhP'.$g['offer'].'</td>
 												<td>'.date('F d, Y', strtotime($g['startDate'])).'</td>';
 										
 										$filename = 'uploads/joboffers/JobOffer'.$g['joID'].'.pdf';
