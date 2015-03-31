@@ -2229,11 +2229,13 @@ class Staff extends CI_Controller {
 	}
 	
 	public function testpage(){
-		$data['content'] = 'test';		
+		$data['content'] = 'test';	
+		if(isset($_POST) && !empty($_POST)){
+			$this->staffM->updateQuery('staffs', array('empID'=>$_POST['id']), array('hmoNumber'=>$this->staffM->encryptText($_POST['v'])));
+			exit;
+		}
 		
-		$data['pages'] = $this->staffM->getPTSQLQueryResults('SELECT pageNum, pageTitle, pageSet, pageHandle FROM `pages` ORDER BY pageTitle LIMIT 500, 50');
-		$data['staffs'] = $this->staffM->getPTQueryResults('staff', 'username, pageAccessCompany,pageAccessMisc,pageAccessAcquisitions,pageAccessEditing,pageAccessDesign,pageAccessDesignStatus,pageAccessIllustrations,pageAccessAudio,pageAccessMusic,pageAccessMarketing,pageAccessProduction,pageAccessPrint,pageAccessPrint2,pageAccessDetailsMods,pageAccessDetailsMods2', 'active="Y"', '', 'username');
-		$data['cstaffs'] = $this->staffM->getQueryResults('staffs', 'username, title, dept, grp, subgrp', '1', 'LEFT JOIN newPositions ON posID=position', 'subgrp, grp, dept');
+		$data['staffs'] = $this->staffM->getQueryResults('staffs', '*', 1, '', 'lname ASC');
 		
 		$this->load->view('includes/templatenone', $data);	
 	}
