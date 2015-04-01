@@ -3,8 +3,7 @@
 	require_once('includes/labels.php');
 	date_default_timezone_set("Asia/Manila");
 	setlocale(LC_MONETARY, 'en_US');
-	
-	
+		
 	if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 		echo '<script>window.parent.location = "http://careerph.tatepublishing.net/login.php";</script>';
 		exit();

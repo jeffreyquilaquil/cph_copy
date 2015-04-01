@@ -1,6 +1,8 @@
 <?php
 require 'config.php';
 
+
+
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	header("Location: login.php");
 	exit();
@@ -126,8 +128,7 @@ if(isset($_POST) AND !empty($_POST)){
 				
 		if($_POST['office'] == 'cebu'){
 			$to = 'helpdesk.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,'.$supEmail.','.$reqEmail;
-			$from = 'hr.cebu@tatepublishing.net';
-			
+			$from = 'hr.cebu@tatepublishing.net';			
 		}else{
 			$to = 'helpdesk.us@tatepublishing.net';
 			$from = 'vikki.williams@tatepublishing.net';
