@@ -128,7 +128,7 @@ if(isset($_POST) AND !empty($_POST)){
 				
 		if($_POST['office'] == 'cebu'){
 			$to = 'helpdesk.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,'.$supEmail.','.$reqEmail;
-			$from = 'hr.cebu@tatepublishing.net';			
+			$from = 'kent.ybanez@tatepublishing.net';			
 		}else{
 			$to = 'helpdesk.us@tatepublishing.net';
 			$from = 'vikki.williams@tatepublishing.net';
