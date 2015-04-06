@@ -92,32 +92,33 @@ class MyCrons extends CI_Controller {
 			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
 			$years = floor($diff / (365*60*60*24));
 			
-			if($q->leaveCredits>0){
-				$body = '<p>Hi,</p>
-					<p><i>This is an automated message.</i><br/>
-					*************************************************************************************</p>
-					<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
-					<p><br/></p>
-					<p>Thanks!</p>
-					<p>CAREERPH Auto-Email</p>';
-				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
+			if($years>0){			
+				if($q->leaveCredits>0){
+					$body = '<p>Hi,</p>
+						<p><i>This is an automated message.</i><br/>
+						*************************************************************************************</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
+						<p><br/></p>
+						<p>Thanks!</p>
+						<p>CAREERPH Auto-Email</p>';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
+				}
+				
+				$hremail = '<p>Hi HR,</p>
+						<p><i>This is an automated message.</i><br/>
+						*************************************************************************************</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'.</p>
+						<p><br/></p>
+						<p>Thanks!</p>
+						<p>CAREERPH Auto-Email</p>';
+				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
+				
+				
+				$this->staffM->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($years+10)));
+				
+				$nnote = 'CONGRATULATIONS! This day marks your '.$this->staffM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($years+10).'. <br/><br/>We wish you happiness and success now and always.';
+				$this->addMyNotif($q->empID, $nnote, 0, 1);
 			}
-			
-			$hremail = '<p>Hi HR,</p>
-					<p><i>This is an automated message.</i><br/>
-					*************************************************************************************</p>
-					<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'.</p>
-					<p><br/></p>
-					<p>Thanks!</p>
-					<p>CAREERPH Auto-Email</p>';
-			$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
-			
-			
-			$this->staffM->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($years+10)));
-			
-			$nnote = 'CONGRATULATIONS! This day marks your '.$this->staffM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($years+10).'. <br/><br/>We wish you happiness and success now and always.';
-			$this->addMyNotif($q->empID, $nnote, 0, 1);
-			
 		endforeach;
 		
 	}
