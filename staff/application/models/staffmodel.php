@@ -1108,7 +1108,8 @@ class Staffmodel extends CI_Model {
 			$volume[$key]  = $row['timestamp'];
 		}
 
-		array_multisort($volume, SORT_DESC, $notesArr);
+		if(!empty($notesArr) && !empty($volume))
+			array_multisort($volume, SORT_DESC, $notesArr);
 		
 		return $notesArr;		
 	}  
