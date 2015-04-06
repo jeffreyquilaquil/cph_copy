@@ -764,8 +764,11 @@ class Staff extends CI_Controller {
 			
 	public function ntepdf(){
 		if($this->uri->segment(2)!=''){
-			$nteID = $this->uri->segment(2);
-			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, staffs.title, supervisor, dept, grp', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+            $nteID = $this->uri->segment(2);
+            /*
+             * remove staff.title - unknow column in db
+             * */
+			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
 			if(count($row)==0){
 				echo 'No NTE record.';
