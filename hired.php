@@ -25,7 +25,7 @@ if(isset($_POST) AND !empty($_POST)){
 				'sMaidenLast' => $hire['mname'],
 				'emailCom' => $_POST['username'].'@tatepublishing.com',
 				'email' => $_POST['email'],
-				'office' => $_POST['office']
+				'office' => (($_POST['office']=='cebu')?'PH-Cebu':$_POST['office'])
 				);
 	
 	if( $_POST['accountType'] == 2 ){ //mimic user
