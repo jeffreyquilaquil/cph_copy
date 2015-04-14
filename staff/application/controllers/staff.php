@@ -768,7 +768,7 @@ class Staff extends CI_Controller {
             /*
              * remove staff.title - unknow column in db
              * */
-			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp, title', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
 			if(count($row)==0){
 				echo 'No NTE record.';
@@ -872,31 +872,31 @@ class Staff extends CI_Controller {
 			$pdf->SetFont('Helvetica','',9);
 			$pdf->setXY(115, 217);
 			$pdf->Write(0, date('l, F d, Y', strtotime($row->dateissued)));	
-			if(file_exists(UPLOAD_DIR.$sName->username.'/signature.png')){
+			/* if(file_exists(UPLOAD_DIR.$sName->username.'/signature.png')){
 				$pdf->Image(UPLOAD_DIR.$sName->username.'/signature.png', 40, 205, 0);
-			}
+			} */
 			
 			//received by
-			if($row->responsedate!='0000-00-00 00:00:00'){
-				$pdf->SetFont('Helvetica','B',9);
-				$pdf->setXY(33, 239);
-				$pdf->Write(0, strtoupper($row->name));
+			$pdf->SetFont('Helvetica','B',9);
+			$pdf->setXY(33, 238.8);
+			$pdf->Write(0, strtoupper($row->name));
+			if($row->responsedate!='0000-00-00 00:00:00'){				
 				$pdf->SetFont('Helvetica','',9);
-				$pdf->setXY(115, 239);
+				$pdf->setXY(115, 238.8);
 				$pdf->Write(0, date('l, F d, Y', strtotime($row->responsedate)));	
-				if(file_exists(UPLOAD_DIR.$row->username.'/signature.png')){
+				/* if(file_exists(UPLOAD_DIR.$row->username.'/signature.png')){
 					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 40, 227, 0);
-				}				
+				} */				
 			}
 			
 			if($row->status==0){
-				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"');
+				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 				if($row->type=='tardiness') $sanctionArr = $this->txtM->definevar('sanctiontardiness');
 				else $sanctionArr = $this->txtM->definevar('sanctionawol');
 
 				$secondlevelmngr = '';
 				if(isset($firstlevelmngr->supervisor))
-					$secondlevelmngr = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS eName', 'empID="'.$firstlevelmngr->supervisor.'"');
+					$secondlevelmngr = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS eName, title', 'empID="'.$firstlevelmngr->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 									
 				$thru = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name', 'empID="'.$row->carissuer.'"');
 				
@@ -1001,7 +1001,7 @@ class Staff extends CI_Controller {
 				$pdf->Write(0, date('F d, Y',strtotime($row->cardate))); 	 */
 				
 				$pdf->setXY(20, 222.5);
-				$pdf->Write(0, strtoupper($secondlevelmngr));	
+				$pdf->Write(0, strtoupper($secondlevelmngr->eName));	
 				/* $pdf->setXY(135, 222.5);
 				$pdf->Write(0, date('F d, Y',strtotime($row->cardate))); */ 
 								
@@ -1086,10 +1086,10 @@ class Staff extends CI_Controller {
 				$pdf->Write(0, strtoupper($thru->name));	
 				$pdf->setXY(135, 197);
 				$pdf->Write(0, date('F d, Y', strtotime($row->cardate)));	
-				if(file_exists(UPLOAD_DIR.$thru->username.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$thru->username.'/signature.png', 25, 184, 0);				
+				/* if(file_exists(UPLOAD_DIR.$thru->username.'/signature.png'))
+					$pdf->Image(UPLOAD_DIR.$thru->username.'/signature.png', 25, 184, 0);	 */			
 				
-				$pdf->setXY(20, 223);
+				$pdf->setXY(20, 224);
 				$pdf->Write(0, strtoupper($row->name));	
 				/* $pdf->setXY(135, 223);
 				$pdf->Write(0, date('F d, Y'));	 */
@@ -1246,7 +1246,8 @@ class Staff extends CI_Controller {
 			if($this->user->access=='' && $this->user->level==0){
 				$data['access'] = false;
  			}else{		
-				$data['nte'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+				$data['pendingacknowledgement'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1 AND responsedate="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+				$data['pendingforcar'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1 AND responsedate!="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
 				$data['ntewcar'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.carissuer LIMIT 1) AS carName', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
 			}
 		}

@@ -360,8 +360,13 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 <?php }
 	if(count($disciplinary)>0){
 ?>	
-	<table class="tableInfo">
-		<tr class="trlabel" id="disciplinary"><td colspan=8>Disciplinary Records</td></tr>
+	<table class="tableInfo" id="disRec">
+		<tr class="trlabel">
+			<td>Disciplinary Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disRec', this)" class="droptext">Show</a>]</td>
+		</tr>		
+	</table>
+	
+	<table class="tableInfo hidden" id="disRecData">
 		<tr class="trhead">	
 			<td>Action</td>
 			<td>Type</td>

@@ -1209,6 +1209,8 @@ class Staffmodel extends CI_Model {
 			if($this->access->accessHR==true){
 				$cnt += $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
 			}
+		}else if($type=='nte'){
+			$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', 'status=1 AND responsedate!="0000-00-00 00:00:00"');
 		}
 		
 		return $cnt;
@@ -1311,7 +1313,16 @@ class Staffmodel extends CI_Model {
 			//page2
 			$pdf->AddPage();
 			$tplIdx = $pdf->importPage(2);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);				
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
+
+			//acknowledgements
+			$pdf->SetFont('Arial','B',10);
+			$pdf->setXY(17, 61);
+			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(17, 80);
+			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(180, 71);
+			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
 		}
 		
 		if($type=='evaluation'){
@@ -1433,6 +1444,15 @@ class Staffmodel extends CI_Model {
 					}					
 				} */				
 			}
+			
+			//acknowledgements
+			$pdf->SetFont('Arial','B',10);
+			$pdf->setXY(15, 153);
+			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(15, 172.5);
+			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(175, 163);
+			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
 		}	
 		
 		

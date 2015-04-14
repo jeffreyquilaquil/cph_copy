@@ -43,6 +43,7 @@
 					$updateRequestNum = $this->staffM->countResults('updateRequest');
 					$pendingCOENum = $this->staffM->countResults('pendingCOE');
 					$staffLeavesNum = $this->staffM->countResults('staffLeaves');
+					$nteNum = $this->staffM->countResults('nte');
 					
 					if($this->access->accessFullHR==true){
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Staff CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';						
@@ -52,7 +53,7 @@
 					}
 					if($this->access->accessFinance==false){
 						echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Staff Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';
-						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">NTE Issued</a></li>';
+						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">NTE Issued '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Staff Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='others')?'class="current"':'').'><a class="iframe" href="'.$this->config->base_url().'others/">Other Pages</a></li>';
 					}
