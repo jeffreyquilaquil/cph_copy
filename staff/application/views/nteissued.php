@@ -1,15 +1,122 @@
 <h2>NTE Issued</h2>
 <hr/>
-<ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">Pending Employee's Acknowledgement <?= ((count($pendingacknowledgement)>0)?'('.count($pendingacknowledgement).')':'') ?></li>
-	<li class="tab-link" data-tab="tab-2">Acknowledged and Pending for CAR <?= ((count($pendingforcar)>0)?'('.count($pendingforcar).')':'') ?></li>
-	<li class="tab-link" data-tab="tab-3">CAR Generated <?= ((count($ntewcar)>0)?'('.count($ntewcar).')':'') ?></li>
-</ul>
-
-<div id="tab-1" class="tab-content current">
 <?php
-	if(count($pendingacknowledgement)==0){
-		echo '<br/>No pending NTE\'s.';
+$cntAllActive = count($allActive);
+if($this->access->accessFullHR==true){
+	$cntPendingPrint = count($pendingPrint);
+	$cntPendingUpload = count($pendingUpload);
+}
+?>
+
+<?php if($this->access->accessFullHR==true){ ?>
+	<ul class="tabs">
+		<li class="tab-link current" data-tab="pendingprinttab">Pending for Printing (<span id="cntPendingPrint"><?= $cntPendingPrint ?></span>)</li>
+		<li class="tab-link" data-tab="pendinguploadtab">Pending for Upload (<span id="cntPendingUpload"><?= $cntPendingUpload ?></span>)</li>
+		<li class="tab-link" data-tab="allactivetab <?= (($this->access->accessFullHR==false)?'current':'')?>">All Active NTE's (<span id="cntPendingUpload"><?= $cntAllActive ?></span>)</li>
+	</ul>
+<?php } ?>	
+
+
+<?php if($this->access->accessFullHR==true){ ?>
+	<div id="pendingprinttab" class="tab-content current">
+	<?php
+		if($cntPendingPrint==0){
+			echo '<br/>No pending NTE for printing.';
+		}else{
+	?>
+	<table class="tableInfo">
+		<tr class="trhead">
+			<td>Employee</td>
+			<td>NTE Type</td>
+			<td>Level of Offense</td>
+			<td>Date Issued</td>
+			<td>Issued By</td>
+			<td>Type</td>
+			<td>File</td>
+			<td>Printed</td>
+		</tr>
+	<?php
+		foreach($pendingPrint AS $n):
+			echo '
+				<tr id="trpendingprint_'.$n->nteID.'">
+					<td>'.$n->name.'</td>
+					<td>'.ucfirst($n->type).'</td>
+					<td>'.$this->staffM->ordinal($n->offenselevel).' Offense</td>
+					<td>'.date('F d, Y', strtotime($n->dateissued)).'</td>
+					<td>'.$n->issuerName.'</td>
+					<td>'.(($n->status==1)?'NTE':'CAR').'</td>
+					<td><a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$n->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
+					<td><input type="checkbox" onClick="ntePrinted('.$n->nteID.', this)"/></td>
+				</tr>
+			';
+		endforeach;
+	?>
+	</table>
+	<?php
+		}
+	?>
+	</div>
+
+
+	<div id="pendinguploadtab" class="tab-content">
+	<?php
+		if($cntPendingUpload==0){
+			echo '<br/>No pending NTE for upload. If counter above is not 0 please refresh the page.';
+		}else{
+	?>
+	<table class="tableInfo">
+		<tr class="trhead">
+			<td>Employee</td>
+			<td>NTE Type</td>
+			<td>Level of Offense</td>
+			<td>Date Issued</td>
+			<td>Issued By</td>
+			<td>Printed By</td>
+			<td>Date Printed</td>
+			<td>Type</td>
+			<td>Upload</td>
+		</tr>
+	<?php
+		foreach($pendingUpload AS $u):
+			if($u->status==1)
+				$whoprinted = explode('|', $u->nteprinted);
+			else
+				$whoprinted = explode('|', $u->carprinted);
+			echo '
+				<tr id="trnteupload_'.$u->nteID.'">
+					<td>'.$u->name.'</td>
+					<td>'.ucfirst($u->type).'</td>
+					<td>'.$this->staffM->ordinal($u->offenselevel).' Offense</td>
+					<td>'.date('F d, Y', strtotime($u->dateissued)).'</td>
+					<td>'.$u->issuerName.'</td>
+					<td>'.$whoprinted[0].'</td>
+					<td>'.date('F d, Y',strtotime($whoprinted[1])).'</td>
+					<td>'.(($u->status==1)?'NTE':'CAR').'</td>
+					<td><input type="button" value="Upload" onClick="nteUpload('.$u->nteID.')"/></td>
+				</tr>
+			';
+		endforeach;
+		
+	?>
+	</table>
+	<form id="signNTE" action="" method="POST" enctype="multipart/form-data" class="hidden">
+		<input type="file" id="signedFile" name="signedFile"/>
+		<input type="hidden" id="nteID" name="nteID"/>
+		<input type="hidden" name="submitType" value="signedNTE"/>					
+	</form>
+
+	<?php
+		}
+	?>
+	</div>
+
+<?php } //end of code if user is not full or HR?>
+
+
+<div id="allactivetab" class="tab-content <?= (($this->access->accessFullHR==false)?'current':'')?>">
+<?php
+	if($cntAllActive==0){
+		echo '<br/>No NTE records.';
 	}else{
 ?>
 <table class="tableInfo">
@@ -19,20 +126,20 @@
 		<td>Level of Offense</td>
 		<td>Date Issued</td>
 		<td>Issued By</td>
-		<td>NTE</td>
-		<td>View</td>
+		<td>Sanction</td>
+		<td>Details</td>
 	</tr>
 <?php
-	foreach($pendingacknowledgement AS $n):
+	foreach($allActive AS $a):
 		echo '
-			<tr>
-				<td>'.$n->name.'</td>
-				<td>'.ucfirst($n->type).'</td>
-				<td>'.$this->staffM->ordinal($n->offenselevel).' Offense</td>
-				<td>'.date('F d, Y', strtotime($n->dateissued)).'</td>
-				<td>'.$n->issuerName.'</td>
-				<td><a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$n->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
-				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$n->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+			<tr id="trpendingprint_'.$a->nteID.'">
+				<td>'.$a->name.'</td>
+				<td>'.ucfirst($a->type).'</td>
+				<td>'.$this->staffM->ordinal($a->offenselevel).' Offense</td>
+				<td>'.date('F d, Y', strtotime($a->dateissued)).'</td>
+				<td>'.$a->issuerName.'</td>
+				<td>'.$a->sanction.'</td>
+				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$a->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>
 			</tr>
 		';
 	endforeach;
@@ -43,81 +150,33 @@
 ?>
 </div>
 
-<div id="tab-2" class="tab-content">
-<?php
-	if(count($pendingforcar)==0){
-		echo '<br/>No pending NTE\'s.';
-	}else{
-?>
-<table class="tableInfo">
-	<tr class="trhead">
-		<td>Employee</td>
-		<td>NTE Type</td>
-		<td>Level of Offense</td>
-		<td>Date Issued</td>
-		<td>Date Acknowledged</td>
-		<td>NTE</td>
-		<td>View</td>
-	</tr>
-<?php
-	foreach($pendingforcar AS $p):
-		echo '
-			<tr>
-				<td>'.$p->name.'</td>
-				<td>'.ucfirst($p->type).'</td>
-				<td>'.$this->staffM->ordinal($p->offenselevel).' Offense</td>
-				<td>'.date('F d, Y', strtotime($p->dateissued)).'</td>
-				<td>'.date('F d, Y', strtotime($p->responsedate)).'</td>
-				<td><a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$p->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
-				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$p->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-			</tr>
-		';
-	endforeach;
-?>
-</table>
-<?php
-	}
-?>
-</div>
+<script type="text/javascript">
+	$(function(){
+		$('#signedFile').change(function(){
+			$('#trnteupload_'+$('#nteID').val()+' td:last').html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="25"/>');
+			$('#signNTE').submit();
+		});
+	});
 
-
-<div id="tab-3" class="tab-content">
-<?php
-	if(count($ntewcar)==0){
-		echo '<br/>No generated CAR.';
-	}else{
-?>
-<table class="tableInfo">
-	<tr class="trhead">
-		<td>Employee</td>
-		<td>NTE Type</td>
-		<td>Level of Offense</td>
-		<td>Date NTE Issued</td>
-		<td>NTE Issued By</td>
-		<td>Date CAR Issued</td>
-		<td>CAR Issued By</td>
-		<td>NTE File</td>
-		<td>View</td>
-	</tr>
-<?php
-	foreach($ntewcar AS $nt):
-		echo '
-			<tr>
-				<td>'.$nt->name.'</td>
-				<td>'.$nt->type.'</td>
-				<td>'.$this->staffM->ordinal($nt->offenselevel).' Offense</td>
-				<td>'.date('F d, Y', strtotime($nt->dateissued)).'</td>
-				<td>'.$nt->issuerName.'</td>
-				<td>'.date('F d, Y', strtotime($nt->cardate)).'</td>
-				<td>'.$nt->carName.'</td>
-				<td><a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$nt->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
-				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$nt->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-			</tr>
-		';
-	endforeach;
-?>
-</table>
-<?php
+	function ntePrinted(id, ths){
+		if($(ths).is(':checked')){
+			if(confirm('Are you sure you already printed the document?')){				
+				$('#trpendingprint_'+id+' td:last').html('<img src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>" width="25"/>');
+				$.post('<?= $this->config->item('career_uri') ?>',{submitType:'nteprinted',nteID:id},
+				function(){
+					$('#trpendingprint_'+id).hide();
+					location.reload();
+				}); 
+			}else{
+				$(ths).prop('checked', false); 
+			}
+		}
 	}
-?>
-</div>
+	
+	function nteUpload(id){
+		$('#signedFile').trigger('click');
+		$('#nteID').val(id);		
+	}
+	
+</script>
+

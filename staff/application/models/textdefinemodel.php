@@ -48,7 +48,7 @@ class Textdefinemodel extends CI_Model {
 			$a = array(
 						'1' => 'Verbal Warning', 
 						'2' => 'Written Warning',
-						'3' => '1 – 4 Days Suspension',
+						'3' => '1 - 4 Days Suspension',
 						'4' => '5 - 10 Days Suspension',
 						'5' => 'Termination'
 					);

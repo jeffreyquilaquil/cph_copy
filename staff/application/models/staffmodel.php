@@ -1209,8 +1209,8 @@ class Staffmodel extends CI_Model {
 			if($this->access->accessHR==true){
 				$cnt += $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
 			}
-		}else if($type=='nte'){
-			$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', 'status=1 AND responsedate!="0000-00-00 00:00:00"');
+		}else if($type=='nte'){						
+			$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', '(status=1 AND nteprinted="") OR (status=0 AND carprinted="") OR (status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded="")');
 		}
 		
 		return $cnt;

@@ -663,10 +663,10 @@ class Staff extends CI_Controller {
 	
 	public function issueNTE(){		
 		$data['content'] = 'issueNTE';
-		if($this->user!=false){			
+		if($this->user!=false){
 			$data['ntegenerated']=false;
 			
-			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, email, pemail, supervisor, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND supervisor!=0 ) AS sName', 'empID="'.$this->uri->segment(2).'"');
+			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, fname, CONCAT(fname," ",lname) AS name, email, pemail, supervisor, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND supervisor!=0 ) AS sName', 'empID="'.$this->uri->segment(2).'"');
 			
 			//check if you are allowed to issue nte
 			if($this->user->access=='' && $this->staffM->checkStaffUnderMe($data['row']->username)==false){
@@ -710,17 +710,17 @@ class Staff extends CI_Controller {
 				$this->staffM->addMyNotif($_POST['empID_fk'], $this->user->name.' issued an NTE to you.  Please check your disciplinary records or click <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/" class="iframe">here</a> to view the NTE file.', 4, 1);
 				$this->staffM->addMyNotif($this->user->empID, 'You issued an NTE to '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/" class="iframe">here</a> to view NTE details page or <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/" class="iframe">here</a> to view PDF the file. ', 5, 0);
 				
-				$dateplus5 = date('l F d, Y', strtotime('+5 day', strtotime(date('Y-m-d'))));
+				$dateplus5 = date('l F d, Y', strtotime('+7 day'));
 				$nextMonday = date('l F d, Y', strtotime('next monday', strtotime($dateplus5)));
 				
 				$to = $data['row']->email.','.$data['row']->pemail;
 				$subject = 'A Notice to Explain For '.$data['row']->name;
-				$body = '<p>Hello '.$data['row']->name.'</p>
-					<p>This is an automatic notification sent to inform you a Notice to Explain is generated for you. See details below:
+				$body = '<p>Hello '.trim($data['row']->fname).',</p>
+					<p>This is an automatic notification sent to inform you a Notice to Explain is generated for you by '.$this->user->name.'. See details below:
 						<ul>
-							<li>Date of issuance: '.date('F d, Y').'</li>
+							<li>Date of Issuance: '.date('F d, Y').'</li>
 							<li>Offense Number: '.$_POST['offenselevel'].'</li>
-							<li>AWOL dates:
+							<li>'.ucfirst($_POST['type']).' Dates:
 								<ul>';
 						$inQ = explode('|', $ins['offensedates']);
 						foreach($inQ AS $in):
@@ -735,19 +735,21 @@ class Staff extends CI_Controller {
 					</p>	
 					<p><i>Click <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/"><b>here</b></a> to view the file.</i></p>';
 				if($_POST['offenselevel']<3){
-				if($_POST['type']=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
-				else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');				
-				
-				$body .= '<p>Note that the Code of Conduct prescribes a sanction of '.$data['sanctionArr'][$_POST['offenselevel']].' to a '.$this->staffM->ordinal($_POST['offenselevel']).' offense of AWOL.</p>					
-					<p>You are hereby requested to send an explanation to your immediate supervisor <a href="mailto:'.$supEmail.'">'.$supEmail.'</a> and cc <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' (5 days) to send your explanation to <a href="mailto:'.$supEmail.'">'.$supEmail.'</a> and cc <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>. Failure to do so will be considered an admission of fault and your waiver of your right to be heard.</p>
-					<p>A <b>Corrective Action Report</b> and <b>Notice of Disciplinary Action</b> will naturally follow the Notice of Decision whether or not an explanation is received from you. The management may give a lighter sanction depending on the validity of the explanation that you provided, or in consideration of the frequency in which the offense is repeated and of your overall conduct and performance at work.</p>';
+					if($_POST['type']=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
+					else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');				
+					
+					$body .= '<p>Note that the Code of Conduct prescribes a sanction of '.$data['sanctionArr'][$_POST['offenselevel']].' to a '.$this->staffM->ordinal($_POST['offenselevel']).' offense of '.$_POST['type'].'.</p>					
+						<p>You are hereby requested to send an explanation. Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/"><b>here</b></a> to submit your explanation. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' (5 days) to write your explanation. Failure to do so will be considered an admission of fault and your waiver of your right to be heard.</p>
+						<p style="color:red;">This shall be the first and only reminder for you to provide your explanation to the said NTE.</p>
+						<p>A <b>Corrective Action Report</b> and <b>Notice of Disciplinary Action</b> will naturally follow the Notice of Decision whether or not an explanation is received from you. The management may give a lighter sanction depending on the validity of the explanation that you provided, or in consideration of the frequency in which the offense is repeated and of your overall conduct and performance at work.</p>';
 				}else{
-				$body .= '<p>Note that 3 or more offenses of AWOL is already TERMINABLE as prescribed by our Code of Conduct.</p>
-					<p>You are hereby requested to send an explanation to your immediate supervisor <a href="mailto:'.$supEmail.'">'.$supEmail.'</a> and cc <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' to send your explanation to <a href="mailto:'.$supEmail.'">'.$supEmail.'</a> and cc <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>.</p>
-					<p>On '.$nextMonday.' you are invited for an administrative hearing at the Admin Office where you can further justify your explanation. Failure to send an explanation or attend the administrative hearing shall be considered an admission of fault and your waiver of your right to be heard.</p>
-					<p>A <b>Corrective Action Report</b> and <b>Notice of Disciplinary Action</b> will naturally follow the Notice of Decision whether or not an explanation is received from you.</p>';
+					$body .= '<p>Note that 3 or more offenses of '.$_POST['type'].' is already TERMINABLE as prescribed by our Code of Conduct.</p>
+						<p>You are hereby requested to send an explanation. Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/"><b>here</b></a> to submit your explanation. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' to write your explanation.</p>
+						<p>On '.$nextMonday.' you are invited for an administrative hearing at the Admin Office where you can further justify your explanation. Failure to send an explanation or attend the administrative hearing shall be considered an admission of fault and your waiver of your right to be heard.</p>
+						<p style="color:red;">This shall be the first and only reminder for you to provide your explanation to the said NTE.</p>
+						<p>A <b>Corrective Action Report</b> and <b>Notice of Disciplinary Action</b> will naturally follow the Notice of Decision whether or not an explanation is received from you.</p>';
 				}
-				$body .= '<p>Please email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> should you have any question or concern about this.</p>
+				$body .= '<p>If you have questions or concerns about this NTE, plase discuss with '.$this->user->name.'.</p>
 					<p>The hard copy will be routed to you for your signature.</p>
 					<p><br/></p>
 					<p>Yours truly,</p>
@@ -778,41 +780,6 @@ class Staff extends CI_Controller {
 			if($row->issuer!=0){
 				$sName = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, username', 'empID="'.$row->issuer.'"');			
 			}
-						
-			require_once('includes/fpdf/fpdf.php');
-			require_once('includes/fpdf/fpdi.php');
-			
-			$pdf = new FPDI();
-			$pdf->AddPage();
-			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
-			$tplIdx = $pdf->importPage(1);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-			
-			$pdf->SetFont('Helvetica','B',9);
-			$pdf->setTextColor(0, 0, 0);
-			
-			$pdf->setXY(47, 38.7);
-			$pdf->Write(0, date('l, F d, Y', strtotime($row->dateissued)));	
-			
-			$pdf->setXY(47, 42.8);
-			$pdf->Write(0, $row->name);	
-			
-			if(isset($sName->name)){
-				$pdf->setXY(47, 51.5);
-				$pdf->Write(0, $sName->name);	
-			}
-			
-			$pdf->setXY(47, 47);
-			$pdf->Write(0, 'The Human Resource Department');	
-			
-			$pdf->setTextColor(255, 0, 0);
-			$pdf->setXY(29, 92);		
-			$pdf->Write(0, $this->staffM->ordinal($row->offenselevel).' Offense');			
-			$pdf->setXY(29, 152);
-			$pdf->Write(0, $this->staffM->ordinal($row->offenselevel).' Offense');	
-			
-			$pdf->setTextColor(0, 0, 0);
-			$pdf->SetFont('Helvetica','',9);
 			
 			$nntype = '';
 			$nntext = '';
@@ -828,67 +795,99 @@ class Staff extends CI_Controller {
 				$nntext = 'You have been recorded as tardy on the dates listed below:';
 				$nnexp = 'Offense Against Attendance And Schedule Adherence - Tardiness and Undertime (i.e. Employees who will be late in reporting to work or late in returning to work from their scheduled break) - Level 1';
 			}
+						
+			require_once('includes/fpdf/fpdf.php');
+			require_once('includes/fpdf/fpdi.php');
 			
-			$pdf->setXY(30, 97);
-			$pdf->Write(0, $nntype);				
-			$pdf->setXY(30, 101.5);
-			$pdf->MultiCell(150, 4, $nntext ,0,'L',false);				
-			$pdf->setXY(30, 155);
-			$pdf->MultiCell(150, 4, $nnexp ,0,'L',false);	
+			$pdf = new FPDI();
+			$pdf->AddPage();
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
 			
-			
-			$dd = explode('|',$row->offensedates);
-			
-			$pdf->SetFont('Helvetica','',9);
-			if(isset($dd[0])){
-				$pdf->setXY(40, 118);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[0])));
-			}
-			if(isset($dd[1])){
-				$pdf->setXY(40, 123);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[1])));
-			}
-			if(isset($dd[2])){
-				$pdf->setXY(40, 128);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[2])));
-			}
-			if(isset($dd[3])){
-				$pdf->setXY(110, 118);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[3])));
-			}
-			if(isset($dd[4])){
-				$pdf->setXY(110, 123);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[4])));
-			}
-			if(isset($dd[5])){
-				$pdf->setXY(110, 128);
-				$pdf->Write(0, date($dateFormat, strtotime($dd[5])));
-			}
-			
-			//issued by
-			$pdf->SetFont('Helvetica','B',9);
-			$pdf->setXY(33, 217);
-			$pdf->Write(0, strtoupper($sName->name));	
-			$pdf->SetFont('Helvetica','',9);
-			$pdf->setXY(115, 217);
-			$pdf->Write(0, date('l, F d, Y', strtotime($row->dateissued)));	
-			/* if(file_exists(UPLOAD_DIR.$sName->username.'/signature.png')){
-				$pdf->Image(UPLOAD_DIR.$sName->username.'/signature.png', 40, 205, 0);
-			} */
-			
-			//received by
-			$pdf->SetFont('Helvetica','B',9);
-			$pdf->setXY(33, 238.8);
-			$pdf->Write(0, strtoupper($row->name));
-			if($row->responsedate!='0000-00-00 00:00:00'){				
+			if($row->status==1){ //if NTE form		
+				$tplIdx = $pdf->importPage(1);
+				$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+				
+				$pdf->SetFont('Helvetica','B',9);
+				$pdf->setTextColor(0, 0, 0);
+				
+				$pdf->setXY(47, 38.7);
+				$pdf->Write(0, date('l, F d, Y', strtotime($row->dateissued)));	
+				
+				$pdf->setXY(47, 42.8);
+				$pdf->Write(0, $row->name);	
+				
+				if(isset($sName->name)){
+					$pdf->setXY(47, 51.5);
+					$pdf->Write(0, $sName->name);	
+				}
+				
+				$pdf->setXY(47, 47);
+				$pdf->Write(0, 'The Human Resource Department');	
+				
+				$pdf->setTextColor(255, 0, 0);
+				$pdf->setXY(29, 92);		
+				$pdf->Write(0, $this->staffM->ordinal($row->offenselevel).' Offense');			
+				$pdf->setXY(29, 152);
+				$pdf->Write(0, $this->staffM->ordinal($row->offenselevel).' Offense');	
+				
+				$pdf->setTextColor(0, 0, 0);
 				$pdf->SetFont('Helvetica','',9);
-				$pdf->setXY(115, 238.8);
-				$pdf->Write(0, date('l, F d, Y', strtotime($row->responsedate)));	
-				/* if(file_exists(UPLOAD_DIR.$row->username.'/signature.png')){
-					$pdf->Image(UPLOAD_DIR.$row->username.'/signature.png', 40, 227, 0);
-				} */				
+								
+				$pdf->setXY(30, 97);
+				$pdf->Write(0, $nntype);				
+				$pdf->setXY(30, 101.5);
+				$pdf->MultiCell(150, 4, $nntext ,0,'L',false);				
+				$pdf->setXY(30, 155);
+				$pdf->MultiCell(150, 4, $nnexp ,0,'L',false);	
+				
+				
+				$dd = explode('|',$row->offensedates);
+				
+				$pdf->SetFont('Helvetica','',9);
+				if(isset($dd[0])){
+					$pdf->setXY(40, 118);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[0])));
+				}
+				if(isset($dd[1])){
+					$pdf->setXY(40, 123);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[1])));
+				}
+				if(isset($dd[2])){
+					$pdf->setXY(40, 128);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[2])));
+				}
+				if(isset($dd[3])){
+					$pdf->setXY(110, 118);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[3])));
+				}
+				if(isset($dd[4])){
+					$pdf->setXY(110, 123);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[4])));
+				}
+				if(isset($dd[5])){
+					$pdf->setXY(110, 128);
+					$pdf->Write(0, date($dateFormat, strtotime($dd[5])));
+				}
+				
+				//issued by
+				$pdf->SetFont('Helvetica','B',9);
+				$pdf->setXY(30, 215);
+				$pdf->MultiCell(63, 4, strtoupper($sName->name),0,'C',false);			
+				$pdf->SetFont('Helvetica','',9);
+				$pdf->setXY(110, 215);
+				$pdf->MultiCell(63, 4, date('F d, Y', strtotime($row->dateissued)),0,'C',false);		
+			
+				
+				//received by
+				$pdf->SetFont('Helvetica','B',9);
+				$pdf->setXY(30, 236.5);
+				$pdf->MultiCell(63, 4, strtoupper($row->name),0,'C',false);	
+				$pdf->SetFont('Helvetica','',9);
+				$pdf->setXY(110, 236.5);
+				$pdf->MultiCell(63, 4, date('F d, Y', strtotime($row->dateissued)),0,'C',false);	
 			}
 			
+			//if CAR form
 			if($row->status==0){
 				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 				if($row->type=='tardiness') $sanctionArr = $this->txtM->definevar('sanctiontardiness');
@@ -907,7 +906,7 @@ class Staff extends CI_Controller {
 				if($nlevel>3) $nextsanction = 'Termination';
 				else $nextsanction = $sanctionArr[$nlevel];
 			
-				$pdf->AddPage();
+				
 				$tplIdx = $pdf->importPage(2);
 				$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 				
@@ -994,16 +993,18 @@ class Staff extends CI_Controller {
 				$pdf->SetFont('Arial','B',10);
 				
 				if(isset($firstlevelmngr->eName)){
-					$pdf->setXY(20, 196);
-					$pdf->Write(0, strtoupper($firstlevelmngr->eName));	
+					$pdf->setXY(20, 194.5);	
+					$pdf->MultiCell(77, 4,strtoupper($firstlevelmngr->eName),0,'C',false);
 				}			
-				/* $pdf->setXY(135, 196);
-				$pdf->Write(0, date('F d, Y',strtotime($row->cardate))); 	 */
+				$pdf->setXY(135, 194.5);
+				$pdf->MultiCell(50, 4,date('F d, Y',strtotime($row->cardate)),0,'C',false);
 				
-				$pdf->setXY(20, 222.5);
-				$pdf->Write(0, strtoupper($secondlevelmngr->eName));	
-				/* $pdf->setXY(135, 222.5);
-				$pdf->Write(0, date('F d, Y',strtotime($row->cardate))); */ 
+				if(isset($secondlevelmngr->eName)){
+					$pdf->setXY(20, 221);
+					$pdf->MultiCell(77, 4,strtoupper($secondlevelmngr->eName),0,'C',false);				
+				}
+				$pdf->setXY(135, 221);
+				$pdf->MultiCell(50, 4,date('F d, Y',strtotime($row->cardate)),0,'C',false);		
 								
 				
 				$pdf->AddPage();
@@ -1082,17 +1083,15 @@ class Staff extends CI_Controller {
 				$pdf->MultiCell(175, 4, $notice ,0,'L',false);
 				
 				$pdf->SetFont('Arial','B',10);
-				$pdf->setXY(20, 197);
-				$pdf->Write(0, strtoupper($thru->name));	
-				$pdf->setXY(135, 197);
-				$pdf->Write(0, date('F d, Y', strtotime($row->cardate)));	
-				/* if(file_exists(UPLOAD_DIR.$thru->username.'/signature.png'))
-					$pdf->Image(UPLOAD_DIR.$thru->username.'/signature.png', 25, 184, 0);	 */			
+				$pdf->setXY(20, 195.5);
+				$pdf->MultiCell(77, 4,strtoupper($thru->name),0,'C',false);
+				$pdf->setXY(135, 195.5);
+				$pdf->MultiCell(50, 4,date('F d, Y', strtotime($row->cardate)),0,'C',false);
 				
-				$pdf->setXY(20, 224);
-				$pdf->Write(0, strtoupper($row->name));	
-				/* $pdf->setXY(135, 223);
-				$pdf->Write(0, date('F d, Y'));	 */
+				$pdf->setXY(20, 222);
+				$pdf->MultiCell(77, 4,strtoupper($row->name),0,'C',false);
+				$pdf->setXY(135, 222);
+				$pdf->MultiCell(50, 4,date('F d, Y', strtotime($row->cardate)),0,'C',false);				
 			}
 				
 			if($this->uri->segment(3)!='')
@@ -1104,12 +1103,76 @@ class Staff extends CI_Controller {
 		}
 	}
 	
+	public function nteissued(){
+		$data['content'] = 'nteissued';
+		
+		if($this->user!=false){
+			if($this->user->access=='' && $this->user->level==0){
+				$data['access'] = false;
+ 			}else{
+				if(isset($_POST) && !empty($_POST)){
+					if($_POST['submitType']=='nteprinted'){
+						$reqInfo = $this->staffM->getSingleInfo('staffs', 'fname, email, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, status', 'nteID="'.$_POST['nteID'].'"', 'LEFT JOIN staffNTE ON issuer=empID');
+						//update database	
+						if($reqInfo->status==1)
+							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('nteprinted'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
+						else	
+							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('carprinted'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
+						
+						//send email to requestor to get printed document from HR						
+						$emBody = '<p>Hi '.$reqInfo->fname.',</p>
+								<p>Please be informed that the '.(($reqInfo->status==1)?'NTE':'CAR').' for '.$reqInfo->name.' has been printed. Please collect the document from HR and have it signed by '.$reqInfo->name.'. <span style="color:red;">Note that you will receive a daily reminder until this document is returned to HR with complete signatures (yours and employee\'s).</span></p>
+								<p>&nbsp;</p>
+								<p>Yours truly,<br/>
+								<b>The Human Resources Department</b></p>';												
+						$this->staffM->sendEmail('hr.cebu@tatepublishing.net', $reqInfo->email, 'NTE document has been printed', $emBody, 'The Human Resources Department');	
+					}else if($_POST['submitType']=='signedNTE'){
+						$nteD = $this->staffM->getSingleInfo('staffNTE', 'nteID, status', 'nteID="'.$_POST['nteID'].'"');
+
+						//update database
+						if($nteD->status==1)
+							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('nteuploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
+						else
+							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('caruploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
+						
+						//upload signed document to server
+						if($_FILES['signedFile']['name']!=''){
+							$katski = array_reverse(explode('.', $_FILES['signedFile']['name']));
+							$fname = $_POST['nteID'].'_'.(($nteD->status==1)?'NTE':'CAR').'_'.date('YmdHis').'.'.$katski[0];
+							move_uploaded_file($_FILES['signedFile']['tmp_name'], UPLOADS.'NTE/'.$fname);	
+						}
+					}
+				}
+			
+				if($this->access->accessFullHR==true){
+					$data['pendingPrint'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted="") OR (status=0 AND carprinted="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+					$data['pendingUpload'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, carprinted, nteprinted, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+				}
+				
+				$condition = '';
+				if($this->access->accessFullHR==false){
+					$ids = '"",'; //empty value for staffs with no under yet
+					$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+					foreach($myStaff AS $m):
+						$ids .= $m->empID.',';
+					endforeach;
+					if($ids!='')
+						$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
+				}
+				
+				$data['allActive'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status!=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+				
+			}
+		}
+		$this->load->view('includes/template', $data);
+	}
+	
 	public function detailsNTE(){
 		$data['content'] = 'detailsNTE';
 		if($this->user!=false){				
 			$nteID = $this->uri->segment(2);
 			
-			$data['row'] = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=issuer AND issuer!=0) AS issuerName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=carissuer AND carissuer!=0) AS carName', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+			$data['row'] = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, email, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=issuer AND issuer!=0) AS issuerName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=carissuer AND carissuer!=0) AS carName', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk'); 
 			
 			if($data['row']->type=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
 			else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');
@@ -1118,6 +1181,18 @@ class Staff extends CI_Controller {
 				if($_POST['submitType']=='aknowledge'){
 					$this->staffM->updateQuery('staffNTE', array('nteID'=>$nteID), array('response' => addslashes($_POST['response']), 'responsedate'=>date('Y-m-d H:i:s')));
 					$this->staffM->addMyNotif($this->user->empID, 'You acknowledged the NTE issued to you. Click <a href="'.$this->config->base_url().'detailsNTE/'.$nteID.'/" class="iframe">here</a> to view details.', 5);
+					
+					
+					//send email to nte requestor if there is response
+					$issuerEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$data['row']->issuer.'"');
+					$ebody = '<p>Hi,</p>
+							<p>Please be informed that '.$data['row']->name.' has responded to the NTE with the below explanation:</p>
+							<p><b>"'.((empty($_POST['response']))?'None':nl2br($_POST['response'])).'"</b><p>
+							<p>Your next step as the NTE requestor will be to evaluate the merit of the explanation whether or not you find that the explanation is sufficient, you must document your decision with a Corrective Action Report. Click <b><a href="'.$this->config->base_url().'detailsNTE/'.$nteID.'/">here</a></b> to generate the CAR. <span style="color:red;">Remember that you will receive a daily email reminder to generate the CAR from the date the explanation was received until the CAR is generated.</span></p>
+							<p>&nbsp;</p>
+							<p>Thanks!</p>';
+					$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $issuerEmail, 'NTE Response of '.$data['row']->name, $ebody, 'CareerPH');
+					
 					header('Location:'.$_SERVER['REQUEST_URI']);
 					exit;
 				}else if($_POST['submitType']=='cancel'){
@@ -1132,7 +1207,7 @@ class Staff extends CI_Controller {
 						$this->staffM->addMyNotif($carID, $this->user->name.' cancelled the NTE you issued to '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'ntepdf/'.$data['row']->nteID.'/" class="iframe">here</a> to view info.', 0, 1);
 					}
 					exit;
-				}else if($_POST['submitType']=='issuecar'){
+				}else if($_POST['submitType']=='issuecar'){					
 					if($_POST['satisfactory']==1){
 						$upArr['status'] = '3';						
 					}else{
@@ -1175,6 +1250,13 @@ class Staff extends CI_Controller {
 					}else{
 						$ntx = $this->user->name.' issued a Corrective Action Report to you.';
 						$ntxu = 'You issued a Corrective Action Report to '.$data['row']->name.'.';
+						
+						//send email to employee
+						$emBody = '<p>Hi,</p>
+								<p>Please be informed that '.$this->user->name.' has generated a CAR for you. The corrective action is '.$_POST['sanction'].'. Please check <b><a href="'.$this->config->base_url().'detailsNTE/'.$_POST['nteID'].'/">here</a></b> to see the details of the CAR. Should you have any concern about this CAR, please discuss and clarify with '.$data['row']->issuerName.' before signing the document.</p>
+								<p>&nbsp;</p>
+								<p>Thanks!</p>';
+						$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'CAR has been generated', $emBody, 'CAREERPH');
 					}
 					
 					$this->staffM->addMyNotif($data['row']->empID_fk, $ntx.' Please check your disciplinary records or click <a href="'.$this->config->base_url().'detailsNTE/'.$_POST['nteID'].'/" class="iframe">here</a> to view the NTE details.', 4, 1);
@@ -1239,20 +1321,7 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	public function nteissued(){
-		$data['content'] = 'nteissued';
-		
-		if($this->user!=false){
-			if($this->user->access=='' && $this->user->level==0){
-				$data['access'] = false;
- 			}else{		
-				$data['pendingacknowledgement'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1 AND responsedate="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
-				$data['pendingforcar'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status=1 AND responsedate!="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
-				$data['ntewcar'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.carissuer LIMIT 1) AS carName', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
-			}
-		}
-		$this->load->view('includes/template', $data);
-	}
+	
 	
 	public function fileleave(){
 		$data['content'] = 'fileleave';

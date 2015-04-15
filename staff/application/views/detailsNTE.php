@@ -68,12 +68,12 @@
 	</tr>
 	<?php
 	if($row->responsedate!='0000-00-00 00:00:00'){
-		echo '<tr><td>Date Acknowledged</td><td>'.date('F d, Y', strtotime($row->responsedate)).'</td></tr>';
+		echo '<tr><td>Date Responded</td><td>'.date('F d, Y', strtotime($row->responsedate)).'</td></tr>';
 		echo '<tr><td>Response</td><td>'.((!empty($row->response))?nl2br($row->response):'None').'</td></tr>';		
 	}else if($row->carissuer==0){
 		echo '<tr>
-				<td>Date Acknowledged</td>
-				<td><b>NOT YET ACKNOWLEDGE</b></td>
+				<td>Response</td>
+				<td><b>NOT YET RESPONDED</b></td>
 			</tr>';
 	}
 	
@@ -114,7 +114,7 @@
 		}
 	}else if($row->carissuer==0){
 		echo '<tr>
-				<td>View NTE Details</td>
+				<td>NTE Form</td>
 				<td><a href="'.$this->config->base_url().'ntepdf/'.$row->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 			</tr>';
 	}	
@@ -138,7 +138,7 @@
 	}else{
 		if($this->user->empID==$row->empID_fk && $row->responsedate=='0000-00-00 00:00:00'){
 			echo '<form method="POST" action="" onSubmit="return checkacknowledge();">
-				<tr><td><b>Response</b></td><td><textarea class="forminput" name="response" id="responsev"></textarea></td></tr>
+				<tr><td><b>Response</b></td><td><textarea rows="10" class="forminput" name="response" id="responsev"></textarea></td></tr>
 				<tr><td><br/></td><td><input type="hidden" name="submitType" value="aknowledge"/><input type="submit" value="Acknowledge and Submit"/></td></tr>
 				</form>';
 		}		
@@ -149,7 +149,8 @@
 	}
 
 	if(
-		$row->status==0 || ($row->status==1 && $this->access->accessFullHR==true && $row->empID_fk!=$this->user->empID)
+		$row->status==0 || 
+		($row->status==1 && ($this->access->accessFullHR==true || $row->issuer==$this->user->empID))
 	){
 ?>
 	<tr>
@@ -159,7 +160,7 @@
 	<tr id="gencartr">
 		<td colspan=2>
 	<?php 
-		if($this->access->accessFullHR==true){
+		if($this->access->accessFullHR==true || $row->issuer==$this->user->empID){
 			echo '<button id="generateC">Generate CAR</button>';
 		}else{
 			echo 'CAR not yet generated.';
@@ -313,7 +314,7 @@
 	</tr>
 	<tr>
 		<td>Sanction</td>
-		<td><?= $row->sanction ?></td>
+		<td><b style="color:red;"><?= $row->sanction ?></b></td>
 	</tr>
 <?php if(!empty($row->reasonsanction)){ ?>
 	<tr>
@@ -340,7 +341,7 @@
 		<td><?= $row->planImp ?></td>
 	</tr>
 	<tr>
-		<td>View CAR Details</td>
+		<td>CAR Form</td>
 		<td><a href="<?= $this->config->base_url() ?>ntepdf/<?= $row->nteID ?>/"><img src="<?= $this->config->base_url() ?>css/images/pdf-icon.png"/></a></a></td>
 	</tr>
 <?php } ?>
@@ -412,8 +413,10 @@
 		$('#respond').change(function(){
 			if($(this).val()=='no'){
 				$('.trsatisfactory').addClass('hidden');
+				$('.psanctiontr').removeClass('hidden');
 			}else{
 				$('.trsatisfactory').removeClass('hidden');	
+				$('.psanctiontr').addClass('hidden');
 			}				
 		});
 		

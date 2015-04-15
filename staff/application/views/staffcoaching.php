@@ -170,7 +170,3 @@
 </table>
 </div>
 
-<script type="text/javascript">
-	
-</script>
-

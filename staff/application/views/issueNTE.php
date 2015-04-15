@@ -162,6 +162,11 @@ if($prevID!=''){ ?>
 			$('#formUpload').submit();
 		});
 		
+		$('.datepick').datetimepicker({ 
+			format:'F d, Y',
+			maxDate:'<?= date('Y-m-d') ?>'
+		});	
+		
 		$('#type').change(function(){
 			if($(this).val()=='tardiness'){
 				$('.trawol').addClass('hidden');
@@ -183,18 +188,22 @@ if($prevID!=''){ ?>
 			if(valid==false){
 				alert('Please input offense dates.');
 			}
-		}else if($('#type').val()=='tardiness'){
+		}else if($('#type').val()=='tardiness'){ 
 			xx = 0;
 			var ss = new RegExp(/^[0-9]{2}:[0-9]{2}$/);
 			for(i=0; i<6; i++){
-				if($('input[name="tdates\['+i+'\]"]').val()!='') xx++;				
-				if($('input[name="tdates\['+i+'\]"]').val() != '' && $('input[name="ttime\['+i+'\]"]').val()=='' || 
-					$('input[name="tdates\['+i+'\]"]').val() == '' && $('input[name="ttime\['+i+'\]"]').val()!='' ||
-					$('input[name="ttime\['+i+'\]"]').val()!='' && ss.test($('input[name="ttime\['+i+'\]"]').val())==false){
+				var tdates = $('input[name="tdates\['+i+'\]"]').val();
+				var ttime = $('input[name="ttime\['+i+'\]"]').val();
+				var datetoday = new Date();
+				if(tdates!=''){
+					xx++;
+				}
+				if(tdates != '' && ttime=='' ||  tdates == '' && ttime!='' || ttime!='' && ss.test(ttime)==false){
 					valid = false;
 				}
+				
 			}
-			if(valid==false) alert('Please check your inputted values. Please use 24-hour format.');
+			if(valid==false) alert('Please check your inputted values. Use 24-hour format and date should be on or before today.');
 			if(xx==0){ 
 				alert('Please input date and time of tardiness.');
 				valid=false;
