@@ -112,12 +112,22 @@
 					<td>'.$cc[2].'</td>
 				</tr>';
 		}
+	}
+	
+	if(!empty($row->nteuploaded)){
+		$exx = explode('|',$row->nteuploaded);
+		if(isset($exx[2]) && file_exists(UPLOADS.'NTE/'.$exx[2])){
+			echo '<tr>
+				<td>NTE File Uploaded</td>
+				<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$exx[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
+			</tr>';
+		}		
 	}else if($row->carissuer==0){
 		echo '<tr>
 				<td>NTE Form</td>
 				<td><a href="'.$this->config->base_url().'ntepdf/'.$row->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 			</tr>';
-	}	
+	}
 	
 	echo '<tr id="canceltr" class="hidden">
 			<td><b>Why do you want to cancel?</b></td>
@@ -340,10 +350,25 @@
 		<td>Plan for Improvement</td>
 		<td><?= $row->planImp ?></td>
 	</tr>
-	<tr>
-		<td>CAR Form</td>
-		<td><a href="<?= $this->config->base_url() ?>ntepdf/<?= $row->nteID ?>/"><img src="<?= $this->config->base_url() ?>css/images/pdf-icon.png"/></a></a></td>
-	</tr>
+<?php
+	if(!empty($row->caruploaded)){
+		$xc = explode('|',$row->caruploaded);
+		if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
+			echo '<tr>
+				<td>CAR File Uploaded</td>
+				<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
+			</tr>';
+		}
+		
+	}else{
+		echo '<tr>
+			<td>CAR Form</td>
+			<td><a href="'.$this->config->base_url().'ntepdf/'.$row->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></a></td>
+		</tr>';
+	}
+?>
+
+	
 <?php } ?>
 </table>
 <?php }

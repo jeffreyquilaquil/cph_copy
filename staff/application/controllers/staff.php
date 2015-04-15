@@ -1128,19 +1128,21 @@ class Staff extends CI_Controller {
 						$this->staffM->sendEmail('hr.cebu@tatepublishing.net', $reqInfo->email, 'NTE document has been printed', $emBody, 'The Human Resources Department');	
 					}else if($_POST['submitType']=='signedNTE'){
 						$nteD = $this->staffM->getSingleInfo('staffNTE', 'nteID, status', 'nteID="'.$_POST['nteID'].'"');
-
-						//update database
-						if($nteD->status==1)
-							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('nteuploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
-						else
-							$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('caruploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s'))); 
 						
 						//upload signed document to server
 						if($_FILES['signedFile']['name']!=''){
 							$katski = array_reverse(explode('.', $_FILES['signedFile']['name']));
 							$fname = $_POST['nteID'].'_'.(($nteD->status==1)?'NTE':'CAR').'_'.date('YmdHis').'.'.$katski[0];
-							move_uploaded_file($_FILES['signedFile']['tmp_name'], UPLOADS.'NTE/'.$fname);	
+							move_uploaded_file($_FILES['signedFile']['tmp_name'], UPLOADS.'NTE/'.$fname);
+
+							//update database
+							if($nteD->status==1)
+								$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('nteuploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s').'|'.$fname)); 
+							else
+								$this->staffM->updateQuery('staffNTE', array('nteID'=>$_POST['nteID']), array('caruploaded'=>$this->user->username.'|'.date('Y-m-d H:i:s').'|'.$fname));								
 						}
+						
+						
 					}
 				}
 			
