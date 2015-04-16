@@ -86,4 +86,29 @@ class Itchecklist extends CI_Controller {
 		$this->load->view('includes/template', $data);
 	}
 
+	public function newhirestatus(){
+		$data['content'] = 'itnewhirestatus';
+		
+		if($this->user!=false){
+			if($this->user->dept!='IT'){
+				$data['access'] = false;
+			}else{
+				if(isset($_POST) && !empty($_POST)){
+						if($_POST['type']=='seatplan' || $_POST['type']=='status'){
+							$retvalue = $_POST['sval'];
+						}else{
+							$retvalue = $this->user->username.', '.date('Y-m-d H:i:s');
+						}
+						
+						$this->staffM->updateQuery('staffNewEmployees', array('empID_fk'=>$_POST['empID_fk']), array($_POST['type']=>$retvalue));	
+						echo $retvalue;
+					exit;
+				}
+				
+				$data['inprogress'] = $this->staffM->getQueryResults('staffNewEmployees', 'staffNewEmployees.*, CONCAT(fname," ",lname) AS name, title, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS imsupervisor', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+				$data['done'] = $this->staffM->getQueryResults('staffNewEmployees', 'staffNewEmployees.*, CONCAT(fname," ",lname) AS name, title, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS imsupervisor', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+			}	
+		}
+		$this->load->view('includes/template', $data);
+	}
 }

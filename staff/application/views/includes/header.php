@@ -30,6 +30,7 @@
 				echo '<li '.(($content=='itchecklist')?'class="current"':'').'><a href="'.$this->config->base_url().'itchecklist/">IT Checklist</a>';
 					echo '<ul class="dropdown">';
 						echo '<li '.(($content=='deactivateuser')?'class="current"':'').'><a href="'.$this->config->base_url().'itchecklist/deactivateuser/">Deactivate User</a></li>';
+						echo '<li '.(($content=='newhirestatus')?'class="current"':'').'><a href="'.$this->config->base_url().'itchecklist/newhirestatus/">New Hire Status</a></li>';
 					echo '</ul>';
 				echo '</li>';
 			}

@@ -121,7 +121,8 @@ if(isset($_POST) AND !empty($_POST)){
 					'hdmf' => $_POST['hdmf'],
 					'maritalStatus' => $_POST['maritalStatus']
 				);
-		$db->insertQuery('staffs', $cstaffData);
+		$lastIDinserted = $db->insertQuery('staffs', $cstaffData);
+		$db->insertQuery('staffNewEmployees', array('empID_fk'=>$lastIDinserted)); //insert to staffNewEmployees for IT checklist
 		
 		$supEmail = $ptDb->selectSingleQuery('staff', 'email' , 'CONCAT(sFirst," ",sLast)="'.$jobReq['supervisor'].'"');
 		$reqEmail = $ptDb->selectSingleQuery('staff', 'email' , 'username="'.$jobReq['requestor'].'"');	
