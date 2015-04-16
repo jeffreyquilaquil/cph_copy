@@ -56,7 +56,7 @@ class MyCrons extends CI_Controller {
 				}				
 			}
 			
-			/* $eBody = '<p>Hi,</p>';
+			$eBody = '<p>Hi,</p>';
 			$eBody .= '<p>'.$supervisor.' has not taken action on Leave ID <a href="'.$this->config->base_url().'staffleaves/'.$q->leaveID.'/">#'.$q->leaveID.'</a> within '.($nutri*24).' hours from the time the leave was filed. In the event that '.$supervisor.' is on leave, you as '.(($sup=='')?'HR':'him/her immediate supervisor').' must take action on Leave ID <a href="'.$this->config->base_url().'staffleaves/'.$q->leaveID.'/">#'.$q->leaveID.'</a> otherwise this will be escalated to your immediate supervisor.</p>
 				<p><br/></p>
 				<p>Thank you very much.</p>
@@ -66,8 +66,7 @@ class MyCrons extends CI_Controller {
 				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
 			else
 				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $supEmail, 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
-			 */
-			 
+						 
 			echo '<pre>';
 			print_r($q);
 			echo '</pre>';
