@@ -1342,7 +1342,7 @@ class Staff extends CI_Controller {
 				$data['numLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3');
 			}
 									
-			if(isset($_POST) && !empty($_POST)){
+			if(isset($_POST) && !empty($_POST)){			
 				if($_POST['submitType']=='chooseFromUploaded'){
 					$upFiles = $this->staffM->getQueryResults('staffUploads', 'upID, docName, fileName', 'empID_fk="'.$this->user->empID.'" AND isDeleted=0');
 					if(count($upFiles)==0){
@@ -1413,14 +1413,18 @@ class Staff extends CI_Controller {
 						}elseif(strtotime($_POST['leaveStart']) == strtotime($_POST['leaveEnd'])){
 							$data['errortxt'] .= 'The start and end of your leave is the same. Please correct.<br/>';
 						}else{							
-							if($_POST['leaveType']==1){
-								$vdate = date('F d, Y H:i', strtotime('+13 days'));
-																
-								if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
-									$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
-								}
-								if($_POST['totalHours']>40){
-									$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
+							if($_POST['leaveType']==1){ //if vacation leave								
+								//if leavecredits reset 2 weeks before
+								if($this->user->leaveFlag==1 && strtotime($_POST['leaveStart']) < strtotime(date('2015-m-d',strtotime($this->user->startDate)))){
+									$data['errortxt'] .= 'You cannot file paid vacation leave before your anniversary date.<br/>';
+								}else{	
+									$vdate = date('F d, Y H:i', strtotime('+13 days'));
+									if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
+										$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
+									}
+									if($_POST['totalHours']>40){
+										$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
+									}
 								}
 							}else if($_POST['leaveType']==2 || $_POST['leaveType']==3){
 								if(strtotime(date('Y-m-d', strtotime($_POST['leaveStart']))) >= strtotime(date('Y-m-d')) && (!isset($code) || (isset($code) && count($code)==0)))

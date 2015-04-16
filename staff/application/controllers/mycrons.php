@@ -20,13 +20,11 @@ class MyCrons extends CI_Controller {
 		return $grow;		
 	}
 	
-	/***** Unattended leave or cancelled request will send email to immediate supervisor if no approval. *****/
+	/*****  Unattended leave or cancelled request will send email to immediate supervisor if no approval.  *****/
 	public function cancelledLeavesUnattended24Hrs(){	
 		$now = time();
 		$date24hours = date('Y-m-d H:i:s', strtotime('-1 day'));
 		$query = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3 AND status!=5 AND iscancelled=0) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")'); 
-		
-		
 		
 		foreach($query AS $q):
 			if($q->iscancelled==2) $thedate = $q->datecancelled;
@@ -84,42 +82,70 @@ class MyCrons extends CI_Controller {
 		endforeach;
 	}
 	
-	/***** Reset leave credits value to 10+tateemployment years on the anniversary or employee's hire date and email accounting *****/
-	function resetAnnivLeaveCredits(){		
-		$query = $this->staffM->getQueryResults('staffs', 'empID, leaveCredits, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND startDate LIKE "%'.date('m-d').'"');
-		foreach($query AS $q):			
-			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
-			$years = floor($diff / (365*60*60*24));
-			
-			if($years>0){			
-				if($q->leaveCredits>0){
-					$body = '<p>Hi,</p>
-						<p><i>This is an automated message.</i><br/>
-						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
-						<p><br/></p>
-						<p>Thanks!</p>
-						<p>CAREERPH Auto-Email</p>';
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
+	/***** 
+		- Reset leave credits value to 10+tateemployment years on the anniversary or employee's hire date and email accounting 
+		- If employee has no more leave credits available, new set of leave credits will start to appear in the employee's profile 2 weeks prior to anniversary date
+			- However, the only available date will be the employee's upcoming anniversary date onwards. The system not allow the application forward if the selected start date is before the upcoming anniversary date. No code can allow employee to select a date before his anniversary date.
+			- If the employee still has leave credits 2 weeks before his anniversary date, then the new set will not yet appear even if it's already past 2 weeks from anniversary date.
+	*****/
+	function resetAnnivLeaveCredits(){	
+		//select active staffs with month and day start date is today
+		$query = $this->staffM->getQueryResults('staffs', 'empID, leaveCredits, leaveFlag, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND startDate LIKE "%'.date('m-d').'"');
+		foreach($query AS $q):	
+			//if leave credits already reset
+			if($q->leaveFlag==1){
+				$this->staffM->updateQuery('staffs', array('empID'=>$q->empID), array('leaveFlag'=>0));
+			}else{		
+				$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
+				$years = floor($diff / (365*60*60*24));
+				
+				if($years>0){			
+					if($q->leaveCredits>0){
+						$body = '<p>Hi,</p>
+							<p><i>This is an automated message.</i><br/>
+							*************************************************************************************</p>
+							<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
+							<p><br/></p>
+							<p>Thanks!</p>
+							<p>CAREERPH Auto-Email</p>';
+						$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
+					}
+					
+					$hremail = '<p>Hi HR,</p>
+							<p><i>This is an automated message.</i><br/>
+							*************************************************************************************</p>
+							<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'.</p>
+							<p><br/></p>
+							<p>Thanks!</p>
+							<p>CAREERPH Auto-Email</p>';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
+					
+					
+					$this->staffM->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($years+10)));
+					
+					$nnote = 'CONGRATULATIONS! This day marks your '.$this->staffM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($years+10).'. <br/><br/>We wish you happiness and success now and always.';
+					$this->addMyNotif($q->empID, $nnote, 0, 1);
 				}
-				
-				$hremail = '<p>Hi HR,</p>
-						<p><i>This is an automated message.</i><br/>
-						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.(10+$years).'. Unused leave credits is '.$q->leaveCredits.'.</p>
-						<p><br/></p>
-						<p>Thanks!</p>
-						<p>CAREERPH Auto-Email</p>';
-				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
-				
-				
-				$this->staffM->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($years+10)));
-				
-				$nnote = 'CONGRATULATIONS! This day marks your '.$this->staffM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($years+10).'. <br/><br/>We wish you happiness and success now and always.';
-				$this->addMyNotif($q->empID, $nnote, 0, 1);
 			}
 		endforeach;
 		
+		//Update if employee has no more leave credits available, new set of leave credits will start to appear in the employee's profile 2 weeks prior to anniversary date.
+		$query2 = $this->staffM->getQueryResults('staffs', 'empID, leaveCredits, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND leaveCredits=0 AND DATE_FORMAT(DATE_SUB(startDate, INTERVAL 2 WEEK),"%m-%d") =  "'.date('m-d').'"');
+		
+		foreach($query2 AS $q2):
+			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q2->startDate));
+			$years = floor($diff / (365*60*60*24));
+			
+			//update database
+			$this->staffM->updateQuery('staffs', array('empID'=>$q2->empID), array('leaveCredits'=>($years+11), 'leaveFlag'=>1)); //11 because the total year is less than 1 because it is not yet the anniversary
+			
+			//add notes to employee
+			$nnote2 = 'CONGRATULATIONS! Two weeks from now marks your '.$this->staffM->ordinal($years+1).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($years+11).' but you can only submit leaves with pay on or after your anniversary date on '.date('F d, Y', strtotime($q2->startDate)).'.<br/><br/>We wish you happiness and success now and always.';
+			$this->addMyNotif($q2->empID, $nnote2, 0, 1);
+		endforeach;
+		echo '<pre>';
+		print_r($query2);
+		exit;
 	}
 		
 	function accessenddate(){
