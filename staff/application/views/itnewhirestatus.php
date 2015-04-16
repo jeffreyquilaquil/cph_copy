@@ -7,6 +7,7 @@
 
 <div id="pending" class="tab-content current">
 <?php
+	if(count($inprogress)== 0) echo '<br/>None.';
 	foreach($inprogress AS $in){
 ?>
 		<table id="table_<?= $in->empID_fk ?>" class="tableInfo">
@@ -157,6 +158,7 @@
 
 <div id="done" class="tab-content">
 <?php
+	if(count($done)== 0) echo '<br/>None.';
 	foreach($done AS $do){
 ?>
 		<table id="table_<?= $do->empID_fk ?>" class="tableInfo">
