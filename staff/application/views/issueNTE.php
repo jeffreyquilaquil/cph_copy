@@ -20,6 +20,7 @@ if(!file_exists($signature)){
 
 if($prevID!=''){ ?>
 <b>Details of Last Issued NTE</b>
+<hr/>
 <table class="tableInfo">
 	<tr>
 		<td width="30%">Offense Number</td>
@@ -30,7 +31,7 @@ if($prevID!=''){ ?>
 		<td><?= date('F d, Y', strtotime($prev->dateissued)) ?></td>
 	</tr>
 	<tr>
-		<td>AWOL Dates</td>
+		<td><?= ucfirst($prev->type) ?> Dates</td>
 		<td>
 		<?php
 			$aw = explode('|', $prev->offensedates);
@@ -78,6 +79,7 @@ if($prevID!=''){ ?>
 	</tr>
 </table>
 <br/><br/>
+<hr/>
 <b>Issue an NTE</b>
 <hr/>
 <?php

@@ -1414,17 +1414,12 @@ class Staff extends CI_Controller {
 							$data['errortxt'] .= 'The start and end of your leave is the same. Please correct.<br/>';
 						}else{							
 							if($_POST['leaveType']==1){ //if vacation leave								
-								//if leavecredits reset 2 weeks before
-								if($this->user->leaveFlag==1 && strtotime($_POST['leaveStart']) < strtotime(date('2015-m-d',strtotime($this->user->startDate)))){
-									$data['errortxt'] .= 'You cannot file paid vacation leave before your anniversary date.<br/>';
-								}else{	
-									$vdate = date('F d, Y H:i', strtotime('+13 days'));
-									if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
-										$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
-									}
-									if($_POST['totalHours']>40){
-										$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
-									}
+								$vdate = date('F d, Y H:i', strtotime('+13 days'));
+								if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
+									$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
+								}
+								if($_POST['totalHours']>40){
+									$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
 								}
 							}else if($_POST['leaveType']==2 || $_POST['leaveType']==3){
 								if(strtotime(date('Y-m-d', strtotime($_POST['leaveStart']))) >= strtotime(date('Y-m-d')) && (!isset($code) || (isset($code) && count($code)==0)))
@@ -1526,7 +1521,7 @@ class Staff extends CI_Controller {
 					$this->staffM->addMyNotif($this->user->empID, 'Filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Click <a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$insID.'/">here</a> for details.', 3);
 					
 					//add note to supervisors					
-					$ntexts = $this->user->name.' filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page or click <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">here</a> to view leave details and approve.';
+					$ntexts = 'Filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page or click <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">here</a> to view leave details and approve.';
 						
 					$superID = $this->staffM->getStaffSupervisorsID($this->user->empID);
 					for($s=0; $s<count($superID); $s++){
@@ -1536,7 +1531,7 @@ class Staff extends CI_Controller {
 					$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$this->user->supervisor.'" AND "'.$this->user->supervisor.'"!=0');
 					if(!empty($supEmail)){
 						$msg = '<p>Hi,</p>';
-						$msg .= '<p>'.$this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
+						$msg .= '<p>Filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
 						$msg .= '<p>Thanks!</p>';
 						$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $supEmail, $this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']], $msg, 'CareerPH' );
 					}
@@ -1575,7 +1570,7 @@ class Staff extends CI_Controller {
 				if($segment2 != ''){
 					$data['content'] = 'staffleavesedit';				
 									
-					$data['row'] = $this->staffM->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+					$data['row'] = $this->staffM->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, startDate, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					
 					$data['leaveHistory'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5');
 										
@@ -1631,8 +1626,9 @@ class Staff extends CI_Controller {
 								
 								$approvernote = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
 								$actby = 'Updated '.$data['row']->name.'\'s '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. ';
-									
+																		
 								if($data['row']->leaveType!=4 && $data['row']->leaveType!=5){
+									if($data['row']->leaveCredits>0 || ($data['row']->leaveCredits==0 && date('m-d', strtotime($row->leaveStart)) < date('m-d', strtotime($row->startDate))))
 									$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['remaining']));
 								}
 								
@@ -1753,6 +1749,22 @@ class Staff extends CI_Controller {
 							header('Location:'.$_SERVER['REQUEST_URI']);
 						}
 						exit; 
+					}
+					
+					$data['leaveReset'] = false;
+					$data['current'] = $data['row']->leaveCredits;
+					if(date('m-d', strtotime($data['row']->leaveStart)) >= date('m-d', strtotime($data['row']->startDate))){
+						$data['leaveReset'] = true;	
+						$diff = abs(strtotime(date('Y-m-d')) - strtotime($data['row']->startDate));
+						$years = floor($diff / (365*60*60*24));
+						$current = 11+$years;
+						$data['current'] = 11+$years;
+						
+						$quer = $this->staffM->getQueryResults('staffLeaves', 'leaveCreditsUsed, status', 'empID_fk="'.$data['row']->empID_fk.'" AND status = 1 AND leaveCreditsUsed>0 AND hrapprover!=0 AND leaveStart>"'.date('2015-m-d', strtotime($data['row']->startDate)).'"');
+						
+						foreach($quer AS $qq):
+							$data['current'] -= $qq->leaveCreditsUsed;
+						endforeach;
 					}
 				}else{	
 					$condition = '';

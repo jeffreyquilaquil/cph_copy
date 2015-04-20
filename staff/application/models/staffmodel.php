@@ -966,7 +966,7 @@ class Staffmodel extends CI_Model {
 		return $status;
 	}
 	
-	function leaveTableDisplay($rQuery, $type){		
+	function leaveTableDisplay($rQuery, $type){
 		$leaveTypeArr = $this->txtM->definevar('leaveType');
 		$yellowArr = array('imquery', 'imcancelledquery', 'allpending');
 		$hideArr = array('allpending', 'allapproved', 'allapprovedNopay', 'alldisapproved', 'allcancelled');

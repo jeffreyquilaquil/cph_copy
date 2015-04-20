@@ -1,6 +1,6 @@
 <?php
 	$disabled = '';
-	$lc = $row->totalHours/8;	
+	$lc = $row->totalHours/8;
 ?>
 <h2>Leave Details of <?= $row->name ?></h2>
 <hr/>
@@ -157,7 +157,7 @@
 						<td>Type of Leave</td>
 						<td>Leave Start</td>
 						<td>Leave End</td>
-						<td>Total Number of Hours</td>
+						<td align="center">Total Number of Hours</td>
 						<td>Status</td>
 					</tr>';
 				foreach($leaveHistory AS $rr){
@@ -181,6 +181,9 @@
 	<?php
 	if($row->empStatus=='regular'){
 		echo '<tr><td>Current Leave Credits</td><td>'.$row->leaveCredits.'</td></tr>';
+		if($leaveReset==true){
+			echo '<tr><td>Leave credits on '.date('F d, Y', strtotime($row->startDate)).'</td><td>'.($current).'</td></tr>';
+		}
 	}
 	
 	if($row->hrapprover!=0){
@@ -192,11 +195,19 @@
 	
 	if($row->empStatus=='probationary'){
 		echo '<tr style="color:red;"><td colspan=2>Employee status is <b>probationary</b>.</td></tr>';
-	}else if($row->leaveCredits==0 && $row->leaveType!=4 && $row->leaveType!=5){
-		echo '<tr style="color:red;"><td colspan=2>No more available leave credits with pay for '.$row->fname.'. You can either <b>"approve without pay"</b> or <b>"disapprove"</b> and let him/her file for an offset.</td></tr>';
+	}else if($row->leaveCredits==0 && $row->leaveType<4){
+		echo '<tr style="color:red;"><td colspan=2>No more available leave credits with pay for '.$row->fname.'. ';
+		
+		if($leaveReset==true)
+			echo 'But leave credits will reset on his/her anniversary date on '.date('F d, Y', strtotime($row->startDate)).'.';
+		else
+			echo 'You can either <b>"approve without pay"</b> or <b>"disapprove"</b> and let him/her file for an offset.';
+		
+		echo '</td></tr>';
 	}else if($row->hrapprover==0 && $lc > $row->leaveCredits && $row->leaveType!=4 && $row->leaveType!=5){
 		echo '<tr style="color:red;"><td colspan=2>Requested number of days leave is more than the remaining leave credits. You can either <b>"approve without pay"</b> or <b>"disapprove"</b> the request and let '.$row->fname.' file 2 separate leaves for with and without pay.</td></tr>';
-	}
+	} 
+	
 	if(!file_exists(UPLOAD_DIR . $this->user->username.'/signature.png') && ($row->approverID==0 || $row->hrapprover==0)){
 		echo '<form id="formUpload" action="'.$this->config->base_url().'upsignature/" method="POST" enctype="multipart/form-data">';
 		echo '<tr>
@@ -242,7 +253,8 @@
 				echo  '</td>
 					<td>';
 					
-				if($row->empStatus=='regular' && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5)))
+				//status is regualar AND total number of hours less than total of leave credits OR type is offset or paternity leave OR anniversary date is less than start date
+				if($row->empStatus=='regular' && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5) || $leaveReset==true))
 					echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved '.(($row->leaveType!=4)?'With Pay':'').'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 				if($row->leaveType!=4 && $row->leaveType!=5)
 					echo '<input type="radio" name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved Without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -315,9 +327,12 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 <?php if($row->leaveType!=4 && $row->leaveType!=5){ ?>
 	<tr class="hidedisapprove">
 		<td>Number of Leave Credits to Deduct<br/>
-			<input type="hidden" id="current" value="<?= $row->leaveCredits ?>"/>
-			<input type="hidden" id="remaining" name="remaining" value="<?= $row->leaveCredits - $row->leaveCreditsUsed ?>"/>
-			<i style="color:#333;">Total Remaining Leave Credits: <b id="totalleave"><?= $row->leaveCredits - $row->leaveCreditsUsed ?></b></i>
+		<?php 
+			$remain = $current - $row->leaveCreditsUsed;	
+		?>
+			<input type="hidden" id="current" value="<?= $current ?>"/>
+			<input type="hidden" id="remaining" name="remaining" value="<?= $remain ?>"/>
+			<i style="color:#333;">Total Remaining Leave Credits: <b id="totalleave"><?= $remain ?></b></i>
 		</td>
 		<td><input type="text" id="leaveCreditsUsed" name="leaveCreditsUsed" value="<?= $row->leaveCreditsUsed ?>" class="forminput"/></td>
 	</tr>		
