@@ -1753,7 +1753,7 @@ class Staff extends CI_Controller {
 					
 					$data['leaveReset'] = false;
 					$data['current'] = $data['row']->leaveCredits;
-					if(date('m-d', strtotime($data['row']->leaveStart)) >= date('m-d', strtotime($data['row']->startDate))){
+					if($data['row']->leaveCredits==0 && $data['row']->empStatus=='regular' && date('m-d', strtotime($data['row']->leaveStart)) >= date('m-d', strtotime($data['row']->startDate))){
 						$data['leaveReset'] = true;	
 						$diff = abs(strtotime(date('Y-m-d')) - strtotime($data['row']->startDate));
 						$years = floor($diff / (365*60*60*24));
