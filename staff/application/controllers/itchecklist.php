@@ -105,7 +105,7 @@ class Itchecklist extends CI_Controller {
 					exit;
 				}
 				
-				$data['inprogress'] = $this->staffM->getQueryResults('staffNewEmployees', 'staffNewEmployees.*, CONCAT(fname," ",lname) AS name, title, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS imsupervisor', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+				$data['inprogress'] = $this->staffM->getQueryResults('staffNewEmployees', 'staffNewEmployees.*, CONCAT(fname," ",lname) AS name, title, startDate, shift, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS imsupervisor', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 				$data['done'] = $this->staffM->getQueryResults('staffNewEmployees', 'staffNewEmployees.*, CONCAT(fname," ",lname) AS name, title, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS imsupervisor', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			}	
 		}

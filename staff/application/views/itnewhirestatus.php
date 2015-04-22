@@ -25,6 +25,9 @@
 			<tr class="trhead">
 				<td colspan=3>Immediate Supervisor: <i><?= $in->imsupervisor ?></i></td>
 			</tr>
+			<tr class="trhead">
+				<td colspan=3>Start Date: <i><?= date('F d, Y', strtotime($in->startDate)).' ('.$in->shift.')' ?></i></td>
+			</tr>
 			<tr>
 				<td width="35%"><b>Email Creation</b></td>
 				<td width="35%">- morning (Glaiza, Divi)<br/>
