@@ -665,20 +665,25 @@ class Staff extends CI_Controller {
 		$data['content'] = 'issueNTE';
 		if($this->user!=false){
 			$data['ntegenerated']=false;
+			$empID = $this->uri->segment(2);
 			
-			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, fname, CONCAT(fname," ",lname) AS name, email, pemail, supervisor, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND supervisor!=0 ) AS sName', 'empID="'.$this->uri->segment(2).'"');
+			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, fname, CONCAT(fname," ",lname) AS name, email, pemail, supervisor, (SELECT CONCAT(fname," ",lname) AS sname FROM staffs e WHERE e.empID=staffs.supervisor AND supervisor!=0 ) AS sName', 'empID="'.$empID.'"');
 			
 			//check if you are allowed to issue nte
 			if($this->user->access=='' && $this->staffM->checkStaffUnderMe($data['row']->username)==false){
 				$data['access'] = false;
 			}
 			
-			$data['prevID'] = $this->staffM->getSingleField('staffNTE', 'nteID', 'empID_fk="'.$data['row']->empID.'" ORDER BY dateissued DESC');
-			if($data['prevID']!=''){
+			/* $data['prevID'] = $this->staffM->getSingleField('staffNTE', 'nteID', 'empID_fk="'.$data['row']->empID.'" ORDER BY dateissued DESC');
+			if($data['prevID']!=''){				
 				$data['prev'] = $this->staffM->getSingleInfo('staffNTE', '*', 'nteID="'.$data['prevID'].'"');
 				if($data['prev']->type=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
 				else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');
-			} 
+			}  */
+			
+			$data['prevNTE'] = $this->staffM->getQueryResults('staffNTE', 'nteID, empID_fk, type, offenselevel, offensedates, dateissued, issuer, status, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=issuer) AS issuedBy, sanction, suspensiondates', 'empID_fk="'.$empID.'" AND dateissued >= "'.date('Y-m-', strtotime('-6 months')).'" OR (type="AWOL" AND dateissued>="'.date('Y-m-', strtotime('-1 year')).'")', '', 'dateissued ASC');
+			$data['nteStat'] = $this->txtM->definevar('nteStat');
+			
 			$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$data['row']->supervisor.'"');
 			
 			if(isset($_POST['submitType']) && $_POST['submitType']=='issueNTE'){				

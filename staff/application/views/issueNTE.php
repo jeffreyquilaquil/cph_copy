@@ -1,6 +1,9 @@
-<h2>Issue an NTE for <?= $row->name ?></h2>
+<h2>NTE for <?= $row->name ?></h2>
 <hr/>
 <?php
+$awolnum = 1;
+$tardynum = 1;
+
 if($ntegenerated){
 	echo 'NTE successfully generated.  Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/">here</a> to view NTE details page or <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/D/">here</a> to download the file.';
 }else{
@@ -17,76 +20,61 @@ if(!file_exists($signature)){
 	</tr>';
 	echo '</form>';
 }else{
+	//NTE history
+	if(count($prevNTE) > 0){
+		echo '<table class="tableInfo tacenter">';
+			echo '<tr class="trhead">
+					<td colspan=8 align="center">NTE HISTORY FOR THE LAST 6 MONTHS AND AWOL FOR THE LAST 1 YEAR</td>
+				</tr>';
+			echo '<tr class="formlabel">';
+				echo '<td>NTE ID</td>';
+				echo '<td>Type</td>';
+				echo '<td>Offense Level</td>';
+				echo '<td>Dates</td>';
+				echo '<td>Date Issued</td>';
+				echo '<td>Issued By</td>';
+				echo '<td>Status</td>';
+				echo '<td>Sanction</td>';
+			echo '</tr>';
+			foreach($prevNTE AS $p){
+				if($p->type=='AWOL'){
+					if($p->status==1) $awolnum = 0;
+					else $awolnum++;
+				}else if($p->type=='tardiness'){
+					if($p->status==1) $tardynum = 0;
+					else $tardynum++;						
+				}
+				
+				echo '<tr>';
+					echo '<td><a href="'.$this->config->base_url().'detailsNTE/'.$p->nteID.'/">'.$p->nteID.'</a></td>';
+					echo '<td>'.ucfirst($p->type).'</td>';
+					echo '<td>'.$this->staffM->ordinal($p->offenselevel).'</td>';
+					echo '<td>';
+						$piolo = explode('|', $p->offensedates);
+						foreach($piolo AS $o){
+							if($p->type=='AWOL')
+								echo date('F d, Y', strtotime($o)).'<br/>';
+							else
+								echo date('F d, Y h:i a', strtotime($o)).'<br/>';
+						}
+					echo '</td>';
+					echo '<td>'.date('F d, Y h:i a', strtotime($p->dateissued)).'</td>';
+					echo '<td>'.$p->issuedBy.'</td>';
+					echo '<td>'.$nteStat[$p->status].'</td>';
+					echo '<td>'.$p->sanction.'</td>';
+				echo '</tr>';
+			}
+			
+			
+		echo '</table>';
+	}
+?>
 
-if($prevID!=''){ ?>
-<b>Details of Last Issued NTE</b>
-<hr/>
-<table class="tableInfo">
-	<tr>
-		<td width="30%">Offense Number</td>
-		<td><?= $this->staffM->ordinal($prev->offenselevel).' Offense' ?></td>
-	</tr>
-	<tr>
-		<td>Date NTE was issued</td>
-		<td><?= date('F d, Y', strtotime($prev->dateissued)) ?></td>
-	</tr>
-	<tr>
-		<td><?= ucfirst($prev->type) ?> Dates</td>
-		<td>
-		<?php
-			$aw = explode('|', $prev->offensedates);
-			foreach($aw AS $a):
-				echo date('F d, Y',strtotime($a)).'<br/>';
-			endforeach;
-		?>
-		</td>
-	</tr>
-	<tr>
-		<td>Prescribed Sanction</td>
-		<td><?= $sanctionArr[$prev->offenselevel] ?></td>
-	</tr>
-	<tr>
-		<td>Sanction Issued</td>
-		<td>
-	<?php 
-		if($prev->status==0)
-			echo $prev->sanction;
-		else
-			echo '<b>CAR not yet generated</b>';
-	?>	
-		</td>
-	</tr>
-<?php if($prev->suspensiondates != '' && $prev->sanction !='Termination'){ ?>
-		<tr>
-			<td>Suspension Dates</td>
-			<td>
-		<?php
-			$sdates = explode('|', $prev->suspensiondates);
-			foreach($sdates AS $s):
-				echo date('F d, Y',strtotime($s)).'<br/>';
-			endforeach;
-		?>
-			</td>
-		</tr>
-<?php }
-	$nlevel = $prev->offenselevel + 1;
-	if($nlevel>3) $nextsanction = 'Termination';
-	else $nextsanction = $sanctionArr[$nlevel];
-?>
-	<tr>
-		<td>Any subsequent case will merit</td>
-		<td><?= $nextsanction ?></td>
-	</tr>
-</table>
-<br/><br/>
-<hr/>
-<b>Issue an NTE</b>
-<hr/>
-<?php
-}
-?>
 <form action="" method="POST" onSubmit="return checkvalues();">
 	<table class="tableInfo">
+		<tr class="trhead">
+			<td colspan=2>ISSUE AN NTE</td>
+		</tr>
 		<tr>
 			<td width="30%">NTE Type</td>
 			<td>
@@ -94,16 +82,20 @@ if($prevID!=''){ ?>
 					<option value="AWOL">AWOL</option>
 					<option value="tardiness">Excessive Tardiness</option>
 				</select>
-		</td>
+			</td>
 		</tr>
+	<?php 
+		if($awolnum==0){
+			echo '<tr class="trawol">
+					<td colspan=2><p class="errortext">There is pending NTE for CAR. You need to generate CAR first before you can issue another NTE for AWOL.</p></td>
+				</tr>';
+		}else{
+	?>		
 		<tr class="trawol">
 			<td>Is this what offense?</td>
 			<td>
-				<select name="offenselevel" class="forminput">
-					<option value="1">1st</option>
-					<option value="2">2nd</option>
-					<option value="3">3rd</option>
-				</select>
+				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->staffM->ordinal($awolnum) ?>"/>
+				<input id="offlevel" type="hidden" name="offenselevel" value="<?= $awolnum ?>"/>
 			</td>
 		</tr>
 		<tr class="trawol">
@@ -119,16 +111,19 @@ if($prevID!=''){ ?>
 				<input type="text" name="offensedates[]" class="forminput datepick" placeholder="Date 6"/>
 			</td>
 		</tr>
+		<?php } 
 		
+		if($tardynum==0){
+			echo '<tr class="trtardiness hidden">
+					<td colspan=2><p class="errortext">There is pending NTE for CAR. You need to generate CAR first before you can issue another NTE for Tardiness.</p></td>
+				</tr>';
+		}else{
+		?>
 		<tr class="trtardiness hidden">
 			<td>Is this what offense?</td>
 			<td>
-				<select name="offenselevel" class="forminput">
-					<option value="1">1st</option>
-					<option value="2">2nd</option>
-					<option value="3">3rd</option>
-					<option value="4">4th</option>
-				</select>
+				<input id="offlevelord" type="text" name="offenselevel" class="forminput" disabled="disabled" value="<?= $this->staffM->ordinal($tardynum) ?>"/>
+				<input id="offlevel" type="hidden" class="forminput" disabled="disabled" value="<?= $tardynum ?>"/>
 			</td>
 		</tr>
 		<tr class="trtardiness hidden">
@@ -145,7 +140,10 @@ if($prevID!=''){ ?>
 			</td>
 		</tr>
 		
-		
+		<?php 
+		}
+
+		if($awolnum!=0 || $tardynum!=0){ ?>	
 		<tr>
 			<td colspan=2>
 				<input type="hidden" name="empID_fk" value="<?= $row->empID ?>"/>
@@ -154,6 +152,7 @@ if($prevID!=''){ ?>
 				<input type="button" value="Cancel" onClick="parent.$.colorbox.close(); return false;"/>
 			</td>
 		</tr>
+	<?php } ?>
 	</table>
 </form>
 <?php } ?> 

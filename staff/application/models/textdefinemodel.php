@@ -144,6 +144,13 @@ class Textdefinemodel extends CI_Model {
 				'sampleAudio' => 'Sample Audio Recording',		
 				'illustrations' => 'Illustrations Test'			
 			);		
+		}else if($con=='nteStat'){
+			$a = array(
+				'0' => 'CAR Generated',		
+				'1' => 'NTE Generated',		
+				'2' => 'Cancelled',		
+				'3' => 'Satisfactory'		
+			);	
 		}
 		
 		return $a;
