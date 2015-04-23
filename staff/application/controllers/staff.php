@@ -1765,7 +1765,7 @@ class Staff extends CI_Controller {
 						$current = 11+$years;
 						$data['current'] = 11+$years;
 						
-						$quer = $this->staffM->getQueryResults('staffLeaves', 'leaveCreditsUsed, status', 'empID_fk="'.$data['row']->empID_fk.'" AND status = 1 AND leaveCreditsUsed>0 AND hrapprover!=0 AND leaveStart>"'.date('2015-m-d', strtotime($data['row']->startDate)).'"');
+						$quer = $this->staffM->getQueryResults('staffLeaves', 'leaveCreditsUsed, status', 'empID_fk="'.$data['row']->empID_fk.'" AND status = 1 AND leaveCreditsUsed>0 AND hrapprover!=0 AND leaveStart>"'.date('Y').'-'.date('m-d', strtotime($data['row']->startDate)).'"');
 						
 						foreach($quer AS $qq):
 							$data['current'] -= $qq->leaveCreditsUsed;

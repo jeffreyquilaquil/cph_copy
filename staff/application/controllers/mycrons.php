@@ -96,7 +96,7 @@ class MyCrons extends CI_Controller {
 				$current = 10+$years;
 				$used = 0;
 				//check for remaining leave credits
-				$quer = $this->staffM->getQueryResults('staffLeaves', 'leaveCreditsUsed, status', 'empID_fk="'.$q->empID.'" AND status = 1 AND leaveCreditsUsed>0 AND hrapprover!=0 AND leaveStart>"'.date('2015-m-d', strtotime($q->startDate)).'"');
+				$quer = $this->staffM->getQueryResults('staffLeaves', 'leaveCreditsUsed, status', 'empID_fk="'.$q->empID.'" AND status = 1 AND leaveCreditsUsed>0 AND hrapprover!=0 AND leaveStart>"'.date('Y').'-'.date('m-d', strtotime($q->startDate)).'"');
 				foreach($quer AS $qq):
 					$used += $qq->leaveCreditsUsed;
 				endforeach;
