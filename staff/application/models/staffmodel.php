@@ -604,36 +604,61 @@ class Staffmodel extends CI_Model {
 			$cval[$cnum][2] = '';
 			$cnum++;
 		}
-		
+				
 		if(isset($cval[0])){
 			$pdf->setXY(20, 88); $pdf->Write(0, $cval[0][0]); 
 			$pdf->setXY(80, 86); $pdf->MultiCell(50, 4, $cval[0][1] ,0,'L',false);
 			$pdf->setXY(142, 86); $pdf->MultiCell(50, 4,$cval[0][2] ,0,'L',false);
 		}
-		if(isset($cval[1])){
-			$pdf->setXY(20, 103); $pdf->Write(0, $cval[1][0]);
-			$pdf->setXY(85, 103); $pdf->Write(0, $cval[1][1]);
-			$pdf->setXY(140, 103); $pdf->Write(0, $cval[1][2]);
+		if(isset($cval[1])){			
+			if($cval[1][0]=='Justification for salary adjustment:'){
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[1][0]);
+				$pdf->setXY(80, 98); $pdf->MultiCell(115, 4, $cval[1][1],0,'L',false);
+			}else{
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[1][0]);
+				$pdf->setXY(85, 103); $pdf->Write(0, $cval[1][1]);
+				$pdf->setXY(140, 103); $pdf->Write(0, $cval[1][2]);
+			}			
 		}
 		if(isset($cval[2])){
-			$pdf->setXY(20, 116); $pdf->Write(0, $cval[2][0]);
-			$pdf->setXY(85, 116); $pdf->Write(0, $cval[2][1]);
-			$pdf->setXY(140, 116); $pdf->Write(0, $cval[2][2]);
+			if($cval[2][0]=='Justification for salary adjustment:'){
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[2][0]);
+				$pdf->setXY(80, 111); $pdf->MultiCell(115, 4, $cval[2][1],0,'L',false);
+			}else{
+				$pdf->setXY(20, 116); $pdf->Write(0, $cval[2][0]);
+				$pdf->setXY(85, 116); $pdf->Write(0, $cval[2][1]);
+				$pdf->setXY(140, 116); $pdf->Write(0, $cval[2][2]);
+			}
 		}
 		if(isset($cval[3])){
-			$pdf->setXY(20, 128); $pdf->Write(0, $cval[3][0]);
-			$pdf->setXY(85, 128); $pdf->Write(0, $cval[3][1]);
-			$pdf->setXY(140, 128); $pdf->Write(0, $cval[3][2]);
+			if($cval[3][0]=='Justification for salary adjustment:'){
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[3][0]);
+				$pdf->setXY(80, 123); $pdf->MultiCell(115, 4, $cval[3][1],0,'L',false);
+			}else{
+				$pdf->setXY(20, 128); $pdf->Write(0, $cval[3][0]);
+				$pdf->setXY(85, 128); $pdf->Write(0, $cval[3][1]);
+				$pdf->setXY(140, 128); $pdf->Write(0, $cval[3][2]);
+			}
 		}
 		if(isset($cval[4])){
-			$pdf->setXY(20, 141); $pdf->Write(0, $cval[4][0]);
-			$pdf->setXY(85, 141); $pdf->Write(0, $cval[4][1]);
-			$pdf->setXY(140, 141); $pdf->Write(0, $cval[4][2]);
+			if($cval[4][0]=='Justification for salary adjustment:'){
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[4][0]);
+				$pdf->setXY(80, 136); $pdf->MultiCell(115, 4, $cval[4][1],0,'L',false);
+			}else{
+				$pdf->setXY(20, 141); $pdf->Write(0, $cval[4][0]);
+				$pdf->setXY(85, 141); $pdf->Write(0, $cval[4][1]);
+				$pdf->setXY(140, 141); $pdf->Write(0, $cval[4][2]);
+			}
 		}
 		if(isset($cval[5])){
-			$pdf->setXY(20, 153); $pdf->Write(0, $cval[5][0]);
-			$pdf->setXY(85, 153); $pdf->Write(0, $cval[5][1]);
-			$pdf->setXY(140, 153); $pdf->Write(0, $cval[5][2]);
+			if($cval[5][0]=='Justification for salary adjustment:'){
+				$pdf->setXY(20, 103); $pdf->Write(0, $cval[5][0]);
+				$pdf->setXY(80, 148); $pdf->MultiCell(115, 4, $cval[5][1],0,'L',false);
+			}else{
+				$pdf->setXY(20, 153); $pdf->Write(0, $cval[5][0]);
+				$pdf->setXY(85, 153); $pdf->Write(0, $cval[5][1]);
+				$pdf->setXY(140, 153); $pdf->Write(0, $cval[5][2]);
+			}
 		}
 		
 		$cnum++;
