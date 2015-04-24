@@ -3,7 +3,7 @@
 <ul class="tabs">
 <?php	
 	if($this->access->accessFullHR==true){
-		echo '<li class="tab-link current" data-tab="tab-1">Pending Forms for HR '.((count($inprogress)>0)?'('.count($inprogress).')':'').'</li>';
+		echo '<li class="tab-link current" data-tab="tab-1">Pending Forms for HR '.((count($forprinting)>0)?'('.count($forprinting).')':'').'</li>';
 	}
 ?>
 	<li class="tab-link <?= (($this->access->accessFullHR==false)?'current':'') ?>" data-tab="tab-2">In Progress <?= ((count($inprogress)>0)?'('.count($inprogress).')':'') ?></li>
