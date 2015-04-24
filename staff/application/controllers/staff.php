@@ -2817,6 +2817,16 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/template', $data);	
 	}
 	
+	public function setstaffschedule() {
+		
+		$id = $this->uri->segment(2);	
+		$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name',' empID="'.$id.'" ');				
+		$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
+		
+		$data['content'] = 'setstaffschedule';
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
 	
 	
 }
