@@ -109,8 +109,20 @@ class Schedules extends CI_Controller {
 		
 		$id = $this->uri->segment(3);	
 		$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name',' empID="'.$id.'" ');								
-		$data['content'] = 'setstaffschedule';
+		$query = "SELECT * FROM  staffCustomSched";
+		$query_result = $this->db->query($query);
+		$data['customSched'] = $query_result->result();		
+		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
+		$data['content'] = 'setstaffschedule';		
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function getvalueofpredefinesched() {
+		$id = $this->input->post("id");
+		$response = $this->scheduleM->getCustomSchedDetails($id);
+		echo $response;
+		// echo "hello world";
+	
 	}
 	
 	
