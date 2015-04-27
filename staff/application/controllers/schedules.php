@@ -71,7 +71,7 @@ class Schedules extends CI_Controller {
 					$note = 'You added custom schedule: '.$_POST['schedName'];
 				}else if($_POST['submitType']=='updateCustomSched'){					
 					$tbl = 'staffCustomSched';
-					$where = array('schedID'=>$_POST['schedID']);
+					$where = array('custschedID'=>$_POST['schedID']);
 					unset($_POST['schedID']);
 					unset($_POST['submitType']);
 					$upArr = $_POST;
@@ -80,7 +80,7 @@ class Schedules extends CI_Controller {
 					$note = 'You added custom schedule: '.$_POST['schedName'].'.';
 				}else if($_POST['submitType']=='deleteCustomSched'){
 					$tbl = 'staffCustomSched';
-					$where = array('schedID'=>$_POST['id']);
+					$where = array('custschedID'=>$_POST['id']);
 					$upArr['status'] = 0;
 					
 					$addUp = 'updateData';					

@@ -109,7 +109,7 @@
 		<option value=5>Last</option>
 	</select>	
 	&nbsp;&nbsp;&nbsp;
-	(Select an option if creating recurring schedule in a month)
+	(Select an option if specific day of the month)
 	<br/><br/>
 	
 	<table class="tableInfo">
@@ -139,20 +139,20 @@
 		echo '<br/><br/><br/><hr/><h3/>All Custom Schedules</h3>';
 		echo '<table class="tableInfo">';
 		foreach($allCustomSched AS $acs){
-			echo '<tr class="trhead ctimetr'.$acs->schedID.'">
+			echo '<tr class="trhead ctimetr'.$acs->custschedID.'">
 					<td colspan=6>
 						<span class="una">'.$acs->schedName.'</span>
-						<input id="inputschedName'.$acs->schedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
+						<input id="inputschedName'.$acs->custschedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
 					<td align="right">
-						<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->schedID.')"/>
-						<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->schedID.')"/>
-						<button class="hidden ikalawa" onClick="updateCustSched('.$acs->schedID.')">Update</button>
-						<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->schedID.')">Cancel</button>
+						<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->custschedID.')"/>
+						<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->custschedID.')"/>
+						<button class="hidden ikalawa" onClick="updateCustSched('.$acs->custschedID.')">Update</button>
+						<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->custschedID.')">Cancel</button>
 						<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
 					</td>
 				</tr>';
 			if($acs->schedType!=0){
-				echo '<tr class="ctimetr'.$acs->schedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
+				echo '<tr class="ctimetr'.$acs->custschedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
 					if($acs->sunday!=0 ) echo ' Sunday ';
 					else if($acs->monday!=0 ) echo ' Monday ';
 					else if($acs->tuesday!=0 ) echo ' Tuesday ';
@@ -182,7 +182,7 @@
 					<td>Friday</td>
 					<td>Saturday</td>			
 				</tr>';
-			echo '<tr class="ctimetr'.$acs->schedID.'">
+			echo '<tr class="ctimetr'.$acs->custschedID.'">
 				<td>'.$this->scheduleM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
 				<td>'.$this->scheduleM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
 				<td>'.$this->scheduleM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>

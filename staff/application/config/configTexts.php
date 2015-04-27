@@ -54,7 +54,7 @@
 	$config['txt_terminationType'] = 'Termination Reason';
 	$config['txt_taxstatus'] = 'Tax Status';
 	
-	$config['maritalstatus'] = array(
+	$config['maritalStatus'] = array(
 					'Single' => 'Single',
 					'Married' => 'Married',
 					'Widowed' => 'Widowed',

@@ -1069,8 +1069,8 @@ class Staffmodel extends CI_Model {
 									$disp .= '</option>';
 								}
 							endforeach;
-						}else{
-							$arr = $this->config->item($fld);
+						}else{ 
+							$arr = $this->config->item($fld);							
 							foreach($arr AS $k=>$va):
 								if($k==$v) $vvalue=$va;
 								$disp .= '<option value="'.$k.'" '.(($k==$v) ? 'selected="selected"' : '').'>'.$va.'</option>';
