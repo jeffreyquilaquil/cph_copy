@@ -25,21 +25,21 @@
 	</tr>
 </table>
 <?php 
-	$this->load->view('calendar', $timelogs);
+	$this->load->view('tc_calendar', $timelogs);
 ?>
 </div>
 
 <!-- ATTENDANCE -->
 <div id="attendance" class="tab-content <?= (($tpage=='attendance')?'current':'') ?>">
 <?php 
-	$this->load->view('calendar', $attendance);
+	$this->load->view('tc_calendar', $attendance);
 ?>
 </div>
 
 <!-- CALENDAR -->
 <div id="calendar" class="tab-content <?= (($tpage=='calendar')?'current':'') ?>">
 <?php 
-	$this->load->view('calendar', $calendar);
+	$this->load->view('tc_calendar', $calendar);
 ?>
 </div>
 

@@ -19,7 +19,7 @@ class Timecard extends CI_Controller {
 	} 
 	
 	public function index($segment2){	
-		$data['content'] = 'timecard';	
+		$data['content'] = 'tc_timecard';	
 			
 		if($this->user!=false){		
 			if(isset($_POST) && !empty($_POST) && isset($_POST['submitType'])){
@@ -45,12 +45,23 @@ class Timecard extends CI_Controller {
 				$data['today'] = $this->uri->segment(3);
 			}
 								
-			$data['tpage'] = $segment2;
+			$data['tpage'] = $segment2; //calendar, timelogs, attendance
 			$data['timelogs'] = array('type'=>'timelogs');
 			$data['attendance'] = array('type'=>'attendance');
 			$data['calendar'] = array('type'=>'calendar'); 
 			
-			$data['calData'] = $this->staffM->getQueryResults('staffSchedules','staffSchedules.*', 'empID_fk="'.$this->user->empID.'"');
+			$data['custTime'] = array();
+			$tQuery = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeID, timeValue', 'category>0 AND status=1');
+			foreach($tQuery AS $t){
+				$data['custTime'][$t->timeID] = $t->timeValue;
+			}
+			
+			if($data['tpage']=='calendar'){
+				$calcondition = ' AND ("'.date('Y-m-01', strtotime($data['today'])).'" BETWEEN shiftstart AND shiftend OR (shiftstart BETWEEN "'.date('Y-m-01', strtotime($data['today'])).'" AND "'.date('Y-m-t', strtotime($data['today'])).'") OR (shiftstart<="'.date('Y-m-01', strtotime($data['today'])).'" AND shiftend="0000-00-00"))';
+				
+				$data['calScheds'] = $this->staffM->getQueryResults('staffSchedules','shiftstart, shiftend, staffCustomSched.*', 'empID_fk="'.$this->user->empID.'" AND staffCustomSched_fk !=0'.$calcondition, 'LEFT JOIN staffCustomSched ON custschedID=staffCustomSched_fk');
+				$data['calSchedTime'] = $this->staffM->getQueryResults('staffSchedules', 'shiftstart, shiftend, timeValue', 'staffCustomSchedTime!=0 AND status=1'.$calcondition, 'LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime');
+			}
 				
 			if(!isset($data['allStaffs']))
 				$data['allStaffs'] = $this->allemployees(); 			
