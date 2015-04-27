@@ -116,6 +116,29 @@ if($segment2=='offset'){
 						</td>
 					</tr>
 					<tr>
+						<td>Upload Supporting Documents<br/><i style="color:#555;">Upload up to 5 documents</i></td>
+						<td>
+							<div id="divsupdocsBox">
+								<input type="checkbox" id="noDocs" name="noDocs" <?= ((isset($_POST['noDocs']))?'checked':'')?>/> I DON'T HAVE SUPPORTING DOCUMENTATION<br/>
+								<i style="color:#555;">Note that leaves that do not have valid supporting documentation shall be UNPAID. Absences without formal leave applications submitted are considered AWOL</i><br/><br/>
+							</div>
+							<div id="divsupdocs">
+								<input type="file" name="supDocs[]" id="f0" style="width:100%;"/>
+								<input type="file" name="supDocs[]" id="f1" style="width:100%;" class="hidden"/>
+								<input type="file" name="supDocs[]" id="f2" style="width:100%;" class="hidden"/>
+								<input type="file" name="supDocs[]" id="f3" style="width:100%;" class="hidden"/>
+								<input type="file" name="supDocs[]" id="f4" style="width:100%;" class="hidden"/>
+							</div>
+							<div id="paternityNote" class="hidden"><br/>
+								<input type="button" id="chooseSupDocs" value="Choose from uploaded Personnel Files"/> <img id="chooseImg" class="hidden" src="<?= $this->config->base_url().'css/images/small_loading.gif' ?>" width="20px"/><br/>
+								<input type="hidden" name="fromUploaded" value=""/>
+								<div id="uploadedFiles"></div>
+								<i style="color:#555;">Note that supporting documents are required for Paternity Leaves: (a) Marriage Certificate (b) Ultrasound Report of Lawful Wife.<br/>
+								If you do not have the above required documents, please file Vacation leave instead.</i>
+							</div>
+						</td>
+					</tr>
+					<tr>
 						<td>Additional Notes<br/><i style="color:#555;">(Optional)</i></td>
 						<td><textarea name="notesforHR" class="forminput"><?= ((isset($_POST['notesforHR']))?$_POST['notesforHR']:'') ?></textarea></td>
 					</tr>				

@@ -1,3 +1,8 @@
+<?php
+	echo '<pre>';
+	print_r($calData);
+	echo '</pre>';
+?>
 <table border=0 class="attendancetbl">					
 	<?php
 		$day_count = 1;
@@ -49,10 +54,14 @@
 		
 		while ( $daynum <= $days_in_month ){ 
 			$calendar .= '<td colspan=2 class="'.(($daynum==date('d', $today))?'dtoday':'').'">
-					<div class="daycontent">
-						<a href="" class="iframe" class="adaynum">'.$daynum.'</a>
-					</div>
-				</td>'; 
+					<div class="daycontent">';
+			
+			if($type=='calendar' && $this->access->accessFull==true)
+				$calendar .= '<a href="" class="iframe" class="adaynum">'.$daynum.'</a>';
+			else
+				$calendar .= $daynum;
+			
+			$calendar .= '</div></td>';
 			
 			$daynum++; 
 			$day_count++;

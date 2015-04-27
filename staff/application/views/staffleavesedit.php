@@ -110,7 +110,7 @@
 		<td>Department</td>
 		<td><?= $row->dept ?></td>
 	</tr>
-<?php if($row->leaveType==2 || $row->leaveType==3 || $row->leaveType==5){ ?>
+<?php if($row->leaveType==2 || $row->leaveType==3 || $row->leaveType==5 || ($row->leaveType==4 && !empty($row->supDocs))){ ?>
 	<tr>
 		<td>Supporting Documents</td>
 		<td>

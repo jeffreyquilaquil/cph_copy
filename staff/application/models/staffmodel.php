@@ -306,7 +306,7 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function createLeavepdf($leave){
-		$leaveArr = $this->txtM->definevar('leaveType');
+		$leaveArr = $this->config->item('leaveType');
 			
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -974,7 +974,7 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function getLeaveStatusText($status, $iscancelled){
-		$leaveStatusArr = $this->txtM->definevar('leaveStatus');
+		$leaveStatusArr = $this->config->item('leaveStatus');
 		$status = ucfirst($leaveStatusArr[$status]); 
 		
 		if($iscancelled==1 && $status==0)
@@ -992,7 +992,7 @@ class Staffmodel extends CI_Model {
 	}
 	
 	function leaveTableDisplay($rQuery, $type){
-		$leaveTypeArr = $this->txtM->definevar('leaveType');
+		$leaveTypeArr = $this->config->item('leaveType');
 		$yellowArr = array('imquery', 'imcancelledquery', 'allpending');
 		$hideArr = array('allpending', 'allapproved', 'allapprovedNopay', 'alldisapproved', 'allcancelled');
 		$disp = '<table class="tableInfo fs11px '.((in_array($type,$hideArr))?'hidden':'').'" id="tbl'.$type.'">
@@ -1043,7 +1043,7 @@ class Staffmodel extends CI_Model {
 		if(in_array($fld,array('bdate', 'startDate', 'endDate', 'accessEndDate', 'regDate'))) $aclass = 'datepick';
 		
 		$disp = '<tr class="'.$c.'tr '.$showhide.'">
-					<td width="30%">'.$this->txtM->defineField($fld).'</td>
+					<td width="30%">'.$this->config->item('txt_'.$fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
 					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk', 'terminationType', 'taxstatus'))){
@@ -1070,7 +1070,7 @@ class Staffmodel extends CI_Model {
 								}
 							endforeach;
 						}else{
-							$arr = $this->txtM->definevar($fld);
+							$arr = $this->config->item($fld);
 							foreach($arr AS $k=>$va):
 								if($k==$v) $vvalue=$va;
 								$disp .= '<option value="'.$k.'" '.(($k==$v) ? 'selected="selected"' : '').'>'.$va.'</option>';
@@ -1097,7 +1097,7 @@ class Staffmodel extends CI_Model {
 	
 	public function mergeMyNotes($empID, $username){
 		$notesArr = array();
-		$noteType = $this->txtM->definevar('noteType');
+		$noteType = $this->config->item('noteType');
 		$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
 		$ptNotes = $this->staffM->getPTQueryResults('eNotes', 'eNotes.*, eData.u, "" AS userSID', 'u="'.$username.'"', 'LEFT JOIN eData ON eKey=eNoteOwner', 'eNoteStamp DESC');
 		
@@ -1182,7 +1182,7 @@ class Staffmodel extends CI_Model {
 		else if($type=='levelID_fk')
 			$was = $this->staffM->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$tval.'"');
 		else if($type=='terminationType' || ( $type=='taxstatus' && !empty($tval))){
-			$tarr = $this->txtM->definevar($type); 
+			$tarr = $this->config->item($type); 
 			$was = $tarr[$tval];
 		}else if($type=='sal' || $type=='allowance')
 			$was = 'Php '.$tval;
@@ -1455,7 +1455,7 @@ class Staffmodel extends CI_Model {
 				$pdf->Write(0, $this->staffM->coachingScore($fscore));
 				
 				/* //recommendation
-				$recArr = $this->txtM->definevar('coachingrecommendations');
+				$recArr = $this->config->item('coachingrecommendations');
 				$pdf->setXY(290, 103);
 				$pdf->Write(0, $recArr[$row->recommendation]);
 				

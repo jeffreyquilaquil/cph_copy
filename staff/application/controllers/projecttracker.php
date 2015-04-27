@@ -7,7 +7,6 @@ class Projecttracker extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");				
 		$this->db = $this->load->database('default', TRUE);	
 		$this->load->model('Staffmodel', 'staffM');	
-		$this->load->model('Textdefinemodel', 'txtM');
 	}
 
 	public function getUserData(){
@@ -52,7 +51,7 @@ class Projecttracker extends CI_Controller {
 		if($empID!=''){
 			$myNotes = $this->staffM->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
 					
-			$noteType = $this->txtM->definevar('noteType');
+			$noteType = $this->config->item('noteType');
 			$types = array();
 			foreach($noteType AS $k=>$n):
 				$types[$n] = $k;

@@ -1,20 +1,20 @@
 <h2>Manage Schedules</h2><hr/>
 
 <ul class="tabs">
-	<li class="tab-link" data-tab="tab-1">Custom Time</li>
-	<li class="tab-link current" data-tab="tab-2">Custom Schedule</li>
+	<li class="tab-link current" data-tab="tab-1">Custom Time</li>
+	<li class="tab-link" data-tab="tab-2">Custom Schedule</li>
 </ul>
 <br/>
-<div id="tab-1" class="tab-content">	
+<div id="tab-1" class="tab-content current">	
 	<div style="width:50%; float:left;">
 		<h3>Add Time Category</h3>
 		<table>
 			<tr><td width="120px">Category Name</td><td><input type="text" class="padding5px" style="width:250px;" id="catName"/></td></tr>
-			<tr><td><br/></td><td><button id="addTimeCategory">Add Time Category</button></td></tr>
+			<tr><td><br/></td><td><button id="addTimeCategory" class="btnclass">Add Time Category</button></td></tr>
 		</table>
 	</div>
 	
-	<div style="width:45%; float:left; border-left:1px solid #ccc; padding:20px;">
+	<div style="width:45%; float:left; border-left:1px solid #ccc; padding:0 20px;">
 		<h3>Add Time Option</h3>
 		<table>
 			<tr><td width="120px">Category</td>
@@ -32,10 +32,10 @@
 			<tr><td>Name (optional)</td><td><input type="text" id="timeName" class="padding5px" style="width:248px;"/></td></tr>
 			<tr><td>Time</td>
 				<td>
-					<input type="text" id="timestart" class="timepick padding5px" style="width:113px;" placeholder="start"/>&nbsp;&nbsp;
-					<input type="text" id="timeend" class="timepick padding5px" style="width:113px;" placeholder="end"/>
+					<input type="text" id="timestart" class="timepickA padding5px" style="width:113px;" placeholder="start"/>&nbsp;&nbsp;
+					<input type="text" id="timeend" class="timepickA padding5px" style="width:113px;" placeholder="end"/>
 				</td></tr>
-			<tr><td><br/></td><td><button id="addTime">Add Time</button></td></tr>
+			<tr><td><br/></td><td><button id="addTime" class="btnclass">Add Time</button></td></tr>
 		</table>
 	</div>
 	
@@ -77,8 +77,8 @@
 					<td>
 						<div class="hidden" id="editTime'.$n.'">
 							<input type="text" name="timeName" class="padding5px" value="'.$ss[1].'"/>
-							<input type="text" name="start" class="timepick padding5px" value="'.$x[0].'"/>
-							<input type="text" name="end" class="timepick padding5px" value="'.$x[1].'"/>
+							<input type="text" name="start" class="timepickA padding5px" value="'.$x[0].'"/>
+							<input type="text" name="end" class="timepickA padding5px" value="'.$x[1].'"/>
 							<button id="btn'.$n.'" onClick="updateTime('.$n.')">Update</button>
 							<button onClick="hideEditTime('.$n.')">Cancel</button>
 						</div>
@@ -96,11 +96,24 @@
 	
 </div>
 <!-------------------------- End of tab 1 ------------------------>
-<div id="tab-2" class="tab-content current">
-	<h3>Add Custom Schedule</h3>
+<div id="tab-2" class="tab-content">
+	<h3>Add Custom Schedule</h3><hr class="gray"/>
 	Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
+	Every&nbsp;&nbsp;&nbsp;
+	<select id="schedType" class="padding5px" style="width:260px;">
+		<option value=0></option>
+		<option value=1>First</option>
+		<option value=2>Second</option>
+		<option value=3>Third</option>
+		<option value=4>Fourth</option>
+		<option value=5>Last</option>
+	</select>	
+	&nbsp;&nbsp;&nbsp;
+	(Select an option if creating recurring schedule in a month)
+	<br/><br/>
+	
 	<table class="tableInfo">
-		<tr class="trhead" align="center">
+		<tr class="trlabel" align="center">
 			<td>Sunday</td>
 			<td>Monday</td>
 			<td>Tuesday</td>
@@ -120,10 +133,10 @@
 		</tr>
 	</table>
 	<br/>
-	<button id="addcustomschedule">Add Custom Schedule</button>
+	<button id="addcustomschedule" class="btnclass">Add Custom Schedule</button>
 <?php
 	if(count($allCustomSched)>0){
-		echo '<hr class="gray"/><h3/>All Custom Schedules</h3>';
+		echo '<br/><br/><br/><hr/><h3/>All Custom Schedules</h3>';
 		echo '<table class="tableInfo">';
 		foreach($allCustomSched AS $acs){
 			echo '<tr class="trhead ctimetr'.$acs->schedID.'">
@@ -138,7 +151,29 @@
 						<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
 					</td>
 				</tr>';
-			echo '<tr align="center">
+			if($acs->schedType!=0){
+				echo '<tr class="ctimetr'.$acs->schedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
+					if($acs->sunday!=0 ) echo ' Sunday ';
+					else if($acs->monday!=0 ) echo ' Monday ';
+					else if($acs->tuesday!=0 ) echo ' Tuesday ';
+					else if($acs->wednesday!=0 ) echo ' Wednesday ';
+					else if($acs->thursday!=0 ) echo ' Thursday ';
+					else if($acs->friday!=0 ) echo ' Friday ';
+					else if($acs->saturday!=0 ) echo ' Saturday ';
+					echo 'of the Month';
+					
+					echo '&nbsp;&nbsp;&nbsp;<select id="schedType" class="padding5px ikalawa hidden" style="width:150px;">
+						<option value=0></option>
+						<option value=1 '.(($acs->schedType==1)?'selected="selected"':'').'>First</option>
+						<option value=2 '.(($acs->schedType==2)?'selected="selected"':'').'>Second</option>
+						<option value=3 '.(($acs->schedType==3)?'selected="selected"':'').'>Third</option>
+						<option value=4 '.(($acs->schedType==4)?'selected="selected"':'').'>Fourth</option>
+						<option value=5 '.(($acs->schedType==5)?'selected="selected"':'').'>Last</option>
+					</select>';
+					
+				echo '</td></tr>';
+			}
+			echo '<tr align="center" class="trlabel">
 					<td>Sunday</td>
 					<td>Monday</td>
 					<td>Tuesday</td>
@@ -165,22 +200,25 @@
 
 <script type="text/javascript">
 	$(function(){
+		$('.timepickA').datetimepicker({ format:'h:i a', datepicker:false });
+		
 		$('#addTimeCategory').click(function(){
 			if($('#catName').val()==''){
 				alert('Category name is empty.');
 			}else{
 				$(this).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
-				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtimecategory',name:$('#catName').val()}, function(){
+				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtimecategory',name:$('#catName').val()}, 
+				function(){
 					$('#catName').val('');
 					location.reload(true);
-					alert('Category name has been added.');					
+					alert('Category name has been added.');	
 				});
 			}
 		});
 		
 		$('#addTime').click(function(){
 			if($('#timecategory').val()=='' || $('#timestart').val()=='' || $('#timeend').val()==''){
-				alert('Please input all fields.');
+				alert('Please input missing values.');
 			}else{
 				$(this).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
 				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtime',name:$('#timeName').val(),start:$('#timestart').val(),end:$('#timeend').val(),cat:$('#timecategory').val()}, function(){
@@ -209,6 +247,7 @@
 				$.post('<?= $this->config->item('career_uri') ?>',{ 
 					submitType:'addCustomSched',
 					schedName:$('#schedname').val(),
+					schedType:$('#schedType').val(),
 					sunday:$('#sunday').val(),
 					monday:$('#monday').val(),
 					tuesday:$('#tuesday').val(),
@@ -246,7 +285,7 @@
 		$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'updateTime',id:id,timeName:$('#editTime'+id+' input[name="timeName"]').val(),start:$('#editTime'+id+' input[name="start"]').val(),end:$('#editTime'+id+' input[name="end"]').val()}, function(){
 			$('#editTime'+id).addClass('hidden');
 			location.reload(true);
-			alert('Time has been updated.');			
+			alert('Time has been updated.');
 		});
 	}
 	
@@ -281,6 +320,7 @@
 				submitType:'updateCustomSched',
 				schedID:id,
 				schedName:$('#inputschedName'+id).val(),
+				schedType:$('.ctimetr'+id+' #schedType').val(),
 				sunday:$('.ctimetr'+id+' #sunday').val(),
 				monday:$('.ctimetr'+id+' #monday').val(),
 				tuesday:$('.ctimetr'+id+' #tuesday').val(),
@@ -290,7 +330,7 @@
 				saturday:$('.ctimetr'+id+' #saturday').val()
 			}, function(){
 				location.reload(true);
-				alert('Custom schedule has been updated.');			
+				alert('Custom schedule has been updated.');
 			});
 		}
 	}
