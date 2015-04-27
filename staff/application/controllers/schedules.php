@@ -7,7 +7,6 @@ class Schedules extends CI_Controller {
 		date_default_timezone_set("Asia/Manila");
 		
 		$this->load->model('Staffmodel', 'staffM');
-		$this->load->model('Textdefinemodel', 'txtM');
 		$this->load->model('Schedulemodel', 'scheduleM');			
 		$this->db = $this->load->database('default', TRUE);	
 		session_start();		
@@ -16,45 +15,92 @@ class Schedules extends CI_Controller {
 		$this->access = $this->staffM->getUserAccess();
 	} 
 	
-	public function index(){
-		$data['content'] = 'schedules';	
+	public function index(){		
+		$data['content'] = 'sched_schedules';	
 		$data['row'] = $this->user;	
 		if($this->user!=false){
 			if(isset($_POST) && !empty($_POST)){
+				$tbl = '';
+				$note = '';
+				$addUp = '';
+				$insArr = array();
+				$upArr = array();
+				$where = array();
+				
 				if($_POST['submitType']=='addtimecategory'){
-					$this->staffM->insertQuery('staffCustomSchedTime', array('timeName'=>$_POST['name'], 'category'=>0, 'addInfo'=>$this->user->empID.'|'.date('Y-m-d H:i:s')));
-					$this->staffM->addMyNotif($this->user->empID,'You added time category '.$_POST['name'].'.', 5);
-				}else if($_POST['submitType']=='addtime'){
-					$this->staffM->insertQuery('staffCustomSchedTime', array('timeName'=>$_POST['name'],'timeValue'=>$_POST['start'].' - '.$_POST['end'], 'category'=>$_POST['cat'], 'addInfo'=>$this->user->empID.'|'.date('Y-m-d H:i:s')));
-					$this->staffM->addMyNotif($this->user->empID,'You added time category '.$_POST['name'].'.', 5);
+					$tbl = 'staffCustomSchedTime';
+					$insArr['timeName'] = $_POST['name'];
+					$insArr['category'] = 0;
+					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
+					
+					$note = 'You added time category '.$_POST['name'].'.';
+				}else if($_POST['submitType']=='addtime'){					
+					$tbl = 'staffCustomSchedTime';
+					$insArr['timeName'] = $_POST['name'];
+					$insArr['timeValue'] = $_POST['start'].' - '.$_POST['end'];
+					$insArr['category'] = $_POST['cat'];
+					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
+					
+					$note = 'You added time category '.$_POST['name'].'.';
 				}else if($_POST['submitType']=='deleteTime'){
-					$this->staffM->dbQuery('UPDATE staffCustomSchedTime SET status=0, addInfo=CONCAT(addInfo,"|'.$this->user->empID.'|'.date('Y-m-d H:i:s').'") WHERE timeID="'.$_POST['id'].'"');
-					$this->staffM->addMyNotif($this->user->empID,'You deleted time option '.$_POST['id'].'.', 5);
-				}else if($_POST['submitType']=='updateTime'){
-					$this->staffM->dbQuery('UPDATE staffCustomSchedTime SET timeName="'.$_POST['timeName'].'", timeValue="'.$_POST['start'].' - '.$_POST['end'].'", addInfo=CONCAT(addInfo,"|'.$this->user->empID.'|'.date('Y-m-d H:i:s').'") WHERE timeID="'.$_POST['id'].'"');
-					$this->staffM->addMyNotif($this->user->empID,'You updated time option ID: '.$_POST['id'].' to '.$_POST['start'].' - '.$_POST['end'], 5);
+					$tbl = 'staffCustomSchedTime';
+					$where = array('timeID'=>$_POST['id']);
+					$addUp = 'addInfo';
+					$upArr['status'] = 0;
+					
+					$note = 'You deleted time option '.$_POST['id'].'.';
+				}else if($_POST['submitType']=='updateTime'){					
+					$tbl = 'staffCustomSchedTime';
+					$where = array('timeID'=>$_POST['id']);
+					$upArr['timeName'] = $_POST['timeName'];
+					$addUp = 'addInfo';
+					
+					if(!empty($_POST['start']) && !empty($_POST['end'])){
+						$upArr['timeValue'] = $_POST['start'].' - '.$_POST['end'];
+						$note = 'You updated time option ID: '.$_POST['id'].' to '.$_POST['start'].' - '.$_POST['end'];
+					}else{
+						$note = 'You updated time option ID: '.$_POST['id'];
+					}										
 				}else if($_POST['submitType']=='addCustomSched'){
 					unset($_POST['submitType']);
-					$_POST['createdby'] = $this->user->empID;
-					$_POST['datecreated'] = date('Y-m-d H:i:s');
-					$this->staffM->insertQuery('staffCustomSched', $_POST);
-					$this->staffM->addMyNotif($this->user->empID,'You added custom schedule: '.$_POST['schedName'], 5);
-				}else if($_POST['submitType']=='updateCustomSched'){
-					$id = $_POST['schedID'];
+					$tbl = 'staffCustomSched';
+					$insArr = $_POST;
+					$insArr['createdby'] = $this->user->empID;
+					$insArr['datecreated'] = date('Y-m-d H:i:s');
+					
+					$note = 'You added custom schedule: '.$_POST['schedName'];
+				}else if($_POST['submitType']=='updateCustomSched'){					
+					$tbl = 'staffCustomSched';
+					$where = array('schedID'=>$_POST['schedID']);
 					unset($_POST['schedID']);
 					unset($_POST['submitType']);
-					$this->staffM->updateQuery('staffCustomSched', array('schedID'=>$id), $_POST);
-					$this->staffM->dbQuery('UPDATE staffCustomSched SET updateData=CONCAT(updateData,"'.$this->user->empID.'--'.date('Y-m-d H:i:s').'|") WHERE schedID="'.$id.'"');
-					$this->staffM->addMyNotif($this->user->empID,'You added custom schedule: '.$_POST['schedName'].'.', 5);
+					$upArr = $_POST;
+					
+					$addUp = 'updateData';					
+					$note = 'You added custom schedule: '.$_POST['schedName'].'.';
 				}else if($_POST['submitType']=='deleteCustomSched'){
-					$this->staffM->dbQuery('UPDATE staffCustomSched SET status=0, updateData=CONCAT(updateData,"|'.$this->user->empID.'|'.date('Y-m-d H:i:s').'|") WHERE schedID="'.$_POST['id'].'"');
-					$this->staffM->addMyNotif($this->user->empID,'You deleted custom schedule '.$_POST['id'].'.', 5);
+					$tbl = 'staffCustomSched';
+					$where = array('schedID'=>$_POST['id']);
+					$upArr['status'] = 0;
+					
+					$addUp = 'updateData';					
+					$note = 'You deleted custom schedule '.$_POST['id'].'.';
+				}
+				
+				//update and insert defined above
+				if(!empty($note)) $this->staffM->addMyNotif($this->user->empID,$note, 5);
+				if(!empty($tbl) && count($insArr)>0) $this->staffM->insertQuery($tbl, $insArr);
+				if(!empty($tbl) && count($upArr)>0 && count($where)>0) $this->staffM->updateQuery($tbl, $where, $upArr);
+				reset($where);
+				if(!empty($tbl) && count($where)>0 && !empty($addUp)){
+					$this->staffM->updateConcat($tbl, key($where).'="'.$where[key($where)].'"', $addUp, $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|');
 				}
 				exit;
 			}
 			$data['timecategory'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'category=0 AND status=1');		
 			$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
 			$data['allCustomSched'] = $this->staffM->getQueryResults('staffCustomSched', '*', 'status=1');
+			$data['schedTypeArr'] = $this->config->item('schedType');
 		}
 		$this->load->view('includes/template', $data);	
 	}	

@@ -242,7 +242,8 @@ class Staff extends CI_Controller {
 					$txt = '';
 					$tab = "\t";
 					for($i=0;$i<count($data['fvalue']);$i++){
-						$txt .= $this->txtM->defineField($data['fvalue'][$i]).$tab;
+						$txt .= $this->config->item('txt_'.$data['fvalue'][$i]).$tab;
+						
 					}
 					
 					$txt .= "\r\n";
@@ -334,7 +335,7 @@ class Staff extends CI_Controller {
 											if($o=='') $o = 'none';
 										}
 										
-										$upNote .= $this->txtM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';			
+										$upNote .= $this->config->item('txt_'.$k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';			
 									endforeach;
 									$upNote .= 'This needs HR approval. Please upload documents on Personal File on My Info page to support the request.';
 									$this->staffM->addMyNotif($_POST['empID'], $upNote);								
@@ -433,7 +434,7 @@ class Staff extends CI_Controller {
 										if($o=='') $o = 'none';
 									}
 									
-									$upNote .= $this->txtM->defineField($k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
+									$upNote .= $this->config->item('txt_'.$k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
 								endforeach;
 								$this->staffM->addMyNotif($empID, $upNote, 0, 1);
 							}
@@ -503,7 +504,7 @@ class Staff extends CI_Controller {
 						
 						exit;
 					}else if($_POST['submitType']=='cancelRequest'){					
-						$this->staffM->addMyNotif($data['row']->empID, 'Cancelled update field request:<br/>'.$this->txtM->defineField($_POST['fld']).' - '.$this->staffM->infoTextVal($_POST['fld'], $_POST['fname']), 5);
+						$this->staffM->addMyNotif($data['row']->empID, 'Cancelled update field request:<br/>'.$this->config->item('txt_'.$_POST['fld']).' - '.$this->staffM->infoTextVal($_POST['fld'], $_POST['fname']), 5);
 						$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>5));
 						exit;
 					}else if($_POST['submitType']=='uLeaveC'){
@@ -546,8 +547,8 @@ class Staff extends CI_Controller {
 					}
 				} //end of POST not empty
 			
-				$data['leaveTypeArr'] = $this->txtM->definevar('leaveType');
-				$data['leaveStatusArr'] = $this->txtM->definevar('leaveStatus');
+				$data['leaveTypeArr'] = $this->config->item('leaveType');
+				$data['leaveStatusArr'] = $this->config->item('leaveStatus');
 				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'" AND status!=5','', 'date_requested DESC');
 				$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
 				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating,	dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
@@ -587,7 +588,7 @@ class Staff extends CI_Controller {
 					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>1));
 															
 					$ntext = 'Approved update request.<br/>Information details has been updated to:<br/>';
-					$ntext .= $this->txtM->defineField($_POST['fieldN']).' - ';
+					$ntext .= $this->config->item('txt_'.$_POST['fieldN']).' - ';
 					$ntext .= $this->staffM->infoTextVal($_POST['fieldN'], $_POST['fieldV']);
 											
 					$this->staffM->addMyNotif($_POST['empID'], $ntext, 0, 1);
@@ -629,7 +630,7 @@ class Staff extends CI_Controller {
 					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>2,'notes'=>$note.'request disapproved <br/><i>'.$_POST['notes'].'</i>'));
 					$data['success'] = true;
 					
-					$ntext = $this->user->name.' disapproved your personal details update request: '.$this->txtM->defineField($_POST['fieldN']).' - '.$_POST['fieldV'].'<br/>Reason: '.$_POST['notes'];
+					$ntext = $this->user->name.' disapproved your personal details update request: '.$this->config->item('txt_'.$_POST['fieldN']).' - '.$_POST['fieldV'].'<br/>Reason: '.$_POST['notes'];
 					$this->staffM->addMyNotif($_POST['empID_fk'], $ntext, 0, 1);
 				}else if($_POST['submitType']=='sendEmail' || $_POST['submitType']=='sendEmailClose'){
 					$this->staffM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['email'], $_POST['subject'], nl2br($_POST['message']), 'CAREERPH');
@@ -677,12 +678,12 @@ class Staff extends CI_Controller {
 			/* $data['prevID'] = $this->staffM->getSingleField('staffNTE', 'nteID', 'empID_fk="'.$data['row']->empID.'" ORDER BY dateissued DESC');
 			if($data['prevID']!=''){				
 				$data['prev'] = $this->staffM->getSingleInfo('staffNTE', '*', 'nteID="'.$data['prevID'].'"');
-				if($data['prev']->type=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
-				else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');
+				if($data['prev']->type=='tardiness') $data['sanctionArr'] = $this->config->item('sanctiontardiness');
+				else $data['sanctionArr'] = $this->config->item('sanctionawol');
 			}  */
 			
 			$data['prevNTE'] = $this->staffM->getQueryResults('staffNTE', 'nteID, empID_fk, type, offenselevel, offensedates, dateissued, issuer, status, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=issuer) AS issuedBy, sanction, suspensiondates', 'empID_fk="'.$empID.'" AND (dateissued >= "'.date('Y-m-', strtotime('-6 months')).'" OR (type="AWOL" AND dateissued>="'.date('Y-m-', strtotime('-1 year')).'"))', '', 'dateissued ASC');
-			$data['nteStat'] = $this->txtM->definevar('nteStat');
+			$data['nteStat'] = $this->config->item('nteStat');
 			
 			$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$data['row']->supervisor.'"');
 			
@@ -740,8 +741,8 @@ class Staff extends CI_Controller {
 					</p>	
 					<p><i>Click <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/"><b>here</b></a> to view the file.</i></p>';
 				if($_POST['offenselevel']<3){
-					if($_POST['type']=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
-					else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');				
+					if($_POST['type']=='tardiness') $data['sanctionArr'] = $this->config->item('sanctiontardiness');
+					else $data['sanctionArr'] = $this->config->item('sanctionawol');				
 					
 					$body .= '<p>Note that the Code of Conduct prescribes a sanction of '.$data['sanctionArr'][$_POST['offenselevel']].' to a '.$this->staffM->ordinal($_POST['offenselevel']).' offense of '.$_POST['type'].'.</p>					
 						<p>You are hereby requested to send an explanation. Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/"><b>here</b></a> to submit your explanation. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' (5 days) to write your explanation. Failure to do so will be considered an admission of fault and your waiver of your right to be heard.</p>
@@ -895,8 +896,8 @@ class Staff extends CI_Controller {
 			//if CAR form
 			if($row->status==0){
 				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
-				if($row->type=='tardiness') $sanctionArr = $this->txtM->definevar('sanctiontardiness');
-				else $sanctionArr = $this->txtM->definevar('sanctionawol');
+				if($row->type=='tardiness') $sanctionArr = $this->config->item('sanctiontardiness');
+				else $sanctionArr = $this->config->item('sanctionawol');
 
 				$secondlevelmngr = '';
 				if(isset($firstlevelmngr->supervisor))
@@ -1181,8 +1182,8 @@ class Staff extends CI_Controller {
 			
 			$data['row'] = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, email, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=issuer AND issuer!=0) AS issuerName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=carissuer AND carissuer!=0) AS carName', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk'); 
 			
-			if($data['row']->type=='tardiness') $data['sanctionArr'] = $this->txtM->definevar('sanctiontardiness');
-			else $data['sanctionArr'] = $this->txtM->definevar('sanctionawol');
+			if($data['row']->type=='tardiness') $data['sanctionArr'] = $this->config->item('sanctiontardiness');
+			else $data['sanctionArr'] = $this->config->item('sanctionawol');
 			
 			if(isset($_POST) && !empty($_POST)){
 				if($_POST['submitType']=='aknowledge'){
@@ -1521,7 +1522,7 @@ class Staff extends CI_Controller {
 						}
 					}
 									
-					$leaveTypeArr = $this->txtM->definevar('leaveType');
+					$leaveTypeArr = $this->config->item('leaveType');
 					//add notes to employee
 					$this->staffM->addMyNotif($this->user->empID, 'Filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Click <a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$insID.'/">here</a> for details.', 3);
 					
@@ -1570,8 +1571,8 @@ class Staff extends CI_Controller {
 			if($this->user->access=='' && $this->user->level==0 && $segment2==''){
 				$data['access'] = false;
 			}else{
-				$data['leaveTypeArr'] = $this->txtM->definevar('leaveType');
-				$data['leaveStatusArr'] = $this->txtM->definevar('leaveStatus');
+				$data['leaveTypeArr'] = $this->config->item('leaveType');
+				$data['leaveStatusArr'] = $this->config->item('leaveStatus');
 				if($segment2 != ''){
 					$data['content'] = 'staffleavesedit';				
 									
@@ -2046,8 +2047,8 @@ class Staff extends CI_Controller {
 						$this->staffM->updateQuery('staffUpdated', array('updateID'=>$this->uri->segment(3)), array('status'=>3));
 											
 						$wfval = $this->staffM->infoTextVal($wonka->fieldname, $wonka->fieldvalue);
-						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wfval.'<br/>Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
-						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->txtM->defineField($wonka->fieldname).' - '.$wfval.'<br/>Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
+						$this->staffM->addMyNotif($wonka->empID_fk, $this->user->name.' generated CIS for your update request:<br/>'.$this->config->item('txt_'.$wonka->fieldname).' - '.$wfval.'<br/>Claim the printed copy of the CIS from '.$this->user->fname.', sign and submit it to HR so they can proceed with the changes.', 0, 1);
+						$this->staffM->addMyNotif($this->user->empID, 'You generated a CIS for '.$wonka->name.'. Update requests:<br/>'.$this->config->item('txt_'.$wonka->fieldname).' - '.$wfval.'<br/>Print the CIS and let '.$this->user->fname.'sign and submit it to HR so they can proceed with the changes.', 5);
 					}
 				}else{
 					$this->staffM->addMyNotif($this->user->empID, 'Generated CIS for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'cispdf/'.$insid.'/" class="iframe">here</a> to view file.', 5);
@@ -2102,8 +2103,8 @@ class Staff extends CI_Controller {
 						$chQuery = json_decode($data['row']->changes);
 						foreach($chQuery AS $k=>$c):
 							if($k!='salary'){
-								$chtext .= 'Previous '.$this->txtM->defineField($k).': '.$c->c.'<br/>';
-								$chtext .= 'New '.$this->txtM->defineField($k).': <b>'.$c->n.'</b><br/>';	
+								$chtext .= 'Previous '.$this->config->item('txt_'.$k).': '.$c->c.'<br/>';
+								$chtext .= 'New '.$this->config->item('txt_'.$k).': <b>'.$c->n.'</b><br/>';	
 							}
 						endforeach;
 						
@@ -2517,7 +2518,7 @@ class Staff extends CI_Controller {
 	
 		$data['org'] = $this->staffM->getSQLQueryArrayResults('SELECT DISTINCT org FROM newPositions');
 		$data['orgLevel'] = $this->staffM->getSQLQueryArrayResults('SELECT * FROM orgLevel');
-		$data['requiredTestArr'] = $this->txtM->definevar('requiredTest');		
+		$data['requiredTestArr'] = $this->config->item('requiredTest');		
 		$data['requiredSkillsArr'] = $this->staffM->getQueryResults('applicantSkills', '*');
 		
 		$this->load->view('includes/templatecolorbox', $data);
@@ -2530,7 +2531,7 @@ class Staff extends CI_Controller {
 		if($id!=''){
 			$data['page'] = 'details';
 			$data['row'] = $this->staffM->getSingleInfo('newPositions', '*, levelName', 'posID="'.$id.'"', 'LEFT JOIN orgLevel ON levelID=orgLevel_fk');
-			$data['txt'] = $this->txtM->definevar('requiredTest');
+			$data['txt'] = $this->config->item('requiredTest');
 			$allskills = $this->staffM->getQueryResults('applicantSkills', '*');
 			$sArr = array();
 			foreach($allskills AS $a):
@@ -2618,7 +2619,7 @@ class Staff extends CI_Controller {
 			$data['row'] = $this->staffM->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, supervisor', 'empID="'.$id.'"');
 			
 			$data['supervisors'] = $this->staffM->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, title', 'staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'fname ASC');
-			$data['areaofimprovementArr'] = $this->txtM->definevar('areaofimprovement');
+			$data['areaofimprovementArr'] = $this->config->item('areaofimprovement');
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);

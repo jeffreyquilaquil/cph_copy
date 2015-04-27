@@ -11,8 +11,8 @@ class Schedulemodel extends CI_Model {
     }	
 
 	function customTimeDisplay($time, $day, $v='', $edit=true){
-		$valentine = '<select id="'.$day.'" class="everyday padding5px" '.(($edit==false)?'disabled':'').'>
-					<option value="">Day Off</option>';					
+		$valentine = '<select id="'.$day.'" class="schedSelect everyday padding5px '.(($v!='' && $v==0)?'bggray':'').'" '.(($edit==false)?'disabled':'').'>
+					<option value=""></option>';					
 					foreach($time AS $t=>$t2):
 						$valentine .= '<optgroup label="'.$t2['name'].'">';						
 						foreach($t2 AS $k=>$t):

@@ -27,7 +27,7 @@ if($edit==''){
 			echo '
 				<tr>
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$r->username.'/">'.$r->fname.' '.$r->lname.'</a></td>
-					<td>'.$this->txtM->defineField($r->fieldname).'</td>
+					<td>'.$this->config->item('txt_'.$r->fieldname).'</td>
 					<td>';
 						if($f=='sal' || $f=='allowance')
 							echo 'Php '.$r->$f;

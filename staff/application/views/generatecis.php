@@ -48,7 +48,7 @@ if($updated==false && count($row)>0){
 			<select name="office" id="valoffice" class="forminput">
 				<option value=""></option>
 			<?php
-				$otype = $this->txtM->definevar('office');
+				$otype = $this->config->item('office');
 				foreach($otype AS $o):
 					echo '<option value="'.$o.'">'.$o.'</option>';
 				endforeach;

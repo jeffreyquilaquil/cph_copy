@@ -70,7 +70,7 @@
 		<tr class="trhead"><td>Fields</td><td>Details</td><td>Date Update Requested</td><td><br/></td></tr>
 <?php	foreach($updatedVal AS $u){
 			echo '<tr>
-					<td>'.$this->txtM->defineField($u->fieldname).'</td>';
+					<td>'.$this->config->item('txt_'.$u->fieldname).'</td>';
 				echo '<td>'.$this->staffM->infoTextVal($u->fieldname, $u->fieldvalue).'</td>';
 				echo '<td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
 					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$u->fieldname.'\', \''.$u->fieldvalue.'\')"></td>
