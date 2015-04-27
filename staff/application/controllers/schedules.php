@@ -59,5 +59,14 @@ class Schedules extends CI_Controller {
 		$this->load->view('includes/template', $data);	
 	}	
 	
+	public function setstaffschedule() {
+		
+		$id = $this->uri->segment(3);	
+		$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name',' empID="'.$id.'" ');								
+		$data['content'] = 'setstaffschedule';
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	
 }
 ?>

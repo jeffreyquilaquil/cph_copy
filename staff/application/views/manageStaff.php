@@ -88,7 +88,8 @@
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching</a></li>';
 						if($this->access->accessFull==true){
-							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>';
+							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>
+							<li><a class="iframe2" href="'.$this->config->base_url().'schedules/setstaffschedule/'.$row->empID.'/">Set Schedule</a></li>';
 						}
 							
 				echo 	'</ul>
