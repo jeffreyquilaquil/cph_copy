@@ -165,9 +165,9 @@
 				n = n+parseInt(rarr[r]);
 			}
 			wvalue = (n/(rarr.length-1))*0.80;
-			wvalue = wvalue+parseInt($('#emprating').val());
+			wvalue = wvalue+parseFloat($('#emprating').val());
 			wvalue = wvalue.toFixed(2);
-			$('#score').html('Employee\'s Weighed Score:'+wvalue+'<br/>'+coachingScore(wvalue));			
+			$('#score').html('Employee\'s Weighed Score: '+wvalue+'<br/>'+coachingScore(wvalue));			
 		}
 		
 		if(valid==false){

@@ -1344,10 +1344,15 @@ class Staffmodel extends CI_Model {
 			$pdf->SetFont('Arial','B',10);
 			$pdf->setXY(17, 61);
 			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(137, 63); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
+			
 			$pdf->setXY(17, 80);
 			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(137, 82); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
+			
 			$pdf->setXY(180, 71);
 			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
+			$pdf->setXY(312, 73); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
 		}
 		
 		if($type=='evaluation'){
@@ -1445,7 +1450,7 @@ class Staffmodel extends CI_Model {
 				$pdf->setXY(288, 72);
 				$pdf->Write(0, number_format(($eRateAve*0.20), 2));
 				$pdf->setXY(330, 72);
-				$pdf->Write(0, number_format(($sRateAve*0.20), 2));
+				$pdf->Write(0, number_format(($sRateAve*0.80), 2));
 				//total weighed average
 				$fscore = number_format((($eRateAve*0.20) + ($sRateAve*0.80)), 2);
 				$pdf->setXY(227, 100);
@@ -1474,10 +1479,15 @@ class Staffmodel extends CI_Model {
 			$pdf->SetFont('Arial','B',10);
 			$pdf->setXY(15, 153);
 			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(133, 155); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
+			
 			$pdf->setXY(15, 172.5);
 			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(133, 174.5); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
+			
 			$pdf->setXY(175, 163);
 			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
+			$pdf->setXY(308, 165); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
 		}	
 		
 		

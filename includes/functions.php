@@ -120,21 +120,12 @@ function get_file($dir){
 
 function is_good_email($email, $id=NULL){
 	global $db;
-	if(!is_null($id)){
-		$filter = "AND id<>$id";
-	}
 	$email = trim($email);
 	if(empty($email)){
 		return "Email empty.";
 	}
-	else{
-		$count = $db->selectSingleQuery("applicants", "COUNT(email)", "email = '{$email}' $filter");
-		if($count > 0){
-			return "Email already exist.";
-		}
-		else if(filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE){
-			return "Invalid Email.";
-		}
+	else if(filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE){
+		return "Invalid Email.";
 	}
 	return TRUE;
 }
