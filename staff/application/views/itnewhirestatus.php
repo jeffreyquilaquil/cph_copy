@@ -179,6 +179,9 @@
 			<tr class="trhead">
 				<td colspan=3>Immediate Supervisor: <i><?= $do->imsupervisor ?></i></td>
 			</tr>
+			<tr class="trhead">
+				<td colspan=3>Start Date: <i><?= date('F d, Y', strtotime($do->startDate)).' ('.$do->shift.')' ?></i></td>
+			</tr>
 			<tr>
 				<td width="35%"><b>Email Creation</b></td>
 				<td width="35%">- morning (Glaiza, Divi)<br/>
