@@ -130,6 +130,7 @@ class Schedules extends CI_Controller {
 		$this->load->view('includes/template', $data);	
 	}
 
+		
 	public function holidayevents(){
 		$data['content'] = 'sched_holiday';
 		$data['allDayTypes'] = $this->config->item('holidayTypes');
@@ -143,6 +144,69 @@ class Schedules extends CI_Controller {
 
 		$this->load->view('includes/templatecolorbox', $data);	
 	}
+	
+	
+	public function setstaffschedule() {
+		$id = $this->uri->segment(3);	
+		if(isset($_POST) && !empty($_POST)){ print_r($_POST);			
+			 if($_POST['submitType']=='setScheduleForStaff'){
+				$presched = $_POST['presched'];
+				if($presched == 0) {
+					$array_custom = array();
+					$array_custom['schedName'] = $_POST['schedName'];
+					$array_custom['schedType'] = $_POST['schedType'];
+					$array_custom['sunday'] = $_POST['sunday'];
+					$array_custom['monday'] = $_POST['monday'];
+					$array_custom['tuesday'] = $_POST['tuesday'];
+					$array_custom['wednesday'] = $_POST['wednesday'];
+					$array_custom['thursday'] = $_POST['thursday'];
+					$array_custom['friday'] = $_POST['friday'];
+					$array_custom['saturday'] = $_POST['saturday'];
+					$array_custom['datecreated'] = date('Y-m-d H:i:s');
+					
+					$newId = $this->staffM->insertQuery("staffCustomSched", $array_custom);					
+					$array_input = array();
+					$array_input['staffCustomSched_fk'] = $newId;
+					$array_input['effectivestart'] = date("Y-m-d",strtotime($_POST['effective_startdate']));
+					$array_input['effectiveend'] = date("Y-m-d",strtotime($_POST['effective_enddate']));
+					$array_input['empID_fk'] = $id;
+					$array_input['assignby'] = $this->user->empID;
+					$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
+											
+				}
+				else{	
+					$array_input = array();
+					$array_input['staffCustomSched_fk'] = $_POST['presched'];
+					$array_input['effectivestart'] = date("Y-m-d",strtotime($_POST['effective_startdate']));
+					$array_input['effectiveend'] = date("Y-m-d",strtotime($_POST['effective_enddate']));
+					$array_input['empID_fk'] = $id;
+					$array_input['assignby'] = $this->user->empID;
+					$newId = $this->staffM->insertQuery("staffSchedules", $array_input);					
+				}
+			}
+			unset($_POST);
+			exit;
+		}
+		
+		
+		$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name',' empID="'.$id.'" ');								
+		$query = "SELECT * FROM  staffCustomSched";
+		$query_result = $this->db->query($query);
+		$data['customSched'] = $query_result->result();		
+		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
+		$data['currentSched'] = $this->staffM->getQueryResults('staffSchedules', '*', 'empID_fk='.$id,' LEFT JOIN staffCustomSched ON  custschedID = staffCustomSched_fk');
+		$data['content'] = 'setstaffschedule';		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function getvalueofpredefinesched() {
+		$id = $this->input->post("id");
+		$response = $this->scheduleM->getCustomSchedDetails($id);
+		echo json_encode($response);
+		// echo "hello world";
+	
+	}
+	
 	
 }
 ?>
