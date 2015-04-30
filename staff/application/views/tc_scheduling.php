@@ -1,20 +1,6 @@
-<!-- ATTENDANCE -->
-<div id="attendance" class="tab-content <?= (($tpage=='attendance')?'current':'') ?>">
-<?php 
-	$this->load->view('tc_calendar', $attendance);
-?>
-</div>
-
-<!-- CALENDAR -->
-<div id="calendar" class="tab-content <?= (($tpage=='calendar')?'current':'') ?>">
-<?php 
-	$this->load->view('tc_calendar', $calendar);
-?>
-</div>
-
-<!-- SCHEDULDING -->
-<div id="scheduling" class="tab-content <?= (($tpage=='scheduling')?'current':'') ?>">	
 <?php
+	$this->load->view('includes/header_timecard'); 
+	
 	if(isset($assignSched) && $assignSched==true){
 		echo '<table class="tableInfo">';
 		foreach($allStaffs AS $at):
@@ -63,34 +49,21 @@
 		echo '<td></td>';
 		echo '<td></td>';
 		echo '</tr>';
-		/* echo '<tr>';
-		echo '<td><input type="checkbox" name="assign[]" value="'.$a->empID.'" class="hidden"/> '.$a->lname.'</td>';
-		echo '<td>'.$a->fname.'</td>';
-		echo '<td>'.$a->title.'</td>';
-		echo '<td>'.$a->shift.'</td>';
-		echo '<td>'.$a->dept.'</td>';
-		echo '<td>'.$a->leader.'</td>';
-		echo '<td>'.$a->holidaySched.'</td>';
-		echo '</tr>'; */
 	endforeach;
 ?>
 	</form>
 	</table>
 <?php } ?>
-</div>
-
 
 <script type="text/javascript">
-	$(function(){
-		//$('.dTable').dataTable();
-		
+	$(function(){				
 		$('.dTable').dataTable({
 			"dom": 'lf<"toolbar">tip'
 		});
 		
 		
 		//"dom": '<"toolbar">frtip'
-		$("div.toolbar").html('<br/><br/><br/><input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive']))?'checked':'')?>/> <b>include inactive employees</b><br/><input type="checkbox" id="selectAll"/> Select All<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Or Select the employees below that need a Schedule Assignment.</i><br/><br/>');
+		$("div.toolbar").html('<br/><br/><br/><input type="checkbox" id="selectAll"/> Select All<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Or Select the employees below that need a Schedule Assignment.</i><br/><br/>');
 				
 		$('.dTable').on('click','tbody tr',function(){
 			$(this).toggleClass('selected');
