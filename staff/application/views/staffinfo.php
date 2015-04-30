@@ -173,10 +173,12 @@
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, true);
 				echo $this->staffM->displayInfo('jdetails', 'active', $row->active, true);
 				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), true);
+				echo $this->staffM->displayInfo('jdetails', 'staffHolidaySched', ucfirst($row->staffHolidaySched), true);
 			}else{
 				echo $this->staffM->displayInfo('jdetails', 'idNum', $row->idNum, false);
 				echo $this->staffM->displayInfo('jdetails', 'active', (($row->active==1)?'Yes':'No'), false);
 				echo $this->staffM->displayInfo('jdetails', 'office', ucfirst($row->office), false);
+				echo $this->staffM->displayInfo('jdetails', 'staffHolidaySched', ucfirst($row->staffHolidaySched), false);
 			}
 			
 			

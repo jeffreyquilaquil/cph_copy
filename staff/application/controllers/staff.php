@@ -429,6 +429,9 @@ class Staff extends CI_Controller {
 										$o = $orig['levelName'];
 									}else if($k=='bankAccnt' || $k=='hmoNumber'){
 										$o = $this->staffM->decryptText($orig[$k]);
+									}else if($k=='staffHolidaySched'){
+										$schedLoc = $this->config->item($k);
+										$o = $schedLoc[$orig[$k]];
 									}else{
 										$o = $orig[$k];
 										if($o=='') $o = 'none';
@@ -2816,16 +2819,6 @@ class Staff extends CI_Controller {
 				
 		$data['all'] = $all;		
 		$this->load->view('includes/template', $data);	
-	}
-	
-	public function setstaffschedule() {
-		
-		$id = $this->uri->segment(2);	
-		$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name',' empID="'.$id.'" ');				
-		$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
-		
-		$data['content'] = 'setstaffschedule';
-		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	

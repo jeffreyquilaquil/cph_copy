@@ -1,11 +1,46 @@
 <h2>Manage Schedules</h2><hr/>
 
 <ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">Custom Time</li>
-	<li class="tab-link" data-tab="tab-2">Custom Schedule</li>
+	<li class="tab-link current" data-tab="holeventsched">Holiday/Event Schedule</li>
+	<li class="tab-link" data-tab="customtime">Custom Time</li>
+	<li class="tab-link" data-tab="customsched">Custom Schedule</li>	
 </ul>
 <br/>
-<div id="tab-1" class="tab-content current">	
+<div id="holeventsched" class="tab-content current">
+	<div id="addHolidaySchedDiv" class="hidden">
+		<?php $this->load->view('sched_holiday'); ?>
+	</div>
+	<hr/>
+	<h3>All Holiday/Event Schedules
+		<button id="addHolidaybtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
+	</h3>
+	<table class="tableInfo">
+		<tr class="trlabel">
+			<td>Date</td>
+			<td>Weekday</td>
+			<td>Name</td>
+			<td>Type</td>
+			<td>Repetition</td>
+			<td>Work Day?</td>
+			<td><br/></td>
+		</tr>
+	<?php
+		foreach($holidaySchedArr AS $hol){
+			echo '<tr class="holidaycolor_'.$hol->holidayType.'">
+					<td>'.date('F d', strtotime($hol->holidayDate)).'</td>
+					<td>'.date('l', strtotime($hol->holidayDate)).'</td>
+					<td>'.$hol->holidayName.'</td>
+					<td>'.$allDayTypes[$hol->holidayType].'</td>
+					<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
+					<td>'.(($hol->holidayWork==0)?'No':'Yes').'</td>
+					<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
+				</tr>';
+		}
+	?>
+	</table>
+</div>
+<!-------------------------- Holiday/Event Schedule ------------------------>
+<div id="customtime" class="tab-content">	
 	<div style="width:50%; float:left;">
 		<h3>Add Time Category</h3>
 		<table>
@@ -95,108 +130,110 @@
 ?>
 	
 </div>
-<!-------------------------- End of tab 1 ------------------------>
-<div id="tab-2" class="tab-content">
-	<h3>Add Custom Schedule</h3><hr class="gray"/>
-	Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
-	Every&nbsp;&nbsp;&nbsp;
-	<select id="schedType" class="padding5px" style="width:260px;">
-		<option value=0></option>
-		<option value=1>First</option>
-		<option value=2>Second</option>
-		<option value=3>Third</option>
-		<option value=4>Fourth</option>
-		<option value=5>Last</option>
-	</select>	
-	&nbsp;&nbsp;&nbsp;
-	(Select an option if specific day of the month)
-	<br/><br/>
+<!-------------------------- Custom Time ------------------------>
+<div id="customsched" class="tab-content">
+	<div id="addCustomSchedDiv" class="hidden">	
+		<h3>Add Custom Schedule</h3><hr class="gray"/>
+		Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
+		Every&nbsp;&nbsp;&nbsp;
+		<select id="schedType" class="padding5px" style="width:260px;">
+			<option value=0></option>
+			<option value=1>First</option>
+			<option value=2>Second</option>
+			<option value=3>Third</option>
+			<option value=4>Fourth</option>
+			<option value=5>Last</option>
+		</select>	
+		&nbsp;&nbsp;&nbsp;(Select an option if specific day of the month)
+		<br/><br/>	
+		<table class="tableInfo">
+			<tr class="trlabel" align="center">
+				<td>Sunday</td>
+				<td>Monday</td>
+				<td>Tuesday</td>
+				<td>Wednesday</td>
+				<td>Thursday</td>
+				<td>Friday</td>
+				<td>Saturday</td>			
+			</tr>
+			<tr>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'sunday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'monday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'tuesday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'wednesday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'thursday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'friday') ?></td>
+				<td><?= $this->scheduleM->customTimeDisplay($time, 'saturday') ?></td>
+			</tr>
+		</table>
+		<br/>
+		<button id="addcustomschedule" class="btnclass">Add Schedule</button>
+	</div>
 	
+	<hr/><h3/>All Custom Schedules
+		<button id="addCustomSchedbtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addCustomSchedDiv').show(); ">+ Add Custom Schedule</button>
+	</h3>
 	<table class="tableInfo">
-		<tr class="trlabel" align="center">
-			<td>Sunday</td>
-			<td>Monday</td>
-			<td>Tuesday</td>
-			<td>Wednesday</td>
-			<td>Thursday</td>
-			<td>Friday</td>
-			<td>Saturday</td>			
-		</tr>
-		<tr>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'sunday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'monday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'tuesday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'wednesday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'thursday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'friday') ?></td>
-			<td><?= $this->scheduleM->customTimeDisplay($time, 'saturday') ?></td>
-		</tr>
-	</table>
-	<br/>
-	<button id="addcustomschedule" class="btnclass">Add Custom Schedule</button>
 <?php
-	if(count($allCustomSched)>0){
-		echo '<br/><br/><br/><hr/><h3/>All Custom Schedules</h3>';
-		echo '<table class="tableInfo">';
-		foreach($allCustomSched AS $acs){
-			echo '<tr class="trhead ctimetr'.$acs->custschedID.'">
-					<td colspan=6>
-						<span class="una">'.$acs->schedName.'</span>
-						<input id="inputschedName'.$acs->custschedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
-					<td align="right">
-						<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->custschedID.')"/>
-						<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->custschedID.')"/>
-						<button class="hidden ikalawa" onClick="updateCustSched('.$acs->custschedID.')">Update</button>
-						<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->custschedID.')">Cancel</button>
-						<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
-					</td>
-				</tr>';
-			if($acs->schedType!=0){
-				echo '<tr class="ctimetr'.$acs->custschedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
-					if($acs->sunday!=0 ) echo ' Sunday ';
-					else if($acs->monday!=0 ) echo ' Monday ';
-					else if($acs->tuesday!=0 ) echo ' Tuesday ';
-					else if($acs->wednesday!=0 ) echo ' Wednesday ';
-					else if($acs->thursday!=0 ) echo ' Thursday ';
-					else if($acs->friday!=0 ) echo ' Friday ';
-					else if($acs->saturday!=0 ) echo ' Saturday ';
-					echo 'of the Month';
-					
-					echo '&nbsp;&nbsp;&nbsp;<select id="schedType" class="padding5px ikalawa hidden" style="width:150px;">
-						<option value=0></option>
-						<option value=1 '.(($acs->schedType==1)?'selected="selected"':'').'>First</option>
-						<option value=2 '.(($acs->schedType==2)?'selected="selected"':'').'>Second</option>
-						<option value=3 '.(($acs->schedType==3)?'selected="selected"':'').'>Third</option>
-						<option value=4 '.(($acs->schedType==4)?'selected="selected"':'').'>Fourth</option>
-						<option value=5 '.(($acs->schedType==5)?'selected="selected"':'').'>Last</option>
-					</select>';
-					
-				echo '</td></tr>';
-			}
-			echo '<tr align="center" class="trlabel">
-					<td>Sunday</td>
-					<td>Monday</td>
-					<td>Tuesday</td>
-					<td>Wednesday</td>
-					<td>Thursday</td>
-					<td>Friday</td>
-					<td>Saturday</td>			
-				</tr>';
-			echo '<tr class="ctimetr'.$acs->custschedID.'">
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'wednesday', $acs->wednesday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'thursday', $acs->thursday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'friday', $acs->friday, false).'</td>
-				<td>'.$this->scheduleM->customTimeDisplay($time, 'saturday', $acs->saturday, false).'</td>
+	foreach($allCustomSched AS $acs){
+		echo '<tr class="trhead ctimetr'.$acs->custschedID.'">
+				<td colspan=6>
+					<span class="una">'.$acs->schedName.'</span>
+					<input id="inputschedName'.$acs->custschedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
+				<td align="right">
+					<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->custschedID.')"/>
+					<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->custschedID.')"/>
+					<button class="hidden ikalawa" onClick="updateCustSched('.$acs->custschedID.')">Update</button>
+					<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->custschedID.')">Cancel</button>
+					<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
+				</td>
 			</tr>';
-			echo '<tr><td colspan=7><br/></td></tr>';
+		if($acs->schedType!=0){
+			echo '<tr class="ctimetr'.$acs->custschedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
+				if($acs->sunday!=0 ) echo ' Sunday ';
+				else if($acs->monday!=0 ) echo ' Monday ';
+				else if($acs->tuesday!=0 ) echo ' Tuesday ';
+				else if($acs->wednesday!=0 ) echo ' Wednesday ';
+				else if($acs->thursday!=0 ) echo ' Thursday ';
+				else if($acs->friday!=0 ) echo ' Friday ';
+				else if($acs->saturday!=0 ) echo ' Saturday ';
+				echo 'of the Month';
+				
+				echo '&nbsp;&nbsp;&nbsp;<select id="schedType" class="padding5px ikalawa hidden" style="width:150px;">
+					<option value=0></option>
+					<option value=1 '.(($acs->schedType==1)?'selected="selected"':'').'>First</option>
+					<option value=2 '.(($acs->schedType==2)?'selected="selected"':'').'>Second</option>
+					<option value=3 '.(($acs->schedType==3)?'selected="selected"':'').'>Third</option>
+					<option value=4 '.(($acs->schedType==4)?'selected="selected"':'').'>Fourth</option>
+					<option value=5 '.(($acs->schedType==5)?'selected="selected"':'').'>Last</option>
+				</select>';
+				
+			echo '</td></tr>';
 		}
-		echo '</table>';
+		echo '<tr align="center" class="trlabel">
+				<td>Sunday</td>
+				<td>Monday</td>
+				<td>Tuesday</td>
+				<td>Wednesday</td>
+				<td>Thursday</td>
+				<td>Friday</td>
+				<td>Saturday</td>			
+			</tr>';
+		echo '<tr class="ctimetr'.$acs->custschedID.'">
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'wednesday', $acs->wednesday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'thursday', $acs->thursday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'friday', $acs->friday, false).'</td>
+			<td>'.$this->scheduleM->customTimeDisplay($time, 'saturday', $acs->saturday, false).'</td>
+		</tr>';
+		echo '<tr><td colspan=7><br/></td></tr>';
 	}
 ?>
+	</table>
 </div>
+
 
 <script type="text/javascript">
 	$(function(){
@@ -345,5 +382,4 @@
 			});
 		}
 	}
-	
 </script>

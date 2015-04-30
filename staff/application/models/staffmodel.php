@@ -1046,7 +1046,7 @@ class Staffmodel extends CI_Model {
 					<td width="30%">'.$this->config->item('txt_'.$fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'levelID_fk', 'terminationType', 'taxstatus'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'staffHolidaySched', 'levelID_fk', 'terminationType', 'taxstatus'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
@@ -1086,7 +1086,11 @@ class Staffmodel extends CI_Model {
 						else $disp .= $vvalue;	
 					$disp .= '</span>';
 				}else{
-					$disp .= $vvalue;
+					if($fld=='staffHolidaySched'){
+						$farr = $this->config->item($fld);
+						$disp .= $farr[$vvalue];
+					}else
+						$disp .= $vvalue;
 				}				
 		$disp .= '</td>
 				</tr>';
@@ -1186,7 +1190,10 @@ class Staffmodel extends CI_Model {
 			$was = $tarr[$tval];
 		}else if($type=='sal' || $type=='allowance')
 			$was = 'Php '.$tval;
-		else if($type=='bankAccnt' || $type=='hmoNumber') 
+		else if($type=='staffHolidaySched'){
+			$schedLoc = $this->config->item('staffHolidaySched');
+			$was = $schedLoc[$tval];
+		}else if($type=='bankAccnt' || $type=='hmoNumber') 
 			$was = $this->staffM->decryptText($tval);
 		else 
 			$was = $tval;

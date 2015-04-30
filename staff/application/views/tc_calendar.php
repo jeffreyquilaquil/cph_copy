@@ -6,17 +6,17 @@
 	$month = date('m', $today);
 	$day = date('d', $today);
 	$first_day = date('w',mktime(0,0,0,$month, 1, $year));
-	$days_in_month = cal_days_in_month(0, $month, $year); 
+	$days_in_month = cal_days_in_month(0, $month, $year);
 	
 ?>
 <table border=0 class="attendancetbl">					
 	<?php
 		$calendar = '<tr class="monthtd">';
-			$calendar .= '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$type.'/'.date('Y-m-d', strtotime('-1 year', $today)).'/\'"><< '.date('Y', strtotime('-1 year', $today)).'</td>';
+			$calendar .= '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$type.'/'.date('Y-m-d', strtotime('-1 year', $today)).'/\'">'.date('Y', strtotime('-1 year', $today)).'<br/> << </td>';
 			for($d=1; $d<=12; $d++){
 				$calendar .= '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$type.'/'.date('Y-m-d', strtotime($year.'-'.$d.'-'.$day)).'/\'" class="'.(($d==date('m', $today))?'dtoday errortext':'').'">'.strtoupper(date('M', strtotime($year.'-'.$d))).'</td>';
 			}
-			$calendar .= '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$type.'/'.date('Y-m-d', strtotime('+1 year', $today)).'/\'">'.date('Y', strtotime('+1 year', $today)).' >></td>';
+			$calendar .= '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$type.'/'.date('Y-m-d', strtotime('+1 year', $today)).'/\'">'.date('Y', strtotime('+1 year', $today)).'<br/> >> </td>';
 		$calendar .= '</tr>';
 
 		$calendar .= '<tr>
@@ -29,7 +29,7 @@
 		$calendar .= '</i></td>
 			</tr>'; 
 			
-		$calendar .= '<tr class="trlabel">';
+		$calendar .= '<tr class="trlabel calendarweek">';
 			$calendar .= '<td colspan=2>SUNDAY</td>';
 			$calendar .= '<td colspan=2>MONDAY</td>';
 			$calendar .= '<td colspan=2>TUESDAY</td>';
@@ -48,56 +48,33 @@
 			$day_count++;
 		}
 		
+			
 		while ( $daynum <= $days_in_month ){ 
 			$calendar .= '<td colspan=2 class="'.(($daynum==date('d', $today))?'dtoday':'').'">
 					<div class="daycontent">';
 			
-			$calendar .= '[';
-				if($type=='calendar' && $this->access->accessFull==true) $calendar .= '<a href="" class="iframe" class="adaynum">'.$daynum.'</a>';
-				else $calendar .= $daynum;
-			$calendar .= ']';
+			if($type=='calendar' && $this->access->accessFull==true)
+				$calendar .= '<a href="'.$this->config->base_url().'schedules/holidayevents/'.$month.'-'.$daynum.'/" class="iframe"><div class="daynum">'.$daynum.'</div></a>';
+			else
+				$calendar .= '<div class="daynum">'.$daynum.'</div>';
+			
+			echo $calendar; /**** ECHO CALENDAR ****/
 			
 			if($type=='calendar'){
-				$calendar .= '<br/>';
-				
-				if($daynum<10) $myday = date('Y-m-d', strtotime($year.'-'.$month.'-0'.$daynum));
-				else $myday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$daynum));
-				
-				$caltxt = '';
-				
-				//custom schedules
-				foreach($calScheds AS $cal){
-					$xx = strtolower(date('l', strtotime($year.'-'.$month.'-'.$daynum)));
-					
-					if($cal->schedType!=0){ //first week
-						if($cal->schedType==1) $fval = 'first';
-						else if($cal->schedType==2) $fval = 'second';
-						else if($cal->schedType==3) $fval = 'third';
-						else if($cal->schedType==4) $fval = 'fourth';
-						else $fval = 'last';
-					
-						if($cal->$xx !=0 && $myday==date('Y-m-d', strtotime($fval.' '.$xx.' of '.$year.'-'.$month)))
-							$caltxt = $custTime[$cal->$xx];						
-					}else{			
-						if($myday >= $cal->shiftstart && ($myday <= $cal->shiftend || $cal->shiftend=='0000-00-00')){
-							if($cal->$xx!=0)
-								$caltxt = $custTime[$cal->$xx];
-						}
-					}
-				}
-				
-				//custom time schedules
-				foreach($calSchedTime AS $ctym){
-					if($myday>=$ctym->shiftstart && $myday<=$ctym->shiftend)
-						$caltxt = $ctym->timeValue;
-				}
-				
-				$calendar .= $caltxt;
+				$calendardata['today'] = $today;
+				$calendardata['year'] = $year;
+				$calendardata['month'] = $month;
+				$calendardata['daynum'] = $daynum;
+				$calendardata['calHoliday'] = $calHoliday;
+				$calendardata['calScheds'] = $calScheds;
+				$calendardata['calSchedTime'] = $calSchedTime;
+				$calendardata['calLeaves'] = $calLeaves;
+				$this->load->view ('tc_calendarview', $calendardata);
 			}
 			
 		
 			
-			$calendar .= '</div></td>';
+			$calendar = '</div></td>';
 			
 			$daynum++; 
 			$day_count++;
@@ -112,9 +89,7 @@
 			$day_count++; 
 		}
 		
-		
-		
-		echo $calendar;
+		echo $calendar; /**** ECHO CALENDAR ****/
 	//} 
 	?>	
 </table>

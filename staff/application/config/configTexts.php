@@ -24,6 +24,7 @@
 	$config['txt_philhealth'] = 'Philhealth';
 	$config['txt_hdmf'] = 'HDMF';
 	$config['txt_office'] = 'Office Branch';
+	$config['txt_staffHolidaySched'] = 'Holiday Schedule';
 	$config['txt_shift'] = 'Shift Sched';
 	$config['txt_startDate'] = 'Start Date';
 	$config['txt_idNum'] = 'Payroll ID';
@@ -123,6 +124,10 @@
 	$config['office'] = array(
 						'PH-Cebu'=>'PH-Cebu',
 						'US-OKC'=>'US-OKC'
+					);
+	$config['staffHolidaySched'] = array(
+						0=>'Philippine Holidays',
+						1=>'US Holidays'
 					);				
 	$config['terminationType'] = array(
 						'0'=>'',
@@ -190,5 +195,14 @@
 				'3' => 'Third',		
 				'4' => 'Fourth',		
 				'5' => 'Last'		
+			);	
+	$config['holidayTypes'] = array(
+				'0' => 'Regular Holiday',
+				'1' => 'Regular PHL Holiday',
+				'2' => 'Special PHL Holiday',
+				'3' => 'US Holiday',
+				'4' => 'Others'
 			);
+	
+	
 ?>
