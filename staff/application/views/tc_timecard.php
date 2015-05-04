@@ -65,7 +65,9 @@
 	}else{
 ?>
 	<form id="formSched" action="<?= $this->config->base_url().'timecard/scheduling/'?>" method="POST">
-	<input type="submit" name="submitType" value="Assign a Schedule" class="padding5px floatright"/><br/>
+	<input type="button" id="assignschedbutton" name="assignschedbutton" value="Assign a Schedule" class="padding5px floatright"/>
+	<br/>
+	
 		
 	<table class="dTable display stripe hover">
 	<?php
@@ -84,7 +86,7 @@
 
 	foreach($allStaffs AS $a):
 		echo '<tr>';
-		echo '<td><input type="checkbox" name="assign[]" value="'.$a->empID.'" class="hidden"/>
+		echo '<td><input type="checkbox" name="assign[]" id=="'.$a->empID.'" value="'.$a->empID.'" class="hidden"/>
 			'.$a->lname,', '.$a->fname.'</td>';
 		echo '<td></td>';
 		echo '<td></td>';
@@ -114,6 +116,7 @@
 <script type="text/javascript">
 	$(function(){
 		//$('.dTable').dataTable();
+	
 		
 		$('.dTable').dataTable({
 			"dom": 'lf<"toolbar">tip'
@@ -149,6 +152,27 @@
 				$('.dTable tbody tr').removeClass('selected');
 				$("input[name=assign\\[\\]]").prop('checked', false);
 			}
+		});
+		
+		
+		// $(".iframe2").colorbox({iframe:true, width:"990px", height:"600px"});
+		$('#assignschedbutton').click(function(){			
+			 var val = [];
+			$(':checkbox:checked').each(function(i){
+			  val[i] = $(this).val();
+			});
+			
+			alert(val);
+			var valuehere = "0";
+			size = val.length;
+			for(count = 0; count < size ; count++) {
+				valuehere += val[count]+"_";
+			}
+			
+			$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffschedule/' ?>'+valuehere});			
+			// $.post('<?= $this->config->base_url().'schedules/setstaffschedule/' ?>'+valuehere, function(data){				
+			// });		
+			
 		});
 		
 		<?php
