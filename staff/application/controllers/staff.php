@@ -2320,6 +2320,13 @@ class Staff extends CI_Controller {
 				}else if($segment2!=''){
 					$data['row'] = $this->staffM->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
 					$data['to'] = $data['row']->email;
+					if($this->uri->segment(3)=='acknowledgecoaching'){
+						$data['subject'] = 'Please acknowledge coaching evaluation';	
+						$data['message'] = '<p>Hi '.$data['row']->fname.',</p>
+							<p>Please acknowledge and input coaching score discussed to you by your supervisor. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$this->uri->segment(4).'/">here</a> to acknowledge.<p>
+							<p>&nbsp;</p>
+							<p>Thanks!</p>';
+					}
 				}
 			}
 			
@@ -2682,6 +2689,8 @@ class Staff extends CI_Controller {
 						echo '<script>window.location.href="'.$this->config->item('career_uri').'";</script>';
 					}
 				}
+			}else if($_POST['submitType']=='coachingCancel'){
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('status'=>4, 'canceldata'=>$_POST['reason'].' <br/><i>'.date('Y-m-d h:i a').'</i>'));				
 			}
 		}
 				
@@ -2729,11 +2738,12 @@ class Staff extends CI_Controller {
 					if($ids!='')
 						$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
 				}
-			
-				$data['forprinting'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', '(status=0 AND (HRoptionStatus=0 || HRoptionStatus=1)) OR (status=1 AND HRoptionStatus>=2 AND HRoptionStatus<4)', 'LEFT JOIN staffs ON empID=empID_fk');
+		
+				$data['forprinting'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', '(status=0 AND (HRoptionStatus=0 || HRoptionStatus=1)) OR (status=1 AND HRoptionStatus>=2 AND HRoptionStatus<4) OR (status=3 AND HRoptionStatus<4)', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['inprogress'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', 'status=0 AND coachedEval>"'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['pending'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', '(status=0 OR status=2) AND coachedEval<="'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['done'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', 'status=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['done'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', '(status=1 OR status=3)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['cancelled'] = $this->staffM->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedBy', 'status=4'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		

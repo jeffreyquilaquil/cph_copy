@@ -1518,7 +1518,7 @@ class Staffmodel extends CI_Model {
 	
 	public function coachingStatus($id){
 		$stat = '';	
-		$row = $this->staffM->getSingleInfo('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating', 'coachID="'.$id.'"');
+		$row = $this->staffM->getSingleInfo('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating, fname AS name', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 	
 		if($row->status==0){
 			$today = date('Y-m-d');
@@ -1532,9 +1532,9 @@ class Staffmodel extends CI_Model {
 				}else if($row->selfRating!='' && $row->supervisorsRating==''){
 					$stat = 'Evaluation Due.';
 					if($this->user->empID==$row->empID_fk || $this->user->empID!=$row->coachedBy) $stat .= ' Self-Rating submitted. Pending coach evaluation.';
-					else $stat .= ' Self-Rating submitted. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to evaluate.';
+					else $stat .= ' Self-Rating submitted. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to evaluate.'; 
 				}
-			}					
+			}
 		}else if($row->status==1){
 			$stat = $this->staffM->coachingScore($row->finalRating);
 		}else if($row->status==2){
@@ -1545,6 +1545,10 @@ class Staffmodel extends CI_Model {
 			$stat = 'Coach ratings locked in.';
 			if($row->empID_fk==$this->user->empID)
 				$stat .= ' Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$row->coachID.'/" class="iframe">here</a> to Acknowledge.';
+			else
+				$stat .= ' Click <a class="iframe" href="'.$this->config->base_url().'sendEmail/'.$row->empID_fk.'/acknowledgecoaching/'.$row->coachID.'/">here</a> to send message to '.$row->name.' to input coaching score.';
+		}else if($row->status==4){
+			$stat = 'CANCELLED';
 		}
 		return $stat;	
 	}
