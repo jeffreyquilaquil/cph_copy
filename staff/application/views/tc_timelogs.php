@@ -1,4 +1,7 @@
-<?php $this->load->view('includes/header_timecard'); ?>
+<?php 
+	$this->load->view('includes/header_timecard'); 
+	$dataArr['content'] = array();
+?>
 
 <table border=0 class="attendancetbl">
 	<tr><td colspan=2>

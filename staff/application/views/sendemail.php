@@ -72,7 +72,9 @@ $(function () {
 	});
 });
 tinymce.init({
-	selector: "textarea",	
+	selector: "textarea",
+	relative_urls : false,
+	remove_script_host : false,
 	menubar : false,
 	plugins: [
 		"link",

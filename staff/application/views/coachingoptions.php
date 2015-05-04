@@ -58,11 +58,30 @@ if(count($row)==0){
 			<td>Status</td>
 			<td><b><?= $this->staffM->coachingStatus($row->coachID); ?></b></td>
 		</tr>
+	<?php 
+		if($row->status==4){
+			echo '<tr>';
+			echo '<td>Cancel Reason</td>';
+			echo '<td>'.$row->canceldata.'</td>';
+			echo '</tr>';
+		}else if($row->HRoptionStatus<2){ ?>
 		<tr>
 			<td>Coaching Form</td>
 			<td><?= '<a href="'.$this->config->base_url().'coachingform/expectation/'.$row->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>' ?></td>
 		</tr>
-	<?php
+		<?php if($row->status==0 && $row->HRoptionStatus<2 && ($this->user->empID==$row->generatedBy || $this->access->accessFullHR==true)){ ?>
+			<tr id="coachCancelBtn">
+				<td><br/></td>
+				<td><input type="button" value="Cancel this Coaching" class="btnclass" onClick="$('#coachCancelBtn').addClass('hidden'); $('#coachCancelWhy').removeClass('hidden'); "/></td>
+			</tr>
+			<tr id="coachCancelWhy" class="hidden">
+				<td>Why do you want to cancel this coaching?</td>
+				<td><textarea id="textCancel" class="inputform"></textarea><br/>
+				<input id="cancelBtn" type="button" class="btnclass" value="Cancel"></td>
+			</tr>
+		<?php
+			}
+		}
 		$fileloc = UPLOADS.'coaching/coachingform_'.$row->coachID.'.pdf';
 		if($row->HRoptionStatus>=2 && file_exists($fileloc)){
 			echo '<tr>';
@@ -284,7 +303,7 @@ if(count($row)==0){
 				<td>
 				<?php
 					if(isset($opt[3])){ echo $opt[3]; }
-					else if($row->status==1) echo '<input type="checkbox" id="efprinted"/> Tick checkbox if done printing form';
+					else echo '<input type="checkbox" id="efprinted"/> Tick checkbox if done printing form';
 				?>
 				</td>					
 			</tr>
@@ -293,8 +312,8 @@ if(count($row)==0){
 				<td>Upload signed evaluation form</td>
 				<td>
 				<?php
-					if(isset($opt[2])){ echo $opt[2]; }
-					else if($row->status==1) echo '<form action="" method="POST" id="uploadEFForm" enctype="multipart/form-data"><input type="file" name="cffile" id="uploadEF" value="Upload Signed Form"/><input type="hidden" name="submitType" value="uploadEF"/></form>';
+					if(isset($opt[4])){ echo $opt[4]; }
+					else echo '<form action="" method="POST" id="uploadEFForm" enctype="multipart/form-data"><input type="file" name="cffile" id="uploadEF" value="Upload Signed Form"/><input type="hidden" name="submitType" value="uploadEF"/></form>';
 				?>
 				</td>	
 			</tr>
@@ -412,6 +431,7 @@ if(count($row)==0){
 		});
 		
 		$('#uploadCF').change(function(){
+			displaypleasewait();
 			$('#uploadCFForm').submit();
 		});
 		
@@ -432,7 +452,19 @@ if(count($row)==0){
 		});
 		
 		$('#uploadEF').change(function(){
+			displaypleasewait();
 			$('#uploadEFForm').submit();
+		});
+		
+		$('#cancelBtn').click(function(){
+			if($('#textCancel').val()=='') alert('Cancel reason is empty');
+			else{
+				displaypleasewait();
+				$.post('<?= $this->config->item('career_uri') ?>', {submitType:'coachingCancel', reason:$('#textCancel').val()},
+				function(){
+					location.reload();
+				});
+			}
 		});
 	});
 	

@@ -203,6 +203,21 @@
 				'3' => 'US Holiday',
 				'4' => 'Others'
 			);
+	$config['hrOptionStatus'] = array(
+				0 => 'None',
+				1 => 'Coaching Form Printed',
+				2 => 'Coaching Form Uploaded',
+				3 => 'Evaluation Form Printed',
+				4 => 'Evaluation Form Uploaded'
+			);
+	$config['hrOptionPending'] = array(
+				0 => 'Pending Coaching Form for Printing',
+				1 => 'Pending Coaching Form for Upload',
+				2 => 'Pending Evaluation Form for Printing',
+				3 => 'Pending Evaluation Form for Upload',
+				4 => 'Done'
+			);
+			
 	
 	
 ?>

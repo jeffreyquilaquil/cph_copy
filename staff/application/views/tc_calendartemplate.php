@@ -55,8 +55,8 @@
 			else
 				echo '<div class="daynum">'.$daynum.'</div>';
 				
-			//print the content of the day found in page view file
-			if(isset($content[$daynum])) echo $content[$daynum];
+			/********* print the content of the day found in page view file ***********/
+				if(isset($content[$daynum])) echo $content[$daynum];
 			
 			echo '</div></td>';
 			
