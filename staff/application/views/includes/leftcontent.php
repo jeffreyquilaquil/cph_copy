@@ -46,13 +46,14 @@ if($this->user!=false && count($row)>0){
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request COE</a></li>';
 		}
-		if($content=='staffinfo' && $this->user->username != $row->username && ($this->access->accessFullHR==true || $this->staffM->checkStaffUnderMe($row->username))){
+		if(($content=='staffinfo' || $this->uri->segment(1)=='timecard') && $this->user->username != $row->username && ($this->access->accessFullHR==true || $this->staffM->checkStaffUnderMe($row->username))){
+			echo '<li><a href="'.$this->config->base_url().'timecard/'.$row->empID.'/attendance/" '.(($this->uri->segment(1)=='timecard')?'class="current"':'').'>Timecard and Payroll</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/" class="iframe">Issue NTE</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/" class="iframe">Generate Coaching Form</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'schedules/">Schedules</a></li>';				
 		}
-		if(($content!='staffinfo' || ($content=='staffinfo' && $current=='myinfo')) && ($this->access->accessFullHR==true || $this->user->level>0)){
+		if((($content!='staffinfo' && $this->uri->segment(1)!='timecard') || ($content=='staffinfo' && $current=='myinfo')) && ($this->access->accessFullHR==true || $this->user->level>0)){
 			echo '<li><a href="'.$this->config->base_url().'generatecode/" class="iframe">Generate Code</a></li>';	
 			echo '<li><a href="'.$this->config->item('career_url').'/jobrequisition.php" target="_blank">Request for Job Requisition</a></li>';		
 		}

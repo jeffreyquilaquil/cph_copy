@@ -8,7 +8,7 @@
 			echo '<td><div>
 				<b>'.$at->lname.', '.$at->fname.'</b><br/>
 				'.$at->title.'<br/>
-				'.$at->holidaySched.'
+				'.$at->staffholidaySched.'
 				</div></td>';
 			echo '<td>Assign to Custom Schedule:</td>';
 			echo '</tr>';
