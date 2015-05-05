@@ -8,7 +8,11 @@
 			echo '<td><div>
 				<b>'.$at->lname.', '.$at->fname.'</b><br/>
 				'.$at->title.'<br/>
+<<<<<<< HEAD
 				'.$at->staffHolidaySched.'
+=======
+				'.$at->staffholidaySched.'
+>>>>>>> e3badd060b251c520f7c784e7d6304af5c233b58
 				</div></td>';
 			echo '<td>Assign to Custom Schedule:</td>';
 			echo '</tr>';

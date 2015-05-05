@@ -178,7 +178,7 @@ ul.dropmenu li a{
   border-radius:5px;
 } 
 
-ul.dropmenu li.current a, ul.dropmenu li a:hover, ul#leftMenu li a:hover{ 
+ul.dropmenu li.current a, ul.dropmenu li a:hover, ul#leftMenu li a:hover, ul#leftMenu li a.current{ 
 	background: red;
 	color: #fff;
 }
@@ -457,13 +457,13 @@ ul.tabs2 li.current{
 
 
 .attendancetbl{ width:100%; text-align:center; border:1px solid #000; border-collapse:collapse; }
-.attendancetbl td{ border:1px solid #000; padding:20px; }
+.attendancetbl td{ border:1px solid #000; padding:10px 0; }
 .attendancetbl button{ padding:5px 10px; }
 .attendancetbl{ width:100%; border-collapse:collapse; }
 .attendancetbl tr.weekname td{ padding:0px; }
 .attendancetbl tr.weekdays td{ vertical-align:top; text-align:left; }
 .attendancetbl tr.weekdays td{ padding:0; }
-.attendancetbl .daycontent{ min-height:150px; }
+.attendancetbl .daycontent{ min-height:120px; }
 .attendancetbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:gray; }
 .attendancetbl a:hover .daynum{ background-color:#aaa; }
 .attendancetbl .dayholiday{ text-align:center; background-color:red; padding:3px; border-radius:3px; margin:4px; color:#fff; font-size:10px; font-weight:bold; }

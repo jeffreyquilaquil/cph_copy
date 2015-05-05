@@ -117,7 +117,14 @@ $('#submitbutton').click(function(){
 			$time[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
 	endforeach;
 
-	echo '<h2>Set Schedule for '.$row->name.'</h2>';
+	// print_r($row->name);
+	echo '<h3>Set Schedule for ';
+			$listofnames = "";
+			foreach($row as $names) {
+				$listofnames .=  $names->name." , ";
+			}
+			echo "<b>".rtrim($listofnames," , ")."</b>";
+	echo '</h3>';
 	
 	echo '<form method="post">';	
 	echo '<input id="submitType" name="submitType" type="hidden" value="setScheduleForStaff"/>';

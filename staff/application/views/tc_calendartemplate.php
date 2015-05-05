@@ -11,16 +11,16 @@
 ?>
 <table border=0 class="attendancetbl">	
 	<tr class="monthtd">
-		<td onClick="location.href='<?= $this->config->base_url().'timecard/'.$tpage.'/'.date('Y-m-d', strtotime('-1 year', $today)).'/' ?>'"><?= date('Y', strtotime('-1 year', $today)) ?><br/> << </td>
+		<td onClick="location.href='<?= $this->config->base_url().'timecard/'.(($visitID!='')?$visitID.'/':'').$tpage.'/'.date('Y-m-d', strtotime('-1 year', $today)).'/' ?>'"><?= date('Y', strtotime('-1 year', $today)) ?><br/> << </td>
 	<?php
 			for($d=1; $d<=12; $d++){
-				echo '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.$tpage.'/'.date('Y-m-d', strtotime($year.'-'.$d.'-'.$day)).'/\'" class="'.(($d==date('m', $today))?'dtoday errortext':'').'">'.strtoupper(date('M', strtotime($year.'-'.$d))).'</td>';
+				echo '<td onClick="location.href=\''.$this->config->base_url().'timecard/'.(($visitID!='')?$visitID.'/':'').$tpage.'/'.date('Y-m-d', strtotime($year.'-'.$d.'-'.$day)).'/\'" class="'.(($d==date('m', $today))?'dtoday errortext':'').'">'.strtoupper(date('M', strtotime($year.'-'.$d))).'</td>';
 			}
 	?>	
-		<td onClick="location.href='<?= $this->config->base_url().'timecard/'.$tpage.'/'.date('Y-m-d', strtotime('+1 year', $today)).'/' ?>"><?= date('Y', strtotime('+1 year', $today)) ?><br/> >> </td>
+		<td onClick="location.href='<?= $this->config->base_url().'timecard/'.(($visitID!='')?$visitID.'/':'').$tpage.'/'.date('Y-m-d', strtotime('+1 year', $today)).'/' ?>"><?= date('Y', strtotime('+1 year', $today)) ?><br/> >> </td>
 	</tr>
 	<tr>
-		<td align="left" colspan=14>
+		<td align="left" colspan=14 style="padding-left:10px;">
 			<b><?= strtoupper(date('F Y', $today)) ?></b><br/><br/>
 		<?php
 			if($tpage=='timelogs') echo '<i>Click on a date to submit a request to resolve attendance.</i>';
@@ -55,8 +55,13 @@
 			else
 				echo '<div class="daynum">'.$daynum.'</div>';
 				
-			/********* print the content of the day found in page view file ***********/
+			/********* print the content of the day found in page view file 
+				Example:
+				$content[1] = '07:00 am - 04:00 pm';
+				$content[2] = '07:00 am - 04:00 pm';
+			***********/
 				if(isset($content[$daynum])) echo $content[$daynum];
+			/********* end of display ***********/
 			
 			echo '</div></td>';
 			

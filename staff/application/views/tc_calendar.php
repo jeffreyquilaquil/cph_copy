@@ -12,6 +12,9 @@
 		$daytext = '';	
 		if($daynum<10) $daynum0 = '0'.$daynum;
 		else $daynum0 = $daynum;
+		
+		$currentday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$daynum0));	//current dayholiday
+		$dayoftheweek = date('N', strtotime($currentday));	//day of the week 1 (for Monday) through 7 (for Sunday)
 			
 		//for holidays
 		if(isset($calHoliday[$daynum0])) 
@@ -30,7 +33,7 @@
 		){
 			//custom schedules
 			$customschedtext = '';	
-			$myday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$daynum0));	
+			
 			foreach($calScheds AS $cal){
 				$xx = strtolower(date('l', strtotime($year.'-'.$month.'-'.$daynum0)));
 				
@@ -41,10 +44,10 @@
 					else if($cal->schedType==4) $fval = 'fourth';
 					else $fval = 'last';
 				
-					if($cal->$xx !=0 && $myday==date('Y-m-d', strtotime($fval.' '.$xx.' of '.$year.'-'.$month)))
+					if($cal->$xx !=0 && $currentday==date('Y-m-d', strtotime($fval.' '.$xx.' of '.$year.'-'.$month)))
 						$customschedtext .= $custTime[$cal->$xx];						
 				}else{			
-					if($myday >= $cal->effectivestart && ($myday <= $cal->effectiveend || $cal->effectiveend=='0000-00-00')){
+					if($currentday >= $cal->effectivestart && ($currentday <= $cal->effectiveend || $cal->effectiveend=='0000-00-00')){
 						if($cal->$xx!=0)
 							$customschedtext .= $custTime[$cal->$xx];
 					}
@@ -53,13 +56,34 @@
 			 
 			//custom time schedules
 			foreach($calSchedTime AS $ctym){
-				if($myday>=$ctym->effectivestart && $myday<=$ctym->effectiveend)
+				if($currentday>=$ctym->effectivestart && $currentday<=$ctym->effectiveend)
 					$customschedtext = $ctym->timeValue;
 			}
 			
 			if(!empty($customschedtext)){
 				$daytext .= '<div class="daysched tacenter" style="background-color:green; padding:3px; border-radius:3px;">'.$customschedtext.'</div>';
 			}			
+		}
+		
+		//this is for Staff leaves
+		foreach($calLeaves AS $leaves){
+			$leavetxt = '';
+			$start = date('Y-m-d', strtotime($leaves->leaveStart));
+			$end = date('Y-m-d', strtotime($leaves->leaveEnd));
+			
+			if($currentday>=$start && $currentday<=$end && $dayoftheweek<6){
+				$leavetxt = '<div class="daysched tacenter" style="background-color:#f6546a; padding:3px; border-radius:3px;">';
+				if($leaves->iscancelled!=0 || $leaves->status==0 || $leaves->status==4){					
+					$leavetxt = $daytext.$leavetxt;
+					$leavetxt .= 'Leave Pending Approval';
+				}else{
+					$leavetxt .= 'On-Leave';
+					if($leaves->status==1) $leavetxt .= ' (Approved With Pay)';
+					else $leavetxt .= ' (Approved Without Pay)';
+				}				
+				$leavetxt .= '</div>';
+				$daytext = $leavetxt;
+			}					
 		}
 		
 		if(!empty($daytext)) $dataArr['content'][$daynum] = $daytext;

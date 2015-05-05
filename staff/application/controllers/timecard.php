@@ -13,42 +13,51 @@ class Timecard extends CI_Controller {
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();				
 	}
-	
-	public function index(){
-		$this->timelogs();
+		
+	public function _remap($method){
+		$segment3 = $this->uri->segment(3);
+		$segment4 = $this->uri->segment(4);
+		$data['today'] = date('Y-m-d');
+		$data['visitID'] = '';
+		
+		if(is_numeric($method)){
+			$data['column'] = 'withLeft';
+			$data['visitID'] = $method;
+			$data['row'] = $this->staffM->getSingleInfo('staffs','empID,username, fname', 'empID="'.$method.'"');
+						
+			if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$segment4)) $data['today'] = $segment4;
+			
+			if(empty($segment3)){
+				$this->timelogs($data);
+			}else{
+				$this->$segment3($data);
+			}
+		}else{
+			if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$segment3)) $data['today'] = $segment3;
+			if($method=='index')
+				$this->timelogs($data);
+			else
+				$this->$method($data);
+		}		
 	}
 	
-	public function timelogs(){		
-		$data['content'] = 'tc_timelogs';		
-	
+	public function timelogs($data){		
+		$data['content'] = 'tc_timelogs';	
+				
 		if($this->user!=false){	
-			$data['tpage'] = 'timelogs';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-								
+			$data['tpage'] = 'timelogs';	
+											
 			$data['dataArr'] = array();			
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function attendance(){		
+	public function attendance($data){		
 		$data['content'] = 'tc_attendance';		
 	
 		if($this->user!=false){	
-			$data['tpage'] = 'attendance';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
+			$data['tpage'] = 'attendance';	
 								
 			$data['dataArr'] = array();			
 		}
@@ -56,28 +65,24 @@ class Timecard extends CI_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function calendar(){		
+	public function calendar($data){		
 		$data['content'] = 'tc_calendar';		
-	
+				
 		if($this->user!=false){	
-			$data['tpage'] = 'calendar';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-			
+			$data['tpage'] = 'calendar';	
+						
 			$data['custTime'] = array();
 			$tQuery = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeID, timeValue', 'category>0 AND status=1');
 			foreach($tQuery AS $t){
 				$data['custTime'][$t->timeID] = $t->timeValue;
 			}
+								
+			if(isset($data['row']->empID)) $empID = $data['row']->empID;
+			else $empID = $this->user->empID;
 			
 			$calcondition = ' AND ("'.date('Y-m-01', strtotime($data['today'])).'" BETWEEN effectivestart AND effectiveend OR (effectivestart BETWEEN "'.date('Y-m-01', strtotime($data['today'])).'" AND "'.date('Y-m-t', strtotime($data['today'])).'") OR (effectivestart<="'.date('Y-m-01', strtotime($data['today'])).'" AND effectiveend="0000-00-00"))';							
-			$data['calScheds'] = $this->staffM->getQueryResults('staffSchedules','effectivestart, effectiveend, staffCustomSched.*', 'empID_fk="'.$this->user->empID.'" AND staffCustomSched_fk !=0'.$calcondition, 'LEFT JOIN staffCustomSched ON custschedID=staffCustomSched_fk');
-			$data['calSchedTime'] = $this->staffM->getQueryResults('staffSchedules', 'effectivestart, effectiveend, timeValue', 'empID_fk="'.$this->user->empID.'" AND staffCustomSchedTime!=0 AND status=1'.$calcondition, 'LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime');
+			$data['calScheds'] = $this->staffM->getQueryResults('staffSchedules','effectivestart, effectiveend, staffCustomSched.*', 'empID_fk="'.$empID.'" AND staffCustomSched_fk !=0'.$calcondition, 'LEFT JOIN staffCustomSched ON custschedID=staffCustomSched_fk');
+			$data['calSchedTime'] = $this->staffM->getQueryResults('staffSchedules', 'effectivestart, effectiveend, timeValue', 'empID_fk="'.$empID.'" AND staffCustomSchedTime!=0 AND status=1'.$calcondition, 'LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime');
 			
 			$calHolidaysQuery = $this->staffM->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
 			$data['calHoliday'] = array();
@@ -90,14 +95,25 @@ class Timecard extends CI_Controller {
 				$data['calHoliday'][$holdayInt]['holidayWork'] = $calHol->holidayWork;
 			}
 			
-			$data['calLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, iscancelled', 'empID_fk="'.$this->user->empID.'" AND status!=3 AND iscancelled!=1 AND (leaveStart LIKE "'.date('Y-m-', strtotime($data['today'])).'%" OR leaveEnd LIKE "'.date('Y-m-', strtotime($data['today'])).'%")');
+			$data['calLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, iscancelled', 'empID_fk="'.$empID.'" AND status!=3 AND status!=5 AND iscancelled!=1 AND (leaveStart LIKE "'.date('Y-m-', strtotime($data['today'])).'%" OR leaveEnd LIKE "'.date('Y-m-', strtotime($data['today'])).'%")');			
 										
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function scheduling(){		
+	public function schedules($data){		
+		$data['content'] = 'tc_schedules';		
+	
+		if($this->user!=false){	
+			$data['tpage'] = 'schedules';	
+									
+		}
+	
+		$this->load->view('includes/template', $data);
+	}
+	
+	public function scheduling($data){		
 		$data['content'] = 'tc_scheduling';		
 	
 		if($this->user!=false){	
@@ -111,20 +127,17 @@ class Timecard extends CI_Controller {
 						foreach($_POST['assign'] AS $a):
 							$ids .= $a.',';
 						endforeach;
+<<<<<<< HEAD
 						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
+=======
+						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffholidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
+>>>>>>> e3badd060b251c520f7c784e7d6304af5c233b58
 					}
 				}				
 			}		
 		
 			$data['tpage'] = 'scheduling';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-			
+						
 			if(!isset($data['allStaffs']))
 				$data['allStaffs'] = $this->allemployees(); 
 								
@@ -134,57 +147,36 @@ class Timecard extends CI_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function payslips(){		
+	public function payslips($data){		
 		$data['content'] = 'tc_payslips';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'payslips';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-								
+											
 			$data['dataArr'] = array();			
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function payrolls(){		
+	public function payrolls($data){		
 		$data['content'] = 'tc_payrolls';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'payrolls';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-								
+											
 			$data['dataArr'] = array();			
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function reports(){		
+	public function reports($data){		
 		$data['content'] = 'tc_reports';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'reports';			
-			$data['today'] = date('Y-m-d');
-			$segment2 = $this->uri->segment(2);
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-								
+											
 			$data['dataArr'] = array();			
 		}
 	
@@ -211,13 +203,7 @@ class Timecard extends CI_Controller {
 				}				
 			}					
 		
-			$data['today'] = date('Y-m-d');
-			if($segment2 == 'today'){
-				$data['today'] = $this->uri->segment(2);
-			}else if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$this->uri->segment(3))){
-				$data['today'] = $this->uri->segment(3);
-			}
-								
+											
 			$data['tpage'] = $segment2; //calendar, timelogs, attendance
 			$data['timelogs'] = array('type'=>'timelogs');
 			$data['attendance'] = array('type'=>'attendance');
