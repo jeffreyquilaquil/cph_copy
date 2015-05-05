@@ -79,7 +79,7 @@ class Timecard extends CI_Controller {
 			$data['calScheds'] = $this->staffM->getQueryResults('staffSchedules','effectivestart, effectiveend, staffCustomSched.*', 'empID_fk="'.$this->user->empID.'" AND staffCustomSched_fk !=0'.$calcondition, 'LEFT JOIN staffCustomSched ON custschedID=staffCustomSched_fk');
 			$data['calSchedTime'] = $this->staffM->getQueryResults('staffSchedules', 'effectivestart, effectiveend, timeValue', 'empID_fk="'.$this->user->empID.'" AND staffCustomSchedTime!=0 AND status=1'.$calcondition, 'LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime');
 			
-			$calHolidaysQuery = $this->staffM->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
+			$calHolidaysQuery = $this->staffM->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
 			$data['calHoliday'] = array();
 			$holidayTypesArr = $this->config->item('holidayTypes');
 			foreach($calHolidaysQuery AS $calHol){
@@ -111,7 +111,7 @@ class Timecard extends CI_Controller {
 						foreach($_POST['assign'] AS $a):
 							$ids .= $a.',';
 						endforeach;
-						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
+						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
 					}
 				}				
 			}		
@@ -206,7 +206,7 @@ class Timecard extends CI_Controller {
 						foreach($_POST['assign'] AS $a):
 							$ids .= $a.',';
 						endforeach;
-						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, holidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
+						$data['allStaffs'] = $this->staffM->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', 'empID IN ('.trim($ids,',').')', 'LEFT JOIN newPositions ON posId=position', 'lname');
 					}
 				}				
 			}					
@@ -234,7 +234,7 @@ class Timecard extends CI_Controller {
 			$data['calScheds'] = $this->staffM->getQueryResults('staffSchedules','effectivestart, effectiveend, staffCustomSched.*', 'empID_fk="'.$this->user->empID.'" AND staffCustomSched_fk !=0'.$calcondition, 'LEFT JOIN staffCustomSched ON custschedID=staffCustomSched_fk');
 			$data['calSchedTime'] = $this->staffM->getQueryResults('staffSchedules', 'effectivestart, effectiveend, timeValue', 'empID_fk="'.$this->user->empID.'" AND staffCustomSchedTime!=0 AND status=1'.$calcondition, 'LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime');
 			
-			$calHolidaysQuery = $this->staffM->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
+			$calHolidaysQuery = $this->staffM->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
 			$data['calHoliday'] = array();
 			$holidayTypesArr = $this->config->item('holidayTypes');
 			foreach($calHolidaysQuery AS $calHol){
