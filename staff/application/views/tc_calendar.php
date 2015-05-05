@@ -75,11 +75,12 @@
 				$leavetxt = '<div class="daysched tacenter" style="background-color:#f6546a; padding:3px; border-radius:3px;">';
 				if($leaves->iscancelled!=0 || $leaves->status==0 || $leaves->status==4){					
 					$leavetxt = $daytext.$leavetxt;
-					$leavetxt .= 'Leave Pending Approval';
+					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">Leave Pending Approval</a>';
 				}else{
-					$leavetxt .= 'On-Leave';
+					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">On-Leave';
 					if($leaves->status==1) $leavetxt .= ' (Approved With Pay)';
 					else $leavetxt .= ' (Approved Without Pay)';
+					$leavetxt .= '</a>';
 				}				
 				$leavetxt .= '</div>';
 				$daytext = $leavetxt;
