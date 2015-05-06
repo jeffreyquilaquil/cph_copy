@@ -14,9 +14,8 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://careerph.tatepublishing.net/~glaiza/staff/';
+$config['base_url']	= 'http://careerph.tatepublishing.net/staff/';
 $config['career_url']	= 'http://careerph.tatepublishing.net';
-$config['career_uri']	= 'http://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
 
 /*
 |--------------------------------------------------------------------------
