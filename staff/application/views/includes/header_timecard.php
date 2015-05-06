@@ -5,9 +5,10 @@
 <hr/>
 <ul class="tabs2">
 <?php
-	if(!isset($row->empID) || $row->empID==$this->user->empID) echo '<li class="tab-link '.(($tpage=='index' || $tpage=='timelogs')?'current':'').'" data-tab="timelogs">Time Logs</li>';
+	if(!isset($row->empID) || $row->empID==$this->user->empID) echo '<li class="tab-link '.(($tpage=='index' || $tpage=='timelogs')?'current':'').'" data-tab="timelogs">Time Logs</li> ';
 	
-	echo '<li class="tab-link '.(($tpage=='attendance')?'current':'').'" data-tab="attendance">Attendance</li> ';
+	if($this->user->is_supervisor==1 || $this->access->accessFullHRFinance==true) echo '<li class="tab-link '.(($tpage=='attendance')?'current':'').'" data-tab="attendance">Attendance</li> ';
+	
 	echo '<li class="tab-link '.(($tpage=='calendar')?'current':'').'" data-tab="calendar">Calendar</li> ';
 	echo '<li class="tab-link '.(($tpage=='schedules')?'current':'').'" data-tab="schedules">Schedules</li> ';
 	

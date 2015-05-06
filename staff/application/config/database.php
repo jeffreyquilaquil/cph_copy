@@ -50,10 +50,10 @@ $active_record = TRUE;
 
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'root';
-// $db['default']['password'] = 'summer28Thing';
-// $db['default']['database'] = 'tatecareerph_db';
 $db['default']['password'] = 'summer28Thing';
-$db['default']['database'] = 'tatecareerphstaff2_db';
+$db['default']['database'] = 'tatecareerph_db';
+//$db['default']['password'] = 'summer28Thing';
+//$db['default']['database'] = 'tatecareerphstaff2_db';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = FALSE;

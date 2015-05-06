@@ -13,13 +13,13 @@ $pass="januaryRun&34";
 $host="ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com";
 $ptDb = new database($dbname, $user, $pass, $host);
 
-// $dbname="tatecareerph_db";
-// $user="root";
-// $pass="summer28Thing";
-
-$dbname="tatecareerphstaff2_db";
+$dbname="tatecareerph_db";
 $user="root";
 $pass="summer28Thing";
+
+//$dbname="tatecareerphstaff2_db";
+//$user="root";
+//$pass="summer28Thing";
 
 $host="localhost";
 $db = new database($dbname, $user, $pass, $host);
