@@ -34,7 +34,7 @@ class Schedules extends CI_Controller {
 					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
 					
 					$note = 'You added time category '.$_POST['name'].'.';
-				}else if($_POST['submitType']=='addtime'){					
+				}else if($_POST['submitType']=='addtime'){
 					$tbl = 'staffCustomSchedTime';
 					$insArr['timeName'] = $_POST['name'];
 					$insArr['timeValue'] = $_POST['start'].' - '.$_POST['end'];
@@ -153,6 +153,8 @@ class Schedules extends CI_Controller {
 		$size  = sizeof($explode);
 		if(isset($_POST) && !empty($_POST)){ 			
 			  if($_POST['submitType']=='setScheduleForStaff'){
+				
+				
 				$presched = $_POST['presched'];
 				$array_input = array();
 				$array_input['effectivestart'] = date("Y-m-d",strtotime($_POST['effective_startdate']));
@@ -180,15 +182,15 @@ class Schedules extends CI_Controller {
 					$array_input['staffCustomSched_fk'] = $newId;
 														
 					for($ctr = 0; $ctr < $size; $ctr++) {
-						$array_input['empID_fk'] = $explode[$ctr];
-						$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
+						$array_input['empID_fk'] = $explode[$ctr];					
+						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
 					}
 				}
 				else{					
 					$array_input['staffCustomSched_fk'] = $_POST['presched'];										
 					for($ctr = 0; $ctr < $size; $ctr++) {
-						$array_input['empID_fk'] = $explode[$ctr];
-						$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
+						$array_input['empID_fk'] = $explode[$ctr];			
+						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
 					}
 				}
 			}

@@ -73,10 +73,14 @@ $('#submitbutton').click(function(){
 			celebrity = '';
 			if($('#effective_startdate').val()==''){
 				celebrity += 'Effective date must be set.\n';
-			}
+			}						
 			if($('#sunday').val()=='' && $('#monday').val()=='' && $('#tuesday').val()=='' && $('#wednesday').val()=='' && 
 				$('#thursday').val()=='' && $('#friday').val()=='' && $('#saturday').val()==''){
 				celebrity += 'Schedules are empty.';
+			}
+			if($('#effective_enddate').val()==''){
+				if(confirm("Effective End Date is not set, procedd anyway?"));
+					celebrity += '';
 			}
 			if(celebrity!=''){
 				alert(celebrity);
@@ -96,7 +100,7 @@ $('#submitbutton').click(function(){
 					thursday:$('#thursday').val(),
 					friday:$('#friday').val(),
 					saturday:$('#saturday').val()
-				}, function(){
+				}, function(){					
 					location.reload(true);
 					alert('New Schedule Set');
 				});

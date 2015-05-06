@@ -47,5 +47,23 @@ class Schedulemodel extends CI_Model {
 	
 	}
 	
+	function insert_setscheduleforStaff($table, $array_input) {
+		// $this->load->model('Staffmodel', 'staffM');
+		$update_where = "effectiveend ='0000-00-00' AND empID_fk ='".$array_input['empID_fk']."' ";
+		$date = $array_input['effectivestart'];
+		$date1 = str_replace('-', '/', $date);
+		$daybefore = date('Y-m-d',strtotime($date1 . "-1 days"));
+		$update_data = array();
+		$update_data['effectiveend'] = $daybefore;
+		$getexistingperpetual = $this->staffM->updateQuery("staffSchedules", $update_where, $update_data);
+        // $query = "UPDATE staffSchedules SET effectiveend = '".$daybefore."' WHERE effectiveend ='0000-00-00' AND empID_fk ='".$array_input['empID_fk']."'";
+		// echo $query;
+		// exit;
+		// $query_result = $this->db->query($query);
+		// $customSchedDetails = $query_result->result();		
+		$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
+		
+	}
+	
 }
 ?>

@@ -1,6 +1,8 @@
 <?php
 	$this->load->view('includes/header_timecard'); 
 	
+	// echo "alert".date('Y-m-d', strtotime('2015-05-28','+1 day'));
+	
 	if(isset($assignSched) && $assignSched==true){
 		echo '<table class="tableInfo">';
 		foreach($allStaffs AS $at):
@@ -8,11 +10,7 @@
 			echo '<td><div>
 				<b>'.$at->lname.', '.$at->fname.'</b><br/>
 				'.$at->title.'<br/>
-<<<<<<< HEAD
-				'.$at->staffHolidaySched.'
-=======
 				'.$at->staffholidaySched.'
->>>>>>> e3badd060b251c520f7c784e7d6304af5c233b58
 				</div></td>';
 			echo '<td>Assign to Custom Schedule:</td>';
 			echo '</tr>';
@@ -116,8 +114,8 @@
 				valuehere += val[count]+"_";
 			}
 			
-			if(document.getElementById("effectiveend").value = "")
-				alert("Are you sure you want to proceed with End Date?");
+			// if(document.getElementById("effectiveend").value = "")
+				// alert("Are you sure you want to proceed with End Date?");
 			
 			$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffschedule/' ?>'+valuehere});			
 			// $.post('<?= $this->config->base_url().'schedules/setstaffschedule/' ?>'+valuehere, function(data){				
