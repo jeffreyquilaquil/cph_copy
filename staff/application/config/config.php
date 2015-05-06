@@ -16,6 +16,10 @@
 */
 $config['base_url']	= 'http://careerph.tatepublishing.net/staff/';
 $config['career_url']	= 'http://careerph.tatepublishing.net';
+$config['career_uri']	= 'http://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
+$config['toEmail']	= '';
+$config['demnCrypt']	= 'hiCebuITteamIamDivi';
+$config['demnCryptIV']	= 'TaTe';
 
 /*
 |--------------------------------------------------------------------------
