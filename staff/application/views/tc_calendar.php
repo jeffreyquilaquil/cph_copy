@@ -77,10 +77,10 @@
 					$leavetxt = $daytext.$leavetxt;
 					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">Leave Pending Approval</a>';
 				}else{
-					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">On-Leave';
-					if($leaves->status==1) $leavetxt .= ' (Approved With Pay)';
-					else $leavetxt .= ' (Approved Without Pay)';
-					$leavetxt .= '</a>';
+					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">';
+					if($leaves->status==1) $leavetxt .= ' Unpaid Day Off';
+					else $leavetxt .= ' Paid Day Off';
+					$leavetxt .= '<br/><strike>'.date('h:i a', strtotime($leaves->leaveStart)).' - '.date('h:i a', strtotime($leaves->leaveEnd)).'</strike></a>';
 				}				
 				$leavetxt .= '</div>';
 				$daytext = $leavetxt;
