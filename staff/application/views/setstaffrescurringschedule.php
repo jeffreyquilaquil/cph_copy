@@ -85,25 +85,31 @@ $('#submitbutton').click(function(){
 			if(celebrity!=''){
 				alert(celebrity);
 			}else{
-				$("#spanid").html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
-				$.post('<?= $this->config->item('career_uri') ?>',{					
-					submitType:'setScheduleForStaff',
-					presched:$('#presched').val(),
-					effective_startdate:$('#effective_startdate').val(),
-					effective_enddate:$('#effective_enddate').val(),
-					schedName:$('#schedname').val(),
-					schedType:$('#schedType').val(),
-					sunday:$('#sunday').val(),
-					monday:$('#monday').val(),
-					tuesday:$('#tuesday').val(),
-					wednesday:$('#wednesday').val(),
-					thursday:$('#thursday').val(),
-					friday:$('#friday').val(),
-					saturday:$('#saturday').val()
-				}, function(){					
-					location.reload(true);
-					alert('New Schedule Set');
-				});
+				var schedname = $('#schedname').val();
+				if(schedname == ""){
+					alert("Schedule Name must be set");
+				}
+				else {
+					$("#spanid").html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
+					$.post('<?= $this->config->item('career_uri') ?>',{					
+						submitType:'setScheduleForStaff',
+						presched:$('#presched').val(),
+						effective_startdate:$('#effective_startdate').val(),
+						effective_enddate:$('#effective_enddate').val(),
+						schedName:,
+						schedType:$('#schedType').val(),
+						sunday:$('#sunday').val(),
+						monday:$('#monday').val(),
+						tuesday:$('#tuesday').val(),
+						wednesday:$('#wednesday').val(),
+						thursday:$('#thursday').val(),
+						friday:$('#friday').val(),
+						saturday:$('#saturday').val()
+					}, function(){					
+						location.reload(true);
+						alert('New Schedule Set');
+					});
+				}
 			}
 		});
 		

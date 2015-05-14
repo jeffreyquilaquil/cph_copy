@@ -181,7 +181,7 @@
 				for(count = 0; count < size ; count++) {
 					valuehere += val[count]+"_";
 				}
-										
+				
 				$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffschedule/' ?>'+valuehere});						
 			}				
 			else{
@@ -190,6 +190,7 @@
 				for(count = 0; count < size ; count++) {
 					valuehere += staff_val[count]+"_";
 				}
+				alert(valuehere);
 				$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffsrecurringschedule/' ?>'+valuehere});						
 			}
 				

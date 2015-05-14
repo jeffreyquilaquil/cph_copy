@@ -116,9 +116,10 @@ $('#submitbutton').click(function(){
 				$.post('<?= $this->config->base_url().'schedules/addScheduleTime/' ?>',{ 
 					buttonsubmit:'addScheduleButton',
 					scheduleTime:$('#predefinesched').val()				
-				}, function(d){
+				}, function(){
 					location.reload(true);				
 					alert('Custom schedule has been updated.');
+					parent.$.fn.colorbox.close();
 				});
 			}
 	});
@@ -148,6 +149,7 @@ $('#submitbutton').click(function(){
 			}, function(){
 				location.reload(true);								
 				alert('Custom schedule has been updated.');
+				parent.$.fn.colorbox.close();
 			});		
 		}
 	});
