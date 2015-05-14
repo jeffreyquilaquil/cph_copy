@@ -123,7 +123,8 @@ class Schedules extends CI_Controller {
 			$data['timecategory'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'category=0 AND status=1');		
 			$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
 			$data['allCustomSched'] = $this->staffM->getQueryResults('staffCustomSched', '*', 'status=1');
-			$data['holidaySchedArr'] = $this->staffM->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, staffHolidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			// $data['holidaySchedArr'] = $this->staffM->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, staffHolidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			$data['holidaySchedArr'] = $this->staffM->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
 			$data['schedTypeArr'] = $this->config->item('schedType');
 			$data['allDayTypes'] = $this->config->item('holidayTypes');			
 		}
@@ -150,6 +151,7 @@ class Schedules extends CI_Controller {
 		$idd = $this->uri->segment(3);			
 		$trimid = rtrim($idd,"_");
 		$explode = explode("_",$trimid);
+		// var_dump($explode);
 		$size  = sizeof($explode);
 		if(isset($_POST) && !empty($_POST)){ 			
 			  if($_POST['submitType']=='setScheduleForStaff'){
@@ -200,27 +202,191 @@ class Schedules extends CI_Controller {
 		
 		$idstring = "";
 		for($counter = 0; $counter < $size; $counter++) {
-			$idstring .= $explode[$counter].",";			
+			$staff_xplode = explode('~',$explode[$counter]);
+			$idstring .= $staff_xplode[1].",";			
 		}
-		$idstring_trim = rtrim($idstring,",");
-		// echo $idstring_trim;
-		// $datass = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );								
-		// print_r($datass);
-		$data['row'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
+		$idstring_trim = rtrim($idstring,",");		
 		
+		# display date -> staff
+		$a_string = "";
+		$array_value_dateindex = array();	
+		for($counter = 0; $counter < $size; $counter++) {
+			$staff_xplode = explode('~',$explode[$counter]);			
+			if(array_key_exists($staff_xplode[0],$array_value_dateindex)) 
+				$array_value_dateindex[$staff_xplode[0]] .= $staff_xplode[1]."|";			
+			else
+			$array_value_dateindex[$staff_xplode[0]] = $staff_xplode[1].'|';
+		}
+		
+		// var_dump($array_value_dateindex);
+		$name_object = array();
+		
+		foreach($array_value_dateindex as $key=>$value){			
+		$idstring = "";
+			$trimmedValue = rtrim($value,"|");	
+			$staff_xplode = explode('|',$trimmedValue);				
+			$sizeofExplode = sizeof($staff_xplode);
+			for($ctr = 0; $ctr < $sizeofExplode; $ctr++)			
+				$idstring .= $staff_xplode[$ctr].",";		
+			
+			$idstring_trim = rtrim($idstring,",");				
+			if($idstring_trim != "")
+				$name_object[$key] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID',' empID IN ('.$idstring_trim.')' );
+		}
+		
+		$data['row'] = $name_object;									
+		$data['timeNameList'] = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeName,timeID',' category = 0' );
 		$query = "SELECT * FROM  staffCustomSched";
 		$query_result = $this->db->query($query);
 		$data['customSched'] = $query_result->result();		
+		// $data['customSchedTime'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
 		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');		 
 		$data['content'] = 'setstaffschedule';		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function setstaffsrecurringschedule() {
+		$idd = $this->uri->segment(3);			
+		$trimid = rtrim($idd,"_");
+		$explode = explode("_",$trimid);
+		// var_dump($explode);
+		$size  = sizeof($explode);
+		if(isset($_POST) && !empty($_POST)){ 			
+			  if($_POST['submitType']=='setScheduleForStaff'){
+				
+				
+				$presched = $_POST['presched'];
+				$array_input = array();
+				$array_input['effectivestart'] = date("Y-m-d",strtotime($_POST['effective_startdate']));
+				$array_input['assignby'] = $this->user->empID;
+				
+				if($_POST['effective_enddate'] == "")
+					$array_input['effectiveend'] = "0000-00-00";
+				else
+					$array_input['effectiveend'] = date("Y-m-d",strtotime($_POST['effective_enddate']));
+					
+				if($presched == 0) {
+					$array_custom = array();
+					$array_custom['schedName'] = $_POST['schedName'];
+					$array_custom['schedType'] = $_POST['schedType'];
+					$array_custom['sunday'] = $_POST['sunday'];
+					$array_custom['monday'] = $_POST['monday'];
+					$array_custom['tuesday'] = $_POST['tuesday'];
+					$array_custom['wednesday'] = $_POST['wednesday'];
+					$array_custom['thursday'] = $_POST['thursday'];
+					$array_custom['friday'] = $_POST['friday'];
+					$array_custom['saturday'] = $_POST['saturday'];
+					$array_custom['datecreated'] = date('Y-m-d H:i:s');
+					
+					$newId = $this->staffM->insertQuery("staffCustomSched", $array_custom);															
+					$array_input['staffCustomSched_fk'] = $newId;
+														
+					for($ctr = 0; $ctr < $size; $ctr++) {
+						$array_input['empID_fk'] = $explode[$ctr];					
+						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+					}
+				}
+				else{					
+					$array_input['staffCustomSched_fk'] = $_POST['presched'];										
+					for($ctr = 0; $ctr < $size; $ctr++) {
+						$array_input['empID_fk'] = $explode[$ctr];			
+						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+					}
+				}
+			}
+			unset($_POST);
+			exit; 
+		}
+		
+		$idstring = "";
+		for($counter = 0; $counter < $size; $counter++) {			
+			$idstring .= $explode[$counter].",";			
+		}
+		$idstring_trim = rtrim($idstring,",");		
+				
+		$data['row'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID ',' empID IN ('.$idstring_trim.')' );
+		$data['timeNameList'] = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeName,timeID',' category = 0' );
+		$query = "SELECT * FROM  staffCustomSched";
+		$query_result = $this->db->query($query);
+		$data['customSched'] = $query_result->result();		
+		// $data['customSchedTime'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
+		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');		 
+		$data['content'] = 'setstaffrescurringschedule';		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function getvalueofpredefinesched() {
 		$id = $this->input->post("id");
 		$response = $this->scheduleM->getCustomSchedDetails($id);
-		echo json_encode($response);
-		// echo "hello world";
+		echo json_encode($response);		
+	
+	}
+	
+	public function addScheduleTime(){
+		$Timeschedule = "";
+		$newcategoryname = "";
+		$category_id = "";
+		if($this->input->post("buttonsubmit") == "addScheduleButton"){
+			// echo "addScheduleButton";
+			$Timeschedule = $this->input->post("scheduleTime");
+			
+		}
+		else if($this->input->post("buttonsubmit") == "AddNowbutton"){
+			// $toecho = array(); 
+			// $toecho['buttonsubmit'] = $this->input->post("buttonsubmit");
+			// $toecho['newtimename'] = $this->input->post("newtimename");
+			// $toecho['giventimename'] = $this->input->post("giventimename");
+			// $toecho['starttime'] = $this->input->post("starttime");
+			// $toecho['endtime'] = $this->input->post("endtime");
+			
+			// buttonsubmit:'AddNowbutton',
+			// newcategoryname: valueofnewcategoryname,
+			// newtimeschedname : $('#time_name').val(),
+			// defineschedtime : predefinetimename,
+			// starttime : $('#starttime').val(),
+			// endtime : $('#endtime').val()
+				
+				
+			// echo $this->input->post("defineschedtime");
+			// $category_id = $this->staffM->getSingleField("staffCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
+			// echo $category_id;
+			if($this->input->post("defineschedtime") == ""){				
+				$newcatergoryInsert = array();
+				$newcatergoryInsert['timeName'] = $this->input->post("newcategoryname");				
+				$newcatergoryInsert['category'] = 0;
+				$newcatergoryInsert['status'] = 1;
+				$newcatergoryInsert['addInfo'] = $this->user->empID."--".strtotime(date('Y-m-d'))."|";
+				$category_id = $this->staffM->insertQuery("staffCustomSchedTime",$newcatergoryInsert);		
+			}
+			else
+				// $category_id = $this->staffM->getSingleField("staffCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
+				$category_id = $this->input->post("defineschedtime");
+			
+									
+			$newTimeSched = array();
+			$newTimeSched['timeName'] = $this->input->post("newtimeschedname");
+			$newTimeSched['timeValue'] = $this->input->post("starttime")." - ".$this->input->post("endtime");
+			$newTimeSched['category'] = $category_id;
+			$newTimeSched['status'] = 1;
+			$newTimeSched['addInfo'] = $this->user->empID."--".strtotime(date('Y-m-d'))."|";
+			$Timeschedule = $this->staffM->insertQuery("staffCustomSchedTime",$newTimeSched);		
+							
+		}
+		
+		$sessionRowValue = $this->session->userdata('rowvaluesession');
+		foreach($sessionRowValue as $key=>$value) {						
+			foreach($value as $maonani) {							
+				$inputdata = array();
+				$inputdata['empID_fk'] = $maonani->empID;
+				$inputdata['staffCustomSchedTime'] = $Timeschedule;
+				$inputdata['effectivestart'] = $key;
+				$inputdata['effectiveend'] = $key;
+				$inputdata['assignby'] = $this->user->empID;
+				$this->staffM->insertQuery("staffSchedules",$inputdata);		
+			}					
+		}		
+						
+			
 	
 	}
 	

@@ -59,6 +59,15 @@ table.dataTable tbody tr {
 table.dataTable tbody tr.selected {
   background-color: #b0bed9;
 }
+
+table.dataTable tbody tr td.tddate.selected{
+  background-color: #b0beda;
+}
+
+table.dataTable tbody tr td.nameId {
+  background-color: #b0bed9;
+}
+
 table.dataTable tbody th,
 table.dataTable tbody td {
   padding: 8px 10px;

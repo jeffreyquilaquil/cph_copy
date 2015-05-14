@@ -57,7 +57,7 @@ function onClickPreSched() {
 
 $(function(){
 
-	
+	$('.timepickA').datetimepicker({ format:'h:i a', datepicker:false });
 	$('#schedname').removeAttr('disabled');
 	$('#schedType').removeAttr('disabled');
 	$('#sunday').removeAttr('disabled');
@@ -67,7 +67,7 @@ $(function(){
 	$('#thursday').removeAttr('disabled');
 	$('#friday').removeAttr('disabled');
 	$('#saturday').removeAttr('disabled');		
-
+	$('#div_create').hide();		
 
 $('#submitbutton').click(function(){			
 			celebrity = '';
@@ -105,12 +105,93 @@ $('#submitbutton').click(function(){
 					alert('New Schedule Set');
 				});
 			}
-		});
-		
+		});			
 	
 	
+	$("#addSchedule").click(function(){	
+			if($('#predefinesched').val() == "") {
+					alert('No schedule was selected');
+			}
+			else{
+				$.post('<?= $this->config->base_url().'schedules/addScheduleTime/' ?>',{ 
+					buttonsubmit:'addScheduleButton',
+					scheduleTime:$('#predefinesched').val()				
+				}, function(d){
+					location.reload(true);				
+					alert('Custom schedule has been updated.');
+				});
+			}
 	});
+	
+	$("#Addnow").click(function(){			
+		var catergoryname = $('#listofcategoryname').val();
+		var valueofnewcategoryname = "";
+		var predefinetimename = "";
+		if(catergoryname == ""){
+			alert('No Category was selected');
+		}
+		else{
+			if( catergoryname == "addnewcategoryname")
+				valueofnewcategoryname = $('#new_name').val();
+			else
+				predefinetimename = catergoryname;
+				
+			// alert(predefinetimename);
+			$.post('<?= $this->config->base_url().'schedules/addScheduleTime/' ?>',{
+				buttonsubmit:'AddNowbutton',
+				newcategoryname: valueofnewcategoryname,
+				newtimeschedname : $('#time_name').val(),
+				defineschedtime : predefinetimename,
+				starttime : $('#starttime').val(),
+				endtime : $('#endtime').val()
+				
+			}, function(){
+				location.reload(true);								
+				alert('Custom schedule has been updated.');
+			});		
+		}
+	});
+	
+});
+	
+function showNewNameField(value) {	
+	if(value == "addnewcategoryname")
+		 $("#fornewcategoryname").html('<input type="text" name="new_name" id="new_name" class="padding5px" placeholder="New Category Name Here"><br/><br/>');
+	else
+		$("#fornewcategoryname").html('');
+}
+
+function changepresched(value) {	
+	if(value == "createnewsched") {
+		$( "#div_create" ).show( "slow", function() {});		
+		$( "#addSchedule" ).hide( "slow", function() {});
+	}
+	else{
+		$( "#div_create" ).hide( "slow", function() {});
+		$( "#addSchedule" ).show( "slow", function() {});
+	}
+}
+
+
 </script>
+<style>
+ul.a {
+    list-style-type: none;
+
+}
+
+ul.a li{
+		margin-bottom:10px;
+		margin-top:10px;
+}
+
+
+ul.b {
+    list-style-type: square;
+}
+
+
+</style>
 <?php
 	if(count($alltime)==0) echo 'No time records.';	
 	$time = array();
@@ -121,103 +202,105 @@ $('#submitbutton').click(function(){
 			$time[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
 	endforeach;
 
-	// print_r($row->name);
-	echo '<h3>Set Schedule for ';
-			$listofnames = "";
-			foreach($row as $names) {
-				$listofnames .=  $names->name." , ";
-			}
-			echo "<b>".rtrim($listofnames," , ")."</b>";
-	echo '</h3>';
 	
-	echo '<form method="post">';	
+	// echo '<form method="post">';	
+	// $stringofkeys = "";
+	// $stringofid = "";
+
 	echo '<input id="submitType" name="submitType" type="hidden" value="setScheduleForStaff"/>';
+	$this->session->set_userdata('rowvaluesession',$row);
+	echo '<table border="0" width="100%">
+				<tr>';
+				echo '<td valign="top">'; 
+						echo '<h3>Set Schedule for </h3>';		
+						echo '<ul class="a">';
+						foreach($row as $key=>$value) {							
+							echo '<li>'.$key;
+								echo '<ul  class="b">';
+										foreach($value as $maonani) {
+											echo '<li>';											
+											echo $maonani->name;
+											echo '</li>';
+										}					
+								echo '</ul>';
+							echo '</li>';	
+							
+						}
+						echo '</ul>';				
+				echo '</td>';
+				echo '<td valign="top">';
+							echo '<table border="0">';
+							echo '<tr>';	
+							echo '<td></td>';	
+							echo '</tr>';	
+							echo '<tr valign="top">';	
+								echo '<td>';			
+									echo '<table>';
+									echo '
+											<tr>
+												<td>Choose From Predefine Schedule</td>
+											</tr>
+											<tr>
+												<td>													
+													<select id="predefinesched" class="schedSelect everyday padding5px" onchange="changepresched(this.value);">
+															<option value=""></option>
+															<option value="createnewsched" >Create New Schedule</option>';					
+															foreach($time AS $t=>$t2):
+																echo '<optgroup label="'.$t2['name'].'">';						
+																foreach($t2 AS $k=>$t):
+																	if($k!='name'){
+																		$ex = explode('|', $t);
+																		echo '<option value="'.$k.'" '.(($k==$v)?'selected="selected"':'').'>'.$ex[0].'</option>';
+																	}
+																endforeach;
+																echo '</optgroup>';
+															endforeach;					
+															
+												
+													echo '<option value=""></option>
+												</select>													
+												</td>
+											</tr>';											
+									echo '</table>';						
+								echo '</td>';
+							echo '</tr>';	
+							echo '<tr height="10px">';	
+							echo '<td></td>';	
+							echo '</tr>';	
+							echo '<tr>';	
+							echo '<td>
+										<input type="button" name="addSchedule" id="addSchedule" value="Set Schedule">
+										
+									</td>';
+							echo '</tr>';	
+							echo '<table>';
+				echo '</td>';
+				echo '<tr>';	
 	echo '<table>';
-	echo '<tr valign="top">';	
-		echo '<td>';			
-			echo '<table class="tableInfo">';
-			echo '<tr>
-						<td>Effective Date</td>
-						<td>
-							<input type="text" id="effective_startdate" name="effective_startdate" class="forminput datepick" style="width:38%;" value="" placeholder="Start Date"/> &nbsp;&nbsp;&nbsp; To &nbsp;&nbsp;&nbsp;
-							<input type="text" id="effective_enddate" name="effective_enddate" class="forminput datepick" style="width:38%;" value="" placeholder="End Date"/>
-						</td>
-					</tr>
-					<tr>
-						<td>Choose From Predefine Schedule</td>
-						<td>
-							<select name="presched" id="presched" onChange="onClickPreSched();">';								
-								echo '<option value="0">Add New Custom Sched</option>';
-								foreach($customSched as $sched) {;
-								echo '<option value="'.$sched->custschedID.'">'.$sched->schedName.'</option>';
-								};
-							echo '</select>
-							<span id="spanid"></span>
-						</td>
-					</tr>
-					<tr class="trlabel" align="center">
-						<td colspan="2">Custom Schedule</td>						
-					</tr>
-					<tr >
-						<td colspan="2">
-							<table class="tableInfo">
-								<tr>
-									<td>Schedule Name</td>
-									<td>
-										<input id="schedname" type="text" class="padding5px" style="width:250px;"/>
-									</td>
-								</tr>
-								<tr>
-									<td>Every</td>
-									<td>
-										<select id="schedType" class="padding5px" style="width:140px;">
-											<option value=0></option>
-											<option value=1>First</option>
-											<option value=2>Second</option>
-											<option value=3>Third</option>
-											<option value=4>Fourth</option>
-											<option value=5>Last</option>
-										</select>	
-										&nbsp;&nbsp;&nbsp;
-										(Select an option if specific day of the month)
-									</td>
-								</tr>
-								<tr>
-									<td>Sunday</td>';
-									echo '<td>'.$this->scheduleM->customTimeDisplay($time, 'sunday').'</td>
-								</tr>
-								<tr>
-									<td>Monday</td>
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'monday').'</td>
-								</tr>
-									<td>Tuesday</td>
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'tuesday').'</td>
-								</tr>
-									<td>Wednesday</td>
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'wednesday').' </td>
-								</tr>
-									<td>Thursday</td>
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'thursday').'</td>
-								</tr>
-									<td>Friday</td>
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'friday').'</td>
-								</tr>
-									<td>Saturday</td>			
-									<td>'.$this->scheduleM->customTimeDisplay($time, 'saturday').'</td>
-								</tr>
-								<tr>
-							</table>
-						</td>
-					</tr>
-					<tr align="center">
-						<td></td>						
-						<td><input type="button" value="Submit" id="submitbutton"/></td>
-					</tr>';
-					
-			echo '</table>';						
-		echo '</td>';
-	echo '</tr>';	
-	echo '<table>';
-	echo '</form>';
+	
+	
+	?>
+	<div id="div_create">
+		 <!--<fieldset><legend>New Schedule</legend>		-->
+			<br/>Category Name <br/><br/>
+			<select class="padding5px" name="listofcategoryname" id="listofcategoryname" onchange="showNewNameField(this.value);">				
+				<option></option> 
+				<option value="addnewcategoryname">Add New Category Name</option> 
+				<?php foreach($timeNameList as $listoftimenames) {
+					echo '<option value="'.$listoftimenames->timeID.'">'.$listoftimenames->timeName.'</option>';
+				}?>
+				
+			</select>&nbsp;&nbsp;  
+			<br/><br/>
+			<span id="fornewcategoryname"></span>
+			<input type="text" name="time_name" id="time_name" class="padding5px" placeholder="Time New Name Here"><br/><br/>
+			<input type="text" id="starttime" class="timepickA padding5px" style="width:113px;" placeholder="start time"/>&nbsp;&nbsp;
+			<input type="text" id="endtime" class="timepickA padding5px" style="width:113px;" placeholder="end time"/><br/><br/><br/><br/>
+			<input type="button" name="Addnow" id="Addnow" value="Add & Assign Schedule"><br/><br/><br/><br/>
+		<!--</fieldset>-->
+	</div>
+	<?php
+	
+	// echo '</form>';
 
 ?>
