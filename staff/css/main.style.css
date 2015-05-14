@@ -448,6 +448,10 @@ ul.tabs2 li{
 	border-bottom-style: none;
 }
 
+ul.tabs2 li.admin{
+	background: #848484;
+}
+
 ul.tabs2 li.current{
 	background: #fff;
 	color: #222;
@@ -464,15 +468,18 @@ ul.tabs2 li.current{
 .attendancetbl tr.weekdays td{ vertical-align:top; text-align:left; }
 .attendancetbl tr.weekdays td{ padding:0; }
 .attendancetbl .daycontent{ min-height:120px; }
-.attendancetbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:gray; }
+.attendancetbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:#bbb; }
 .attendancetbl a:hover .daynum{ background-color:#aaa; }
 .attendancetbl .dayholiday{ text-align:center; background-color:red; padding:3px; border-radius:3px; margin:4px; color:#fff; font-size:10px; font-weight:bold; }
 .attendancetbl .daysched{ text-align:center; background-color:green; padding:3px; border-radius:3px; margin:4px; color:#fff; font-size:10px; font-weight:bold; }
-.attendancetbl .dtoday{ background-color:#ebb5b5; }
+.attendancetbl .dtoday{ background-color:#848484; }
 .attendancetbl .monthtd td{ cursor:pointer; }
 .attendancetbl .monthtd td:hover{ background-color:#e2e2e2; }
 .attendancetbl a{ text-decoration:none; }
 .attendancetbl .calendarweek td{ width:14.28% }
+.attendancetbl .divoptions{ position:absolute; text-align:center; background-color:#ddd; border:1px solid #ccc; border-radius:10px; top:25px; padding:3px; }
+
+
 
 .orgchart li{ border:1px solid #ccc; padding:5px; margin:5px;}
 .li_0{ background-color:#b30000; }

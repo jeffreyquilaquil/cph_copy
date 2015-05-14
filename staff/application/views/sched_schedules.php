@@ -1,9 +1,9 @@
 <h2>Manage Schedules</h2><hr/>
 
 <ul class="tabs">
-	<li class="tab-link current" data-tab="holeventsched">Holiday/Event Schedule</li>
-	<li class="tab-link" data-tab="customtime">Custom Time</li>
-	<li class="tab-link" data-tab="customsched">Custom Schedule</li>	
+	<li class="tab-link current" data-tab="holeventsched">Holiday/Event Schedules</li>
+	<li class="tab-link" data-tab="customtime">Custom Times</li>
+	<li class="tab-link" data-tab="customsched">Custom Schedules</li>	
 </ul>
 <br/>
 <div id="holeventsched" class="tab-content current">

@@ -7,6 +7,8 @@
 	$day = date('d', $today);
 	$first_day = date('w',mktime(0,0,0,$month, 1, $year));
 	$days_in_month = cal_days_in_month(0, $month, $year);
+	$userID = $this->user->empID;
+	if(!empty($visitID)) $userID = $visitID;
 	
 ?>
 <table border=0 class="attendancetbl">	
@@ -48,11 +50,18 @@
 					
 		while ( $daynum <= $days_in_month ){ 
 			echo '<td colspan=2 class="'.(($daynum==date('d', $today))?'dtoday':'').'">
-					<div class="daycontent">';
+					<div class="daycontent" style="position:relative;">';
 			
-			if($tpage=='calendar' && $this->access->accessFull==true)
-				echo '<a href="'.$this->config->base_url().'schedules/holidayevents/'.$month.'-'.$daynum.'/" class="iframe"><div class="daynum">'.$daynum.'</div></a>';
-			else
+			if($tpage=='calendar' && $this->access->accessFull==true){
+				//echo '<a href="'.$this->config->base_url().'schedules/holidayevents/'.$month.'-'.$daynum.'/" class="iframe"><div class="daynum">'.$daynum.'</div></a>';
+				echo '
+					<div id="option_'.$daynum.'" class="divoptions hidden">
+						<a href="'.$this->config->base_url().'schedules/setstaffschedule/'.date('Y-m-d', strtotime($year.'-'.$month.'-'.$daynum)).'~'.$userID.'/" class="iframe"><button class="btnclass fs11px">Edit schedule</button></a><br/>
+						<a href="'.$this->config->base_url().'schedules/holidayevents/'.$month.'-'.$daynum.'/" class="iframe"><button class="btnclass fs11px">Add Holiday/Event</button></a><br/>
+						<u class="cpointer" onClick="$(\'#option_'.$daynum.'\').addClass(\'hidden\')">Close</u>
+					</div>
+				<a href="javascript:void(0)"><div class="daynum cpointer" onClick="$(\'#option_'.$daynum.'\').removeClass(\'hidden\')">'.$daynum.'</div></a>';
+			}else
 				echo '<div class="daynum">'.$daynum.'</div>';
 				
 			/********* print the content of the day found in page view file 

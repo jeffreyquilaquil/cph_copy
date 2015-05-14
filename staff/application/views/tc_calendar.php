@@ -33,7 +33,7 @@
 		){
 			//custom schedules
 			$customschedtext = '';	
-			
+			$customschedtoday = '';				
 			foreach($calScheds AS $cal){
 				$xx = strtolower(date('l', strtotime($year.'-'.$month.'-'.$daynum0)));
 				
@@ -55,14 +55,20 @@
 			}
 			 
 			//custom time schedules
+			//if will check if current date is in between eff start and eff date and exclude saturday and sunday if start and end if not equal else include saturday and sunday
 			foreach($calSchedTime AS $ctym){
-				if($currentday>=$ctym->effectivestart && $currentday<=$ctym->effectiveend)
-					$customschedtext = $ctym->timeValue;
+				if($currentday>=$ctym->effectivestart && $currentday<=$ctym->effectiveend && 
+					(($ctym->effectivestart!=$ctym->effectiveend && $dayoftheweek<6) || $ctym->effectivestart==$ctym->effectiveend)
+				)
+					$customschedtoday = $ctym->timeValue;
 			}
 			
-			if(!empty($customschedtext)){
-				$daytext .= '<div class="daysched tacenter" style="background-color:green; padding:3px; border-radius:3px;">'.$customschedtext.'</div>';
-			}			
+			//custom sched for today
+			if(!empty($customschedtoday)) 
+				$daytext .= '<div class="daysched" style="background-color:#2123e0;">'.$customschedtoday.'</div>';
+			else if(!empty($customschedtext))
+				$daytext .= '<div class="daysched" style="background-color:green;">'.$customschedtext.'</div>';
+					
 		}
 		
 		//this is for Staff leaves
@@ -72,7 +78,7 @@
 			$end = date('Y-m-d', strtotime($leaves->leaveEnd));
 			
 			if($currentday>=$start && $currentday<=$end && $dayoftheweek<6){
-				$leavetxt = '<div class="daysched tacenter" style="background-color:#f6546a; padding:3px; border-radius:3px;">';
+				$leavetxt = '<div class="daysched" style="background-color:#6ed86e;">';
 				if($leaves->iscancelled!=0 || $leaves->status==0 || $leaves->status==4){					
 					$leavetxt = $daytext.$leavetxt;
 					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">Leave Pending Approval</a>';
@@ -86,6 +92,16 @@
 				$daytext = $leavetxt;
 			}					
 		}
+		
+		//birthdays
+		$bdtoday = '';
+		foreach($birthdayQuery AS $bday){			
+			if($daynum0==$bday->bdateNum)
+				$bdtoday .= $bday->name.', ';
+		}
+		if(!empty($bdtoday)) 
+			$daytext .= '<div class="daysched" style="background-color:#dc6900; text-align:left;">Birthday: '.rtrim($bdtoday,', ').'</div>';
+		
 		
 		if(!empty($daytext)) $dataArr['content'][$daynum] = $daytext;
 		

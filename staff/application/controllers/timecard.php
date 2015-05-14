@@ -6,6 +6,7 @@ class Timecard extends CI_Controller {
 		parent::__construct();
 		$this->db = $this->load->database('default', TRUE);
 		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Schedulemodel', 'schedM');	
 		
 		date_default_timezone_set("Asia/Manila");
 		session_start();
@@ -41,13 +42,31 @@ class Timecard extends CI_Controller {
 		}		
 	}
 	
-	public function timelogs($data){		
+	public function timelogs($data){
+
 		$data['content'] = 'tc_timelogs';	
 				
 		if($this->user!=false){	
 			$data['tpage'] = 'timelogs';	
-											
-			$data['dataArr'] = array();			
+			
+			$data['dateSchedToday'] = date('Y-m-d');
+			$data['schedToday'] = $this->schedM->getTodaySched($this->user->empID, $data['today']);
+			$ans = explode('-',$data['schedToday']);
+			if(count($ans)==2){
+				$data['start'] = date('Y-m-d H:i', strtotime(trim($ans[0])));
+				$data['end'] = date('Y-m-d H:i', strtotime(trim($ans[1])));
+				
+				if(strtotime($data['end'])-strtotime($data['start']) < 0) 
+					$data['end'] = date('Y-m-d H:i', strtotime(trim($ans[1]).' +1 day'));				
+			}		
+			
+			$logsQuery = $this->staffM->getQueryResults('staffTimelogs','*','empID_fk="'.$this->user->empID.'" AND clockin LIKE "'.date('Y-m-', strtotime($data['today'])).'%"');
+			$data['logsArr'] = array();
+			foreach($logsQuery AS $l){
+				$data['logsArr'][(int)date('d', strtotime($l->currentDate))] = array('in'=>$l->clockin, 'out'=>$l->clockout, 'breaks'=>$l->breaks, 'currentDate'=>$l->currentDate);						
+			}
+						
+														
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -95,7 +114,11 @@ class Timecard extends CI_Controller {
 				$data['calHoliday'][$holdayInt]['holidayWork'] = $calHol->holidayWork;
 			}
 			
-			$data['calLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, iscancelled', 'empID_fk="'.$empID.'" AND status!=3 AND status!=5 AND iscancelled!=1 AND (leaveStart LIKE "'.date('Y-m-', strtotime($data['today'])).'%" OR leaveEnd LIKE "'.date('Y-m-', strtotime($data['today'])).'%")');			
+			//staff leaves
+			$data['calLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, iscancelled', 'empID_fk="'.$empID.'" AND status!=3 AND status!=5 AND iscancelled!=1 AND (leaveStart LIKE "'.date('Y-m-', strtotime($data['today'])).'%" OR leaveEnd LIKE "'.date('Y-m-', strtotime($data['today'])).'%")');	
+
+			//birthdays
+			$data['birthdayQuery'] = $this->staffM->getQueryResults('staffs','CONCAT(fname," ",lname) AS name, bdate, SUBSTR(bdate,-2) AS bdateNum', 'active=1 AND bdate LIKE "%'.date('-m-',strtotime($data['today'])).'%"');		
 										
 		}
 	

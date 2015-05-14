@@ -1,5 +1,7 @@
 <header>
 <?php
+	$segment2 = $this->uri->segment(2);
+	
 	if($this->user!=false && $this->user->empID!=0){
 	
 	if($this->session->userdata('testing')==true){
@@ -21,9 +23,38 @@
 	<div id="menubar">
 		<ul class="menu">
 			<li <?php if($content=='index'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>">Homepage</a></li>
-			<li <?php if($current=='myinfo'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>myinfo/">My HR Info</a></li>
+			<li <?php if($current=='myinfo'){ echo 'class="current"'; } ?>>
+				<a href="<?= $this->config->base_url() ?>myinfo/">My HR Info</a>
+			</li>
 			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
-			<li <?php if($content=='myattendance'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>timecard/">My Timecard and Payroll</a></li>			
+			
+		<?php
+			echo '<li '.(($content=='myattendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>';
+			
+			echo '<ul class="dropdown">';
+			
+			if($this->access->accessFullHR==true){	
+				echo '<li '.(($content=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Manage Schedules</a></li>';				
+			}
+			
+				echo '<li '.(($segment2=='timelogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a></li>';
+				echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
+				echo '<li '.(($segment2=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/schedules/">My Schedules</a></li>';
+				echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
+				
+				if($this->user->is_supervisor==1) 
+					echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
+			
+			if($this->access->accessFullHR==true){	
+				echo '<li '.(($segment2=='scheduling')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/scheduling/">Scheduling</a></li>';
+				echo '<li '.(($segment2=='payrolls')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payrolls/">Payrolls</a></li>';
+				echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';				
+			}
+			
+			
+			echo '</li>';
+			echo '</ul>';
+		?>			
 			
 		<?php
 			if($this->user->dept== 'IT'){
@@ -50,7 +81,6 @@
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Staff CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';						
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Info Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE '.(($pendingCOENum>0)?'<b>['.$pendingCOENum.']</b>':'').'</a></li>';
-						echo '<li '.(($content=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Manage Schedules</a></li>';
 					}
 					if($this->access->accessFinance==false){
 						echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Staff Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';

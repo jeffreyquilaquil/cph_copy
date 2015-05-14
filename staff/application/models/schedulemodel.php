@@ -64,6 +64,35 @@ class Schedulemodel extends CI_Model {
 		$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
 		
 	}
+		
+	/****
+		sample return value "07:00 am - 04:00 pm" OR "09:00 pm - 06:00 am"
+	***/
+	function getTodaySched($empID, $dateToday){
+		$sched = '';
+		$schedArr = array();
+		$dateToday = date('Y-m-d', strtotime($dateToday));
+		$nameToday = strtolower(date('l', strtotime($dateToday)));
+			
+		//leaves
+		$lquery = $this->staffM->getSingleInfo('staffLeaves', 'status','empID_fk="'.$empID.'" AND "'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND iscancelled=0 AND status BETWEEN 1 AND 2');
+		if(count($lquery)>0){
+			if($lquery->status==1) $sched = 'Paid Day Off';
+			else $sched = 'Unpaid Day Off';
+		}else{				
+			//schedules
+			$fquery = $this->staffM->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND staffCustomSchedTime!=0 AND ("'.$dateToday.'" BETWEEN effectivestart AND effectiveend OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime','assigndate DESC');
+			
+			if(count($fquery)>0){
+				$sched = $fquery->timeValue;
+			}else{
+				$squery = $this->staffM->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND (("'.$dateToday.'" BETWEEN effectivestart AND effectiveend) OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN staffCustomSched ON staffCustomSched_fk = custschedID LEFT JOIN staffCustomSchedTime ON timeID = staffCustomSched.'.$nameToday.'','assigndate DESC');
+				if(count($squery)>0) $sched = $squery->timeValue;
+			}
+		}
+				
+		return $sched;
+	}
 	
 }
 ?>
