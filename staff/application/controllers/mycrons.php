@@ -260,6 +260,11 @@ class MyCrons extends CI_Controller {
 		exit;	
 	}
 	
+	/***** This will delete all staff access logs more than 2 weeks	*****/
+	public function deleteAccessLogsMoreThan2Weeks(){
+		$this->staffM->dbQuery('DELETE FROM staffLogAccess WHERE timestamp < "'.date('Y-m-d', strtotime('-2 weeks')).'"');
+	}
+	
 	/***** Add notification *****/
 	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0){
 		$insArr['empID_fk'] = $empID;

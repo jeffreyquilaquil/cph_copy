@@ -102,6 +102,14 @@ class Staff extends CI_Controller {
 					session_start();
 					$_SESSION['u'] = $row->username; 
 					
+					//insert login details
+					$logData['type'] = 0; //0-login; 1-logout
+					$logData['username'] = $row->username;					
+					$logData['IP'] = $this->input->ip_address();
+					$logData['userAgent'] = $this->input->user_agent();
+					$logData['timestamp'] = date('Y-m-d H:i:s');
+					$this->staffM->insertQuery('staffLogAccess', $logData);
+					
 					if(md5($row->username) == $row->password){
 						header('Location:'.$this->config->base_url().'changepassword/required/');
 					}else{
@@ -116,7 +124,17 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/template', $data);	
 	}
 	
-	public function logout(){	
+	public function logout(){
+		//insert logut details
+		if(!empty($_SESSION['u'])){
+			$logData['type'] = 1; //0-login; 1-logout
+			$logData['username'] = $_SESSION['u'];					
+			$logData['IP'] = $this->input->ip_address();
+			$logData['userAgent'] = $this->input->user_agent();
+			$logData['timestamp'] = date('Y-m-d H:i:s');
+			$this->staffM->insertQuery('staffLogAccess', $logData);
+		}
+		
 		$this->session->sess_destroy();
 		session_unset(); 
 		session_destroy(); 
