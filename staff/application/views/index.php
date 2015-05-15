@@ -1,6 +1,6 @@
 <? //middle-wrapper ?>
 <div id="middle-wrapper">
-	<div id="wrapper-index-mbody">
+	<div id="wrapper-index-mbody" style="overflow-y:auto; height:550px;">
 	<?php if($this->access->accessFullHR==true){ ?>
 		<div id="clbtn">
 			<button id="createAnn">Create New</button>&nbsp;&nbsp;<button id="editAnn">Edit</button>

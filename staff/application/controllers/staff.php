@@ -21,7 +21,15 @@ class Staff extends CI_Controller {
 	public function index(){
 		$data['content'] = 'index';	
 		$data['row'] = $this->user;
-		$data['announcement'] = stripslashes($this->staffM->getSingleField('staffAnnouncements', 'announcement', '1 ORDER BY timestamp DESC'));
+		
+		$data['announcement'] = '';
+		$anArr = array();
+		$anQuery = $this->staffM->getQueryResults('staffAnnouncements','announcement','1','','timestamp DESC');
+		foreach($anQuery AS $an){
+			$anArr[] = stripslashes($an->announcement);
+		}
+		$data['announcement'] = implode('<br/>==================================================================<br/>',$anArr);
+			
 		
 		if(isset($_POST) && !empty($_POST)){
 			if($_POST['submitType']=='announcement'){

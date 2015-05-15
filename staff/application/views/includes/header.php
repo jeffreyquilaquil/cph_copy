@@ -66,7 +66,7 @@
 				echo '</li>';
 			}
 			
-			if($this->user->access!='' || $this->user->level>0){
+			if($this->access->accessFullHRFinance==true || $this->user->level>0){
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					

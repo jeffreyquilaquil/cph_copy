@@ -52,7 +52,7 @@
 	} 
 	
 	echo '<ul class="tabs" style="text-align:right;">';
-	echo '<li class="tab-link current" data-tab="tab-1">Info</li>';	
+	echo '<li class="tab-link current" data-tab="tab-1">Info</li> ';	
 	if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true || $this->access->accessExec==true){
 		echo '<li class="tab-link" data-tab="tab-2">Notes</li>';	
 	}
