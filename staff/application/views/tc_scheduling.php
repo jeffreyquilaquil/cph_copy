@@ -64,21 +64,11 @@
 
 <script type="text/javascript">
 	$(function(){				
-		$('.dTable').dataTable({
-			// "dom": 'lf<"toolbar">tip',			
+		$('.dTable').dataTable({	
 			"bPaginate": false,
 			"bFilter": false			
 		});
 		
-		
-		//"dom": '<"toolbar">frtip'
-		// $("div.toolbar").html('<br/><br/><br/><input type="checkbox" id="selectAll"/> Select All<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Or Select the employees below that need a Schedule Assignment.</i><br/><br/>');
-				
-		// $('.dTable').on('click','input[name=assign0\\[\\]]',function(){
-			// $(this).toggleClass('selected');
-			// var checkBoxes = $(this).find("input[name=assign0\\[\\]]");
-			// checkBoxes.prop("checked", !checkBoxes.prop("checked"));			
-		// });
 		
 		$('.tddate').click(function(){
 			var checkedBox = $(this).find("input[name=assign\\[\\]]");		
@@ -121,50 +111,23 @@
 			}
 		});
 		
+
 		
-		
-		// $('.nameId').click(function(){						
-			// $(this).removeClass('sorting_1');
-			// $(this).addClass('selected');
-			// var checkBoxes = $(this).find("input[name=staffnames\\[\\]]");										
-			// checkBoxes.prop("checked", !checkBoxes.prop("checked"));
+		// $('#selectAll').click(function(){
+			// if($(this).is(":checked")==true){
+				// $('.dTable tbody tr').addClass('selected');
+				// $("input[name=assign\\[\\]]").prop('checked', true);				
+			// }else{
+				// $('.dTable tbody tr').removeClass('selected');
+				// $("input[name=assign\\[\\]]").prop('checked', false);
+			// }
 		// });
-		
-		// $('.dTable').on('click','tbody tr td',function(){
-			// $(this).toggleClass('selected');
-			// var checkBoxes = $(this).find("input[name=assign\\[\\]]");
-			// checkBoxes.prop("checked", !checkBoxes.prop("checked"));			
-		// });
-		
-		 		
-		// $("input[name='includeinactive']").click(function(){
-			/* ppage = $(".tab-content.current").attr('id');
-			if(ppage!=''){
-				$(".tab-content.current").attr('id');
-				window.location.href='<?= $this->config->base_url().'timecard/'?>'+ppage+'/';
-			} */
-			// $('#formSched').submit();		
-			
-			
-		// });
-		
-		$('#selectAll').click(function(){
-			if($(this).is(":checked")==true){
-				$('.dTable tbody tr').addClass('selected');
-				$("input[name=assign\\[\\]]").prop('checked', true);				
-			}else{
-				$('.dTable tbody tr').removeClass('selected');
-				$("input[name=assign\\[\\]]").prop('checked', false);
-			}
-		});
 		
 			
 		$('#assignschedbutton').click(function(){						
 			 var val = [];
 			 var staff_val = [];
-			// $(':checkbox:checked').each(function(i){
-			  // val[i] = $(this).val();
-			// });
+
 			
 			$('input[name=assign\\[\\]]:checkbox:checked').each(function(i){
 			  val[i] = $(this).val();
