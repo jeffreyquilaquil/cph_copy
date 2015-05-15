@@ -26,6 +26,8 @@
 				}	
 			}
 			
+			echo '<button id="canceThisRequest">Cancel</button>';
+			
 			if($row->status<5 && ($row->iscancelled==0 || $row->iscancelled==4) && 
 				(($row->leaveType<4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
 				($row->leaveType==4 && $ccc==true)) &&
@@ -411,7 +413,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<tr><td>Date cancelled</td><td>'.date('F d, Y H:i', strtotime($row->datecancelled)).'</td></tr>';
 	}
 	if($row->canceldata!=''){
-		echo '<tr><td>Reason</td><td>'.$row->cancelReasons.'</td></tr>';	
+		echo '<tr><td>Reason</td><td>'.nl2br($row->cancelReasons).'</td></tr>';	
 		
 		$potter = array_reverse(explode('^_^', $row->canceldata));
 		if(count($potter)>0){
