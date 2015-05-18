@@ -1573,7 +1573,7 @@ class Staff extends CI_Controller {
 					$supEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$this->user->supervisor.'" AND "'.$this->user->supervisor.'"!=0');
 					if(!empty($supEmail)){
 						$msg = '<p>Hi,</p>';
-						$msg .= '<p>Filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
+						$msg .= '<p>'.$this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
 						$msg .= '<p>Thanks!</p>';
 						$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $supEmail, $this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']], $msg, 'CareerPH' );
 					}
@@ -1603,7 +1603,7 @@ class Staff extends CI_Controller {
 	function staffleaves(){ 
 		$segment2 = $this->uri->segment(2);
 		$data['content'] = 'staffleaves';
-				
+			
 		if($this->user!=false){
 			if($this->user->access=='' && $this->user->level==0 && $segment2==''){
 				$data['access'] = false;
@@ -1758,7 +1758,10 @@ class Staff extends CI_Controller {
 							$sDoc = str_replace($_POST['fname'].'|', '', $data['row']->supDocs);
 							$this->staffM->updateQuery('staffLeaves', array('leaveID'=>$data['row']->leaveID), array('supDocs'=>$sDoc));
 							exit;
-						}						
+						}else if($_POST['submitType']=='hrAdditionalRemarks'){
+							$this->staffM->updateConcat('staffLeaves', 'leaveID="'.$segment2.'"', 'hrAddRemarks', $this->user->username.' '.date('Y-m-d h:i a').'>>'.$_POST['remarks'].'||');
+							exit;
+						}					
 						
 						$addnote = ' Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to view leave details.';
 							

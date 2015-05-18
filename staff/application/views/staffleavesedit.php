@@ -282,12 +282,10 @@
 	}
 	
 if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
-?>		
-	
-	<tr><td colspan=2><br/></td></tr>
-	
+?>	
+	<tr><td colspan=2><br/></td></tr>	
 	<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Department</h3></td></tr>
-<?php if($row->dateApproved=='0000-00-00' && ($row->iscancelled==0 || $row->iscancelled==4)){ 
+<?php if($row->dateApproved=='0000-00-00' && ($row->iscancelled==0 || $row->iscancelled==4)){
 		echo '<tr><td colspan=2>Pending Supervisor\'s Approval</td></tr>';
 	}else if($row->hrdateapproved!='0000-00-00'){
 		$hrName = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->hrapprover.'"');
@@ -388,6 +386,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			<input type="hidden" name="oldstatus" id="oldstatus" value="<?= $row->status ?>"/>
 			<input type="hidden" name="submitType" value="hr"/>
 			<input type="submit" value="Submit" <?= $disabled ?>/>
+			&nbsp;&nbsp;<input type="button" id="saveHRRemarks" value="Save remark" <?= $disabled ?>/>
 		</td>
 	</tr>
 	</form>
@@ -397,6 +396,19 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	<tr><td colspan=2><br/></td></tr>
 
 <?php } 
+
+	if(!empty($row->hrAddRemarks)){
+		echo '<tr bgcolor="#eee"><td colspan=2><h3>HR Additional Remarks</h3></td></tr>';
+		
+		$ramsey = array_reverse(explode('||', $row->hrAddRemarks));		
+		foreach($ramsey AS $r){
+			$ram2 = explode('>>', $r);
+			if(isset($ram2[0]) && isset($ram2[1]))
+				echo '<tr><td>'.$ram2[0].'</td><td>'.$ram2[1].'</td></tr>';
+		}
+		echo '<tr><td colspan=2><br/></td></tr>';
+	}
+
 	if(!empty($row->addInfo)){
 		echo '<tr bgcolor="#eee"><td colspan=2><h3>Additional Information Required</h3></td></tr>';
 		echo '<tr><td colspan=2>'.$row->addInfo.'</td></tr>';
@@ -543,6 +555,21 @@ echo '</table>';
 		
 		$('#addEmailBox').click(function(){
 			$('<input type="text" class="forminput toEmail" value=""/><br/>').insertBefore('#addEmailBox');
+		});
+		
+		//HR additional remarks
+		$('#saveHRRemarks').click(function(){
+			var rem = $('#hrremarks').val();
+			if(rem!=''){
+				$(this).attr('disabled','disabled');
+				$('<?= '<img src="'.$this->config->base_url().'css/images/small_loading.gif" style="width:20px;"/>' ?>').insertAfter(this);
+				$.post('<?= $this->config->item('career_uri') ?>', {submitType:'hrAdditionalRemarks', remarks:rem},
+				function(){
+					location.reload();
+				});
+			}else{
+				alert('Remarks is empty.');
+			}
 		});
 		
 	});
