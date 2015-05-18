@@ -37,13 +37,14 @@ if(empty($username) && !isset($_SESSION['u'])){
 				</tr>
 			<?php					
 				$query = $db->selectQueryArray('
-					SELECT applicants.id, CONCAT(fname, " ",lname ) AS name, mnumber, email, applicants.date_created, process, processStat, processType, title
+					SELECT applicants.id, CONCAT(fname, " ",lname ) AS name, mnumber, email, applicants.date_created, process, processStat, processType, title, processText
 					FROM applicants
 					LEFT JOIN recruitmentProcess ON processID = process
 					LEFT JOIN newPositions ON position = posID
 					WHERE 
 					isNew = 1
 					AND title = "'.$position.'"
+					ORDER BY date_created DESC
 				');
 				if(count($query)>0){
 					foreach($query AS $q){
@@ -52,12 +53,14 @@ if(empty($username) && !isset($_SESSION['u'])){
 								<td><a href="http://careerph.tatepublishing.net/view_info.php?id='.$q['id'].'">'.$q['name'].'</a></td>
 								<td>'.$q['mnumber'].'</td>
 								<td>'.$q['email'].'</td>';
-							if($q['process']==6 AND $q['processStat']==0){
-								echo '<td bgcolor="#E0EEE0">'.$q['processType'].'</td>';
-							}else{
-								echo '<td>'.$q['processType'].'</td>';
-							}
-						
+											
+							if($q['process']==6 AND $q['processStat']==0)
+								echo '<td bgcolor="#8dc284" style="color:red; font-weight:bold;">'.$q['processType'].'</td>';
+							else if(!empty($q['processText']) && $q['processText']!='Reprofiled')
+								echo '<td bgcolor="#5d5d5d">'.$q['processText'].'</td>';
+							else
+								echo '<td>'.$q['processType'].'</td>';								
+											
 						echo '</tr>';
 					}
 				}else{
