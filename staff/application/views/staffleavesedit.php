@@ -182,7 +182,7 @@
 	if($row->empStatus=='regular'){
 		echo '<tr><td>Current Leave Credits</td><td>'.$row->leaveCredits.'</td></tr>';
 		if($leaveReset==true){
-			echo '<tr><td>Leave credits on '.date('F d, Y', strtotime($row->startDate)).'</td><td>'.($current).'</td></tr>';
+			echo '<tr><td>Leave credits on '.date('F d', strtotime($row->startDate)).', '.date('Y').'</td><td>'.($current).'</td></tr>';
 		}
 	}
 	
@@ -199,7 +199,7 @@
 		echo '<tr style="color:red;"><td colspan=2>No more available leave credits with pay for '.$row->fname.'. ';
 		
 		if($leaveReset==true)
-			echo 'But leave credits will reset on his/her anniversary date on '.date('F d, Y', strtotime($row->startDate)).'.';
+			echo 'But leave credits will reset on his/her anniversary date on '.date('F d', strtotime($row->startDate)).', '.date('Y').'.';
 		else
 			echo 'You can either <b>"approve without pay"</b> or <b>"disapprove"</b> and let him/her file for an offset.';
 		
