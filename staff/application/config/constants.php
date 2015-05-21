@@ -45,6 +45,6 @@ define('UPLOAD_DIR', 'uploads/staffs/');
 define('UPLOADS', 'uploads/');
 define('PDFTEMPLATES_DIR', 'includes/pdftemplates/');
 
-define('AWSACCESSKEY', 'AKIAIIF24NOON4SDDHSA');
-define('AWSSECRETKEY', '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');
+define('AWSACCESSKEY', 'AKIAI5XRFZB64XKNAMFA');
+define('AWSSECRETKEY', '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');
 
