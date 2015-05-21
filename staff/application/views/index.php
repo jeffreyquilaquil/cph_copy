@@ -12,7 +12,7 @@
 			<button id="ccreate" class="hidden" onClick="insertUpdate('announcement');">Create</button><button id="cupdate" onClick="insertUpdate('updateAnn');" class="hidden">Update</button>&nbsp;&nbsp;<button id="ccancel">Cancel</button>
 		</div>	
 		
-	<?php }else{
+	<?php }else{		
 		echo $announcement;
 	} ?>
 	</div>

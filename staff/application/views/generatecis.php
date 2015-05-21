@@ -92,8 +92,8 @@ if($updated==false && count($row)>0){
 		<td>Select new basic salary</td>
 	</tr>
 	<tr class="trsalary hidden">
-		<td width="40%">Php <?= number_format(str_replace(',','',$row->sal),2) ?></td>
-		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldname) && $wonka->fieldname=='sal')?$wonka->fieldvalue:'')?>"/></td>
+		<td width="40%">Php <?= $this->txtM->convertNumFormat($this->txtM->decryptText($row->sal)) ?></td>
+		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldname) && $wonka->fieldname=='sal')?$this->staffM->convertNumFormat($this->txtM->decryptText($wonka->fieldvalue)):'')?>"/></td>
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Enter justification (<i>this is required</i>)</td>

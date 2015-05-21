@@ -14,8 +14,9 @@ class Staff extends CI_Controller {
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
 						
-		error_reporting(E_ALL);
-		ini_set('display_errors', 1);
+		/* error_reporting(E_ALL);
+		ini_set('display_errors', 1); */
+		
 	}
 		
 	public function index(){
@@ -354,10 +355,8 @@ class Staff extends CI_Controller {
 											$o = $orig['levelName'];
 										}else if($k=='terminationType' || ($k=='taxstatus' && $orig[$k]!='')){
 											$o = $this->staffM->infoTextVal($k, $orig[$k]);
-										}else if($k=='bankAccnt' || $k=='hmoNumber'){
-											$o = $this->staffM->decryptText($orig[$k]);
 										}else{
-											$o = $orig[$k];
+											$o = $this->txtM->convertDecryptedText($k, $orig[$k]);
 											if($o=='') $o = 'none';
 										}
 										
@@ -380,8 +379,12 @@ class Staff extends CI_Controller {
 								if(isset($_POST['endDate']) && $_POST['endDate']!='') $_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
 								if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
 								if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
-								if(isset($_POST['bankAccnt'])) $_POST['bankAccnt'] = $this->staffM->encryptText($_POST['bankAccnt']);
-								if(isset($_POST['hmoNumber'])) $_POST['hmoNumber'] = $this->staffM->encryptText($_POST['hmoNumber']);
+								
+								$encArr = $this->config->item('encText');
+								foreach($encArr AS $en){
+									if(isset($_POST[$en])) 
+										$_POST[$en] = $this->txtM->encryptText($_POST[$en]);
+								}
 								
 								$this->staffM->updateQuery('staffs', array('empID'=>$empID), $_POST);
 								
@@ -453,8 +456,8 @@ class Staff extends CI_Controller {
 										$o = $orig['supName'];
 									}else if($k=='levelID_fk'){
 										$o = $orig['levelName'];
-									}else if($k=='bankAccnt' || $k=='hmoNumber'){
-										$o = $this->staffM->decryptText($orig[$k]);
+									}else if(in_array($k, $this->config->item('encText'))){
+										$o = $this->txtM->decryptText($orig[$k]);
 									}else if($k=='staffHolidaySched'){
 										$schedLoc = $this->config->item($k);
 										$o = $schedLoc[$orig[$k]];
@@ -653,13 +656,13 @@ class Staff extends CI_Controller {
 					}						
 					exit;
 				}else if($_POST['submitType']=='addnote'){								
-					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('notes'=>$note.'<i>'.$_POST['notes'].'</i>'));
+					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('notes'=>'['.date('Y-m-d H:i:s').'] '.$this->user->username.': <i>'.$_POST['notes'].'</i>'));
 					$data['success'] = true;
 				}else if($_POST['submitType']=='disapprove'){
-					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>2,'notes'=>$note.'request disapproved <br/><i>'.$_POST['notes'].'</i>'));
+					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('status'=>2,'notes'=>'['.date('Y-m-d H:i:s').'] '.$this->user->username.': request disapproved <br/><i>'.$_POST['notes'].'</i>'));
 					$data['success'] = true;
 					
-					$ntext = $this->user->name.' disapproved your personal details update request: '.$this->config->item('txt_'.$_POST['fieldN']).' - '.$_POST['fieldV'].'<br/>Reason: '.$_POST['notes'];
+					$ntext = $this->user->name.' disapproved your personal details update request: '.$this->config->item('txt_'.$_POST['fieldN']).' - '.$this->txtM->convertDecryptedText($_POST['fieldN'], $_POST['fieldV']).'<br/>Reason: '.$_POST['notes'];
 					$this->staffM->addMyNotif($_POST['empID_fk'], $ntext, 0, 1);
 				}else if($_POST['submitType']=='sendEmail' || $_POST['submitType']=='sendEmailClose'){
 					$this->staffM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['email'], $_POST['subject'], nl2br($_POST['message']), 'CAREERPH');
@@ -2046,7 +2049,7 @@ class Staff extends CI_Controller {
 				if(!empty($_POST['salary'])){
 					$updateArr['sal'] = $_POST['salary'];
 					$updatetext['salary'] = array(
-										'c' => $data['row']->sal,
+										'c' => $this->txtM->decryptText($data['row']->sal),
 										'n' => $_POST['salary'],
 										'com' => $_POST['justification']
 									);
@@ -2093,7 +2096,8 @@ class Staff extends CI_Controller {
 				}else{
 					$this->staffM->addMyNotif($this->user->empID, 'Generated CIS for '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'cispdf/'.$insid.'/" class="iframe">here</a> to view file.', 5);
 				}
-				header('Location:'.$this->config->base_url().'cispdf/'.$insid.'/');				
+				header('Location:'.$this->config->base_url().'cispdf/'.$insid.'/');	
+				echo '<script> parent.$.fn.colorbox.close(); </script>';
 				exit;
 			}
 			
@@ -2133,7 +2137,11 @@ class Staff extends CI_Controller {
 											
 						if(isset($changes->position)){
 							$changes->levelID_fk = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');			
-						}						
+						}
+						
+						if(isset($changes->sal))
+							$changes->sal = $this->txtM->encryptText($changes->sal);
+												
 						$this->staffM->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), $changes);
 						
 						if(isset($changes->supervisor)){
@@ -2374,12 +2382,9 @@ class Staff extends CI_Controller {
 	
 	public function testpage(){
 		$data['content'] = 'test';	
-		if(isset($_POST) && !empty($_POST)){
-			$this->staffM->updateQuery('staffs', array('empID'=>$_POST['id']), array('hmoNumber'=>$this->staffM->encryptText($_POST['v'])));
-			exit;
-		}
 		
-		$data['staffs'] = $this->staffM->getQueryResults('staffs', '*', 1, '', 'lname ASC');
+		//$data['query1'] = $this->staffM->getQueryResults('staffs', 'empID, sss, sal, hdmf, philhealth, tin, hdmf, encrypHaha', 'encrypHaha=0');
+		$data['query2'] = $this->staffM->getQueryResults('staffs', 'empID, bankAccnt, hmoNumber');
 		
 		$this->load->view('includes/templatenone', $data);	
 	}
@@ -2491,7 +2496,9 @@ class Staff extends CI_Controller {
 				
 	public function notes(){
 		$data['content'] = 'notes';
-		$empID = $this->uri->segment(2);
+		$data['myID'] = $this->user->empID;
+		$data['empID'] = $this->uri->segment(2);
+		$empID = $data['empID'];
 		$username = $this->staffM->getSingleField('staffs', 'username', 'empID="'.$empID.'"');
 				
 		$data['myNotes'] = $this->staffM->mergeMyNotes($empID, $username);		

@@ -218,6 +218,8 @@
 				4 => 'Done'
 			);
 			
+	$config['encText'] = array('bankAccnt', 'hmoNumber', 'sss', 'tin', 'philhealth', 'hdmf', 'sal');
+			
 	
 	
 ?>

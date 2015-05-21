@@ -72,7 +72,7 @@
 			echo '<tr>
 					<td>'.$this->config->item('txt_'.$u->fieldname).'</td>';
 				echo '<td>'.$this->staffM->infoTextVal($u->fieldname, $u->fieldvalue).'</td>';
-				echo '<td>'.date('d M Y H:i',strtotime($u->timestamp)).'</td>
+				echo '<td>'.date('d M Y H:i',strtotime($u->daterequested)).'</td>
 					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$u->fieldname.'\', \''.$u->fieldvalue.'\')"></td>
 				</tr>';
 		} 
@@ -227,8 +227,8 @@
 ?>			
 	<table class="tableInfo hidden" id="compensationtblData">
 	<?php	
-		echo $this->staffM->displayInfo('cdetails', 'sal', $this->staffM->convertNumFormat($row->sal), true, 'Ex. 10,000.00');
-		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->staffM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
+		echo $this->staffM->displayInfo('cdetails', 'sal', $row->sal, true, 'Ex. 10,000.00');
+		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->txtM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
 		
 		if($this->access->accessFullHRFinance==true || $current=='myinfo'){
 			echo $this->staffM->displayInfo('cdetails', 'taxstatus', $row->taxstatus, true);	

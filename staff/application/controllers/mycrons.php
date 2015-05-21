@@ -5,6 +5,7 @@ class MyCrons extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Textdefinemodel', 'txtM');	
 		$this->db = $this->load->database('default', TRUE);	
 		date_default_timezone_set("Asia/Manila");	
 	} 
@@ -171,9 +172,13 @@ class MyCrons extends CI_Controller {
 		foreach($query AS $q):	
 			$chtext = '';
 			$changes = json_decode($q->dbchanges);
-			if(isset($changes->position)){
+			if(isset($changes->title)) 
+				unset($changes->title);
+			if(isset($changes->position))
 				$changes->levelID_fk = $this->staffM->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
-			}			
+			if(isset($changes->sal))
+				$changes->sal = $this->txtM->encryptText($changes->sal);
+			
 			$this->staffM->updateQuery('staffs', array('empID'=>$q->empID_fk), $changes);	
 			
 			if(isset($changes->supervisor)){

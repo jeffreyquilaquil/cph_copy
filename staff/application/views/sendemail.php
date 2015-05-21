@@ -46,7 +46,7 @@
 	<tr>
 		<td><br/></td>
 		<td>
-			<input type="submit" value="Send Email"/>
+			<input type="submit" value="Send Email" class="btnclass"/>
 		</td>
 	</tr>
 </form>

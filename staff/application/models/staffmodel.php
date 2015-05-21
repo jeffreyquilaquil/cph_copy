@@ -9,6 +9,7 @@ class Staffmodel extends CI_Model {
         // Call the Model constructor
         parent::__construct();
 		
+		$this->load->model('Textdefinemodel', 'txtM');	
 		$this->db = $this->load->database('default', TRUE);
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
     }
@@ -203,14 +204,17 @@ class Staffmodel extends CI_Model {
 	function compareResults($new, $orig){
 		unset($new['empID']);
 		unset($new['submitType']);
+		$encArr = $this->config->item('encText');
 		$updated = array();
 		if(count($orig)>0){			
 			foreach($new AS $k=>$v):
 				if($k=='bdate' || $k=='startDate' || $k=='endDate' || $k=='accessEndDate' || $k=='regDate'){
 					if($v=='') $v = '0000-00-00';
 					else $v = date('Y-m-d', strtotime($v));
-				}else if($k=='bankAccnt' || $k=='hmoNumber'){
-					$v = $this->staffM->encryptText($v);
+				}else if(in_array($k, $encArr)){
+					if($k=='sal') $v = str_replace(',','', str_replace('.00','', $v));
+					
+					$v = $this->txtM->encryptText($v);
 				}
 				
 				if($v != $orig[$k])
@@ -568,8 +572,8 @@ class Staffmodel extends CI_Model {
 		}
 		if(isset($changes->salary)){
 			$cval[$cnum][0] = 'Change in Basic Salary';
-			$cval[$cnum][1] = 'Php '.$this->staffM->convertNumFormat($changes->salary->c);
-			$cval[$cnum][2] = 'Php '.$this->staffM->convertNumFormat($changes->salary->n);
+			$cval[$cnum][1] = 'Php '.$this->txtM->convertNumFormat($changes->salary->c);
+			$cval[$cnum][2] = 'Php '.$this->txtM->convertNumFormat($changes->salary->n);
 			$cnum++;
 			
 			$cval[$cnum][0] = 'Justification for salary adjustment:';
@@ -875,7 +879,7 @@ class Staffmodel extends CI_Model {
 					$cnt++;
 				}
 				if(isset($c->salary)){
-					$arr[$cnt][0] = 'Basic Salary'; $arr[$cnt][1] = 'Php '.$this->staffM->convertNumFormat($c->salary->c); $arr[$cnt][2] = 'Php '.$this->staffM->convertNumFormat($c->salary->n);
+					$arr[$cnt][0] = 'Basic Salary'; $arr[$cnt][1] = 'Php '.$this->txtM->convertNumFormat($c->salary->c); $arr[$cnt][2] = 'Php '.$this->txtM->convertNumFormat($c->salary->n);
 					$arr[$cnt][3] = $c->salary->com;
 					$cnt++;	
 				}
@@ -939,15 +943,15 @@ class Staffmodel extends CI_Model {
 		$pdf->setXY(95, 109);
 		$pdf->Write(0, $row->title);
 		
-		$sal = (double)str_replace(',','',$row->salary);
+		$sal = (double)str_replace(',','',$this->txtM->decryptText($row->salary));
 		$allowance = (double)str_replace(',','',$row->allowance);
 		
 		$pdf->setXY(125, 127);
-		$pdf->Write(0, $this->staffM->convertNumFormat(($sal*12)));
+		$pdf->Write(0, $this->txtM->convertNumFormat(($sal*12)));
 		$pdf->setXY(127, 137);
-		$pdf->Write(0, $this->staffM->convertNumFormat(($allowance*12)) );
+		$pdf->Write(0, $this->txtM->convertNumFormat(($allowance*12)) );
 		$pdf->setXY(125, 155);
-		$pdf->Write(0, $this->staffM->convertNumFormat((($sal*12)+($allowance*12))));
+		$pdf->Write(0, $this->txtM->convertNumFormat((($sal*12)+($allowance*12))));
 		
 		$pdf->SetFont('Arial','B',12);
 		$pdf->setXY(10, 177);
@@ -1078,12 +1082,10 @@ class Staffmodel extends CI_Model {
 						}						
 						$disp .= '</select>';
 					}else{
-						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.(($fld=='bankAccnt' || $fld=='hmoNumber')?$this->staffM->decryptText($v):$v).'" id="'.$fld.'">';
+						$disp .= '<input type="text" class="forminput '.$c.'input hidden '.$aclass.'" placeholder="'.$placeholder.'" value="'.$this->txtM->convertDecryptedText($fld, $v, 1).'" id="'.$fld.'">';
 					}	
-					$disp .= '<span class="'.$c.'fld">';					
-						if($fld=='sal' || $fld=='allowance') $disp .= 'Php '.$vvalue;
-						else if($fld=='bankAccnt' || $fld=='hmoNumber') $disp .= $this->staffM->decryptText($vvalue);
-						else $disp .= $vvalue;	
+					$disp .= '<span class="'.$c.'fld">';						
+						$disp .= $this->txtM->convertDecryptedText($fld, $vvalue);
 					$disp .= '</span>';
 				}else{
 					if($fld=='staffHolidaySched'){
@@ -1142,40 +1144,7 @@ class Staffmodel extends CI_Model {
 		
 		return $notesArr;		
 	}  
-	
-	public function convertNumFormat($n){
-		return number_format((int)str_replace(',','',$n),2);
-	}
-	
-	function encryptText($text){		
-		$output = false;
-
-		$encrypt_method = "AES-256-CBC";
-		$secret_key = $this->config->item('demnCryptKey');
-		$secret_iv = $this->config->item('demnCryptIV');
-
-		$key = hash('sha256', $secret_key);		
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		$output = openssl_encrypt($text, $encrypt_method, $key, 0, $iv);
-		$output = base64_encode($output);		
-
-		return $output;		
-    }
-	
-	function decryptText($text){		
-		$output = false;
-
-		$encrypt_method = "AES-256-CBC";
-		$secret_key = $this->config->item('demnCryptKey');
-		$secret_iv = $this->config->item('demnCryptIV');
-
-		$key = hash('sha256', $secret_key);		
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		$output = openssl_decrypt(base64_decode($text), $encrypt_method, $key, 0, $iv);	
-
-		return $output;		
-    }
-	
+		
 	function infoTextVal($type, $tval){
 		$was = '';
 		
@@ -1188,15 +1157,11 @@ class Staffmodel extends CI_Model {
 		else if($type=='terminationType' || ( $type=='taxstatus' && !empty($tval))){
 			$tarr = $this->config->item($type); 
 			$was = $tarr[$tval];
-		}else if($type=='sal' || $type=='allowance')
-			$was = 'Php '.$tval;
-		else if($type=='staffHolidaySched'){
+		}else if($type=='staffHolidaySched'){
 			$schedLoc = $this->config->item('staffHolidaySched');
 			$was = $schedLoc[$tval];
-		}else if($type=='bankAccnt' || $type=='hmoNumber') 
-			$was = $this->staffM->decryptText($tval);
-		else 
-			$was = $tval;
+		}else 
+			$was = $this->txtM->convertDecryptedText($type, $tval);
 			
 		if($was=='')
 			$was = '<i>none</i>';
@@ -1558,6 +1523,35 @@ class Staffmodel extends CI_Model {
 		}
 		return $stat;	
 	}
+	
+	function encryptText($text){		
+		$output = false;
+
+		$encrypt_method = "AES-256-CBC";
+		$secret_key = $this->config->item('demnCryptKey');
+		$secret_iv = $this->config->item('demnCryptIV');
+
+		$key = hash('sha256', $secret_key);		
+		$iv = substr(hash('sha256', $secret_iv), 0, 16);
+		$output = openssl_encrypt($text, $encrypt_method, $key, 0, $iv);
+		$output = base64_encode($output);		
+
+		return $output;		
+    }
+	
+	function decryptText($text){		
+		$output = false;
+
+		$encrypt_method = "AES-256-CBC";
+		$secret_key = $this->config->item('demnCryptKey');
+		$secret_iv = $this->config->item('demnCryptIV');
+
+		$key = hash('sha256', $secret_key);		
+		$iv = substr(hash('sha256', $secret_iv), 0, 16);
+		$output = openssl_decrypt(base64_decode($text), $encrypt_method, $key, 0, $iv);	
+
+		return $output;		
+    }
 	
 	
 	

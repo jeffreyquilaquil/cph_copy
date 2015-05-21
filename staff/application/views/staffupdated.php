@@ -29,16 +29,12 @@ if($edit==''){
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$r->username.'/">'.$r->fname.' '.$r->lname.'</a></td>
 					<td>'.$this->config->item('txt_'.$r->fieldname).'</td>
 					<td>';
-						if($f=='sal' || $f=='allowance')
-							echo 'Php '.$r->$f;
-						else if($f=='bankAccnt' || $f=='hmoNumber')
-							echo $this->staffM->decryptText($r->$f);
-						else if($f=='levelID_fk')
+						if($f=='levelID_fk')
 							echo $r->levelName;
 						else if($f=='terminationType' || $f=='taxstatus')
 							echo $this->staffM->infoTextVal($f, $r->$f);
 						else
-							echo $r->$f;
+							echo $this->txtM->convertDecryptedText($f, $r->$f);
 						
 					echo '</td>
 					<td style="color:red;">'.$this->staffM->infoTextVal($r->fieldname, $r->fieldvalue).'</td>';
