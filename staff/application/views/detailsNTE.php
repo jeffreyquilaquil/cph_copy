@@ -69,7 +69,7 @@
 	<?php
 	if($row->responsedate!='0000-00-00 00:00:00'){
 		echo '<tr><td>Date Responded</td><td>'.date('F d, Y', strtotime($row->responsedate)).'</td></tr>';
-		echo '<tr><td>Response</td><td>'.((!empty($row->response))?nl2br($row->response):'None').'</td></tr>';		
+		echo '<tr><td>Response</td><td>'.((!empty($row->response))?nl2br(stripslashes($row->response)):'None').'</td></tr>';		
 	}else if($row->carissuer==0){
 		echo '<tr>
 				<td>Response</td>
@@ -215,7 +215,7 @@
 				</tr>';
 			echo '<tr class="trsatisfactory hidden">
 					<td class="formlabel">Response</td>
-					<td><textarea name="response" id="response" class="forminput" rows=8>'.$row->response.'</textarea></td>
+					<td><textarea name="response" id="response" class="forminput" rows=8>'.stripslashes($row->response).'</textarea></td>
 				</tr>';
 		}
 		
