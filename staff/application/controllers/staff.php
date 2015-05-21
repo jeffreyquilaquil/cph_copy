@@ -2383,8 +2383,8 @@ class Staff extends CI_Controller {
 	public function testpage(){
 		$data['content'] = 'test';	
 		
-		//$data['query1'] = $this->staffM->getQueryResults('staffs', 'empID, sss, sal, hdmf, philhealth, tin, hdmf, encrypHaha', 'encrypHaha=0');
-		$data['query2'] = $this->staffM->getQueryResults('staffs', 'empID, bankAccnt, hmoNumber');
+		/* $data['query1'] = $this->staffM->getQueryResults('staffs', 'empID, sss, sal, hdmf, philhealth, tin, hdmf');
+		$data['query2'] = $this->staffM->getQueryResults('staffs', 'empID, bankAccnt, hmoNumber'); */
 		
 		$this->load->view('includes/templatenone', $data);	
 	}
