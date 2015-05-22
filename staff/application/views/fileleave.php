@@ -68,7 +68,11 @@ if($segment2=='offset'){
 				
 				echo '<form class="leaveForm" action="" method="POST" onSubmit="return validateForm();" enctype="multipart/form-data">';
 				if($segment2=='offset'){ ?>
-					<tr class="hidden"><td colspan="2"><input type="hidden" name="submitType" value="offset"/></td></tr>
+					<tr class="hidden"><td colspan="2">
+						<input type="hidden" name="code" value="4"/>
+						<input type="hidden" name="leaveType" value="4"/>
+						<input type="hidden" name="submitType" value="offset"/>
+					</td></tr>
 					<tr>
 						<td width="30%">Please specify reason of absence</td>
 						<td><input type="text" id="reason" name="reason" class="forminput" maxlength="150" value="<?= ((isset($_POST['reason']))?$_POST['reason']:'') ?>" placeholder="Note that the approval of this leave request may depend on the reason provided"/></td>
