@@ -44,6 +44,22 @@ if(isset($_POST) && !empty($_POST)){
 		for($i=1; $i< $_POST['num']; $i++ )
 			$db->insertQuery('jobReqData', $_POST);  
 	}
+	
+	//send autoemail to HR
+	$from = 'careers.cebu@tatepublishing.net';
+	$to = 'hr.cebu@tatepublishing.net';
+	$posName = $db->selectSingleQuery("newPositions", "title", "posID='".$_POST['positionID']."'");
+	$subject = 'REQUISITION #'.$iID.' IS SUBMITTED BY '.$_POST['requestor'].' FOR THE POSITION OF '.strtoupper($posName);
+	
+	$body = '<p>This email notification is sent to <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> for the purpose of creating a ticket monitoring the work of recruitment staff on the subject requisition number. With this, all requisitions submitted shall have a corresponding ticket in HR helpdesk. This ticket shall be resolved as soon as the requisition is closed.</p>';
+	$body .= '<p>Notes to this ticket are not necessary until resolution as all applicant history shall be recorded in applicants\' profiles in careerph.</p>';
+	$body .= '<p>Thank you very much team.</p>';
+	$body .= '<p>Dear HR team (recruitment),</p>';
+	$body .= '<p>Fyi...</p>';
+	$body .= '<p><br/></p>';
+	$body .= '<p>CareerPH</p>';
+	
+	sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject, $body, 'CareerPH');
 	$added = true;
 }
 
