@@ -2344,6 +2344,10 @@ class Staff extends CI_Controller {
 							Subject: '.$subject.'<br/>
 							'.$message;
 				$this->staffM->addMyNotif($this->user->empID, $ntexts, 5);
+				//search if staff exist then add notification
+				$staffID = $this->staffM->getSingleField('staffs', 'empID', 'email="'.$to.'"');
+				if(!empty($staffID)) 
+					$this->staffM->addMyNotif($staffID, $ntexts, 0, 1, $this->user->empID);
 								
 				$data['sent'] = true;
 			}else{			
