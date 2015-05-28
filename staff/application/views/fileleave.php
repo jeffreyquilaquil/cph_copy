@@ -23,7 +23,7 @@ if($segment2=='offset'){
 	endforeach;
 	
 	if($num>=16){
-		echo '<p class="errortext">You have already requested for '.$num.' hours of offset for the month of '.date('F').', you may not file any more offset request for additional absences in '.date('F').'.</p>';
+		echo '<p><b>Note:</b> <i>You have already requested for '.$num.' hours of offset for the month of '.date('F').', you may not file any more offset request for additional absences in '.date('F').'.</i></p>';
 	}
 	
 }else{
@@ -38,7 +38,7 @@ if($segment2=='offset'){
 	}else{	
 		if(!empty($errortxt)) echo '<p class="errortext"><b>Please check your inputted values:</b><br/>'.$errortxt.'</p><hr/>';
 		
-		if($segment2=='leave' || ($segment2=='offset' && $num<16)){
+		//if($segment2=='leave' || ($segment2=='offset' && $num<16)){
 			echo '<table class="tableInfo">';
 			
 			$signature = UPLOAD_DIR.$this->user->username.'/signature.png';
@@ -232,7 +232,7 @@ if($segment2=='offset'){
 			
 			
 			echo '</table>';
-		}
+		//}
 	}	
 	
 } //end of segment2 offset or leave

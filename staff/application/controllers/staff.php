@@ -1432,12 +1432,14 @@ class Staff extends CI_Controller {
 							$offdatecheck = false;						
 					}
 					
+					$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m', strtotime($_POST['leaveStart'])).'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
+					
 					$tambal = 0;
 					foreach($data['numOffset'] AS $noffset):
 						$tambal += $noffset->totalHours;
 					endforeach;
 					
-					if(($tambal+$cnthrs)>16) $data['errortxt'] .= 'You cannot file offset leave more than 16 hours in a month.<br/>';
+					if(($tambal+$_POST['totalHours'])>16) $data['errortxt'] .= 'You cannot file offset leave more than 16 hours in a month.<br/>';
 					
 					if($offdatecheck==false) $data['errortxt'] .= 'Check your schedule of work to compensate<br/>';
 					if(empty($offdates)) $data['errortxt'] .= 'Schedule of work to compensate absence is empty<br/>';
