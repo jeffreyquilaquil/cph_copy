@@ -151,7 +151,7 @@ if(isset($_POST) AND !empty($_POST)){
 					Hiring Manager - Please inform IT which computer will be assigned and welcome employee on his first day.<br/>
 					IT - Please coordinate with hiring manager regarding IT preparations, email address and PT account.";
 					
-				if($_POST['office']=='cebu') $body .= 'Click <a href="http://careerph.tatepublishing.net/staff/itchecklist/newhirestatus/">here</a> to view IT checklist.';
+				if($_POST['office']=='cebu') $body .= 'Click <a href="'.HOME_URL.'staff/itchecklist/newhirestatus/">here</a> to view IT checklist.';
 						
 		$body .= "<br/><br/>					
 					Thanks!

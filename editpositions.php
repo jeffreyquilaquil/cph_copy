@@ -4,7 +4,7 @@
 	date_default_timezone_set("Asia/Manila");
 		
 	if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
-		echo '<script>window.parent.location = "http://careerph.tatepublishing.net/login.php";</script>';
+		echo '<script>window.parent.location = "'.HOME_URL.'login.php";</script>';
 		exit();
 	} 	
 	

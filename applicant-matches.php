@@ -50,7 +50,7 @@ if(empty($username) && !isset($_SESSION['u'])){
 					foreach($query AS $q){
 						echo '<tr>
 								<td>'.date('m/d/Y h:s', strtotime($q['date_created'])).'</td>
-								<td><a href="http://careerph.tatepublishing.net/view_info.php?id='.$q['id'].'">'.$q['name'].'</a></td>
+								<td><a href="'.HOME_URL.'view_info.php?id='.$q['id'].'">'.$q['name'].'</a></td>
 								<td>'.$q['mnumber'].'</td>
 								<td>'.$q['email'].'</td>';
 											

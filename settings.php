@@ -15,7 +15,7 @@ if(isset($_POST) && !empty($_POST)){
 		$db->insertQuery('pt_users', array('username'=>$_POST['addusername'], 'level'=>$_POST['level'], 'pt_username'=>$_SESSION['u']));
 		echo '<script>
 			alert("PT User has been added");
-			window.location.href="http://careerph.tatepublishing.net/settings.php";
+			window.location.href="'.HOME_URL.'settings.php";
 		</script>';
 	}
 	
@@ -24,7 +24,7 @@ if(isset($_POST) && !empty($_POST)){
 			$db->insertQuery('applicantSkills', array('skillName'=>$_POST['skillName']));
 			echo '<script>
 				alert("Skill \"'.$_POST['skillName'].'\" has been added.");
-				window.location.href="http://careerph.tatepublishing.net/settings.php?current=tab-3";
+				window.location.href="'.HOME_URL.'settings.php?current=tab-3";
 			</script>';
 		}
 	}
@@ -239,7 +239,7 @@ function funcdelete(id, name){
 		$.post("settings.php?remove="+id,
 			function(data){ 
 				alert(data);
-				window.location.href="http://careerph.tatepublishing.net/settings.php";
+				window.location.href="<?= HOME_URL.'settings.php' ?>";
 			}
 		);
 	}

@@ -5,7 +5,7 @@
 	setlocale(LC_MONETARY, 'en_US');
 		
 	if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
-		echo '<script>window.parent.location = "http://careerph.tatepublishing.net/login.php";</script>';
+		echo '<script>window.parent.location = "'.HOME_URL.'login.php";</script>';
 		exit();
 	} 
 	
@@ -547,7 +547,7 @@
 										
 										$filename = 'uploads/joboffers/JobOffer'.$g['joID'].'.pdf';
 										if(file_exists($filename))
-											echo '<td><a href="http://careerph.tatepublishing.net/'.$filename.'" target="_blank"><img src="img/attach_file.png"></a></td>';
+											echo '<td><a href="'.HOME_URL.$filename.'" target="_blank"><img src="img/attach_file.png"></a></td>';
 										else
 											echo '<td><br/></td>';
 										

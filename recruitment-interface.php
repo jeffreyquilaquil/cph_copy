@@ -39,7 +39,7 @@ require "includes/header.php";
 					else echo '<tr>';				
 					if($info['status']==1) echo '<tr style="background-color:#E0EEE0;">';
 					
-					echo '	<td><a class="iframe" href="http://careerph.tatepublishing.net/req-info.php?id='.$info['jobReqID'].'&no=head">'.$info['jobReqID'].'<a></td>
+					echo '	<td><a class="iframe" href="'.HOME_URL.'req-info.php?id='.$info['jobReqID'].'&no=head">'.$info['jobReqID'].'<a></td>
 							<td>'.date('m/d/Y h:s', strtotime($info['dateSubmitted'])).'</td>
 							<td>'.$info['requestor'].'</td>
 							<td>'.ucfirst($info['requestType']).'</td>
@@ -91,7 +91,7 @@ require "includes/header.php";
 				foreach($closedReq AS $c){
 					if($ccnt%2==0) echo '<tr bgcolor="#dcdcdc">';
 					else echo '<tr>';	
-					echo '<td><a class="iframe" href="http://careerph.tatepublishing.net/req-info.php?id='.$c['jobReqID'].'&no=head">'.$c['jobReqID'].'<a></td>
+					echo '<td><a class="iframe" href="'.HOME_URL.'req-info.php?id='.$c['jobReqID'].'&no=head">'.$c['jobReqID'].'<a></td>
 							<td>'.date('m/d/Y h:s', strtotime($c['dateSubmitted'])).'</td>
 							<td>'.$c['requestor'].'</td>
 							<td>'.$c['org'].'</td>
@@ -101,7 +101,7 @@ require "includes/header.php";
 							<td>'.$c['title'].'</td>
 							<td>'.$c['closedBy'].'</td>
 							<td>'.$c['dateClosed'].'</td>
-							<td><a href="http://careerph.tatepublishing.net/view_info.php?id='.$c['appID'].'" target="_blank">'.$c['name'].'</a></td>
+							<td><a href="'.HOME_URL.'view_info.php?id='.$c['appID'].'" target="_blank">'.$c['name'].'</a></td>
 						</tr>';
 					$ccnt++;
 				}
@@ -134,7 +134,7 @@ require "includes/header.php";
 				foreach($canceledReq AS $c){
 					if($cancnt%2==0) echo '<tr bgcolor="#dcdcdc">';
 					else echo '<tr>';	
-					echo '<td><a class="iframe" href="http://careerph.tatepublishing.net/req-info.php?id='.$c['jobReqID'].'&no=head">'.$c['jobReqID'].'<a></td>
+					echo '<td><a class="iframe" href="'.HOME_URL.'req-info.php?id='.$c['jobReqID'].'&no=head">'.$c['jobReqID'].'<a></td>
 							<td>'.date('m/d/Y h:s', strtotime($c['dateSubmitted'])).'</td>
 							<td>'.$c['requestor'].'</td>
 							<td>'.$c['title'].'</td>
