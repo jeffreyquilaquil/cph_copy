@@ -1372,12 +1372,12 @@ class Staff extends CI_Controller {
 			if($this->user->empStatus=='probationary' && $data['segment2']==''){
 				header('Location:'.$this->config->base_url().'fileleave/leave/');
 				exit;
-			}
+			} 
 			
 			if($data['segment2']=='offset'){
-				$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
+				$data['numOffset'] = $this->staffM->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
 			}else{
-				$data['numLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND iscancelled=0 AND status!=3');
+				$data['numLeaves'] = $this->staffM->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3');
 			}
 									
 			if(isset($_POST) && !empty($_POST)){			
