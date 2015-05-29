@@ -95,6 +95,9 @@
 <?php 
 	if(!empty($row->code)){
 		echo '<tr><td>Code Used</td><td>'.$row->code.'</td></tr>';
+		$vreason = $this->staffM->getSingleField('staffCodes', 'why', 'code="'.trim($row->code).'"');
+		if(!empty($vreason))
+			echo '<tr><td>Valid Reason for Code</td><td>'.$vreason.'</td></tr>';
 	}
 	if(!empty($row->notesforHR)){ ?>
 	<tr>

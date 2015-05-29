@@ -1465,7 +1465,7 @@ class Staff extends CI_Controller {
 					if(empty($_POST['leaveEnd'])) $data['errortxt'] .= 'End Date and Time of Absence is empty<br/>';
 					
 					if(isset($_POST['code']) && !empty($_POST['code'])){
-						$code = $this->staffM->getSingleInfo('staffCodes', 'codeID, generatedBy', 'code="'.$_POST['code'].'" AND usedBy=0 AND status=1');
+						$code = $this->staffM->getSingleInfo('staffCodes', 'codeID, generatedBy', 'code="'.$_POST['code'].'" AND usedBy=0 AND (forWhom=0 OR forWhom='.$this->user->empID.') AND status=1');
 						if(count($code)==0) $data['errortxt'] = 'Code is invalid or already used.<br/>';
 					}
 					
@@ -1479,14 +1479,14 @@ class Staff extends CI_Controller {
 							if($_POST['leaveType']==1){ //if vacation leave								
 								$vdate = date('F d, Y H:i', strtotime('+13 days'));
 								if(strtotime($_POST['leaveStart']) < strtotime($vdate) && (!isset($code) || (isset($code) && count($code)==0))){
-									$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter code to bypass this condition.<br/>';
+									$data['errortxt'] .= 'You cannot file vacation leave less than 2 weeks. Enter valid code to bypass this condition.<br/>';
 								}
 								if($_POST['totalHours']>40){
 									$data['errortxt'] .= 'The maximum number of days per leave application is five (5) days or forty (40) hours.';
 								}
 							}else if($_POST['leaveType']==2 || $_POST['leaveType']==3){
 								if(strtotime(date('Y-m-d', strtotime($_POST['leaveStart']))) >= strtotime(date('Y-m-d')) && (!isset($code) || (isset($code) && count($code)==0)))
-									$data['errortxt'] .= 'Invalid Start of Leave. Sick/Emergency leave cannot be filed in advance. Enter code to bypass this condition.<br/>';
+									$data['errortxt'] .= 'Invalid Start of Leave. Sick/Emergency leave cannot be filed in advance. Enter valid code to bypass this condition.<br/>';
 							}
 						}
 					}
@@ -2476,13 +2476,44 @@ class Staff extends CI_Controller {
 					$insArr['code'] = $res;
 					$insArr['generatedBy'] = $this->user->empID;
 					$insArr['dategenerated'] = date('Y-m-d H:i:s');
+					$insArr['forWhom'] = $_POST['forWhom'];
+					$insArr['why'] = addslashes($_POST['why']);
 					$this->staffM->insertQuery('staffCodes', $insArr);
+					
+					//send email to staff
+					$to = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$insArr['forWhom'].'"');
+					if(!empty($to)){
+						$ebody = '<p>Hi,</p>
+								<p>'.$this->user->fname.' generated code for you. See details below:</p>
+								<p>Code: <b>'.$res.'</b></p>
+								<p>Purpose: '.$_POST['why'].'</p>
+								<p><i>Please take note that generated code is valid for 24 hours and can only be used once.</i></p>
+								<p><br/></p>
+								<p>Thanks!</p>
+								<p>CareerPH</p>
+							';
+						$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $to, 'Code has been generated for you.', $ebody, 'CareerPH');
+						//add notification
+						$this->staffM->addMyNotif($insArr['forWhom'], 'Generated code for you. See details below:<br/>Code: <b>'.$res.'</b><br/>Purpose: '.addslashes($_POST['why']), 0, 1);
+					}
 					
 					echo $res;
 					exit;
 				}
-			}			
-			$data['codes'] = $this->staffM->getQueryResults('staffCodes', 'staffCodes.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE usedBy!=0 AND empID=usedBy) AS useByName', 'generatedBy="'.$this->user->empID.'"', '', 'dateUsed');
+			}
+			
+			$condition = '';
+			if($this->access->accessFullHR==false){
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				if($ids!='')
+					$condition .= ' AND empID IN ('.rtrim($ids,',').')';
+			}
+			$data['staffs'] = $this->staffM->getQueryResults('staffs', 'empID, lname, fname', 'active=1'.$condition, '', 'lname');
+			$data['codes'] = $this->staffM->getQueryResults('staffCodes', 'staffCodes.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE usedBy!=0 AND empID=usedBy) AS useByName, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE forWhom!=0 AND empID=forWhom) AS forWhomName', 'generatedBy="'.$this->user->empID.'"', '', 'dategenerated DESC');
 			
 		}
 		
