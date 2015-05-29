@@ -252,7 +252,7 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletbl', this)" class="droptext">Show</a>]
 					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
 				<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
-					<input type="file" name="pfilei" id="pfilei" class="hidden"/>
+					<input type="file" name="pfilei[]" id="pfilei" multiple="multiple" class="hidden"/>
 					<input type="hidden" name="submitType" value="uploadPF"/>
 				</form>
 			</td>
@@ -277,8 +277,8 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					</td>';
 					
 				echo '<td align="right">';
-				
-					if(strpos($p->fileName,'.jpg') !== false || strpos($p->fileName,'.gif') !== false || strpos($p->fileName,'.png') !== false || strpos($p->fileName,'.pdf') !== false){
+					$ext = strtolower(pathinfo($p->fileName, PATHINFO_EXTENSION));
+					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf'))){
 						echo '<a class="iframe" href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a>';
 					}else{
 						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';

@@ -476,50 +476,66 @@ class Staff extends CI_Controller {
 						$this->staffM->addMyNotif($_POST['empID_fk'], $_POST['ntexts'], $_POST['ntype']);
 					}else if($_POST['submitType']=='uploadPF'){	
 						$err = '';
-						if(empty($_FILES['pfilei']['name'])){
+						
+						$upFile = $_FILES['pfilei'];
+						$cntUp = count($upFile['name']);
+						
+						if(empty($upFile['name'][0])){
 							$err = 'No file uploaded.';
-						}else if(strlen($_FILES['pfilei']['name'])>100){
-							$err = 'Filename is too long. Please upload filename less than 100 characters.';
-						}
+						}else{
+							$moreThan100 = 0;
+							for($n=0; $n<$cntUp; $n++){
+								if(strlen($upFile['name'][$n])>100)
+									$moreThan100 = 1;
+							}
+							if($moreThan100==1)
+								$err = 'Filename is too long. Please upload filename less than 100 characters.';
+						} 						
 						
 						if($err!=''){
 							echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
 						}else{
-							$filename = $_FILES['pfilei']['name'];
-							$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
-							$ddArr = array();
-							for($d=0; $d<count($dd); $d++){
-								$ddArr[] = $dd[$d]->fileName;
+							$fnotes = '';
+							for($ff=0; $ff<$cntUp; $ff++){
+								$filename = $upFile['name'][$ff];
+								$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
+								$ddArr = array();
+								for($d=0; $d<count($dd); $d++){
+									$ddArr[] = $dd[$d]->fileName;
+								}
+								
+								if(in_array($filename, $ddArr)){
+									$filename = date('YmdHis').'_'.$filename;
+								}
+							
+								$dir = UPLOAD_DIR.$data['row']->username;
+								if (!file_exists($dir)) {
+									# $data['dir'] doesn't have value 
+									mkdir($dir, 0755, true);
+									chmod($dir.'/', 0777);
+								}
+								
+								move_uploaded_file($upFile['tmp_name'][$ff], $dir.'/'.$filename);
+								$pIns['empID_fk'] = $data['row']->empID;
+								$pIns['uploadedBy'] = $this->user->empID;
+								$pIns['fileName'] = $filename;
+								$pIns['dateUploaded'] = date('Y-m-d H:i:s');
+								$this->staffM->insertQuery('staffUploads', $pIns);
+								
+								//for notification
+								$ciframe = '';								
+								$ext = strtolower(pathinfo($upFile['name'][$ff], PATHINFO_EXTENSION));
+								if(in_array($ext, array('jpg', 'png', 'gif', 'pdf')))
+									$ciframe = 'class="iframe"';
+																
+								$fnotes .= '<li><a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a></li>';								
 							}
 							
-							if(in_array($filename, $ddArr)){
-								$filename = date('YmdHis').'_'.$filename;
-							}
-						
-							$dir = UPLOAD_DIR.$data['row']->username;
-							if (!file_exists($dir)) {
-								# $data['dir'] doesn't have value 
-								# replace with $dir
-								mkdir($dir, 0755, true);
-								chmod($dir.'/', 0777);
-							}
-							
-							move_uploaded_file($_FILES['pfilei']['tmp_name'], $dir.'/'.$filename);
-							$pIns['empID_fk'] = $data['row']->empID;
-							$pIns['uploadedBy'] = $this->user->empID;
-							$pIns['fileName'] = $filename;
-							$pIns['dateUploaded'] = date('Y-m-d H:i:s');
-							$this->staffM->insertQuery('staffUploads', $pIns);
-							
-							//add notifications
-							$ciframe = '';
-							if(strpos($filename,'.jpg') !== false || strpos($filename,'.png') !== false || strpos($filename,'.gif') !== false || strpos($filename,'.pdf') !== false){
-								$ciframe = 'class="iframe"';
-							}
+							//add notifications							
 							if($data['row']->empID==$this->user->empID){
-								$this->staffM->addMyNotif($this->user->empID, 'You uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>');
+								$this->staffM->addMyNotif($this->user->empID, 'Uploaded file/s: <ul>'.$fnotes.'</ul>');
 							}else{
-								$ttxt = $this->user->name.' uploaded file <a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a>';
+								$ttxt = $this->user->name.' <ul>'.$fnotes.'</ul>';
 								$this->staffM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
 							}							
 						}
@@ -2349,7 +2365,8 @@ class Staff extends CI_Controller {
 				
 				//search if staff exist then add notification
 				$toemails = explode(',', $to);
-				for($e=0; $e<count($toemails); $e++){
+				$cntto = count($toemails);
+				for($e=0; $e<$cntto; $e++){
 					$staffID = $this->staffM->getSingleField('staffs', 'empID', 'email="'.trim($toemails[$e]).'" OR pemail="'.trim($toemails[$e]).'"');
 					if(!empty($staffID)) 
 						$this->staffM->addMyNotif($staffID, $ntexts, 0, 1, $this->user->empID);
