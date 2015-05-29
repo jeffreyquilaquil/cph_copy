@@ -103,8 +103,8 @@
 			if($this->access->accessFullHR==true){
 				echo '<li '.(($content=='CAREERPH')?'class="current"':'').'><a href="'.$this->config->item('career_url').'/" target="_blank">CAREERPH</a>';
 				echo '<ul class="dropdown">';
-					echo '<li><a href="/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
-					echo '<li><a href="/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
+					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
+					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
 				echo '</ul>';
 				echo '</li>';
 			}

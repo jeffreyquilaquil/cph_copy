@@ -18,8 +18,13 @@ if(isset($_POST['cancelJR']) && $_POST['cancelJR']=='yes' && $_POST['cancelRemar
 	exit;
 }
 
+if(isset($_POST['addRemarks']) && !empty($_POST['addRemarks'])){
+	$remarks = '<p><b>'.$_SESSION['u'].'</b> '.date('Y-m-d h:i a').'<br/>'.$_POST['addRemarks'].'</p>';
+	$db->executeQuery('UPDATE jobReqData SET remarks = CONCAT(remarks,\'\', "'.$remarks.'") WHERE jobReqID = "'.$_GET['id'].'"');
+}
+
 $infoQ = $db->selectQueryArray('
-	SELECT jobReqData.*, org, dept, grp, subgrp, title, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.minSal) AS minSal, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.maxSal) AS maxSal
+	SELECT jobReqData.*, org, dept, grp, subgrp, title, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.minSal) AS minSal, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.maxSal) AS maxSal, newPositions.desc
 	FROM jobReqData
 	LEFT JOIN newPositions ON posID = positionID
 	WHERE jobReqID = "'.$_GET['id'].'"
@@ -27,7 +32,7 @@ $infoQ = $db->selectQueryArray('
 
 foreach($infoQ AS $in){
 	$info = $in;
-} 
+}
 
 $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$info['requestor'].'"');
 ?>
@@ -46,7 +51,7 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 <?php }else{ ?>	
 	<table width="90%" cellpadding=5 cellspacing=5>
 		<tr>
-			<td>Job Requisition ID</td>
+			<td width="25%">Job Requisition ID</td>
 			<td><?= $info['jobReqID'] ?></td>
 		</tr>
 		<tr bgcolor="#DCDCDC">
@@ -83,30 +88,50 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 		</tr>
 		
 		<tr bgcolor="#DCDCDC">
+			<td>Job Description</td>
+			<td><?php
+				$desc = nl2br(stripslashes($info['desc']));
+				if(strlen($desc)>250){
+					echo '<div id="smalldiv">'.substr($desc, 0, 250).'...<br/><a href="#" onClick="seemore(1);">Show more...</a></div>';
+					echo '<div id="seemore" class="hidden">'.$desc.'<br/><a href="#" onClick="seemore(0);">Show less...</a></div>';
+				}else
+					echo $desc;				
+			?></td>
+		</tr>
+		
+		<tr>
 			<td>Target Start Date</td>
 			<td><?= $info['startDate'] ?></td>
 		</tr>
-		<tr>
+		<tr bgcolor="#DCDCDC">
 			<td>Immediate Supervisor</td>
 			<td><?= $info['supervisor'] ?></td>
 		</tr>
-		<tr bgcolor="#DCDCDC">
+		<tr>
 			<td>Minimum Salary Offer</td>
 			<td><?= $info['minSal'] ?></td>
 		</tr>
-		<tr>
+		<tr bgcolor="#DCDCDC">
 			<td>Maximum Salary Offer</td>
 			<td><?= $info['maxSal'] ?></td>
 		</tr>
-		<tr bgcolor="#DCDCDC">
+		<tr>
 			<td>Shift</td>
 			<td><?= $info['shift'] ?></td>
 		</tr>
-		<tr>
-			<td>Additional Remarks for HR</td>
-			<td><?= $info['remarks'] ?></td>
-		</tr>
 		<tr bgcolor="#DCDCDC">
+			<td>Additional Remarks</td>
+			<td><?= nl2br($info['remarks']) ?>
+				<div id="btnaddR"><button onClick="showaddR();">+ Add Remark</button></div>
+				<div id="divaddR" class="hidden">
+					<form action="" method="POST">
+						<textarea cols=50 rows=5 name="addRemarks"></textarea>
+						<br/><input type="submit" value="Add Remark"/>
+					</form>
+				</div>
+			</td>
+		</tr>
+		<tr>
 			<td>Number Requested</td>
 			<td><?= $info['num'] ?></td>
 		</tr>
@@ -166,6 +191,21 @@ function checkCancel(){
 		return false;
 	}else
 		return true;
+}
+
+function seemore(t){
+	if(t==1){
+		document.getElementById("seemore").className = "";
+		document.getElementById("smalldiv").className = "hidden";
+	}else{
+		document.getElementById("seemore").className = "hidden";
+		document.getElementById("smalldiv").className = "";
+	}	
+}
+
+function showaddR(){
+	document.getElementById("divaddR").className = "";
+	document.getElementById("btnaddR").className = "hidden";
 }
 </script>
 <?php 
