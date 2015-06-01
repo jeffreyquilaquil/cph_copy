@@ -2554,7 +2554,11 @@ class Staff extends CI_Controller {
 				
 	public function notes(){
 		$data['content'] = 'notes';
-		$data['myID'] = $this->user->empID;
+		if($this->user!=false)
+			$data['myID'] = $this->user->empID;
+		else
+			$data['myID'] = 0;
+		
 		$data['empID'] = $this->uri->segment(2);
 		$empID = $data['empID'];
 		$username = $this->staffM->getSingleField('staffs', 'username', 'empID="'.$empID.'"');
