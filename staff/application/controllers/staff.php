@@ -822,7 +822,7 @@ class Staff extends CI_Controller {
 		if($this->uri->segment(2)!=''){
             $nteID = $this->uri->segment(2);
             /*
-             * remove staff.title - unknow column in db
+             * remove staff.title - unknown column in db
              * */
 			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp, title, startDate', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
@@ -857,7 +857,7 @@ class Staff extends CI_Controller {
 			$pdf->AddPage();
 			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
 			
-			if($row->status==1){ //if NTE form		
+			if($row->status==1 || $this->uri->segment(4)=='nform'){ //if NTE form		
 				$tplIdx = $pdf->importPage(1);
 				$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 				
@@ -942,7 +942,7 @@ class Staff extends CI_Controller {
 			}
 			
 			//if CAR form
-			if($row->status==0 || $row->status==3){
+			if($this->uri->segment(4)!='nform' && ($row->status==0 || $row->status==3)){
 				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 				if($row->type=='tardiness') $sanctionArr = $this->config->item('sanctiontardiness');
 				else $sanctionArr = $this->config->item('sanctionawol');

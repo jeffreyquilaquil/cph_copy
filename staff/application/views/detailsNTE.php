@@ -107,10 +107,10 @@
 				<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$exx[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 			</tr>';
 		}		
-	}else if($row->carissuer==0){
+	}else{
 		echo '<tr>
 				<td>NTE Form</td>
-				<td><a href="'.$this->config->base_url().'ntepdf/'.$row->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
+				<td><a href="'.$this->config->base_url().'ntepdf/'.$row->nteID.'/I/nform/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 			</tr>';
 	}
 	
