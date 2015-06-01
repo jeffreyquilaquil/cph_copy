@@ -15,7 +15,7 @@
 				
 				echo '<tr class="nnotes nstat_'.$m['type'].'" valign="top">';	
 
-				$img = UPLOAD_DIR.$m['username'].'/'.$m['username'].'.jpg';	
+				$img = '/'.UPLOAD_DIR.$m['username'].'/'.$m['username'].'.jpg';	
 
 				if($m['from']=='careerPH' && !file_exists($img) || $m['from']=='pt'){
 					if($m['from']=='pt'){
