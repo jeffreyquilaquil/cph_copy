@@ -45,7 +45,7 @@
 				
 				echo '<td>';
 					echo '<table class="insideTbl" width="100%">';
-						echo '<tr><td width="25%">Date Generated:</td><td><b>'.date('M d, Y h:i a', strtotime($c->dategenerated)).'</b></td></tr>';
+						echo '<tr><td width="18%">Date Generated:</td><td><b>'.date('M d, Y h:i a', strtotime($c->dategenerated)).'</b></td></tr>';
 						if(!empty($c->forWhomName)) echo '<tr><td>For Whom:</td><td><b>'.$c->forWhomName.'</b></td></tr>';
 						if(!empty($c->why)) echo '<tr><td>Reason:</td><td><b>'.$c->why.'</b></td></tr>';
 						if(!empty($c->useByName)) echo '<tr><td>Used By:</td><td><b>'.$c->useByName.'</b></td></tr>';
