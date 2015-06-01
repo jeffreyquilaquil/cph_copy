@@ -824,7 +824,7 @@ class Staff extends CI_Controller {
             /*
              * remove staff.title - unknow column in db
              * */
-			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp, title', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+			$row = $this->staffM->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, username, idNum, supervisor, dept, grp, title, startDate', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
 			if(count($row)==0){
 				echo 'No NTE record.';
@@ -942,7 +942,7 @@ class Staff extends CI_Controller {
 			}
 			
 			//if CAR form
-			if($row->status==0){
+			if($row->status==0 || $row->status==3){
 				$firstlevelmngr = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS eName, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 				if($row->type=='tardiness') $sanctionArr = $this->config->item('sanctiontardiness');
 				else $sanctionArr = $this->config->item('sanctionawol');
@@ -981,7 +981,7 @@ class Staff extends CI_Controller {
 				$pdf->Write(0, $row->idNum);	
 				
 				$pdf->setXY(128, 33);
-				$pdf->Write(0, date('l, F d, Y'));	
+				$pdf->Write(0, date('l, F d, Y', strtotime($row->startDate)));	
 				$pdf->setXY(132, 35);
 				$pdf->MultiCell(150, 4, $row->title ,0,'L',false);
 				if(isset($firstlevelmngr->eName) && isset($firstlevelmngr->title)){
@@ -992,7 +992,10 @@ class Staff extends CI_Controller {
 				}
 				
 				$pdf->setXY(25, 63);
-				$pdf->Write(0, ucwords($sanction));	
+				if($row->status==3) $pdf->Write(0, 'None. Response satisfactory.');
+				else $pdf->Write(0, ucwords($sanction));
+				
+				
 				
 				$pdf->setTextColor(255, 0, 0);
 				$pdf->setXY(20, 78);		
@@ -1036,13 +1039,20 @@ class Staff extends CI_Controller {
 					$pdf->setXY(100, 125);
 					$pdf->Write(0, date($dateFormat,strtotime($dawol[5])));	
 				}
-						
-				$pdf->setXY(20, 140);
-				$pdf->MultiCell(175, 4, $row->planImp ,0,'L',false);	
-						
-				$consequences = 'Any subsequent case of tardiness within the next six months will be second case of excessive tardiness and merits '.strtoupper($nextsanction);
-				$pdf->setXY(20, 157);
-				$pdf->MultiCell(175, 4, $consequences ,0,'L',false);
+				
+				if($row->status!=3){
+					$pdf->setXY(20, 140);
+					$pdf->MultiCell(175, 4, $row->planImp ,0,'L',false);
+				}
+				
+				if($row->status==3){
+					$pdf->setXY(20, 157);
+					$pdf->MultiCell(175, 4, 'NOTE: '.$row->planImp ,0,'L',false);
+				}else{
+					$consequences = 'Any subsequent case of tardiness within the next six months will be second case of excessive tardiness and merits '.strtoupper($nextsanction);
+					$pdf->setXY(20, 157);
+					$pdf->MultiCell(175, 4, $consequences ,0,'L',false);
+				}
 
 				$pdf->SetFont('Arial','B',10);
 				
@@ -1090,7 +1100,8 @@ class Staff extends CI_Controller {
 					$notice .= "However, as of ".date('l F d, Y', strtotime($row->cardate)).", no response is received from you.";
 				}
 				
-				$notice .= "\n\nThe gravity of misconduct committed by you is such that it warrants ".$sanction;
+				if($row->status!=3)
+					$notice .= "\n\nThe gravity of misconduct committed by you is such that it warrants ".$sanction;
 				
 				if(strpos($row->sanction,'Suspension') !== false){
 					$sdatesQ = explode('|', $row->suspensiondates);
@@ -1201,8 +1212,8 @@ class Staff extends CI_Controller {
 				}
 			
 				if($this->access->accessFullHR==true){
-					$data['pendingPrint'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted="") OR (status=0 AND carprinted="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
-					$data['pendingUpload'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, carprinted, nteprinted, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+					$data['pendingPrint'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted="") OR ((status=0 OR status=3) AND carprinted="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
+					$data['pendingUpload'] = $this->staffM->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, carprinted, nteprinted, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', '(status=1 AND nteprinted!="" AND nteuploaded="") OR ((status=0 OR status=3) AND carprinted!="" AND caruploaded="")', 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
 				}
 				
 				$condition = '';

@@ -76,22 +76,7 @@
 				<td><b>NOT YET RESPONDED</b></td>
 			</tr>';
 	}
-	
-	if($row->status==3){
-		echo '<tr>
-				<td>Processed by</td>
-				<td>'.$row->carName.'</td>
-			</tr>
-			<tr>
-				<td>Processed date</td>
-				<td>'.date('F d, Y', strtotime($row->cardate)).'</td>
-			</tr>
-			<tr>
-				<td>Processed note</td>
-				<td>'.$row->planImp.'</td>
-			</tr>';
-	}
-	
+		
 	if($row->status==2){
 		$cc = explode('|', $row->canceldata);
 		if(isset($cc[0])){
@@ -160,6 +145,7 @@
 
 	if(
 		$row->status==0 || 
+		$row->status==3 || 
 		($row->status==1 && ($this->access->accessFullHR==true || $row->issuer==$this->user->empID))
 	){
 ?>
@@ -313,7 +299,23 @@
 	
 	</td></tr>
 	
-<?php }else{ ?>
+<?php }else{ 
+
+	if($row->status==3){
+		echo '<tr>
+				<td>Processed by</td>
+				<td>'.$row->carName.'</td>
+			</tr>
+			<tr>
+				<td>Processed date</td>
+				<td>'.date('F d, Y', strtotime($row->cardate)).'</td>
+			</tr>
+			<tr>
+				<td>Processed note</td>
+				<td>'.$row->planImp.'</td>
+			</tr>';
+	}else{
+?>
 	<tr>
 		<td>Date CAR Issued</td>
 		<td><?= date('F d, Y',strtotime($row->cardate)) ?></td>
@@ -351,6 +353,8 @@
 		<td><?= $row->planImp ?></td>
 	</tr>
 <?php
+	}
+	
 	if(!empty($row->caruploaded)){
 		$xc = explode('|',$row->caruploaded);
 		if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
