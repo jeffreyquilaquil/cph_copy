@@ -13,7 +13,7 @@ $info = $db->selectSingleQueryArray("applicants","*","id=".$id);
 $openP = '';
 
 if($info['isNew']==0){
-	$position = $db->selectSingleQuery("positions", "`title`" , "id=".$info['position']);
+	$position = $db->selectSingleQuery("positions", "title" , "id=".$info['position']);
 }else if(!empty($info['position'])){
 	$pp = $db->selectSingleQueryArray("newPositions", "`title`, `org`, `dept`, `grp`, `subgrp`" , "posID=".$info['position']);	
 	$position = $pp['title'];

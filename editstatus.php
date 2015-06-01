@@ -71,7 +71,11 @@
 
 			$db->updateQuery('applicants', $updateArr, 'id='.$id);		
 			
-			$old = $db->selectSingleQuery('newPositions', 'title' , 'posID='.$info['position']);
+			if($info['isNew']==0)
+				$old = $db->selectSingleQuery("positions", "title" , "id=".$info['position']);
+			else
+				$old = $db->selectSingleQuery('newPositions', 'title' , 'posID='.$info['position']);
+			
 			$newP = $db->selectSingleQuery('newPositions', 'title' , 'posID='.$_POST['newPos']);
 			addStatusNote($id, 'reprofiled', 'reprofiled', $info['position'], '<b>Reprofiled from '.$old.' to '.$newP.'<br/>'.$_POST['reason'].'</b>');
 			echo '<script>alert("Reprofiled");</script>';
