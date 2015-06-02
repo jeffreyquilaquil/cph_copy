@@ -5,3 +5,4 @@ staff/application/config/database.php
 staff/application/config/config.php
 staff/.htaccess
 config.php
+.htaccess
