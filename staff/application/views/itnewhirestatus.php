@@ -14,6 +14,7 @@
 			<tr class="trlabel">
 				<td colspan=3>
 					<?= strtoupper($in->name).' (<i>'.$in->title.'</i>)' ?>
+					&nbsp;&nbsp;&nbsp;<span onClick="showData(this, <?= $in->empID_fk ?>)" class="errortext cpointer">[Show]</span>
 					<div style="float:right;">Status: 
 						<select onChange="changeSeat(<?= $in->empID_fk ?>, 'status', this)">
 							<option value="0" <? (($in->status==0)?'selected="selected"':'')?>>Pending</option>
@@ -23,10 +24,12 @@
 				</td>
 			</tr>
 			<tr class="trhead">
-				<td colspan=3>Immediate Supervisor: <i><?= $in->imsupervisor ?></i></td>
-			</tr>
-			<tr class="trhead">
 				<td colspan=3>Start Date: <i><?= date('F d, Y', strtotime($in->startDate)).' ('.$in->shift.')' ?></i></td>
+			</tr>
+		</table>		
+		<table id="tabledisp_<?= $in->empID_fk ?>" class="tableInfo hidden">
+			<tr class="trhead">
+				<td colspan=3>Immediate Supervisor: <i><?= $in->imsupervisor ?></i></td>
 			</tr>
 			<tr>
 				<td width="35%"><b>Email Creation</b></td>
@@ -152,6 +155,7 @@
 				</td>
 			</tr>
 		</table>
+		<br/>
 	<?php
 	}
 ?>
@@ -168,6 +172,7 @@
 			<tr class="trlabel">
 				<td colspan=3>
 					<?= strtoupper($do->name).' (<i>'.$do->title.'</i>)' ?>
+					&nbsp;&nbsp;&nbsp;<span onClick="showData(this, <?= $do->empID_fk ?>)" class="errortext cpointer">[Show]</span>
 					<div style="float:right;">Status: 
 						<select onChange="changeSeat(<?= $do->empID_fk ?>, 'status', this)">
 							<option value="0">Pending</option>
@@ -177,10 +182,11 @@
 				</td>
 			</tr>
 			<tr class="trhead">
-				<td colspan=3>Immediate Supervisor: <i><?= $do->imsupervisor ?></i></td>
-			</tr>
-			<tr class="trhead">
 				<td colspan=3>Start Date: <i><?= date('F d, Y', strtotime($do->startDate)).' ('.$do->shift.')' ?></i></td>
+			</tr>
+		<table id="tabledisp_<?= $do->empID_fk ?>" class="tableInfo hidden">
+			<tr class="trhead">
+				<td colspan=3>Immediate Supervisor: <i><?= $do->imsupervisor ?></i></td>
 			</tr>
 			<tr>
 				<td width="35%"><b>Email Creation</b></td>
@@ -306,6 +312,7 @@
 				</td>
 			</tr>
 		</table>
+		<br/>
 	<?php
 	}
 ?>
@@ -341,5 +348,12 @@
 				$('#table_'+id).hide();
 			}
 		});
+	}
+	
+	function showData(t, id){;
+		$('#tabledisp_'+id).toggle();
+		$(t).text(function(i, text){
+			return text === "[Show]" ? "[Hide]" : "[Show]";
+		})
 	}
 </script>
