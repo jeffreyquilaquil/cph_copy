@@ -120,6 +120,10 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 			<td><?= $info['shift'] ?></td>
 		</tr>
 		<tr bgcolor="#DCDCDC">
+			<td>Interviewer</td>
+			<td><?= $info['interviewer'] ?></td>
+		</tr>
+		<tr>
 			<td>Additional Remarks</td>
 			<td><?= nl2br($info['remarks']) ?>
 				<div id="btnaddR"><button onClick="showaddR();">+ Add Remark</button></div>
@@ -131,7 +135,7 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 				</div>
 			</td>
 		</tr>
-		<tr>
+		<tr bgcolor="#DCDCDC">
 			<td>Number Requested</td>
 			<td><?= $info['num'] ?></td>
 		</tr>

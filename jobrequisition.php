@@ -8,7 +8,7 @@ if(isset($_GET['position']) && $_GET['position']=='text'){
 }
 
 if(isset($_GET['create']) && $_GET['create']=='new'){
-	$_POST['date_created'] = 'NOW()';
+	$_POST['date_created'] = 'NOW()';	
 	echo $db->insertQuery('newPositions', $_POST);
 	exit;
 }
@@ -36,6 +36,18 @@ if(isset($_POST) && !empty($_POST)){
 	unset($_POST['startShift']);
 	unset($_POST['endShift']);
 	
+		
+	$interv = '';
+	if(!empty($_POST['interviewer'])){		
+		$cInt = count($_POST['interviewer']);
+		for($xx=0; $xx<$cInt; $xx++){
+			if(!empty($_POST['interviewer'][$xx]))
+				$interv .= $_POST['interviewer'][$xx].', ';
+		}
+	}
+	
+	$_POST['interviewer'] = rtrim($interv, ', ');
+		
 	$iID = $db->insertQuery('jobReqData', $_POST);	
 	$db->updateQuery('jobReqData', array('jobReqID' => $iID), 'reqID = "'. $iID .'"');
 	
@@ -73,6 +85,8 @@ if(empty($username) && isset($_SESSION['u']))
 if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 	echo 'Sorry, you do not have access to this page.';
 }else{
+	
+	$staffs = $ptDb->selectQueryArray('SELECT CONCAT(sFirst, " ", sLast) AS name, sFirst, sLast, username FROM staff WHERE active="Y" AND office LIKE "%cebu%" ORDER BY sLast');
 
 ?>
 <style type="text/css">
@@ -268,12 +282,11 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 								<select name="supervisor" id="supervisor" class="form-control">
 									<option value=""></option>
 									<?php
-										$staffs = $ptDb->selectQueryArray('SELECT CONCAT(sFirst, " ", sLast) AS name, username FROM staff WHERE active="Y" AND office LIKE "%cebu%" ORDER BY sFirst');
 										foreach($staffs AS $s):
 											if($s['username']==$_SESSION['u'])
-												echo '<option value="'.$s['name'].'" selected>'.$s['name'].'</option>';
+												echo '<option value="'.$s['name'].'" selected>'.$s['sLast'].', '.$s['sFirst'].'</option>';
 											else
-												echo '<option value="'.$s['name'].'">'.$s['name'].'</option>';
+												echo '<option value="'.$s['name'].'">'.$s['sLast'].', '.$s['sFirst'].'</option>';
 										endforeach;
 									?>
 								</select>
@@ -335,6 +348,20 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 							</td>
 						</tr>
 						<tr>
+							<td><b>FINAL INTERVIEWER:</b><br/><i>Who will conduct the final interview for potential hires?</i></td>
+							<td>
+							<?php 
+								$interviewr = '<select class="form-control" name="interviewer[]"><option value=""></option>';
+								foreach($staffs AS $s):
+									$interviewr .= '<option value="'.$s['name'].'">'.$s['sLast'].', '.$s['sFirst'].'</option>';
+								endforeach;									
+								$interviewr .= '</select>';
+								echo $interviewr;
+							?>
+								<a id="addIntBtn" onClick="addInteviewer();" style="float:right;">Add another final interviewer</a>
+							</td>
+						</tr>
+						<tr>
 							<td>Additional Remarks for HR:</td>
 							<td><textarea name="remarks" class="form-control" rows=10></textarea></td>
 						</tr>
@@ -388,7 +415,14 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 				valid += '-  Valid start and end shift\n';
 			}
 						
+			intervw = '';
+			$('select[name="interviewer[]"]').each(function() {
+				if($(this).val()!="")
+					intervw += $(this).val();
+			});
 			
+			if(intervw=='') valid += '-  Interviewer is empty.\n';
+							
 			if(valid!=''){
 				alert('Please fill up missing/invalid fields:\n'+valid);
 				return false;
@@ -497,6 +531,10 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 			}
 		); 
 		$('#'+c+'Val').val($('#'+c).val());
+	}
+	
+	function addInteviewer(){
+		$('<?= $interviewr ?>').insertBefore('#addIntBtn');
 	}
 	
 	
