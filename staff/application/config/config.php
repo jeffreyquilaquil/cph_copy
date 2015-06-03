@@ -14,10 +14,10 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://careerph.tatepublishing.net/staff/';
-$config['career_url']	= 'http://careerph.tatepublishing.net';
-$config['career_uri']	= 'http://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
-$config['toEmail']	= '';
+$config['base_url']	= 'http://129.3.252.99/staff/';
+$config['career_url']	= 'http://129.3.252.99';
+$config['career_uri']	= 'http://129.3.252.99'.$_SERVER['REQUEST_URI'];
+$config['toEmail']	= 'ludivina.marinas@tatepublishing.net';
 $config['demnCrypt']	= 'hiCebuITteamIamDivi';
 $config['demnCryptIV']	= 'TaTe';
 
