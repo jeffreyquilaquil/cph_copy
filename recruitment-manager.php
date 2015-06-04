@@ -48,6 +48,21 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 	<fieldset>
 		<legend>Recruitment Manager</legend>
 	</fieldset>
+	
+	<div style="display:none;">
+		<div id="prodpreview">
+		   your stuff here
+		   your stuff here
+		   your stuff here
+		   your stuff here
+		   your stuff here
+		   your stuff here
+		   your stuff here
+		</div>
+	</div>
+	
+	
+	<button style="float:right; margin:8px 120px 0 0;" class="iframeSmall" href="#prodpreview">Send Email</button>
 	<ul class="tabs">
 		<li class="tab-link current" data-tab="tab-1">Applicants with Open Job Requisitions (<?= count($appOpenJobReq) ?>)</li>
 		<li class="tab-link" data-tab="tab-2">Applicants with No Open Job Requisitions (<?= count($appNoJobReq) ?>)</li>
@@ -230,6 +245,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 <script type="text/javascript">
 $(document).ready(function() {
 	$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
+	$(".iframeSmall").colorbox({inline:true, width:"450px", height:"300px"});
 	
 	var oTable;
 	oTable = $('.applicants').dataTable({

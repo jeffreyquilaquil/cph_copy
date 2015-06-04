@@ -259,44 +259,139 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 		</tr>		
 	</table>
 	<?php
+	$upArr = array();
+	foreach($pfUploaded AS $pf){
+		$xxArr = array();
+		$xxArr['upID'] = $pf->upID;
+		$xxArr['type'] = 'pf';
+		$xxArr['docName'] = $pf->docName;
+		$xxArr['fileName'] = $pf->fileName;
+		$xxArr['dateUploaded'] = $pf->dateUploaded;
+		$upArr[] = $xxArr;
+	}
+	foreach($nteUploadedFiles AS $nU){
+		if($nU->nteuploaded!=''){
+			$nEx = explode('|', $nU->nteuploaded);
+			if(count($nEx)==3){
+				$xxArr = array();
+				$xxArr['upID'] = 0;
+				$xxArr['type'] = 'NTE';
+				$xxArr['docName'] = 'NTE Uploaded File';
+				$xxArr['fileName'] = $nEx[2];
+				$xxArr['dateUploaded'] = $nEx[1];
+				$upArr[] = $xxArr;
+			}
+		}		
+		if($nU->caruploaded!=''){
+			$cEx = explode('|', $nU->caruploaded);
+			if(count($cEx)==3){
+				$xxArr = array();
+				$xxArr['upID'] = 0;
+				$xxArr['type'] = 'CAR';
+				$xxArr['docName'] = 'CAR Uploaded File';
+				$xxArr['fileName'] = $cEx[2];
+				$xxArr['dateUploaded'] = $cEx[1];
+				$upArr[] = $xxArr;
+			}
+		}
+	}
+	
+	foreach($coachingUploadedFiles AS $cUp){
+		$cfLoc = UPLOADS.'coaching/coachingform_'.$cUp->coachID.'.pdf';
+		$evalLoc = UPLOADS.'coaching/coachingevaluation_'.$cUp->coachID.'.pdf';
+		$exCp = explode('-^_^-', $cUp->HRstatusData);
+		
+		$fullData = explode('-^_^-', $cUp->HRstatusData);	
+		$exData = array();
+		for($x=0; $x<count($fullData); $x++){
+			$haha = explode('|', $fullData[$x]);
+			for($h=0; $h<count($haha); $h++)
+				$exData[$haha[0]][] = $haha[$h];
+		}
+		
+		if(file_exists($cfLoc)){
+			$xxArr = array();
+			$xxArr['upID'] = 0;
+			$xxArr['type'] = 'coaching';
+			$xxArr['docName'] = 'Uploaded Coaching Form';
+			$xxArr['fileName'] = 'coachingform_'.$cUp->coachID.'.pdf';
+			
+			if(isset($exData[2][2]))
+				$xxArr['dateUploaded'] = $exData[2][2];
+			$upArr[] = $xxArr;
+		}
+		
+		if(file_exists($evalLoc)){
+			$xxArr = array();
+			$xxArr['upID'] = 0;
+			$xxArr['type'] = 'coaching';
+			$xxArr['docName'] = 'Uploaded Evaluation Form';
+			$xxArr['fileName'] = 'coachingevaluation_'.$cUp->coachID.'.pdf';
+			
+			if(isset($exData[4][2]))
+				$xxArr['dateUploaded'] = $exData[4][2];
+			$upArr[] = $xxArr;
+		}
+	}
+	
+	
+	
+	foreach($upArr as $key => $upr) {
+		$volume[$key]  = $upr['dateUploaded'];
+	}
+	
+	if(!empty($upArr) && !empty($volume)){
+		array_multisort($volume, SORT_DESC, $upArr);
+	}
+		
 	echo '<table class="tableInfo hidden" id="personalfiletblData">';
-		if(count($pfUploaded)==0){
+		if(count($upArr)==0){
 			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
 		}else{
+			$upArrCnt = count($upArr);
 			echo '<tr class="trhead">
 					<td>Date Uploaded</td>								
 					<td>Document Name</td>
-					<td width="150px"><br/></td>
+					<td width="220px"><br/></td>
 				</tr>';
-			foreach($pfUploaded AS $p){
+			for($uu=0; $uu<$upArrCnt; $uu++){
 				echo '<tr>';
-				echo '<td>'.date('d M Y', strtotime($p->dateUploaded)).'</td>';			
-				echo '<td>
-						<span class="upClass_'.$p->upID.'">'.(($p->docName!='')?$p->docName:$p->fileName).'</span>
-						<input id="uploadDoc_'.$p->upID.'" type="text" value="'.(($p->docName!='')?$p->docName:$p->fileName).'" class="forminput hidden uploadDoc'.$p->upID.'"/>
-					</td>';
+					echo '<td>'.date('d M Y', strtotime($upArr[$uu]['dateUploaded'])).'</td>';
+					echo '<td>
+							<span class="upClass_'.$upArr[$uu]['upID'].'">'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'</span>
+							<input id="uploadDoc_'.$upArr[$uu]['upID'].'" type="text" value="'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'" class="forminput hidden uploadDoc'.$upArr[$uu]['upID'].'"/>
+						</td>';
+					echo '<td align="right">';
 					
-				echo '<td align="right">';
-					$ext = strtolower(pathinfo($p->fileName, PATHINFO_EXTENSION));
-					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf'))){
-						echo '<a class="iframe" href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a>';
+							
+					
+					if($this->access->accessFullHR==true && $upArr[$uu]['type']=='pf'){
+						echo '<button onClick="editUploadDoc('.$upArr[$uu]['upID'].', 0)" class="upClass_'.$upArr[$uu]['upID'].'">Update</button>
+						<img id="uploadDocimg'.$upArr[$uu]['upID'].'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+						<button class="uploadDoc'.$upArr[$uu]['upID'].' hidden" onClick="editUploadDoc('.$upArr[$uu]['upID'].', 1)">Update</button>';
+						echo '<button onClick="delFile('.$upArr[$uu]['upID'].', \''.$upArr[$uu]['fileName'].'\')">Delete</button>';		
+					}
+					
+					
+					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
+						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+					else if($upArr[$uu]['type']=='coaching')
+						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+					else
+						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+					
+					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
+					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
+						echo '<a class="iframe" href="'.$fileUrl.'"><button>View</button></a>';
 					}else{
-						echo '<a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$p->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a>';
-					}
+						echo '<a href="'.$fileUrl.'"><button>Download</button></a>';
+					}					
 					
-					if($this->access->accessFullHR==true){
-						echo '<img src="'.$this->config->base_url().'css/images/view-icon.png" onClick="editUploadDoc('.$p->upID.', 0)" class="cpointer upClass_'.$p->upID.'"/>
-							<button class="uploadDoc'.$p->upID.' hidden" onClick="editUploadDoc('.$p->upID.', 1)">Update</button>
-							<img id="uploadDocimg'.$p->upID.'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>';
-						echo '<img src="'.$this->config->base_url().'css/images/delete-icon.png" style="cursor:pointer;" onClick="delFile('.$p->upID.', \''.$p->fileName.'\')"/>';
-					}
-				
-				echo '</td>';
-				
+					echo '</td>';
 				echo '</tr>';
 			}
 		}
-	echo '</table>';
+	echo '<table>';
 }
 
 if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
@@ -431,11 +526,24 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 				else
 					echo '<td width="200px">'.$stat.'</td>';	
 				
-				echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/expectation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+				$cformLoc = UPLOADS.'coaching/coachingform_'.$per->coachID.'.pdf';
+				if($per->HRoptionStatus>=2 && file_exists($cformLoc)){
+					echo '<td align="center"><a href="'.$this->config->base_url().$cformLoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+				}else{
+					echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/expectation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+				}
+								
 				if($per->status==0) 
 					echo '<td><br/></td>';
-				else
-					echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/evaluation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+				else{
+					$eformLoc = UPLOADS.'coaching/coachingevaluation_'.$per->coachID.'.pdf';
+					if($per->HRoptionStatus>=2 && file_exists($eformLoc)){
+						echo '<td align="center"><a href="'.$this->config->base_url().$eformLoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+					}else{
+						echo '<td align="center"><a href="'.$this->config->base_url().'coachingform/evaluation/'.$per->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+					}
+				}
+					
 			echo '</tr>';
 		endforeach;
 		

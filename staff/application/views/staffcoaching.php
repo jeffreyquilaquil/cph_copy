@@ -156,17 +156,27 @@
 				echo '<td>'.date('F d, Y', strtotime($d->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($d->coachedEval)).'</td>';
 				echo '<td>'.$d->coachedBy.'</td>';
-				echo '<td width="200px">'.$this->staffM->coachingStatus($d->coachID).'</td>';
-				echo '<td align="center">
-					<a href="'.$this->config->base_url().'coachingform/expectation/'.$d->coachID.'/" class="iframe">
-						<img src="'.$this->config->base_url().'css/images/pdf-icon.png">
-					</a>
-				</td>';
-				echo '<td align="center">
-					<a href="'.$this->config->base_url().'coachingform/evaluation/'.$d->coachID.'/" class="iframe">
-						<img src="'.$this->config->base_url().'css/images/pdf-icon.png">
-					</a>
-				</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($d->coachID).'</td>';				
+				
+				echo '<td align="center">';
+				$fileloc = UPLOADS.'coaching/coachingform_'.$d->coachID.'.pdf';
+				if($d->HRoptionStatus>=2 && file_exists($fileloc)){
+					echo '<a class="iframe" href="'.$this->config->base_url().$fileloc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
+				}else{
+					echo '<a href="'.$this->config->base_url().'coachingform/expectation/'.$d->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"> </a>';
+				}
+				echo '</td>';
+				
+				echo '<td align="center">';
+				$evalFileLoc = UPLOADS.'coaching/coachingevaluation_'.$d->coachID.'.pdf';
+				if($d->HRoptionStatus>=2 && file_exists($evalFileLoc)){
+					echo '<a class="iframe" href="'.$this->config->base_url().$evalFileLoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
+				}else{
+					echo '<a class="iframe" href="'.$this->config->base_url().'coachingform/evaluation/'.$d->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"> </a>';
+				}
+				echo '</td>';
+				
+				
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'coachingform/acknowledgment/'.$d->coachID.'/">
 					<img src="'.$this->config->base_url().'css/images/view-icon.png">
 					</a></td>';			

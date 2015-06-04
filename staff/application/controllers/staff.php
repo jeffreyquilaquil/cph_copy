@@ -599,9 +599,12 @@ class Staff extends CI_Controller {
 				$data['leaveStatusArr'] = $this->config->item('leaveStatus');
 				$data['timeoff'] = $this->staffM->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'" AND status!=5','', 'date_requested DESC');
 				$data['disciplinary'] = $this->staffM->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
-				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating,	dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
+				$data['perfTrackRecords'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating,	dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated, HRoptionStatus', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','', 'dateGenerated DESC');
 				
-				$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'staffUploads.*, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE uploadedBy=empID) AS uploader', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
+				$data['pfUploaded'] = $this->staffM->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
+				$data['nteUploadedFiles'] = $this->staffM->getQueryResults('staffNTE', 'nteuploaded, caruploaded', 'empID_fk="'.$data['row']->empID.'"');
+				$data['coachingUploadedFiles'] = $this->staffM->getQueryResults('staffCoaching', 'coachID, HRstatusData, HRoptionStatus', 'empID_fk="'.$data['row']->empID.'" AND HRoptionStatus>=2');
+								
 				$data['isUnderMe'] = $this->staffM->checkStaffUnderMe($data['row']->username);
 										
 				if($page=='myinfo'){
