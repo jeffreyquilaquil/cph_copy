@@ -24,12 +24,10 @@ class Staff extends CI_Controller {
 		$data['row'] = $this->user;
 		
 		$data['announcement'] = '';
-		$anArr = array();
-		$anQuery = $this->staffM->getQueryResults('staffAnnouncements','announcement','1','','timestamp DESC');
-		foreach($anQuery AS $an){
-			$anArr[] = stripslashes($an->announcement);
-		}
-		$data['announcement'] = implode('<br/>==================================================================<br/>',$anArr);
+		
+		$anQuery = $this->staffM->getSingleInfo('staffAnnouncements', 'announcement', 1, '', 'timestamp DESC');
+		if(isset($anQuery->announcement))
+			$data['announcement'] = stripslashes($anQuery->announcement);
 			
 		
 		if(isset($_POST) && !empty($_POST)){
