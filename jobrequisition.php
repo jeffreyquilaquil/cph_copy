@@ -71,7 +71,7 @@ if(isset($_POST) && !empty($_POST)){
 	$body .= '<p><br/></p>';
 	$body .= '<p>CareerPH</p>';
 	
-	sendEmail($from, $to, $subject, $body, 'CareerPH');
+	sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject, $body, 'CareerPH');
 	$added = true;
 }
 
