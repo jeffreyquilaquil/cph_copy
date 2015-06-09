@@ -59,7 +59,7 @@ if(isset($_POST) && !empty($_POST)){
 	
 	//send autoemail to HR
 	$from = 'careers.cebu@tatepublishing.net';
-	$to = 'hr.cebu@tatepublishing.net';
+	$to = 'hr.cebu@tatepublishing.net'; 
 	$posName = $db->selectSingleQuery("newPositions", "title", "posID='".$_POST['positionID']."'");
 	$subject = 'REQUISITION #'.$iID.' IS SUBMITTED BY '.$_POST['requestor'].' FOR THE POSITION OF '.strtoupper($posName);
 	
