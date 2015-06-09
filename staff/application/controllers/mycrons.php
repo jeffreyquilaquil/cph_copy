@@ -7,7 +7,7 @@ class MyCrons extends CI_Controller {
 		$this->load->model('Staffmodel', 'staffM');	
 		$this->load->model('Textdefinemodel', 'txtM');	
 		$this->db = $this->load->database('default', TRUE);	
-		date_default_timezone_set("Asia/Manila");	
+		date_default_timezone_set("Asia/Manila");			
 	} 
 	
 	public function index(){
@@ -204,19 +204,42 @@ class MyCrons extends CI_Controller {
 		$dtoday = date('Y-m-d');
 		$query = $this->staffM->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2)', 'LEFT JOIN staffs ON empID=empID_fk');
 		
+		
 		if(count($query)>0){
 			foreach($query AS $q):
-				if($q->selfRating==''){
-					$mineEmail = 'Hi,<br/><br/>Your performance evaluation is due on '.date('F d, Y', strtotime($q->coachedEval)).'. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe">here</a> to conduct self-evaluation.<br/><br/>Thanks!';
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Evaluate coaching performance', $mineEmail, 'CAREERPH');
+				//if evaluation is today send message to HR
+				if($q->coachedEval==$dtoday){
+					$hrEmail = 'Hello HR,<br/><br/>Please be informed that the evaluation of '.$q->name.' is due. Please use this ticket to monitor that the fully signed evaluation form is signed and on file. Click <a href="'.$this->config->base_url().'coachingform/hroptions/'.$q->coachID.'/">here</a> to view coaching details.<br/><br/>Thank you.';
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Coaching Evaluation Due', $hrEmail, 'CAREERPH');
 				}
+			
+				if($q->selfRating==''){
+					$mineEmail = 'Hello '.$q->name.',<br/><br/>Your self evaluation due already. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to provide.  You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
+					
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH');
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'Evaluate coaching performance', $mineEmail, 'CAREERPH');
+				}
+				
 				if($q->selfRating!='' && $q->supervisor!=0){
-					$supervisorEmail = 'Hi,<br/><br/>The performance evaluation of '.$q->name.' is due on '.date('F d, Y', strtotime($q->coachedEval)).'. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe">here</a> to '.(($q->status==2)?'finalize':'conduct').' evaluation.<br/><br/>Thanks!';
-					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Evaluate coaching performance', $supervisorEmail, 'CAREERPH');
+					$supervisorEmail = 'Hello,<br/><br/>The performance evaluation of '.$q->name.' is due already on '.date('F d, Y', strtotime($q->coachedEval)).'. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to '.(($q->status==2)?'finalize':'conduct').' evaluation. You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
+					
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH');
+					$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'Evaluate coaching performance', $supervisorEmail, 'CAREERPH');
 				}
 			endforeach;	
 		}
-		echo count($query);
+		echo 'Number of pending evaluations: '.count($query).'<br/>';
+		
+		//query for daily reminder to supervisors to get from HR printed docs for signing
+		$printQ = $this->staffM->getQueryResults('staffCoaching', 'coachID, status, fname, email, supervisor, (SELECT CONCAT(fname," ", lname) AS cname FROM staffs s WHERE s.empID=staffCoaching.empID_fk) AS ename', '(status=0 AND HRoptionStatus = 1) OR (status=3 AND HRoptionStatus = 3)', 'LEFT JOIN staffs ON empID=(SELECT supervisor FROM staffs WHERE empID=empID_fk AND supervisor!=0)');
+				
+		foreach($printQ AS $p){
+			$sBody = 'Hello '.$p->fname.',<br/><br/>The '.(($p->status==1)?'coaching':'evaluation').' form for '.$p->ename.' is printed. Please claim the form from HR. You will receive this reminder daily until the said signed '.(($p->status==1)?'coaching':'evaluation').' form is returned to HR.<br/><br/><br/>Thanks!';
+			
+			$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $p->email, 'Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename.'', $sBody, 'CAREERPH');
+		}
+		
+		echo 'Number of pending signed documents: '.count($printQ).'<br/>';
 		exit;		
 	}
 	

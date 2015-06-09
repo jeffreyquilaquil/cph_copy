@@ -2763,15 +2763,28 @@ class Staff extends CI_Controller {
 		$row = $this->staffM->getSingleInfo('staffCoaching', 'staffCoaching.*, username, CONCAT(fname," ",lname) AS name, title, dept, supervisor, position, (SELECT CONCAT(fname," ",lname) AS rname FROM staffs WHERE empID=coachedBy) AS reviewer, startDate', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 		
 		if(isset($_POST) && !empty($_POST)){
-			if($_POST['submitType']=='hroption'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('HRoptionStatus'=>$_POST['status'], 'HRstatusData'=>$_POST['status'].'|'.$this->user->username.'|'.date('Y-m-d H:i:s').'-^_^-'));
-				$this->staffM->addMyNotif($row->generatedBy, 'Please claim from HR printed copy of the coaching form you generated for '.$row->name.' and let employee and supervisors signed it. After signing, return it to HR for filing.');
+			if($_POST['submitType']=='hroption' || $_POST['submitType']=='hroptionevaluation'){
+				if($_POST['submitType']=='hroption')
+					$optionVal = 'coaching';
+				else
+					$optionVal = 'evaluation';
+								
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('HRoptionStatus'=>$_POST['status'], 'HRstatusData'=>$row->HRstatusData.$_POST['status'].'|'.$this->user->username.'|'.date('Y-m-d H:i:s').'-^_^-'));
+				
+				$this->staffM->addMyNotif($row->generatedBy, 'Please claim from HR printed copy of the '.$optionVal.' form you generated/conducted for '.$row->name.' and let employee and supervisors signed it. After signing, return it to HR for filing.');
+				
 				
 				$genEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$row->generatedBy.'"');
 				$bEmail = '<p>Hi,</p>';
-				$bEmail .= '<p>Please claim from HR printed copy of the coaching form you generated for '.$row->name.'.</p>';
+				$bEmail .= '<p>Please claim from HR printed copy of the '.$optionVal.' form you generated/conducted for '.$row->name.'.</p>';
 				$bEmail .= '<p>Thanks!</p>';
-				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $genEmail, 'Printed copy of coaching form', $bEmail, 'CAREERPH');
+				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $genEmail, ucfirst($optionVal).' Form Printed for '.$row->name, $bEmail, 'CAREERPH');
+				
+				//send message to HR
+				$hrEmail = 'Hello HR,<br/><br/>Please be informed that the '.$optionVal.' form of '.$row->name.' is printed. Coach has been informed to collect the prints from HR. Please use this ticket to monitor that the fully signed '.$optionVal.' form is signed and on file. Click <a href="'.$this->config->base_url().'coachingform/hroptions/'.$row->coachID.'/">here</a> to view coaching details.<br/><br/>Thanks!';
+				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', ucfirst($optionVal).' Form Printed for '.$row->name, $hrEmail, 'CAREERPH');
+				
+				
 			}else if($_POST['submitType']=='uploadCF'){				
 				if($_FILES['cffile']['name']!=''){
 					$dir = UPLOADS.'coaching/';	
@@ -2785,15 +2798,6 @@ class Staff extends CI_Controller {
 						echo '<script>window.location.href="'.$this->config->item('career_uri').'";</script>';
 					}
 				}
-			}if($_POST['submitType']=='hroptionevaluation'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('HRoptionStatus'=>$_POST['status'], 'HRstatusData'=>$row->HRstatusData.$_POST['status'].'|'.$this->user->username.'|'.date('Y-m-d H:i:s').'-^_^-'));
-				$this->staffM->addMyNotif($row->generatedBy, 'Please claim from HR printed copy of the evaluation form you conducted for '.$row->name.' and let employee and supervisors signed it. After signing, return it to HR for filing.');
-				
-				$genEmail = $this->staffM->getSingleField('staffs', 'email', 'empID="'.$row->generatedBy.'"');
-				$bEmail = '<p>Hi,</p>';
-				$bEmail .= '<p>Please claim from HR printed copy of the evaluation form you generated for '.$row->name.'.</p>';
-				$bEmail .= '<p>Thanks!</p>';
-				$this->staffM->sendEmail( 'careers.cebu@tatepublishing.net', $genEmail, 'Printed copy of coaching form', $bEmail, 'CAREERPH');
 			}else if($_POST['submitType']=='uploadEF'){				
 				if($_FILES['cffile']['name']!=''){
 					$dir = UPLOADS.'coaching/';	

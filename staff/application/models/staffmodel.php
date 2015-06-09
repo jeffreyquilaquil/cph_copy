@@ -11,7 +11,7 @@ class Staffmodel extends CI_Model {
 		
 		$this->load->model('Textdefinemodel', 'txtM');	
 		$this->db = $this->load->database('default', TRUE);
-		$this->ptDB = $this->load->database('projectTracker', TRUE);
+		$this->ptDB = $this->load->database('projectTracker', TRUE);		
     }
 	
 	function dbQuery($sql){
@@ -1522,38 +1522,7 @@ class Staffmodel extends CI_Model {
 			$stat = 'CANCELLED';
 		}
 		return $stat;	
-	}
-	
-	function encryptText($text){		
-		$output = false;
-
-		$encrypt_method = "AES-256-CBC";
-		$secret_key = $this->config->item('demnCryptKey');
-		$secret_iv = $this->config->item('demnCryptIV');
-
-		$key = hash('sha256', $secret_key);		
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		$output = openssl_encrypt($text, $encrypt_method, $key, 0, $iv);
-		$output = base64_encode($output);		
-
-		return $output;		
-    }
-	
-	function decryptText($text){		
-		$output = false;
-
-		$encrypt_method = "AES-256-CBC";
-		$secret_key = $this->config->item('demnCryptKey');
-		$secret_iv = $this->config->item('demnCryptIV');
-
-		$key = hash('sha256', $secret_key);		
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		$output = openssl_decrypt(base64_decode($text), $encrypt_method, $key, 0, $iv);	
-
-		return $output;		
-    }
-	
-	
+	}	
 	
 }
 
