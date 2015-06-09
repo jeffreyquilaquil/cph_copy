@@ -51,13 +51,12 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 	
 	<div style="display:none;">
 		<div id="prodpreview">
-		   your stuff here
-		   your stuff here
-		   your stuff here
-		   your stuff here
-		   your stuff here
-		   your stuff here
-		   your stuff here
+			<br/>
+			Select an email to send:<br/><br/>
+			<center>
+			   <a class="iframe" href="/emailTemplate.php?type=invitationtoapplyopenposition"><button style="width:370px; padding:10px;">Invitation to Apply for Open Positions</button></a><br/>
+			   <a class="iframe" href="/emailTemplate.php?type=internalannouncementopenposition"><button style="width:370px; padding:10px;">Internal Announcement for Open Positions</button></a>
+			</center>
 		</div>
 	</div>
 	
@@ -77,6 +76,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 		<table class="applicants" cellpadding=5 cellspacing=5 width="100%">
 			<thead style="border-bottom:1px solid #000;">
 			<tr>
+				<th>ID</th>
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
@@ -93,6 +93,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					if($app1%2==0) echo '<tr bgcolor="#dcdcdc">';
 					else echo '<tr>';
 					$txt = '';
+					echo '<td>'.$aa['id'].'</td>';
 					if(!empty($aa['processText'])) $txt = '<span style="color:red;">('.$aa['processText'].')</span>';
 					echo '<td><a href="view_info.php?id='.$aa['id'].'">'.$aa['name'].'</a></td>
 							<td><a href="mailto:'.$aa['email'].'">'.$aa['email'].'</a></td>
@@ -124,6 +125,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 		<table class="applicants" cellpadding=5 cellspacing=5 width="100%">
 			<thead style="border-bottom:1px solid #000;">
 			<tr>
+				<th>ID</th>
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
@@ -140,6 +142,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					if($app%2==0) echo '<tr bgcolor="#dcdcdc">';
 					else echo '<tr>';
 					$txt = '';
+					echo '<td>'.$a['id'].'</td>';
 					if(!empty($a['processText'])) $txt = '<span style="color:red;">('.$a['processText'].')</span>';
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
@@ -171,6 +174,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 		<table class="applicants" cellpadding=5 cellspacing=5 width="100%">
 			<thead style="border-bottom:1px solid #000;">
 			<tr>
+				<th>ID</th>
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
@@ -186,6 +190,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					if($app%2==0) echo '<tr bgcolor="#dcdcdc">';
 					else echo '<tr>';
 					$txt = '';
+					echo '<td>'.$a['id'].'</td>';
 					if(!empty($a['processText'])) $txt = '<span style="color:red;">('.$a['processText'].')</span>';
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
@@ -207,6 +212,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 	<table class="applicants" class="hover stripe row-border">
 		<thead>
 			<tr>
+				<th>ID</th>
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
@@ -222,6 +228,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				$nw = '';
 				if($info['isNew']==0) $nw = ' [<b>old</b>]';
 				echo '<tr>
+						<td>'.$info['id'].'</td>
 						<td><a href="view_info.php?id='.$info['id'].'">'.$info['name'].'</a></td>
 						<td><a href="mailto:'.$info['email'].'">'.$info['email'].'</a></td>
 						<td>'.$info['mnumber'].'</td>
