@@ -29,12 +29,13 @@
 			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 			
 		<?php
+		if($this->config->base_url()!='https://careerph.tatepublishing.net/staff/'){
 			echo '<li '.(($content=='myattendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>';
 			
 			echo '<ul class="dropdown">';
 			
 			if($this->access->accessFullHR==true){	
-				echo '<li '.(($content=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Manage Schedules</a></li>';				
+				echo '<li '.(($content=='sched_schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Schedules Settings</a></li>';				
 			}
 			
 				echo '<li '.(($segment2=='timelogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a></li>';
@@ -54,6 +55,7 @@
 			
 			echo '</li>';
 			echo '</ul>';
+		}
 		?>			
 			
 		<?php
