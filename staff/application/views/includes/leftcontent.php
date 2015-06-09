@@ -1,7 +1,14 @@
 <div id="left-wrapper">
 <center>
 <?php
-if($this->user!=false && count($row)>0){
+if($this->user!=false && $this->uri->segment(1)=='schedules'){
+	echo '<ul id="leftMenu" style="margin:0px;">';
+		echo '<li><a id="schedSettings" class="schedLI current" href="#" onClick="schedChange(this)">Time Settings</a></li>';
+		echo '<li><a id="customtime" class="schedLI" href="#" onClick="schedChange(this)">Custom Time</a></li>';
+		echo '<li><a id="customsched" class="schedLI" href="#" onClick="schedChange(this)">Custom Schedules</a></li>';
+		echo '<li><a id="holeventsched" class="schedLI" href="#" onClick="schedChange(this)">Holiday/Event Schedules</a></li>';
+	echo '</ul>';
+}else if($this->user!=false && count($row)>0){
 	$fname = '';
 
 	if($content=='index'){
@@ -44,7 +51,7 @@ if($this->user!=false && count($row)>0){
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request COE</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>';
 		}
 		if(($content=='staffinfo' || $this->uri->segment(1)=='timecard') && $this->user->username != $row->username && ($this->access->accessFullHR==true || $this->staffM->checkStaffUnderMe($row->username))){
 			echo '<li><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/" '.(($content=='staffinfo')?'class="current"':'').'>'.trim($row->fname).'\'s Info</a></li>';
@@ -84,12 +91,6 @@ if($this->user!=false && count($row)>0){
 		<input type="button" value="Search" id="insearch"/>
 	</div>
 <?php } ?>
-
-<?php	
-}
-?>
-
-</div>
 
 <script>
 $(document).ready(function(){
@@ -146,5 +147,12 @@ function visitStaffPage(username){
 	window.open('<?= $this->config->base_url().'staffinfo/'?>'+username+'/', '_blank');
 }
 </script>
+
+<?php	
+}
+?>
+</div>
+
+
 
 
