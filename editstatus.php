@@ -20,7 +20,6 @@
 		$position = $pp['title'];
 		$info += $pp;
 	}
-		
 			
 
 	if(isset($_GET['pos'])){
@@ -54,12 +53,16 @@
 		}else if($_GET['pos']=='freeze'){
 			$db->updateQuery('applicants', array('processStat' => '0'), 'id='.$_POST['appID']);
 			addStatusNote($_GET['appID'], 'changeStatus', '', $_POST['positionID'], 'Freeze Application');
+		}else if($_GET['pos']=='interviewSched'){
+			$interviewer = $_POST['interviewer'];
+			$sched = date('Y-m-d H:i', strtotime($_POST['dateNtime']));
+			$timezone = $_POST['timezone'];
+			$db->updateQuery('applicants', array('interviewSched' => $interviewer.'|'.$sched.'|'.$timezone), 'id="'.$_POST['appID'].'"');
 		}
-		
 		exit;		
 	}
 	
-	if(isset($_POST) && !empty($_POST)){
+	if(isset($_POST) && !empty($_POST)){		
 		if($_POST['formSubmit']=='reprofile'){
 			$db->updateQuery('applicants', array('position' => $_POST['newPos'], 'isNew' => 1), 'id='.$id);
 			
@@ -195,6 +198,10 @@
 			if(isset($_POST['biometricsEnrolled']) && $_POST['biometricsEnrolled']=='on') $uArr['biometricsEnrolled'] = true;
 			
 			$db->updateQuery('applicants', $uArr, 'id='.$_POST['appID']);			
+		}
+		
+		if(isset($_POST['formSubmit']) && $_POST['process']==4){
+			echo '<script>alert("Please input final interview schedule.");</script>';
 		}
 		
 		echo '<script>window.location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
@@ -472,7 +479,53 @@
 					
 					$isTestEmpty = $tests;
 					echo '<input type="hidden" id="processTests" value="'.$tests.'"/>';
-				}else if($info['process']==4){ ?>
+				}else if($info['process']==4){ 	
+									
+					if(!empty($info['interviewSched'])){ 
+						$intDetails = explode('|', $info['interviewSched']);
+				?>
+					<table id="intDetailstbl" width="30%" cellpadding=5 border=1>
+						<tr bgcolor="#dcdcdc"><td colspan=2><b>Final Interview Details:</b> <a href="javascript:void(0);" style="float:right;" onClick="$('#intDetailstbl').hide(); $('#selectInterviewertbl').show();">Change</a></td></tr>
+						<tr><td>Final Interviewer</td><td><?= $intDetails[0]; ?></td></tr>
+						<tr><td>Interview Schedule</td><td><?= date('F d, Y h:i A', strtotime($intDetails[2])); ?></td></tr>
+						<tr><td>Timezone</td><td><?= $intDetails[3]; ?></td></tr>
+					</table>					
+				<?php
+					}
+				?>				
+					<table id="selectInterviewertbl" width="70%" style="margin-bottom:20px; <?= ((!empty($info['interviewSched']))?'display:none;':'') ?>" cellpadding=5>
+				<?php 
+					$intName = '';
+					if(!empty($info['interviewSched'])){
+						$viewArr = explode('|', $info['interviewSched']);
+						$intName = $viewArr[0];
+					}
+					
+					$staffs = $ptDb->selectQueryArray('SELECT CONCAT(sFirst, " ", sLast) AS name, sFirst, sLast, username, email FROM staff WHERE active="Y" ORDER BY sLast');
+					echo '<tr>';
+					if(empty($intName))
+						echo '<td>No assigned final interviewer yet, please assign</td>';
+					else
+						echo '<td>The (last) assigned final interviewer for this applicant is <b>'.$intName.'</b></td>';
+					
+					echo '<td><select name="interviewer" id="interviewer" class="form-control"><option value="">Select interviewer</option>';
+					foreach($staffs AS $s){
+						echo '<option value="'.$s['name'].'|'.$s['email'].'" '.(($intName==$s['name'])?'selected="selected"':'').'>'.$s['sLast'],', '.$s['sFirst'].'</option>';
+					}
+					echo '</select></td></tr>'; 
+				?>
+						<tr><td width="50%">Recommend time and date of the interviewer:</td><td><input type="text" name="intdate" id="intdate" class="dateandtime form-control"/></td></tr>
+						<tr><td>Select a time zone:</td><td>
+						<select name="inttimezone" class="form-control">
+							<option value="PHT">PHT</option>
+							<option value="CST">CST</option>
+						</select>
+						</td></tr>
+						<tr><td colspan=2 style="color:red;"><span style="font-weight:bold;">Note: If one of the interviewers is in OKC, please use CST time.</span><br/><span>Refer to this site for time conversions: <a href="http://www.timeanddate.com/worldclock/converter.html" target="_blank">http://www.timeanddate.com/worldclock/converter.html</a></span></td></tr>
+						<tr><td colspan=2 align="right"><button class="btn btn-xs btn-success" onClick="nextInterviewer()">Next</button></td></tr>
+					</table>
+				
+					<hr/>
 					<table width="50%" cellspacing=10 cellpadding=10>
 						<?php echo techTest('final', 1, '8'); ?>
 					</table>
@@ -802,6 +855,11 @@
 			format:'F d, Y',
 			timepicker:false
 		}); 
+		
+		$('.dateandtime').datetimepicker({
+			format:'F d, Y h:00 A',
+			timepicker:true
+		});
 
 		if($('#accountType').val() == 2){
 			$('#mimictr').css('display', '');
@@ -867,7 +925,7 @@
 	
 	function validateAdvance(){
 		valid = true;
-		var process = $('#process').val()- 1;
+		var process = $('#process').val()- 1;		
 		
 		if(process == 1 && $('#submitForm').val() != 'yes'){
 			alert($('#submitForm').val());
@@ -1068,6 +1126,29 @@
 		}else{
 			return true;
 		}
+	}
+	
+	function nextInterviewer(){
+		err = '';
+		if($('#interviewer').val()=='')
+			err += '-  No final interviewer\n';
+		if($('#intdate').val()=='')
+			err += '-  No time and date of interview\n';
+
+		if(err!=''){
+			alert('Please check error(s):\n'+err);
+		}else{
+			$(this).attr('disabled', 'disabled');
+			$.post("editstatus.php?pos=interviewSched&appID=<?= $_GET['id'] ?>",{
+				appID:'<?= $_GET['id'] ?>',
+				interviewer:$('#interviewer').val(),
+				dateNtime:$('#intdate').val(),
+				timezone:$('select[name="inttimezone"]').val()
+			},function(){
+				window.location.href="<?= HOME_URL ?>emailTemplate.php?id=<?= $_GET['id'] ?>&type=finalInterviewerSched";
+			});
+		}
+		
 	}
 </script>
 

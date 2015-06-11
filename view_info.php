@@ -163,6 +163,8 @@ if(count($info)==0){
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=custom">Click here to send custom email</a></li>
 		<?php if($info['isNew']==1){ ?><li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=hmanager">Click here to send custom email to Hiring Manager</a></li><? } ?>
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=declined">Click here to send DECLINE EMAIL</a></li>
+		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=finalInterviewerSched">Click here to send Final Interview Invitation (to FINAL INTERVIEWER)</a></li>
+		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=finalInterviewerSched">Click here to resend last Final Interview Invitation (to FINAL INTERVIEWER)</a></li>
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=finalInterview">Click here to send Final Interview Invitation</a></li>
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=testingInvitation">Click here to send Testing Invitation</a></li>
 	</ul>

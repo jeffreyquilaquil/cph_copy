@@ -167,8 +167,8 @@ function sendEmail( $from, $to, $subject, $body, $fromName='' ){
 	   */
 	 
 
-	/* $subject = $subject.' to-'.$to;
-	$to = 'ludivina.marinas@tatepublishing.net'; */
+	$subject = $subject.' to-'.$to;
+	$to = 'ludivina.marinas@tatepublishing.net';
 	$fields = array(
 	'from' => $from,
 	'sendTo' => $to,
@@ -216,4 +216,5 @@ function addStatusNote($appID, $type, $testStatus, $positionID, $reason){
 				
 	$db->insertQuery('processStatusData', $insArr);
 }
+
 ?>

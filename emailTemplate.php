@@ -1,24 +1,34 @@
 <?php
 require 'config.php';
 $type = $_GET['type'];
+$id = $_GET['id'];
 
-$posted = 1;
-if($type=='finalInterview' || $type=='testingInvitation')
-	$posted = 0;
+if(!empty($id)){
+	$info = $db->selectSingleQueryArray("applicants","id, CONCAT(fname,' ',lname) AS fullname, position, isNew, email, interviewSched","id=".$id);
+
+	$position = '';
+	if($info['isNew']==0){
+		$position = $db->selectSingleQuery("positions", "title" , "id=".$info['position']);
+	}else if(!empty($info['position'])){	
+		$position = $db->selectSingleQuery("newPositions", "title" , "posID=".$info['position']);	
+	}
+
+	$arrValues['%NAME%'] = ucwords($info['fullname']);
+	$arrValues['%POSITION%'] = $position;
+}
+
+$subject = '';
+$to = '';
+$message;
 
 if(isset($_POST) && !empty($_POST)){
-	if($_POST['submitType']=='generate' || $_POST['submitType']=='edit'){
-		$posted = 1;
-		$arrValues['%DATEANDTIME%'] = $_POST['dateandtime'];
-		if($type=='finalInterview')
-			$arrValues['%INTERVIEWER%'] = $_POST['interviewer'];
-	}else if($_POST['submitType']=='send'){
+	if($_POST['submitType']=='send'){
 		if(empty($_POST['subject']) || empty($_POST['email']) || empty($_POST['message'])){
 			echo '<p style="color:red;">Unable to send message. Please check all empty fields.</p>';
 		}else{
 			$toId = array();
 			
-			if(isset($_GET['id'])) $toId[] = $_GET['id'];
+			if(!empty($id)) $toId[] = $id;
 			
 			if($type=='invitationtoapplyopenposition'){
 				$qArr = array();
@@ -47,6 +57,23 @@ if(isset($_POST) && !empty($_POST)){
 				if(!empty($noApp)){
 					echo '<p style="color:red;">Email NOT sent to '.rtrim(trim($noApp), ',').'.  No email address or invalid input.</p>';
 				}
+			}else if($type=='finalInterview'){
+				//send email to interviewer and job requestor
+				$to = array();		
+				$schedDetails = explode('|', $info['interviewSched']);		
+				if(isset($schedDetails[1])) $to[] = $schedDetails[1];
+				//get requestor
+				$requestor = $db->selectSingleQuery('jobReqData', 'requestor' , 'positionID='.$info['position'].' AND status=0');		
+				$rData = $ptDb->selectSingleQueryArray('staff', 'CONCAT(sFirst, " ", sLast) AS name, email', 'username="'.$requestor.'"');
+				if(isset($rData['email']) && !in_array($rData['email'], $to)) $to[] = $rData['email'];
+				
+				
+				$to = implode(',', $to).',hr-list@tatepublishing.net';
+				$subject = 'NOTE! Final Interview Invitation send to Applicant '.$info['fullname'].' for position '.strtoupper($position).' Final Interviewer, please be prepared.';
+				$eBody = 'Hello,<br/><br/>Please be informed that a Final Interview invitation has been sent to '.$info['fullname'].' for the position of '.strtoupper($position).'. Final Interviewer is <b>'.$schedDetails[0].'</b>. Final Interview schedule is on <b>'.date('F d, Y h:i A', strtotime($schedDetails[2])).' '.$schedDetails[3].'</b>. Please reply to this email if you have concerns about this matter.<br/><br/>Thanks!';	
+				
+				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email' );
+				echo '<p>Interviewer and requester are also informed.</p>';
 			}
 			
 			if(!empty($_POST['email'])){
@@ -63,41 +90,23 @@ if(isset($_POST) && !empty($_POST)){
 					addStatusNote($t, 'email', '', '', $messageNote);
 				}
 				
-				echo '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">Email Sent to '.rtrim(trim($_POST['email']),',').'</div>';
+				echo 'Thank you! The email has been sent to '.rtrim(trim($_POST['email']),',');
 			}else{
 				echo '<p style="color:red;">Email not sent. Empty recipient.</p>';
 			}
 			exit;
-		}		
-		
+		}			
+	}else if($_POST['submitType']=='generate'){
+		$arrValues['%DATEANDTIME%'] = $_POST['dateandtime'];
 	}
 }
-
-if(isset($_GET['id'])){
-	$info = $db->selectSingleQueryArray("applicants","id, CONCAT(fname,' ',lname) AS fullname, position, isNew, email","id=".$_GET['id']);
-
-	$position = '';
-	if($info['isNew']==0){
-		$position = $db->selectSingleQuery("positions", "title" , "id=".$info['position']);
-	}else if(!empty($info['position'])){	
-		$position = $db->selectSingleQuery("newPositions", "title" , "posID=".$info['position']);	
-	}
-
-	$arrValues['%NAME%'] = ucwords($info['fullname']);
-	$arrValues['%POSITION%'] = $position;
-}
-
-$subject = '';
-$to = '';
-$message;	
+	
 ?>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<title>Email Template</title>
-	<style type="text/css">
-		body{ font-family:'Open Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; }
-	</style>
+	<link href="css/yeti.bootstrap.min.css" rel="stylesheet">
 	<script src="js/jquery.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css"/ >
 	<script src="js/jquery.datetimepicker.js"></script>
@@ -116,34 +125,139 @@ $message;
 	</script>
 </head>
 <body>
-<?php if($type=='finalInterview' && $posted==0){ 
+<?php if($type=='finalInterview'){ 
 	$interviewer = '';
 	if($info['isNew']==1)
 		$interviewer = $db->selectSingleQuery('jobReqData', 'supervisor' , 'positionID='.$info['position'].' AND status=0');
+	
+	if(!empty($info['interviewSched'])){ 
+			$intDetails = explode('|', $info['interviewSched']);
+	?>
+	<div id="finalIntDiv">
+		<table id="intDetailstbl" width="80%" cellpadding=5 border=0>
+			<tr bgcolor="#dcdcdc"><td colspan=2><b>Final Interview Details:</b> <a href="javascript:void(0);" style="float:right;" onClick="$('#intDetailstbl').hide(); $('#selectInterviewertbl').show();">Change</a></td></tr>
+			<tr><td width=35%>Final Interviewer</td><td><?= $intDetails[0]; ?></td></tr>
+			<tr><td>Interview Schedule</td><td><?= date('F d, Y h:i A', strtotime($intDetails[2])); ?></td></tr>
+			<tr><td>Timezone</td><td><?= $intDetails[3]; ?></td></tr>
+			<tr><td colspan=2>
+				<button style="padding:5px;" id="genEmailFI">Generate Email</button>
+			</td></tr>
+		</table>	
+		<br/>
+		
+	<?php
+		}
 ?>
-	<form action="" method="POST" onSubmit="return validateVal('finalInterview')">
-	<b>Interview Schedule</b>
-	<table style="position:relative;">
-		<tr><td>Date and Time:</td><td><input type="text" name="dateandtime" id="dateandtime" size="50" style="padding:5px;"></td></tr>
-		<tr><td>Interviewer:</td><td><input type="text" name="interviewer" id="interviewer" value="<?= $interviewer ?>" size="50"style="padding:5px;"></td></tr>
-		<tr><td colspan=2><input type="submit" value="Generate Email" style="padding:5px;"><input type="hidden" name="submitType" value="generate"/></td></tr>
+	<table id="selectInterviewertbl" width="70%" style="margin-bottom:20px; <?= ((!empty($info['interviewSched']))?'display:none;':'') ?>" cellpadding=5>
+	<?php 
+		$intName = '';
+		if(!empty($info['interviewSched'])){
+			$viewArr = explode('|', $info['interviewSched']);
+			$intName = $viewArr[0];
+		}
+		
+		$staffs = $ptDb->selectQueryArray('SELECT CONCAT(sFirst, " ", sLast) AS name, sFirst, sLast, username, email FROM staff WHERE active="Y" ORDER BY sLast');
+		echo '<tr>';
+		if(empty($intName))
+			echo '<td>No assigned final interviewer yet, please assign</td>';
+		else
+			echo '<td>The (last) assigned final interviewer for this applicant is <b>'.$intName.'</b></td>';
+		
+		echo '<td><select name="interviewer" id="interviewer" class="form-control"><option value="">Select interviewer</option>';
+		foreach($staffs AS $s){
+			echo '<option value="'.$s['name'].'|'.$s['email'].'" '.(($intName==$s['name'])?'selected="selected"':'').'>'.$s['sLast'],', '.$s['sFirst'].'</option>';
+		}
+		echo '</select></td></tr>'; 
+	?>
+		<tr><td width="50%">Recommend time and date of the interviewer:</td><td><input type="text" name="intdate" id="intdate" class="dateandtime form-control"/></td></tr>
+		<tr><td>Select a time zone:</td><td>
+		<select name="inttimezone" class="form-control">
+			<option value="PHT">PHT</option>
+			<option value="CST">CST</option>
+		</select>
+		</td></tr>
+		<tr><td colspan=2 style="color:red;"><span style="font-weight:bold;">Note: If one of the interviewers is in OKC, please use CST time.</span><br/><span>Refer to this site for time conversions: <a href="http://www.timeanddate.com/worldclock/converter.html" target="_blank">http://www.timeanddate.com/worldclock/converter.html</a></span></td></tr>
+		<tr><td colspan=2 align="right"><button class="btn btn-xs btn-success" onClick="nextInterviewer()">Next</button></td></tr>
 	</table>
-	</form>
+	
+	</div>
+	
+	<script type="text/javascript">
+		$(function(){
+			$('#emailContentDiv').hide();
+			$('#edit').hide();
+			$('#send').hide();
+			$('#emailContentShow').hide();
+			
+			$('#genEmailFI').click(function(){
+				$('#finalIntDiv').hide();
+				$('#emailContentShow').show();
+				
+				$('#edit').show();
+				$('#send').show();
+			});
+		});
+		
+		function nextInterviewer(){
+			err = '';
+			if($('#interviewer').val()=='')
+				err += '-  No final interviewer\n';
+			if($('#intdate').val()=='')
+				err += '-  No time and date of interview\n';
+
+			if(err!=''){
+				alert('Please check error(s):\n'+err);
+			}else{
+				$(this).attr('disabled', 'disabled');
+				$.post("editstatus.php?pos=interviewSched&appID=<?= $info['id'] ?>",{
+					appID:'<?= $info['id'] ?>',
+					interviewer:$('#interviewer').val(),
+					dateNtime:$('#intdate').val(),
+					timezone:$('select[name="inttimezone"]').val()
+				},function(){
+					window.location.href="<?= HOME_URL ?>emailTemplate.php?id=<?= $info['id'] ?>&type=finalInterviewerSched";
+				});
+			}
+			
+		}
+	</script>
 	
 <?php
-}else if($type=='testingInvitation' && $posted==0){
+}else if($type=='testingInvitation'){
 ?>
-	<form action="" method="POST" onSubmit="return validateVal('testingInvitation')">
-	<b>Testing Schedule</b>
-	<table style="position:relative;">
-		<tr><td>Date and Time:</td><td><input type="text" name="dateandtime" id="dateandtime" size="50" style="padding:5px;"></td></tr>
-		<tr><td colspan=2><input type="submit" value="Generate Email" style="padding:5px;"><input type="hidden" name="submitType" value="generate"/></td></tr>
-	</table>
-	</form>
+	<div id="testInvDiv">
+		<form action="" method="POST" onSubmit="return validateVal('testingInvitation')">
+		<b>Testing Schedule</b>
+		<table style="position:relative;">
+			<tr><td>Date and Time:</td><td><input type="text" name="dateandtime" id="dateandtime" size="50" style="padding:5px;"></td></tr>
+			<tr><td colspan=2><input type="submit" value="Generate Email" style="padding:5px;"><input type="hidden" name="submitType" value="generate"/></td></tr>
+		</table>
+		</form>
+	</div>
+<?php 
+	if(isset($_POST) && !empty($_POST)){
+		echo '<script> $(function(){ testHide(1); }); </script>';
+	}else{
+		echo '<script> $(function(){ testHide(0); }); </script>';
+	}
+?>	
+	
+	<script type="text/javascript">		
+		function testHide(tt){
+			if(tt==0){
+				$('#emailContentDiv').hide();
+				$('#edit').hide();
+				$('#send').hide();
+				$('#emailContentShow').hide();
+			}else{
+				$('#testInvDiv').hide();
+			}
+		}
+	</script>
 <?php
 }
 
-if($posted==1){
+
 	$template = $db->selectSingleQueryArray('emailTemplates', 'template, templateName, toEdit' , 'templateType="'.$type.'"');
 	
 	if($type=='custom' || $type=='hmanager' && !empty($info)){
@@ -191,50 +305,100 @@ if($posted==1){
 		}
 		$arrValues['%OPENPOSITIONS%'] .= '</ul>';
 		
-		$emailContent = $template['template'];
-		foreach($arrValues AS $a=>$val):
-			$emailContent = str_replace($a, $val, $emailContent);
-		endforeach;
-		
 		$subject = 'Job Opportunities for You in Tate Publishing';
-		$message = $emailContent;
+		$emailContent = $template['template'];		
+	}else if($type=='finalInterviewerSched'){
+		$to = array();		
+		$schedDetails = explode('|', $info['interviewSched']);		
+		if(isset($schedDetails[1])) $to[] = $schedDetails[1];
+		//get requestor
+		$requestor = $db->selectSingleQuery('jobReqData', 'requestor' , 'positionID='.$info['position'].' AND status=0');		
+		$rData = $ptDb->selectSingleQueryArray('staff', 'CONCAT(sFirst, " ", sLast) AS name, email', 'username="'.$requestor.'"');
+		if(isset($rData['email']) && !in_array($rData['email'], $to)) $to[] = $rData['email'];
 		
-	}else if(!empty($template) && $template['toEdit']==1){
-		$emailContent = $template['template'];
-		foreach($arrValues AS $a=>$val):
-			$emailContent = str_replace($a, $val, $emailContent);
-		endforeach;
+		//email body
+		if(isset($schedDetails[0])) $arrValues['%INTERVIEWER%'] = $schedDetails[0];
+		if(isset($schedDetails[2]) && isset($schedDetails[3])) $arrValues['%DATESCHEDULED%'] = date('F d, Y h:i A', strtotime($schedDetails[2])).' '.$schedDetails[3];
+		$arrValues['%HRNOTE%'] = $db->selectSingleQuery('processStatusData', 'reason' , 'appID='.$id.' AND type="hr" AND testStatus="passed"');
+			
+		$emailContent = $template['template'];		
+		//PS for requestor
+		if(count($to)>1 && isset($rData['name'])){
+			$emailContent .= '<p>&nbsp;</p><p><i>***<b>Note for '.$rData['name'].'</b>, you receive this email because you are the job requestor.</i></p>';
+		}		
 		
-		
-		$subject = $template['templateName'];
-		$to = $info['email'];
-		$message = $emailContent;
+		$to = implode(',', $to);
+		$subject = $template['templateName'].' Applicant for '.strtoupper($position).', '.$info['fullname'];
 		$hideContent = true;
 		
-		echo $emailContent;
+		echo '<table cellpadding=5>';
+		echo '<tr><td colspan=2><b>Alert!</b><br/>The assigned final interviewer for this applicant is<br>';
+			if(isset($schedDetails[0])) echo '<b>'.$schedDetails[0].'</b>';
+			if(isset($rData['name'])) echo ' cc <b>'.$rData['name'].'</b>';
+		echo '</td></tr>';
+		echo '<tr><td colspan=2><i>The below email will be sent to the abovementioned person to confirm scheduled interview:</i></td></tr>';
+		echo '</table>';		
+	}else if($type=='finalInterview'){
+		$to = $info['email'];
+		$subject = $template['templateName'];
+		$emailContent = $template['template'];
+		$hideContent = true;
+		
+		$intDetails = explode('|', $info['interviewSched']);
+		if(isset($intDetails[2])) $arrValues['%DATEANDTIME%'] = date('F d, Y h:i A', strtotime($intDetails[2]));
+		if(isset($intDetails[0])) $arrValues['%INTERVIEWER%'] = $intDetails[0];
+		
+	}else if(!empty($template)){
+		$emailContent = $template['template'];
+		$subject = $template['templateName'];
+		
+		if($template['toEdit']==1){			
+			$to = $info['email'];			
+			$hideContent = true;	
+		}		
+	}
+	
+	if(!isset($message)){
+		if(isset($emailContent)){
+			foreach($arrValues AS $a=>$val):
+				$emailContent = str_replace($a, $val, $emailContent);
+			endforeach;
+			$message = $emailContent;
+		}else{
+			$message = '';
+		}		
+	}
+	
+	if(isset($hideContent) && $hideContent==true){
+		echo '<div id="emailContentShow" style="padding-bottom:15px;">';
+			echo '<table cellpadding=5>';
+				echo '<tr><td>Subject:</td><td bgcolor="#ddd">'.$subject.'</td></tr>';
+				echo '<tr><td valign="top">Body:</td><td bgcolor="#ddd">'.$message.'</td></tr>';
+			echo '</table>';
+		echo '</div>';		
 	}
 ?>
 	
 
 <form action="" method="POST">
-<?php if(isset($hideContent) && $hideContent==true){ echo '<div style="display:none;">'; } ?>
-	<b>Subject:</b> <input type="text" name="subject" value="<?= $subject ?>" style="width:100%;padding:5px;"/><br/>
-	
-	<b>To:</b> <span style="font-size:10px;font-style:italic; color:#777;"><?= (($type!='invitationtoapplyopenposition')?'(Separate email addresses with comma)':'') ?></span>
-	<input type="text" name="email" value="<?= $to ?>" style="width:100%;padding:5px;" <?= (($type=='invitationtoapplyopenposition')?'placeholder="Application IDs, separated by commas"':'') ?>/><br/>
-	
-	<b>Message:</b><textarea name="message" style="height:270px;"><?= $message ?></textarea><br/>
-<?php if(isset($hideContent) && $hideContent==true){ echo '</div>'; } ?>	
-
-	<input type="hidden" id="sendEdit" name="submitType" value="send"/>
-	<input type="submit" id="send" value="Send Email" style="padding:5px;"/>
+	<div id="emailContentDiv" <?= ((isset($hideContent) && $hideContent==true)?'style="display:none;"':'') ?>>
+		<b>Subject:</b> <input type="text" name="subject" value="<?= $subject ?>" style="width:100%;padding:5px;"/><br/>
+		
+		<b>To:</b> <span style="font-size:10px;font-style:italic; color:#777;"><?= (($type!='invitationtoapplyopenposition')?'(Separate email addresses with comma)':'') ?></span>
+		<input type="text" name="email" value="<?= $to ?>" style="width:100%;padding:5px;" <?= (($type=='invitationtoapplyopenposition')?'placeholder="Application IDs, separated by commas"':'') ?>/><br/>
+		
+		<b>Message:</b><textarea name="message" style="height:250px;"><?= $message ?></textarea><br/>
+	</div>
 <?php 
-	if(isset($template['toEdit']) && $template['toEdit']==1 && (!isset($_POST) || $_POST['submitType'] != 'edit')){
-		echo '<input type="submit" id="edit" value="Edit" style="padding:5px;"/>';
+	if(isset($template['toEdit']) && $template['toEdit']==1){
+		echo '<input type="button" id="edit" value="Edit Message" style="padding:5px 10px; background-color:gray; cursor:pointer; border:1px solid #000;"/>&nbsp;&nbsp;';
 	} 
 ?>
+	<input type="hidden" id="sendEdit" name="submitType" value="send"/>
+	<input type="submit" id="send" value="Send Email" style="padding:5px 20px; background-color:green; cursor:pointer; border:1px solid #000;"/>
+
 </form>
-<?php } ?>
+
 <script type="text/javascript">
 	$(function () { 
 		$('#dateandtime').datetimepicker({
@@ -242,8 +406,15 @@ if($posted==1){
 			timepicker:true
 		}); 
 		
+		$('.dateandtime').datetimepicker({
+			format:'F d, Y h:00 A',
+			timepicker:true
+		});
+		
 		$('#edit').click(function(){
-			$('#sendEdit').val('edit');
+			$('#emailContentShow').hide();
+			$('#emailContentDiv').show();
+			$(this).hide();			
 		});
 		
 		$('#send').click(function(){
