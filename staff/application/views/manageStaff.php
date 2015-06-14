@@ -36,7 +36,7 @@
 		<td><input type="checkbox" name="flds[]" value="active" <?= ((in_array('active',$fvalue)) ? 'checked':'') ?>/> Active</td>
 		<td><input type="checkbox" name="flds[]" value="accessEndDate" <?= ((in_array('accessEndDate',$fvalue)) ? 'checked':'') ?>/> Access End Date</td>
 		<td><input type="checkbox" name="flds[]" value="terminationType" <?= ((in_array('terminationType',$fvalue)) ? 'checked':'') ?>/> Termination Reason</td>
-		<td><br/></td>
+		<td><input type="checkbox" name="flds[]" value="sal" <?= ((in_array('sal',$fvalue)) ? 'checked':'') ?>/> Salary</td>
 		<td><br/></td>
 	</tr>
 </table>
@@ -75,6 +75,7 @@
 				else if($fvalue[$i]=='active') echo (($row->active=='1')?'Yes':'No');
 				else if($fvalue[$i]=='username') echo strtolower($row->$fvalue[$i]);
 				else if($fvalue[$i]=='terminationType') echo $this->staffM->infoTextVal('terminationType', $row->$fvalue[$i]);
+				else if($fvalue[$i]=='sal') echo $this->txtM->convertDecryptedText('sal',$row->$fvalue[$i]);
 				else echo ucfirst($row->$fvalue[$i]);	
 			echo '</td>';
 		}		

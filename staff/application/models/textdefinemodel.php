@@ -70,6 +70,26 @@ class Textdefinemodel extends CI_Model {
 	public function convertNumFormat($n){
 		return number_format((int)str_replace(',','',$n),2);
 	}
+	
+	function convertTimeToMinHours($tdiff){
+		$tText = '';
+		$hours = floor($tdiff/3600);
+		$remainder = $tdiff - ($hours * 3600);
+		$minutes = floor($remainder/60);
+		$remainder = $remainder - ($minutes * 60);
+		$seconds = $remainder;
+
+		if($hours>0 && $hours==1) $tText .= $hours.' hour ';
+		else if($hours>0 && $hours>1) $tText .= $hours.' hours ';
+
+		if($minutes==1) $tText .= $minutes.' minute ';
+		else if($minutes>1) $tText .= $minutes.' minutes ';
+		
+		if($seconds==1) $tText .= $seconds.' second ';
+		else if($seconds>1) $tText .= $seconds.' seconds ';
+
+		return $tText;
+	}
 		
 }
 
