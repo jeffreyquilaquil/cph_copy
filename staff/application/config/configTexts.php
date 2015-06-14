@@ -219,6 +219,15 @@
 			);
 			
 	$config['encText'] = array('bankAccnt', 'hmoNumber', 'sss', 'tin', 'philhealth', 'hdmf', 'sal');
+	
+	$config['timeLogType'] = array(
+				'A' => 'Time In',
+				'B' => 'Lunch Out',
+				'C' => 'Lunch In',
+				'D' => 'Break Out',
+				'E' => 'Break In',
+				'Z' => 'Time Out',
+			);
 			
 	
 	

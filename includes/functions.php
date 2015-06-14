@@ -217,4 +217,24 @@ function addStatusNote($appID, $type, $testStatus, $positionID, $reason){
 	$db->insertQuery('processStatusData', $insArr);
 }
 
+function encryptText($text){
+	$theencryptor = 'hiCebuITteamIamDivi';
+	if(!empty($text)){
+		$secret = base64_encode($theencryptor);
+		$text = base64_encode($secret.base64_encode($text));
+	}
+	return $text;
+}
+
+function decryptText($text){
+	$theencryptor = 'hiCebuITteamIamDivi';
+	if(!empty($text)){
+		$secret = base64_encode($theencryptor);
+		$text = base64_decode($text);
+		$text = str_replace($secret, '', $text);
+		$text = base64_decode($text);
+	}
+	return $text;
+}
+
 ?>

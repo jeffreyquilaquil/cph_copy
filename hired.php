@@ -111,14 +111,14 @@ if(isset($_POST) AND !empty($_POST)){
 					'startDate' => date('Y-m-d', strtotime($startD)),
 					'office' => (($_POST['office']=='cebu')?'PH-Cebu':$_POST['office']),
 					'shift' => $_POST['shift'],
-					'sal' => $hire['salaryOffer'],
+					'sal' => encryptText($hire['salaryOffer']),
 					'bdate' => $hire['bdate'],
 					'address' => $hire['address'],
 					'phone1' => $hire['mnumber'],
-					'sss' => $_POST['sss'],
-					'tin' => $_POST['tin'],
-					'philhealth' => $_POST['philhealth'],
-					'hdmf' => $_POST['hdmf'],
+					'sss' => encryptText($_POST['sss']),
+					'tin' => encryptText($_POST['tin']),
+					'philhealth' => encryptText($_POST['philhealth']),
+					'hdmf' => encryptText($_POST['hdmf']),
 					'maritalStatus' => $_POST['maritalStatus']
 				);
 		$lastIDinserted = $db->insertQuery('staffs', $cstaffData);
