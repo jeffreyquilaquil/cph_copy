@@ -91,14 +91,22 @@ if($updated==false && count($row)>0){
 		<td width="40%">Current basic salary</td>
 		<td>Select new basic salary</td>
 	</tr>
+<?php
+	$curSal = $this->txtM->convertNumFormat($this->txtM->decryptText($row->sal));
+	if(empty($curSal) || $curSal=='0.00' || $curSal=='0'){
+		echo '<tr class="trsalary hidden"><td colspan=2 class="errortext">Current salary is empty. Please request HR to update current salary before you can file for salary change.
+			<input type="hidden" name="salary" id="valsalary" value=""/></td></tr>';
+	}else{
+?>
 	<tr class="trsalary hidden">
-		<td width="40%">Php <?= $this->txtM->convertNumFormat($this->txtM->decryptText($row->sal)) ?></td>
+		<td width="40%">Php <?= $curSal ?></td>
 		<td><input type="text" name="salary" id="valsalary" class="forminput" placeholder="10,000.00" value="<?= ((isset($wonka->fieldname) && $wonka->fieldname=='sal')?$this->staffM->convertNumFormat($this->txtM->decryptText($wonka->fieldvalue)):'')?>"/></td>
 	</tr>
 	<tr class="trsalary hidden">
 		<td width="40%">Enter justification (<i>this is required</i>)</td>
 		<td><input type="text" class="forminput" value="" name="justification" id="justification" maxlength="100"/></td>
 	</tr>
+<?php } ?>
 	<!-------------------------------			ENDDATE				---------->
 	<tr class="trenddate trblank hidden"><td colspan=2><br/></td></tr>
 	<tr class="trnote trenddate hidden">

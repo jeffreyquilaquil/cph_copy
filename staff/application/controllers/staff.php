@@ -13,7 +13,7 @@ class Staff extends CI_Controller {
 		
 		$this->user = $this->staffM->getLoggedUser();
 		$this->access = $this->staffM->getUserAccess();
-						
+		
 		/* error_reporting(E_ALL);
 		ini_set('display_errors', 1); */
 		
