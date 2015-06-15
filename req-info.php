@@ -34,6 +34,7 @@ foreach($infoQ AS $in){
 	$info = $in;
 }
 
+
 $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$info['requestor'].'"');
 ?>
 <div class="container">
@@ -167,7 +168,7 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 					?>
 					<tr>
 						<td width=50%>Open</td>
-						<td width=50% align="center"><?php echo $open; if($open>0 && is_admin()){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a><?php } ?></b></td>
+						<td width=50% align="center"><?php echo $open; if($open>0 && ($_SESSION['u']==$info['requestor'] || is_admin())){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a><?php } ?></b></td>
 					</tr>
 					<tr>
 						<td>Closed</td>
