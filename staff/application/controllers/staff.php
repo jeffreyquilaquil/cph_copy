@@ -2981,7 +2981,7 @@ class Staff extends CI_Controller {
 			
 			$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $insArr['emails'], $this->user->name.' invites you to apply in Tate Publishing', $ebody, 'CareerPH at Tate Publishing');
 			
-			$this->actionM->whatIsMyAction('sendEmail', 'Send invitation to apply email to '.$insArr['emails']);
+			$this->actionM->whatIsMyAction('sendEmail', 'Send email invitation to apply to '.$insArr['emails']);
 			$data['submitted'] = '<br/><br/><h3>Email sent to your friend '.$insArr['firstName'].' '.$insArr['lastName'].'</h3>';	
 			
 		}
