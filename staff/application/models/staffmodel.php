@@ -237,7 +237,10 @@ class Staffmodel extends CI_Model {
 		}
 		return $num . 'th';
 	}
-		
+	
+	/***
+		$ntype 0-other, 1-salary, 2-performance, 3-timeoff, 4-disciplinary, 5-actions
+	***/
 	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0, $sID=''){
 		$insArr['empID_fk'] = $empID;
 		

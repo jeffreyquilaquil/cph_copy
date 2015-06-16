@@ -7,6 +7,7 @@ class Staff extends CI_Controller {
 		$this->db = $this->load->database('default', TRUE);
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
 		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Actionmodel', 'actionM');	
 		$this->load->model('Textdefinemodel', 'txtM');	
 		date_default_timezone_set("Asia/Manila");
 		session_start();
@@ -15,8 +16,7 @@ class Staff extends CI_Controller {
 		$this->access = $this->staffM->getUserAccess();
 		
 		/* error_reporting(E_ALL);
-		ini_set('display_errors', 1); */
-		
+		ini_set('display_errors', 1); */		
 	}
 		
 	public function index(){
@@ -2956,6 +2956,38 @@ class Staff extends CI_Controller {
 		$this->load->view('includes/template', $data);	
 	}
 	
+	public function referafriend(){
+		$data['content'] = 'referafriend';
+		
+		if(isset($_POST) && !empty($_POST)){
+			$insArr['empID_fk'] = $this->user->empID;
+			$insArr['lastName'] = $_POST['lastName'];
+			$insArr['firstName'] = $_POST['firstName'];
+			$insArr['emails'] = implode(',',$_POST['email']);
+			$insArr['contacts'] = implode(',',$_POST['number']);
+			$insArr['timestamp'] = date('Y-m-d H:i:s');
+			$this->staffM->insertQuery('staffReferFriend', $insArr);
+			
+			//send email
+			$ebody = '<p>Hello '.$insArr['firstName'].' '.$insArr['lastName'].',</p>
+					<p>A good day to you!</p>
+					<p>Your friend '.$this->user->name.' currently works at Tate Publishing and Enterprises (Philippines) and is inviting you to apply for any the positions that are currently open in the company:</p>';
+			
+			$ebody .= '<p>To apply, please submit this form:<br/><a href="'.$this->config->item('career_url').'">Careerph.tatepublishing.net</a></p>';
+			$ebody .= '<p><b style="color:red;">IMPORTANT :</b><br/>
+						Don\'t forget to select "Referred by a Tate Employee" in the filed <i style="color:#a52a2a;">"Where did you hear about Tate Publishing?"</i> and write '.$this->user->name.' in the field that follows.</p>';
+			$ebody .= '<p>We look forward to processing your application soon!</p>
+						<p>Thank you very much!</p>';			
+			
+			$this->staffM->sendEmail('careers.cebu@tatepublishing.net', $insArr['emails'], $this->user->name.' invites you to apply in Tate Publishing', $ebody, 'CareerPH at Tate Publishing');
+			
+			$this->actionM->whatIsMyAction('sendEmail', 'Send invitation to apply email to '.$insArr['emails']);
+			$data['submitted'] = '<br/><br/><h3>Email sent to your friend '.$insArr['firstName'].' '.$insArr['lastName'].'</h3>';	
+			
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
 	
 	
 }
