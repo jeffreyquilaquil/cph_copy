@@ -257,7 +257,7 @@ class Staff extends CI_Controller {
 				
 			
 				$data['query'] = $this->staffM->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
-				
+								
 				if(isset($_POST) && !empty($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report'){					
 					header("Content-Type: application/xls");    
 					header("Content-Disposition: attachment; filename=staffs.xls");  
@@ -275,7 +275,10 @@ class Staff extends CI_Controller {
 					
 					foreach($data['query'] AS $q):
 						for($j=0;$j<count($data['fvalue']);$j++){
-							$txt .= $q->$data['fvalue'][$j];
+							if($data['fvalue'][$j]=='sal')
+								$txt .= $this->txtM->convertDecryptedText($data['fvalue'][$j],$q->$data['fvalue'][$j]);
+							else
+								$txt .= $q->$data['fvalue'][$j];
 							$txt .= $tab;
 						}
 						$txt .= "\r\n";
