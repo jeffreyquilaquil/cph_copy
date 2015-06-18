@@ -36,6 +36,13 @@ require "includes/header.php";
 if(count($info)==0){
 	echo '<b>Applicant info not found.</b>';
 }else{
+	//check possible duplicate entry
+	$duplicateQuery = $db->selectQueryArray('SELECT id, CONCAT(fname," ",lname) AS name, email, mnumber, date_created, processType, processText, IF(isNew= 0, (SELECT title FROM positions WHERE positions.id=applicants.position LIMIT 1), (SELECT title FROM newPositions WHERE posID=applicants.position LIMIT 1)) as title
+		FROM applicants 
+		LEFT JOIN recruitmentProcess ON processID=process
+		WHERE id!="'.$info['id'].'" AND 
+		((fname LIKE "'.$info['fname'].'%" AND lname LIKE "'.$info['lname'].'%") OR email="'.$info['email'].'" OR mnumber="'.$info['mnumber'].'")');
+	
 ?>
 
 
@@ -70,7 +77,7 @@ if(count($info)==0){
 			</div>
 		</td></tr>		
 	</table>
-	<br/>
+	<hr/>
 	<b>Status History</b> 
 	<button id="sHshow" class="btn btn-xs" onClick="showHide(1, 'sHhide', 'sHshow', 'statHist')">show</button>
 	<button id="sHhide" class="btn btn-xs"  onClick="showHide(0, 'sHshow', 'sHhide', 'statHist')" style="display:none;">hide</button>
@@ -170,6 +177,27 @@ if(count($info)==0){
 	</ul>
 	<?php } ?>
 	
+<?php
+	if(count($duplicateQuery)>0){
+		echo '<hr/>';
+		echo '<b>Possible Duplicate Applicants</b>';
+		echo '<table width="100%">';
+		echo '<tr><th>ID</th><th>Applicant\'s Name</th><th>Email</th><th>Contact Number</th><th>Position Applied</th><th>Date Applied</th><th>Status</th></tr>';
+		foreach($duplicateQuery AS $dup){
+			echo '<tr>';
+				echo '<td>'.$dup['id'].'</td>';
+				echo '<td><a href="view_info.php?id='.$dup['id'].'" target="_blank">'.$dup['name'].'</a></td>';
+				echo '<td><a href="mailto:'.$dup['email'].'">'.$dup['email'].'</a></td>';
+				echo '<td>'.$dup['mnumber'].'</td>';
+				echo '<td>'.$dup['title'].'</td>';
+				echo '<td>'.date('Y-m-d', strtotime($dup['date_created'])).'</td>';
+				echo '<td>'.((!empty($dup['processText']))?' <span style="color:red;">'.$dup['processText'].'</span>':$dup['processType']).'</td>';
+			echo '</tr>';
+		}
+		echo '</table>';
+	}
+?>
+	
 	<hr/>
 	<b>Applicant Info</b>
 	<table id="applicantInfo" width="100%" class="table">
@@ -236,10 +264,15 @@ if(count($info)==0){
 	<button id="tRshow" class="btn btn-xs" onClick="showHide(1, 'tRhide', 'tRshow', 'trDiv')">show</button>
 	<button id="tRhide" class="btn btn-xs"  onClick="showHide(0, 'tRshow', 'tRhide', 'trDiv')" style="display:none;">hide</button>
 	<div id="trDiv" style="display:none;"><?= nl2br($info['text_resume']) ?></div>
-	
-	<hr/>
-	<b>Attachment</b>
-	<div><?php $att = get_uploaded_file_icon("uploads/resumes/{$info['uploads']}/","large"); if($att==false){ echo 'None.'; }else{ echo $att;} ?></div>
+<?php
+	$att = get_uploaded_file_icon("uploads/resumes/{$info['uploads']}/","large");
+	if($att!=false){
+		echo '<hr/>';
+		echo '<b>Attachment</b>';
+		echo '<div>'.$att.'</div>';
+		
+	}
+?>
 	<hr/>
 	<b>HR Uploads</b>
 	<div class='container'>
