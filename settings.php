@@ -161,7 +161,8 @@ require "includes/header.php";
 					$ttest = '';
 					echo '<td>';
 					$eQuery = explode(',', $p['requiredTest']);
-					for($i=0; $i<count($eQuery); $i++){
+					$cntJapan = count($eQuery);
+					for($i=0; $i<$cntJapan; $i++){
 						$ttest .= $processLabels[$eQuery[$i]].', ';
 					}
 					echo rtrim($ttest,', ');

@@ -55,7 +55,8 @@
 	<tr>
 	<?php
 		echo '<th>Name</th>';
-		for($i=0;$i<count($fvalue);$i++){
+		$cntFeel = count($fvalue);
+		for($i=0;$i<$cntFeel;$i++){
 			echo '<th>'.$this->config->item('txt_'.$fvalue[$i]).'</th>';
 		}
 		echo '<th><br/></th>';
@@ -66,7 +67,8 @@
 	foreach($query AS $row){		
 		echo '<tr>';
 		echo '<td><a href="'.$this->config->base_url().'staffinfo/'.trim($row->username).'/" target="_blank">'.$row->name.'</a></td>';
-		for($i=0;$i<count($fvalue);$i++){
+		$cntGood = count($fvalue);
+		for($i=0;$i<$cntGood;$i++){
 			echo '<td>';
 				if($fvalue[$i]=='email' || $fvalue[$i]=='pemail') echo '<a href="mailto:'.$row->$fvalue[$i].'">'.$row->$fvalue[$i].'</a>';
 				else if($fvalue[$i]=='phone'){ echo $row->phone1; if($row->phone2!=''){ echo ', '.$row->phone2; } }

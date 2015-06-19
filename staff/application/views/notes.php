@@ -3,7 +3,8 @@
 	if(count($myNotes)==0){
 		echo '<tr><td>No notes.</td></tr>';
 	}else{	
-		for($cnt=0; $cnt<count($myNotes); $cnt++){
+		$cntCome = count($br);
+		for($cnt=0; $cnt<$cntCome; $cnt++){
 			$m = $myNotes[$cnt];
 			
 			if($m['type']!=5 || ($m['type'] && $myID==$empID)){			

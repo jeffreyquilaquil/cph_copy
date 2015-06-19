@@ -243,7 +243,8 @@
 			}else{
 				$op = explode('|', $options);
 				$txt .= '<select class="form-control" onChange="showDiv(\''.$type.'\')" id="'.$type.'"><option></option value="">';
-				for($i=0;$i<count($op);$i++){
+				$cntChina = count($op);
+				for($i=0;$i<$cntChina;$i++){
 					$txt .= '<option value="'.$op[$i].'">'.ucfirst($op[$i]).'</option>';
 				}
 				$txt .= '</select>';

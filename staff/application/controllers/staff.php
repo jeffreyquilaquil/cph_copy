@@ -266,15 +266,17 @@ class Staff extends CI_Controller {
 					
 					$txt = '';
 					$tab = "\t";
-					for($i=0;$i<count($data['fvalue']);$i++){
+					$cntNewYork = count($data['fvalue']);
+					for($i=0;$i<$cntNewYork;$i++){
 						$txt .= $this->config->item('txt_'.$data['fvalue'][$i]).$tab;
 						
 					}
 					
 					$txt .= "\r\n";
 					
+					$cntUS = count($data['fvalue']);
 					foreach($data['query'] AS $q):
-						for($j=0;$j<count($data['fvalue']);$j++){
+						for($j=0;$j<$cntUS;$j++){
 							if($data['fvalue'][$j]=='sal')
 								$txt .= $this->txtM->convertDecryptedText($data['fvalue'][$j],$q->$data['fvalue'][$j]);
 							else
@@ -501,7 +503,8 @@ class Staff extends CI_Controller {
 								$filename = $upFile['name'][$ff];
 								$dd = $this->staffM->getQueryArrayResults('staffUploads', 'fileName', 'empID_fk='.$data['row']->empID.' AND isDeleted=0');
 								$ddArr = array();
-								for($d=0; $d<count($dd); $d++){
+								$cntCalifornia = count($dd);
+								for($d=0; $d<$cntCalifornia; $d++){
 									$ddArr[] = $dd[$d]->fileName;
 								}
 								
@@ -1360,7 +1363,8 @@ class Staff extends CI_Controller {
 				if($_POST['submitType']=='accesstype'){
 					$actext = '';
 					if(isset($_POST['access'])){
-						for($i=0; $i<count($_POST['access']); $i++){
+						$cntNevada = count($_POST['access']);
+						for($i=0; $i<$cntNevada; $i++){
 							$actext .= $_POST['access'][$i].',';
 						}
 					}
@@ -1448,7 +1452,8 @@ class Staff extends CI_Controller {
 					$offdates = '';
 					$cnthrs = 0;
 					$offdatecheck = true;
-					for($u=0; $u<count($_POST['offdate']); $u++){
+					$cntLuisiana = count($_POST['offdate']);
+					for($u=0; $u<$cntLuisiana; $u++){
 						$start = $_POST['offdate'][$u]['start'];
 						$end = $_POST['offdate'][$u]['end'];
 					
@@ -1602,7 +1607,8 @@ class Staff extends CI_Controller {
 					$ntexts = 'Filed <b>'.$leaveTypeArr[$_POST['leaveType']].'</b> for '.date('F d, Y h:i a', strtotime($_POST['leaveStart'])).' to '.date('F d, Y h:i a', strtotime($_POST['leaveEnd'])).'. Check Manage Staff > Staff Leaves page or click <a href="'.$this->config->base_url().'staffleaves/'.$insID.'/" class="iframe">here</a> to view leave details and approve.';
 						
 					$superID = $this->staffM->getStaffSupervisorsID($this->user->empID);
-					for($s=0; $s<count($superID); $s++){
+					$cntAlaska = count($superID);
+					for($s=0; $s<$cntAlaska; $s++){
 						$this->staffM->addMyNotif($superID[$s], $ntexts, 0, 1);
 					}
 					//send email to immediate supervisor
@@ -1810,7 +1816,8 @@ class Staff extends CI_Controller {
 						
 						if(isset($hrnote) && !empty($hrnote)){
 							$hrStaffs = $this->staffM->getHRStaffID();
-							for($hr=0; $hr<count($hrStaffs); $hr++){
+							$cntCanada = count($hrStaffs);
+							for($hr=0; $hr<$cntCanada; $hr++){
 								if($hrStaffs[$hr] != $this->user->empID)
 									$this->staffM->addMyNotif($hrStaffs[$hr], $hrnote, 0, 1);
 							}

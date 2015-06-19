@@ -129,7 +129,8 @@
 							$txt .= '<span class="colorgray">In:</span> '.date('h:i', strtotime($arr['clockin'])).'<br/>';
 						if($arr['breaks']!=''){
 							$br = explode(',',$arr['breaks']);
-							for($b=0; $b<count($br);$b++){
+							$cntMuscle = count($br);
+							for($b=0; $b<$cntMuscle;$b++){
 								$bx = explode('|', $br[$b]);
 								if(isset($bx[0])) $txt .= '<span class="colorgray">BrkIn:</span> '.$bx[0].'<br/>';
 								if(isset($bx[1])) $txt .= '<span class="colorgray">BrkOut:</span> '.$bx[1].'<br/>';

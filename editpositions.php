@@ -22,10 +22,12 @@
 	if(isset($_POST) && !empty($_POST)){
 		$rtest = '';
 		$rskills = '';
-		for($i=0; $i<count($_POST['requiredTest']); $i++){
+		$cntLaos = count($_POST['requiredTest']);
+		for($i=0; $i<$cntLaos; $i++){
 			$rtest .= $_POST['requiredTest'][$i].',';
 		}
-		for($j=0; $j<count($_POST['requiredSkills']); $j++){
+		$cntLaos2 = count($_POST['requiredSkills']);
+		for($j=0; $j<$cntLaos2; $j++){
 			$rskills .= $_POST['requiredSkills'][$j].'|';
 		}
 	
@@ -77,7 +79,8 @@ if(isset($_GET['desc']) && $_GET['desc']=='yes'){
 		endforeach;
 	
 		echo '<ul>';
-		for($k=0; $k<count($rskillsArr); $k++){
+		$cntMalay = count($rskillsArr);
+		for($k=0; $k<$cntMalay; $k++){
 			echo '<li>'.$sArr[$rskillsArr[$k]].'</li>';
 		}
 		echo '</ul>';

@@ -32,9 +32,9 @@
 		$selfRating = explode('|', $row->selfRating);
 		$supRating = explode('|', $row->supervisorsRating);
 		$selfNotes = explode('+++', $row->selfRatingNotes);
-		$num = count($aspect);
 		
-		for($i=0; $i<count($aspect); $i++){
+		$num = count($aspect);
+		for($i=0; $i<$num; $i++){
 			$adata = explode('++||++', $aspect[$i]);
 			echo '<div id="aspect'.$i.'" class="aspectdiv hidden">';
 			
@@ -111,10 +111,11 @@
 		
 		$empRating = 0;
 		$emp = explode('|', $row->selfRating);
-		for($m=0; $m<count($emp); $m++){
+		$cntGrow = count($emp);
+		for($m=0; $m<$cntGrow; $m++){
 			$empRating += $emp[$m];
 		}
-		$empRating = ($empRating/count($emp))*0.20;
+		$empRating = ($empRating/$cntGrow)*0.20;
 		echo '<input type="hidden" id="emprating" value="'.$empRating.'"/>';
 	}else{
 		echo '<p class="errortext">You do not have access to evaluate this coaching.</p>';

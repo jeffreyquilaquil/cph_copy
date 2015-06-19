@@ -18,7 +18,8 @@
 			if($row->leaveType==4){
 				$ccc=true;
 				$od = explode('|', rtrim($row->offsetdates,'|'));
-				for($o=0; $o<count($od); $o++){
+				$cntMove = count($od);
+				for($o=0; $o<$cntMove; $o++){
 					list($start, $end) = explode(',',$od[$o]);
 					if($start<date('Y-m-d H:i')){
 						$ccc = false;
@@ -72,7 +73,8 @@
 			';
 			
 		$od = explode('|', rtrim($row->offsetdates,'|'));
-		for($o=0; $o<count($od); $o++){
+		$cntBad = count($od);
+		for($o=0; $o<$cntBad; $o++){
 			list($start, $end) = explode(',',$od[$o]);
 			echo '<tr>
 					<td>'.date('F d, Y, h:i a', strtotime($start)).'</td>

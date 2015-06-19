@@ -303,9 +303,11 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 		
 		$fullData = explode('-^_^-', $cUp->HRstatusData);	
 		$exData = array();
-		for($x=0; $x<count($fullData); $x++){
+		$cntRara = count($fullData);
+		for($x=0; $x<$cntRara; $x++){
 			$haha = explode('|', $fullData[$x]);
-			for($h=0; $h<count($haha); $h++)
+			$cnthehe = count($haha);
+			for($h=0; $h<$cnthehe; $h++)
 				$exData[$haha[0]][] = $haha[$h];
 		}
 		
