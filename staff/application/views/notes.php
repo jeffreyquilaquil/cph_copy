@@ -3,7 +3,7 @@
 	if(count($myNotes)==0){
 		echo '<tr><td>No notes.</td></tr>';
 	}else{	
-		$cntCome = count($br);
+		$cntCome = count($myNotes);
 		for($cnt=0; $cnt<$cntCome; $cnt++){
 			$m = $myNotes[$cnt];
 			
