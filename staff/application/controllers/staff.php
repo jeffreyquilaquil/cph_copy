@@ -424,6 +424,7 @@ class Staff extends CI_Controller {
 									}
 								}
 								
+								//deactivate PT and careerPH access
 								if(isset($what2update['active'])){
 									if($what2update['active']==1) $this->staffM->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
 									else $this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
@@ -445,8 +446,17 @@ class Staff extends CI_Controller {
 									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
 									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
 								}
-																
-						
+								
+								//cancel coaching if effective separation date is set and note CANCELLED DUE TO TERMINATION
+								if(isset($what2update['endDate'])){
+									$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$empID.'" AND status!=1 AND status!=4');
+									if(count($coaching)>0){
+										foreach($coaching AS $c){
+											$this->staffM->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.date('Y-m-d h:i a').'</i>'));
+										}
+									}						
+								}
+								
 								if($submitType=='jdetails') $upNote = 'Job details';
 								else if($submitType=='cdetails') $upNote = 'Compensation details';
 								else $upNote = 'Personal details';
@@ -648,7 +658,7 @@ class Staff extends CI_Controller {
 											
 					$this->staffM->addMyNotif($_POST['empID'], $ntext, 0, 1);
 					
-					//deactivate PT and careerPH if access end date and separation date is set and date is before today
+					//deactivate PT and careerPH if access end date and separation date is set and date is before today					
 					if(($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate') && $_POST['fieldV']<=date('Y-m-d') && $_POST['fieldV']!='0000-00-00'){
 						$uInfo = $this->staffM->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'username="'.$this->staffM->getSingleField('staffs', 'username', 'empID="'.$_POST['empID'].'"').'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');						
 						if(count($uInfo)>0){										
@@ -676,7 +686,17 @@ class Staff extends CI_Controller {
 								
 							$this->staffM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
 						}					
-					}						
+					}
+
+					//cancel coaching if effective separation date is set and note CANCELLED DUE TO TERMINATION
+					if($_POST['fieldN']=='endDate'){
+						$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$_POST['empID'].'" AND status!=1 AND status!=4');
+						if(count($coaching)>0){
+							foreach($coaching AS $c){
+								$this->staffM->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.date('Y-m-d h:i a').'</i>'));
+							}
+						}						
+					}
 					exit;
 				}else if($_POST['submitType']=='addnote'){								
 					$this->staffM->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('notes'=>'['.date('Y-m-d H:i:s').'] '.$this->user->username.': <i>'.$_POST['notes'].'</i>'));
@@ -2822,7 +2842,7 @@ class Staff extends CI_Controller {
 					}
 				}
 			}else if($_POST['submitType']=='coachingCancel'){
-				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('status'=>4, 'canceldata'=>$_POST['reason'].' <br/><i>'.date('Y-m-d h:i a').'</i>'));				
+				$this->staffM->updateQuery('staffCoaching', array('coachID'=>$id), array('status'=>4, 'canceldata'=>$_POST['reason'].' <br/><i>'.$this->user->username.' '.date('Y-m-d h:i a').'</i>'));				
 			}
 		}
 				

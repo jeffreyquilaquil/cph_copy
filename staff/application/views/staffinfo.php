@@ -156,8 +156,8 @@
 			if($current=='myinfo' || $this->access->accessFullHR==true)
 				echo '[<a href="javascript:void(0);" onClick="toggleDisplay(\'jobtbl\', this)" class="droptext">Show</a>]';	
 				
-				if($current=='myinfo' || $this->access->accessFullHR==true){
-					echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'jdetails\')" id="jdetailsupb">';
+				if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
+					echo '<a href="javascript:void(0)" class="edit '.(($current=='staffinfo' && $this->access->accessFullHR==false && $isUnderMe==true)?'':'hidden').'" onClick="reqUpdate(\'jdetails\')" id="jdetailsupb">';
 					echo (($this->access->accessFullHR==false)?'Request an ':'');
 					echo 'Update</a>';
 				}
@@ -217,7 +217,7 @@
 	echo '<table class="tableInfo" id="compensationtbl">';
 		echo '<tr class="trlabel" id="cdetails">';
 		echo '<td colspan=2>Compensation Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay(\'compensationtbl\', this)" class="droptext">Show</a>]';		
-			if($current=='myinfo' || $this->access->accessFullHR==true){
+			if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
 				echo '<a href="javascript:void(0)" class="edit hidden" onClick="reqUpdate(\'cdetails\')" id="cdetailsupb">';
 				echo (($this->access->accessFullHR==false)?'Request an ':'');
 				echo 'Update</a>';
