@@ -440,7 +440,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		}
 	}
 	
-	if($this->user->empID == $row->approverID && $row->iscancelled==2){
+	if($row->iscancelled==2 && ($this->user->empID == $row->approverID || $this->user->empID == $row->supervisor)){
 		echo '<form action="" method="POST" onSubmit="return validatecapprover();">';
 		echo '<tr><td><br/></td><td><input type="radio" name="capprover" value="1"> Approve &nbsp;&nbsp;&nbsp;<input type="radio" name="capprover" value="0"> Disapprove</td></tr>';
 		echo '<tr id="disapprovecanceltr" class="hidden"><td>Note:</td><td><input type="text" class="forminput" id="disnote" name="disnote"/></td></tr>';
