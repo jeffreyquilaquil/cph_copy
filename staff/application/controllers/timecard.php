@@ -5,13 +5,15 @@ class Timecard extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 		$this->db = $this->load->database('default', TRUE);
-		$this->load->model('Staffmodel', 'staffM');	
+		$this->load->model('Staffmodel', 'staffM');
+		$this->load->model('Textdefinemodel', 'txtM');			
+		$this->load->model('timecardmodel', 'timeM');	
 		
 		date_default_timezone_set("Asia/Manila");
 		session_start();
 		
 		$this->user = $this->staffM->getLoggedUser();
-		$this->access = $this->staffM->getUserAccess();				
+		$this->access = $this->staffM->getUserAccess();		
 	}
 		
 	public function _remap($method){
@@ -45,8 +47,12 @@ class Timecard extends CI_Controller {
 		$data['content'] = 'tc_timelogs';	
 				
 		if($this->user!=false){	
-			$data['tpage'] = 'timelogs';	
-											
+			$data['tpage'] = 'timelogs';
+			$data['schedToday'] = $this->timeM->getDaySched(date('Y-m-d'), $this->user->empID);
+			$data['schedTodayArr'] = $this->timeM->getSchedArr(date('Y-m-d'), $data['schedToday']);
+			$data['timelog'] = $this->timeM->getTimeLogs($data['schedTodayArr'], $this->user->idNum);			
+			$data['calendarLogs'] = $this->timeM->getMonthLogs(date('m', strtotime($data['today'])), $this->user->empID);
+			
 			$data['dataArr'] = array();			
 		}
 	

@@ -16,7 +16,9 @@ class Schedules extends CI_Controller {
 	} 
 	
 	public function index(){		
-		$data['content'] = 'sched_schedules';	
+		$data['content'] = 'sched_schedules';
+		$data['column'] = 'withLeft';	
+		
 		$data['row'] = $this->user;	
 		if($this->user!=false){
 			if(isset($_POST) && !empty($_POST)){
@@ -103,11 +105,16 @@ class Schedules extends CI_Controller {
 					$addUp = 'updateData';					
 					$note = 'You deleted custom schedule '.$_POST['id'].'.';
 				}else if($_POST['submitType']=='getHolidayData'){
-					$beau = $this->staffM->getSingleInfo('staffHolidays', 'holidayName, holidayType, staffHolidaySched, holidayWork, holidayDate', 'holidayID="'.$_POST['id'].'"');
+					$beau = $this->staffM->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate', 'holidayID="'.$_POST['id'].'"');
 					foreach($beau AS $k){
 						echo $k.'|';
 					}
 					exit;
+				}else if($_POST['submitType']=='updateSettings'){
+					unset($_POST['submitType']);
+					$tbl = 'staffSettings';
+					$where = array('settingID'=>$_POST['id']);
+					$upArr['settingVal'] = $_POST['setVal'];
 				}
 				
 				//update and insert defined above
@@ -120,6 +127,7 @@ class Schedules extends CI_Controller {
 				}
 				exit;
 			}
+			$data['settingsQuery'] = $this->staffM->getQueryResults('staffSettings', '*');
 			$data['timecategory'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'category=0 AND status=1');		
 			$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
 			$data['allCustomSched'] = $this->staffM->getQueryResults('staffCustomSched', '*', 'status=1');

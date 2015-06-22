@@ -80,7 +80,7 @@
 			}
 			
 			if($("input[name=staffnames\\[\\]]").is(':checked')){
-				alert("sorry  names are checked");	
+				alert("Sorry  names are checked");	
 				$(this).removeClass('nameId');
 			}		
 			else{		
@@ -153,8 +153,12 @@
 				for(count = 0; count < size ; count++) {
 					valuehere += staff_val[count]+"_";
 				}
-				alert(valuehere);
-				$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffsrecurringschedule/' ?>'+valuehere});						
+				
+				if(valuehere!=''){
+					$.colorbox({width:"900px", height:"600px", iframe:true, href:'<?= $this->config->base_url().'schedules/setstaffsrecurringschedule/' ?>'+valuehere});	
+				}else{
+					alert('Please choose staff to assign sched.');
+				}			
 			}
 				
 			

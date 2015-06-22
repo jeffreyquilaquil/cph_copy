@@ -41,23 +41,27 @@ class Timecardmodel extends CI_Model {
 			//check for schedule
 			$condition = 'empID_fk="'.$empID.'"';
 			$condition .= ' AND ("'.$cdate.'" BETWEEN effectivestart AND effectiveend';
-			$condition .= ' OR (effectiveend="0000-00-00" AND effectivestart<="'.$cdate.'") )';		
+			$condition .= ' OR (effectiveend="0000-00-00" AND effectivestart<="'.$cdate.'") )';
 			$schedQ = $this->staffM->getSingleInfo('staffSchedules', '*', $condition, '', 'assigndate DESC'); 
-			if($schedQ->staffCustomSched_fk!=0){				
-				$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'custschedID="'.$schedQ->staffCustomSched_fk.'"', 'LEFT JOIN staffCustomSched ON timeID='.strtolower(date('l', strtotime($cdate))).'');				
-			}else if($schedQ->staffCustomSchedTime!=0){
-				$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'timeID="'.$schedQ->staffCustomSchedTime.'"');
+			if(!empty($schedQ)){
+				if($schedQ->staffCustomSched_fk!=0){				
+					$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'custschedID="'.$schedQ->staffCustomSched_fk.'"', 'LEFT JOIN staffCustomSched ON timeID='.strtolower(date('l', strtotime($cdate))).'');				
+				}else if($schedQ->staffCustomSchedTime!=0){
+					$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'timeID="'.$schedQ->staffCustomSchedTime.'"');
+				}
+				
+				if(isset($schedT->timeValue) && !empty($schedT->timeValue)){
+					$schedToday = $schedT->timeValue;
+					$checkBelow = false;
+				}			
 			}
-			
-			if(isset($schedT->timeValue) && !empty($schedT->timeValue)){
-				$schedToday = $schedT->timeValue;
-				$checkBelow = false;
-			}			
 		}
 		
 		return $schedToday;	
 	}
 	
+	//this will determine the start and end of schedule whether it advance to another date
+	//returns array values start and end
 	public function getSchedArr($dateToday, $schedText){
 		$schedArr = array();
 				
@@ -73,6 +77,8 @@ class Timecardmodel extends CI_Model {
 		return $schedArr;		
 	}
 	
+	//Get all logs for the given date schedule and returns an array of logs
+	//$sched is an array that contains start and end
 	public function getTimeLogs($sched, $idNum){
 		$logArr = array();
 		if(count($sched)==2){
@@ -90,6 +96,11 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		return $logArr;
+	}
+	
+	//get all logs in a month
+	public function getMonthLogs($month, $userID){
+		return $this->staffM->getQueryResults('staffTimeLogByDate', '*', 'staffs_idNum_fk="'.$userID.'" AND logDate LIKE "%-'.$month.'-%"');	
 	}
 }
 ?>

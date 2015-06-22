@@ -1,54 +1,47 @@
-<h2>Manage Schedules</h2><hr/>
+<h2>Manage Schedule Settings</h2><hr/>
 
-<ul class="tabs">
-	<li class="tab-link current" data-tab="holeventsched">Holiday/Event Schedules</li>
-	<li class="tab-link" data-tab="customtime">Custom Times</li>
-	<li class="tab-link" data-tab="customsched">Custom Schedules</li>	
-</ul>
-<br/>
-<div id="holeventsched" class="tab-content current">
-	<div id="addHolidaySchedDiv" class="hidden">
-		<?php $this->load->view('sched_holiday'); ?>
-	</div>
-	<hr/>
-	<h3>All Holiday/Event Schedules
-		<button id="addHolidaybtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
-	</h3>
-	<table class="tableInfo">
-		<tr class="trlabel">
-			<td>Date</td>
-			<td>Weekday</td>
-			<td>Name</td>
-			<td>Type</td>
-			<td>Repetition</td>
-			<td>Work Day?</td>
-			<td><br/></td>
-		</tr>
-	<?php
-		foreach($holidaySchedArr AS $hol){
-			echo '<tr class="holidaycolor_'.$hol->holidayType.'">
-					<td>'.date('F d', strtotime($hol->holidayDate)).'</td>
-					<td>'.date('l', strtotime($hol->holidayDate)).'</td>
-					<td>'.$hol->holidayName.'</td>
-					<td>'.$allDayTypes[$hol->holidayType].'</td>
-					<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
-					<td>'.(($hol->holidayWork==0)?'No':'Yes').'</td>
-					<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
-				</tr>';
-		}
-	?>
-	</table>
+<div id="schedSettingsDIV" class="schedDiv">
+<button id="btnsettingupdate" class="btnclass" style="float:right; margin-top:-45px;">Update</button>
+<table class="tableInfo">
+<?php	
+	$optArr = array('-8','-7','-6','-5','-4','-3', '-2','-1','0','+1','+2','+3','+4','+5','+6','+7','+8');	
+	foreach($settingsQuery AS $s){
+		echo '<tr>';
+			echo '<td width="70%"><b>'.$s->settingName.'</b><br/>
+				<i>'.$s->settingNote.'</i>				
+				</td>';
+			echo '<td>
+					<span class="spanSet" id="val'.$s->settingID.'">'.$s->settingVal.'</span>';
+			echo '<select class="selectSet forminput hidden" onChange="changeSetting('.$s->settingID.', this);">';
+				foreach($optArr AS $o){
+					echo '<option value="'.$o.' hours" '.(($s->settingVal==$o.' hours')?'selected="selected"':'').'>'.$o.' hours</option>';
+				}
+			echo '</select>';
+			echo '</td>';
+		echo '</tr>';
+	}
+	
+	if(count($settingsQuery)>0){
+		echo '<tr>';
+			echo '<td colspan=2 align="right">
+					<button id="btnsettingcancel" class="btnclass selectSet hidden">Cancel Updates</button>
+				</td>';
+		echo '</tr>';
+	}
+?>
+</table>
 </div>
-<!-------------------------- Holiday/Event Schedule ------------------------>
-<div id="customtime" class="tab-content">	
-	<div style="width:50%; float:left;">
+
+<!-------------------------- START Custom Time ------------------------>
+<div id="customtimeDIV" class="schedDiv hidden">	
+	<div style="width:48%; float:left;">
 		<h3>Add Time Category</h3>
 		<table>
 			<tr><td width="120px">Category Name</td><td><input type="text" class="padding5px" style="width:250px;" id="catName"/></td></tr>
-			<tr><td><br/></td><td><button id="addTimeCategory" class="btnclass">Add Time Category</button></td></tr>
+			<tr><td><br/></td><td><button id="addTimeCategory" class="btnclass">+ Add Time Category</button></td></tr>
 		</table>
 	</div>
-	
+<?php if(count($timecategory)>0){ ?>
 	<div style="width:45%; float:left; border-left:1px solid #ccc; padding:0 20px;">
 		<h3>Add Time Option</h3>
 		<table>
@@ -70,11 +63,12 @@
 					<input type="text" id="timestart" class="timepickA padding5px" style="width:113px;" placeholder="start"/>&nbsp;&nbsp;
 					<input type="text" id="timeend" class="timepickA padding5px" style="width:113px;" placeholder="end"/>
 				</td></tr>
-			<tr><td><br/></td><td><button id="addTime" class="btnclass">Add Time</button></td></tr>
+			<tr><td><br/></td><td><button id="addTime" class="btnclass">+ Add Time</button></td></tr>
 		</table>
 	</div>
-	
 <?php
+}
+	
 	echo '<h3>Time Options</h3>';
 	if(count($alltime)==0) echo 'No time records.';
 	
@@ -130,8 +124,10 @@
 ?>
 	
 </div>
-<!-------------------------- Custom Time ------------------------>
-<div id="customsched" class="tab-content">
+<!-------------------------- END Custom Time ------------------------>
+
+<!-------------------------- Start Custom Schedules ------------------------>
+<div id="customschedDIV" class="schedDiv hidden">
 	<div id="addCustomSchedDiv" class="hidden">	
 		<h3>Add Custom Schedule</h3><hr class="gray"/>
 		Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
@@ -167,10 +163,12 @@
 			</tr>
 		</table>
 		<br/>
-		<button id="addcustomschedule" class="btnclass">Add Schedule</button>
+		<button id="addcustomschedule" class="btnclass">+ Add Schedule</button>
+		<button class="btnclass" onClick="$('#addCustomSchedDiv').hide(); $('#addCustomSchedbtn').show();">Cancel</button>
+		<hr/>
 	</div>
 	
-	<hr/><h3/>All Custom Schedules
+	<h3/>All Custom Schedules
 		<button id="addCustomSchedbtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addCustomSchedDiv').show(); ">+ Add Custom Schedule</button>
 	</h3>
 	<table class="tableInfo">
@@ -233,9 +231,53 @@
 ?>
 	</table>
 </div>
+<!-------------------------- END Custom Schedules ------------------------>
+
+<!-------------------------- Start of Holiday/Event Schedule ------------------------>
+<div id="holeventschedDIV" class="schedDiv hidden" style="margin-top:15px;">
+	<div id="addHolidaySchedDiv" class="hidden">
+		<?php $this->load->view('sched_holiday'); ?>
+	</div>
+	<h3>All Holiday/Event Schedules
+		<button id="addHolidaybtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
+	</h3>
+	<table class="tableInfo">
+		<tr class="trlabel">
+			<td>Date</td>
+			<td>Weekday</td>
+			<td>Name</td>
+			<td>Type</td>
+			<td>Repetition</td>
+			<td>Work Day?</td>
+			<td><br/></td>
+		</tr>
+	<?php
+		foreach($holidaySchedArr AS $hol){
+			echo '<tr class="holidaycolor_'.$hol->holidayType.'">
+					<td>'.date('F d', strtotime($hol->holidayDate)).'</td>
+					<td>'.date('l', strtotime($hol->holidayDate)).'</td>
+					<td>'.$hol->holidayName.'</td>
+					<td>'.$allDayTypes[$hol->holidayType].'</td>
+					<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
+					<td>'.(($hol->holidayWork==0)?'No':'Yes').'</td>
+					<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
+				</tr>';
+		}
+	?>
+	</table>
+</div>
+<!-------------------------- End of Holiday/Event Schedule ------------------------>
 
 
 <script type="text/javascript">
+	function schedChange(jeena){
+		$('.schedLI').removeClass('current');
+		$(jeena).addClass('current');
+		//for contents
+		$('.schedDiv').addClass('hidden');  
+		$('#'+$(jeena).attr('id')+'DIV').removeClass('hidden');
+	}
+
 	$(function(){
 		$('.timepickA').datetimepicker({ format:'h:i a', datepicker:false });
 		
@@ -297,6 +339,18 @@
 					alert('Custom Schedule has been added.');										
 				});
 			}
+		});
+		
+		$('#btnsettingupdate').click(function(){
+			$(this).hide();
+			$('.spanSet').hide();
+			$('.selectSet').show();			
+		});
+		
+		$('#btnsettingcancel').click(function(){
+			$('#btnsettingupdate').show();
+			$('.spanSet').show();
+			$('.selectSet').hide();			
 		});
 	});	
 	
@@ -379,6 +433,44 @@
 			$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'deleteCustomSched',id:id}, function(){
 				location.reload(true);
 				alert('Custom schedule has been deleted.');				
+			});
+		}
+	}
+	
+	function editHoliday(id, ths){				
+		$(ths).html('<?= '<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px"/>' ?>');
+		
+		$.post('<?= $this->config->base_url().'schedules/' ?>',{submitType:'getHolidayData', id:id}, 
+		function(data){
+			dd = data.split('|');
+			$('#holidayID').val(id);
+			$('#holidayName').val(dd[0]);
+			$('#holidayType').val(dd[1]);
+			$('#holidayWork').val(dd[2]);
+			
+			//for date
+			yy = dd[3].split('-');
+			$('#year').val(yy[0]);
+			$('#month').val(parseInt(yy[1]));
+			$('#day').val(parseInt(yy[2]));
+			
+			$('#addHolidaybtn').hide();
+			$('#addHolidaySchedDiv').show();
+			$('#addHolidaySchedDiv h3').html('Modify Holiday/Event Schedule');
+			$('#addHolidaySched').val('Update Schedule');
+			$(ths).html('<img src="<?= $this->config->base_url() ?>css/images/icon-options-edit.png"/>');
+		});
+	}
+	
+	function changeSetting(id, jee){
+		if(confirm('Are you sure you want to update this setting?')){
+			displaypleasewait();
+			$.post('<?= $this->config->base_url().'schedules/' ?>',{submitType:'updateSettings', id:id, setVal:$(jee).val()},
+			function(){
+				parent.$.colorbox.close();
+				$(jee).hide();
+				$('#val'+id).text($(jee).val());
+				$('#val'+id).show();
 			});
 		}
 	}

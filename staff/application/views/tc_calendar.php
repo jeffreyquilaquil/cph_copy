@@ -94,13 +94,13 @@
 		}
 		
 		//birthdays
-		$bdtoday = '';
+		/* $bdtoday = '';
 		foreach($birthdayQuery AS $bday){			
 			if($daynum0==$bday->bdateNum)
 				$bdtoday .= $bday->name.', ';
 		}
 		if(!empty($bdtoday)) 
-			$daytext .= '<div class="daysched" style="background-color:#dc6900; text-align:left;">Birthday: '.rtrim($bdtoday,', ').'</div>';
+			$daytext .= '<div class="daysched" style="background-color:#dc6900; text-align:left;">Birthday: '.rtrim($bdtoday,', ').'</div>'; */
 		
 		
 		if(!empty($daytext)) $dataArr['content'][$daynum] = $daytext;

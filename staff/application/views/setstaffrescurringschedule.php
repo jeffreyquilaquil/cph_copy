@@ -152,7 +152,7 @@ $('#submitbutton').click(function(){
 					<tr>
 						<td>Choose From Predefine Schedule</td>
 						<td>
-							<select name="presched" id="presched" onChange="onClickPreSched();">';								
+							<select class="forminput" name="presched" id="presched" onChange="onClickPreSched();">';								
 								echo '<option value="0">Add New Custom Sched</option>';
 								echo '<optgroup label="Predefine Schedule">';
 								foreach($customSched as $sched) {;
@@ -224,7 +224,7 @@ $('#submitbutton').click(function(){
 					</tr>
 					<tr align="center">
 						<td></td>						
-						<td><input type="button" value="Submit" id="submitbutton"/></td>
+						<td><input type="button" class="btnclass" value="Submit" id="submitbutton"/></td>
 					</tr>';
 					
 			echo '</table>';						

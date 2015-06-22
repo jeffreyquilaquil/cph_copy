@@ -58,11 +58,12 @@
 		<td>
 			<input type="hidden" value="0" id="holidaySched"/>
 			<input type="hidden" value="" id="holidayID"/>
-			<input type="submit" value="Add Schedule" id="addHolidaySched" class="btnclass"/>
+			<input type="submit" value="+ Add Schedule" id="addHolidaySched" class="btnclass"/>
 			<input type="button" value="Cancel" id="addHolidayCancel" class="btnclass"/>				
 		</td>
 	</tr>
 </table>
+<br/>
 
 <script type="text/javascript">
 	$(function(){	

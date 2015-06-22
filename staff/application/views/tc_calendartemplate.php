@@ -69,7 +69,8 @@
 				$content[1] = '07:00 am - 04:00 pm';
 				$content[2] = '07:00 am - 04:00 pm';
 			***********/
-				if(isset($content[$daynum])) echo $content[$daynum];
+				if(isset($content[$daynum]))
+					echo '<div class="daynumcontent">'.$content[$daynum].'</div>';
 			/********* end of display ***********/
 			
 			echo '</div></td>';
