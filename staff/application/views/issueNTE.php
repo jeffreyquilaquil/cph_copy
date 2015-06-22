@@ -39,10 +39,10 @@ if(!file_exists($signature)){
 			foreach($prevNTE AS $p){
 				if($p->type=='AWOL'){
 					if($p->status==1) $awolnum = 0;
-					else $awolnum++;
+					else if($p->status==0) $awolnum++;
 				}else if($p->type=='tardiness'){
 					if($p->status==1) $tardynum = 0;
-					else $tardynum++;						
+					else if($p->status==0) $tardynum++;						
 				}
 				
 				echo '<tr>';
@@ -131,12 +131,12 @@ if(!file_exists($signature)){
 				(within one month) here:
 			</td>
 			<td width="100%">
-				<input type="text" name="tdates[0]" class="padding5px datepick" placeholder="Date 1" style="width:60%; float:left;"/><input type="text" name="ttime[0]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
-				<input type="text" name="tdates[1]" class="padding5px datepick" placeholder="Date 2" style="width:60%; float:left;"/><input type="text" name="ttime[1]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
-				<input type="text" name="tdates[2]" class="padding5px datepick" placeholder="Date 3" style="width:60%; float:left;"/><input type="text" name="ttime[2]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
-				<input type="text" name="tdates[3]" class="padding5px datepick" placeholder="Date 4" style="width:60%; float:left;"/><input type="text" name="ttime[3]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
-				<input type="text" name="tdates[4]" class="padding5px datepick" placeholder="Date 5" style="width:60%; float:left;"/><input type="text" name="ttime[4]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
-				<input type="text" name="tdates[5]" class="padding5px datepick" placeholder="Date 6" style="width:60%; float:left;"/><input type="text" name="ttime[5]" class="padding5px" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[0]" class="padding5px datepick" placeholder="Date 1" style="width:60%; float:left;"/><input type="text" name="ttime[0]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[1]" class="padding5px datepick" placeholder="Date 2" style="width:60%; float:left;"/><input type="text" name="ttime[1]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[2]" class="padding5px datepick" placeholder="Date 3" style="width:60%; float:left;"/><input type="text" name="ttime[2]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[3]" class="padding5px datepick" placeholder="Date 4" style="width:60%; float:left;"/><input type="text" name="ttime[3]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[4]" class="padding5px datepick" placeholder="Date 5" style="width:60%; float:left;"/><input type="text" name="ttime[4]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
+				<input type="text" name="tdates[5]" class="padding5px datepick" placeholder="Date 6" style="width:60%; float:left;"/><input type="text" name="ttime[5]" class="padding5px dtime" placeholder="hh:mm" style="float:left; margin-left:10px;"/> <br/>
 			</td>
 		</tr>
 		
@@ -166,6 +166,11 @@ if(!file_exists($signature)){
 		$('.datepick').datetimepicker({ 
 			format:'F d, Y',
 			maxDate:'<?= date('Y-m-d') ?>'
+		});	
+		
+		$('.dtime').datetimepicker({ 
+			datepicker:false,
+			format:'H:i'
 		});	
 		
 		$('#type').change(function(){
