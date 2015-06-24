@@ -48,9 +48,12 @@ class Staffmodel extends CI_Model {
 		return $query->row();
 	}
 	
-	function getQueryResults($table, $fields, $where=1, $join='', $orderby=''){
+	function getQueryResults($table, $fields, $where=1, $join='', $orderby='', $trace=false){
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby; 
-		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby);
+		$sql = "SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby;
+		if($trace==true) echo $sql;
+		
+		$query = $this->db->query($sql);
 		return $query->result();
 	}
 	

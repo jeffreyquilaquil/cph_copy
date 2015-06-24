@@ -134,9 +134,14 @@ class MyCrons extends CI_Controller {
 		exit;
 	}
 		
+	/*****
+		- Automatically deactivate user in PT and careerph if access end date is set today
+		- Cancel all in progress coaching
+	*****/
 	function accessenddate(){
 		$dateToday = date('Y-m-d');
-		$query = $this->staffM->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, endDate, accessEndDate, office, shift, newPositions.title', 'staffs.active=1 AND (accessEndDate="'.$dateToday.'" OR endDate="'.date('Y-m-d').'")', 'LEFT JOIN newPositions ON posID=position');
+		$dateTodayText = date('Y-m-d h:i a');
+		$query = $this->staffM->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, endDate, accessEndDate, office, shift, newPositions.title', 'staffs.active=1 AND (accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'")', 'LEFT JOIN newPositions ON posID=position');
 		
 		foreach($query AS $uInfo):
 			$this->staffM->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
@@ -162,7 +167,16 @@ class MyCrons extends CI_Controller {
 				
 			$this->staffM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
 			
+			//cancel all in progress coaching of the employee
+			$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$uInfo->empID.'" AND status!=1 AND status!=4');
+			if(count($coaching)>0){
+				foreach($coaching AS $c){
+					$this->staffM->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.$dateTodayText.'</i>'));
+				}
+			}
+			
 		endforeach;
+		
 
 		exit;
 	}

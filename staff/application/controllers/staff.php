@@ -331,7 +331,7 @@ class Staff extends CI_Controller {
 					if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
 						$orig = (array)$data['row'];
 						
-						$what2update = $this->staffM->compareResults($_POST, $orig);							
+						$what2update = $this->staffM->compareResults($_POST, $orig);					
 						if(count($what2update) >0){
 							if($this->access->accessFullHR==false){
 									$upNote = 'You requested an update for:<br/>';
@@ -424,6 +424,16 @@ class Staff extends CI_Controller {
 									}
 								}
 								
+								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
+								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
+									$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$empID.'" AND status!=1 AND status!=4');
+									if(count($coaching)>0){
+										foreach($coaching AS $c){
+											$this->staffM->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.date('Y-m-d h:i a').'</i>'));
+										}
+									}						
+								}
+								
 								//deactivate PT and careerPH access
 								if(isset($what2update['active'])){
 									if($what2update['active']==1) $this->staffM->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
@@ -445,16 +455,6 @@ class Staff extends CI_Controller {
 									
 									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
 									$this->staffM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
-								}
-								
-								//cancel coaching if effective separation date is set and note CANCELLED DUE TO TERMINATION
-								if(isset($what2update['endDate'])){
-									$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$empID.'" AND status!=1 AND status!=4');
-									if(count($coaching)>0){
-										foreach($coaching AS $c){
-											$this->staffM->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.date('Y-m-d h:i a').'</i>'));
-										}
-									}						
 								}
 								
 								if($submitType=='jdetails') $upNote = 'Job details';
@@ -688,8 +688,8 @@ class Staff extends CI_Controller {
 						}					
 					}
 
-					//cancel coaching if effective separation date is set and note CANCELLED DUE TO TERMINATION
-					if($_POST['fieldN']=='endDate'){
+					//cancel coaching if effective separation date is set on or before today. Add note CANCELLED DUE TO TERMINATION
+					if($_POST['fieldN']=='endDate' && $_POST['fieldV']<=date('Y-m-d')){
 						$coaching = $this->staffM->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$_POST['empID'].'" AND status!=1 AND status!=4');
 						if(count($coaching)>0){
 							foreach($coaching AS $c){
