@@ -1210,13 +1210,18 @@ class Staffmodel extends CI_Model {
 				$cnt += $this->staffM->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
 			}
 		}else if($type=='nte'){	
-			$ids = '"",'; //empty value for staffs with no under yet
-			$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
-			foreach($myStaff AS $m):
-				$ids .= $m->empID.',';
-			endforeach;
-			
-			$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', '((status=1 AND nteprinted="") OR (status=0 AND carprinted="") OR (status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded="")) AND empID_fk IN ('.rtrim($ids,',').')');
+			//if HR
+			if($this->access->accessHR==true){
+				$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', '(status=1 AND (nteprinted="" OR (nteprinted!="" AND nteuploaded=""))) OR ((status=0 OR status=3) AND (carprinted="" OR (carprinted!="" AND caruploaded="")))', 'LEFT JOIN staffs ON empID=empID_fk');				
+			}else{
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->staffM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				
+				$cnt = $this->staffM->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', 'empID_fk IN ('.rtrim($ids,',').') AND ((status=1 AND nteprinted="") OR (status=0 AND carprinted="") OR (status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded=""))');
+			}			
 		}
 		
 		return $cnt;
