@@ -238,7 +238,7 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 					</div>
 				</div><!-- end fo step2 div-->
 				
-				<form id="mainForm" action="" method="POST">
+				<form id="mainForm" action="" method="POST" onSubmit="return validateJobForm();">
 					<input type="hidden" name="requestType" id="requestType" value=""/>
 					<input type="hidden" name="positionID" id="positionID" value=""/>
 					<input type="hidden" name="requestor" value="<?= $username ?>"/>					
@@ -355,7 +355,10 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 							<td><textarea name="remarks" class="form-control" rows=10></textarea></td>
 						</tr>
 						<tr>
-							<td colspan=2 align="right"><button class="btn btn-danger btn-sm" id="submitBtn">Submit New Requisition</button></td>
+							<td colspan=2 align="right">
+								<!--<button class="btn btn-danger btn-sm" id="submitBtn">Submit New Requisition</button>-->
+								<input id="submtBtn" type="submit" class="btn btn-danger btn-sm" value="Submit New Requisition"/>
+							</td>
 						</tr>
 					</table>
 				</div><!-- end of step3 div-->
@@ -388,34 +391,34 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 			$('#next').removeClass('hide');
 		});
 		
-		$('#submitBtn').click(function(){
-			valid = '';
-			if($('#num').val()=='')
-				valid += '-  How many slots\n';
-			if($('#startDate').val()=='')
-				valid += '-  Start Date\n';
-			if($('#supervisor').val()=='')
-				valid += '-  Immediate supervisor\n';
-			if($('#minSal').val()=='')
-				valid += '-  Mininum Salary\n';
-			if($('#maxSal').val()=='')
-				valid += '-  Maximum Salary\n';
-			if($('#shift').val()=='' && (Math.abs($('#startShift').val() - $('#endShift').val() ) != 9 )){
-				valid += '-  Valid start and end shift\n';
-			}
-			if($('select[name="interviewer"]').val()=='')
-				valid += '-  Interviewer is empty\n';
-						
-			if(valid!=''){
-				alert('Please fill up missing/invalid fields:\n'+valid);
-				return false;
-			}else{
-				$(this).attr('disabled', 'disabled');
-				return true;
-			}
-		}); 
-		
 	});
+	
+	function validateJobForm(){
+		valid = '';
+		if($('#num').val()=='')
+			valid += '-  How many slots\n';
+		if($('#startDate').val()=='')
+			valid += '-  Start Date\n';
+		if($('#supervisor').val()=='')
+			valid += '-  Immediate supervisor\n';
+		if($('#minSal').val()=='')
+			valid += '-  Mininum Salary\n';
+		if($('#maxSal').val()=='')
+			valid += '-  Maximum Salary\n';
+		if($('#shift').val()=='' && (Math.abs($('#startShift').val() - $('#endShift').val() ) != 9 )){
+			valid += '-  Valid start and end shift\n';
+		}
+		if($('select[name="interviewer"]').val()=='')
+			valid += '-  Interviewer is empty\n';
+					
+		if(valid!=''){
+			alert('Please fill up missing/invalid fields:\n'+valid);
+			return false;
+		}else{
+			$('#submtBtn').attr('disabled', 'disabled');
+			return true;
+		}
+	}
 	
 	function changeStep(step){
 		if(step==2){
