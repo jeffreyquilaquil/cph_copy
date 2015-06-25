@@ -159,6 +159,22 @@ class CI_Profiler {
 
 		// Let's determine which databases are currently connected to
 		foreach (get_object_vars($this->CI) as $CI_object)
+		{
+			if (is_object($CI_object) && is_subclass_of(get_class($CI_object), 'CI_DB') )
+			{
+				$dbs[] = $CI_object;
+			}
+			else if (is_object($CI_object) && is_subclass_of(get_class($CI_object), 'CI_Model'))
+			{
+				foreach (get_object_vars($CI_object) as $Model_object){
+					if (is_object($Model_object) && is_subclass_of(get_class($Model_object), 'CI_DB') )
+					{
+						$dbs[] = $Model_object; 
+					}
+				}
+			}
+		}
+		/* foreach (get_object_vars($this->CI) as $CI_object)
 		{			
 			if (is_object($CI_object) && is_subclass_of(get_class($CI_object), 'CI_DB') )
 			{
@@ -174,7 +190,7 @@ class CI_Profiler {
 				}
 			}
 			
-		}
+		} */
 
 		if (count($dbs) == 0)
 		{
