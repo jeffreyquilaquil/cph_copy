@@ -167,13 +167,7 @@ class Staff extends MY_Controller {
 			if(count($info)==0){
 				echo ucfirst($type).' "'.$_POST[$type].'" is not found.';
 			}else{
-				$body = '<p>Hi '.$info->fname.',</p>
-						<p>Click <a href="'.$this->config->base_url().'forgotpassword/'.md5($info->username).'/'.'">here</a> to reset password.</p>
-						<p><br/></p>
-						<p>Thanks!</p>
-						<p>CareerPH</p>
-				';
-				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $info->email, 'CareerPH Forgot Password', $body, 'CareerPH' );
+				$this->emailM->emailForgotPassword($info->email, $info->fname, $info->username);
 				echo 'Request to reset password sent. Please check your email address '.$info->email.'.';
 			}
 			exit;
@@ -1437,7 +1431,7 @@ class Staff extends MY_Controller {
 				}
 				
 				//check for duplicate insert leave data
-				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.$_POST['reason'].'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND notesforHR="'.$_POST['notesforHR'].'"');
+				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.$_POST['reason'].'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND notesforHR="'.$_POST['notesforHR'].'" AND status=0');
 				if(count($dupQuery)>0){
 					echo 'There is a duplicate entry of this leave. Click <a href="'.$this->config->base_url().'staffleaves/'.$dupQuery->leaveID.'/">here</a> to view duplicate leave entry or check "Time Off Details" on My HR Info page if filed leave exists or inform IT if no duplicate entry and you can\'t file leave.';
 					exit;
