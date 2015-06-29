@@ -1,14 +1,9 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Timecardmodel extends CI_Model {
-	var $db;
-	
-    function __construct() {
+	function __construct() {
         // Call the Model constructor
-        parent::__construct();
-		
-		$this->db = $this->load->database('default', TRUE);
-		$this->load->model('Staffmodel', 'staffM');	
+        parent::__construct();			
     }
 	
 	public function getTimeSettings(){

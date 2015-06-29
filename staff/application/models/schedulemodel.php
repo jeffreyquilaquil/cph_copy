@@ -1,13 +1,9 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Schedulemodel extends CI_Model {
-	var $db;
-	
-    function __construct() {
+	function __construct() {
         // Call the Model constructor
-        parent::__construct();
-		
-		$this->db = $this->load->database('default', TRUE);
+        parent::__construct();			
     }	
 
 	function customTimeDisplay($time, $day, $v='', $edit=true){
