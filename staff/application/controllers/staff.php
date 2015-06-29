@@ -1092,7 +1092,7 @@ class Staff extends MY_Controller {
 					$pdf->setXY(20, 157);
 					$pdf->MultiCell(175, 4, 'NOTE: '.$row->planImp ,0,'L',false);
 				}else{
-					$consequences = 'Any subsequent case of '.strtolower($nntype).' within the next six months will be '.$this->textM->ordinal($row->offenselevel).' case of excessive '.strtolower($nntype).' and merits '.strtoupper($nextsanction);
+					$consequences = 'Any subsequent case of '.$nntype.' within the next six months will be '.$this->textM->ordinal($row->offenselevel).' case of excessive '.$nntype.' and merits '.strtoupper($nextsanction);
 					$pdf->setXY(20, 157);
 					$pdf->MultiCell(175, 4, $consequences ,0,'L',false);
 				}
