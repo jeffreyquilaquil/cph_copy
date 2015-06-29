@@ -10,7 +10,7 @@
 <?php
 	foreach($allStaffs AS $all){
 		echo '<tr>
-			<td>'.$all->lname.', '.$all->fname.'</td>
+			<td><a href="'.$this->config->base_url().'timecard/'.$all->empID.'/schedules/" target="_blank">'.$all->lname.', '.$all->fname.'</a></td>
 			<td><button class="btnclass iframe" href="'.$this->config->base_url().'schedules/setschedule/'.$all->empID.'/">Set Schedule</button></td>
 		</tr>';
 	}
@@ -20,7 +20,6 @@
 <script type="text/javascript">
 	$(function(){
 		$('.dTable').dataTable({
-			"pageLength": 5,
 			"ordering": false
 		});
 	});

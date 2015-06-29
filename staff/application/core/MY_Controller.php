@@ -15,6 +15,7 @@ class MY_Controller extends CI_Controller {
 		$this->load->model('Databasemodel', 'dbmodel');
 		$this->load->model('Textmodel', 'textM');
 		$this->load->model('Commonmodel', 'commonM');
+		$this->load->model('Emailmodel', 'emailM');
 		
 		$this->user = $this->getLoggedUser();
 		$this->access = $this->getUserAccess();

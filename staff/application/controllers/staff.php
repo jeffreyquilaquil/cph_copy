@@ -173,7 +173,7 @@ class Staff extends MY_Controller {
 						<p>Thanks!</p>
 						<p>CareerPH</p>
 				';
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $info->email, 'CareerPH Forgot Password', $body, 'CareerPH' );
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $info->email, 'CareerPH Forgot Password', $body, 'CareerPH' );
 				echo 'Request to reset password sent. Please check your email address '.$info->email.'.';
 			}
 			exit;
@@ -416,38 +416,21 @@ class Staff extends MY_Controller {
 								
 								$this->dbmodel->updateQuery('staffs', array('empID'=>$empID), $_POST);
 								
-								if((isset($what2update['endDate']) && $what2update['endDate']!='0000-00-00' && $what2update['endDate']<=date('Y-m-d')) || 
-									(isset($what2update['accessEndDate']) && $what2update['accessEndDate']!='0000-00-00' && $what2update['accessEndDate']<=date('Y-m-d'))
-								){									
+								//if access end date or end date is set
+								if((isset($what2update['endDate']) && $what2update['endDate']!='0000-00-00') || 
+									isset($what2update['accessEndDate']) && $what2update['accessEndDate']!='0000-00-00'
+								){
 									$uInfo = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$empID.'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
 									if(count($uInfo)>0){										
 										//set PT and careerph user inactive
-										$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
+										if($this->config->item('devmode')==false)
+											$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
 										$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$empID.'"');
 										
-										//send email
-										$ebody = '<p><b>Employee Separation Notice:</b></p>';
-										$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
-										
-										$ebody .= '<p>';
-										$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
-										
-										if(isset($what2update['accessEndDate']) || $uInfo->accessEndDate!='0000-00-00') 
-											$ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($_POST['accessEndDate'])).'</b><br/>';											
-										if(isset($what2update['endDate']) || $uInfo->endDate!='0000-00-00')
-											$ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($_POST['endDate'])).'</b><br/>';	
-										
-										$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
-										$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
-										$ebody .= '</p>';											
-										
-										$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
-										
-										$ebody .= '<p>Thanks!</p>';
-											
-										$this->commonM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
+										//send separation notice email
+										$this->emailM->emailSeparationNotice($uInfo);										
 									}
-								}
+								}	
 								
 								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
 								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
@@ -461,8 +444,10 @@ class Staff extends MY_Controller {
 								
 								//deactivate PT and careerPH access
 								if(isset($what2update['active'])){
-									if($what2update['active']==1) $this->dbmodel->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
-									else $this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
+									if($this->config->item('devmode')==false){
+										if($what2update['active']==1) $this->dbmodel->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$data['row']->username.'"');
+										else $this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
+									}
 									
 									$abody = '<p>Hi,</p>';
 									
@@ -478,8 +463,8 @@ class Staff extends MY_Controller {
 											<p>Thanks!</p>
 											<p>CAREERPH</p>';
 									
-									$this->commonM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
-									$this->commonM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
+									$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
+									$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
 								}
 								
 								if($submitType=='jdetails') $upNote = 'Job details';
@@ -683,35 +668,23 @@ class Staff extends MY_Controller {
 											
 					$this->commonM->addMyNotif($_POST['empID'], $ntext, 0, 1);
 					
-					//deactivate PT and careerPH if access end date and separation date is set and date is before today					
-					if(($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate') && $_POST['fieldV']<=date('Y-m-d') && $_POST['fieldV']!='0000-00-00'){
-						$uInfo = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'username="'.$this->dbmodel->getSingleField('staffs', 'username', 'empID="'.$_POST['empID'].'"').'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');						
-						if(count($uInfo)>0){										
-							//set PT and careerph user inactive
-							$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-							$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$_POST['empID'].'"');
+										
+					if(($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate')){
+						$uInfo = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$_POST['empID'].'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
+						if(count($uInfo)>0){
+							//send separation notice email if access end date or end date is set
+							$this->emailM->emailSeparationNotice($uInfo);
 							
-							//send email
-							$ebody = '<p><b>Employee Separation Notice:</b></p>';
-							$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
-							
-							$ebody .= '<p>';
-							$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
-								
-							if($_POST['fieldN']=='endDate' || $uInfo->endDate!='0000-00-00') $ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($uInfo->endDate)).'</b><br/>';
-							if($_POST['fieldN']=='accessEndDate' || $uInfo->accessEndDate!='0000-00-00') $ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($uInfo->accessEndDate)).'</b><br/>';
-							
-							$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
-							$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
-							$ebody .= '</p>';											
-							
-							$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
-							
-							$ebody .= '<p>Thanks!</p>';
-								
-							$this->commonM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
-						}					
+							//deactivate PT and careerPH if access end date and separation date is set and date is before today	
+							if($_POST['fieldV']<=date('Y-m-d') && $_POST['fieldV']!='0000-00-00'){
+								//set PT and careerph user inactive
+								if($this->config->item('devmode')==false)
+									$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
+								$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$_POST['empID'].'"');	
+							}
+						}												
 					}
+							
 
 					//cancel coaching if effective separation date is set on or before today. Add note CANCELLED DUE TO TERMINATION
 					if($_POST['fieldN']=='endDate' && $_POST['fieldV']<=date('Y-m-d')){
@@ -733,7 +706,7 @@ class Staff extends MY_Controller {
 					$ntext = $this->user->name.' disapproved your personal details update request: '.$this->config->item('txt_'.$_POST['fieldN']).' - '.$this->textM->convertDecryptedText($_POST['fieldN'], $_POST['fieldV']).'<br/>Reason: '.$_POST['notes'];
 					$this->commonM->addMyNotif($_POST['empID_fk'], $ntext, 0, 1);
 				}else if($_POST['submitType']=='sendEmail' || $_POST['submitType']=='sendEmailClose'){
-					$this->commonM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['email'], $_POST['subject'], nl2br($_POST['message']), 'CAREERPH');
+					$this->emailM->sendEmail( 'hr.cebu@tatepublishing.net', $_POST['email'], $_POST['subject'], nl2br($_POST['message']), 'CAREERPH');
 					
 					$forevermore = $this->user->name.' sent you an email';
 					if($_POST['submitType']=='sendEmailClose'){
@@ -850,7 +823,7 @@ class Staff extends MY_Controller {
 					<p><b>The Human Resources Department</b></p>
 				';
 				
-				$this->commonM->sendEmail( 'hr.cebu@tatepublishing.net', $to, $subject, $body, 'The Human Resources Department');
+				$this->emailM->sendEmail( 'hr.cebu@tatepublishing.net', $to, $subject, $body, 'The Human Resources Department');
 				
 			}
 			
@@ -1233,7 +1206,7 @@ class Staff extends MY_Controller {
 								<p>&nbsp;</p>
 								<p>Yours truly,<br/>
 								<b>The Human Resources Department</b></p>';												
-						$this->commonM->sendEmail('hr.cebu@tatepublishing.net', $reqInfo->email, 'NTE document has been printed', $emBody, 'The Human Resources Department');	
+						$this->emailM->sendEmail('hr.cebu@tatepublishing.net', $reqInfo->email, 'NTE document has been printed', $emBody, 'The Human Resources Department');	
 					}else if($_POST['submitType']=='signedNTE'){
 						$nteD = $this->dbmodel->getSingleInfo('staffNTE', 'nteID, status', 'nteID="'.$_POST['nteID'].'"');
 						
@@ -1301,7 +1274,7 @@ class Staff extends MY_Controller {
 							<p>Your next step as the NTE requestor will be to evaluate the merit of the explanation whether or not you find that the explanation is sufficient, you must document your decision with a Corrective Action Report. Click <b><a href="'.$this->config->base_url().'detailsNTE/'.$nteID.'/">here</a></b> to generate the CAR. <span style="color:red;">Remember that you will receive a daily email reminder to generate the CAR from the date the explanation was received until the CAR is generated.</span></p>
 							<p>&nbsp;</p>
 							<p>Thanks!</p>';
-					$this->commonM->sendEmail('careers.cebu@tatepublishing.net', $issuerEmail, 'NTE Response of '.$data['row']->name, $ebody, 'CareerPH');
+					$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $issuerEmail, 'NTE Response of '.$data['row']->name, $ebody, 'CareerPH');
 					
 					header('Location:'.$_SERVER['REQUEST_URI']);
 					exit;
@@ -1366,7 +1339,7 @@ class Staff extends MY_Controller {
 								<p>Please be informed that '.$this->user->name.' has generated a CAR for you. The corrective action is '.$_POST['sanction'].'. Please check <b><a href="'.$this->config->base_url().'detailsNTE/'.$_POST['nteID'].'/">here</a></b> to see the details of the CAR. Should you have any concern about this CAR, please discuss and clarify with '.$data['row']->issuerName.' before signing the document.</p>
 								<p>&nbsp;</p>
 								<p>Thanks!</p>';
-						$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'CAR has been generated', $emBody, 'CAREERPH');
+						$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'CAR has been generated', $emBody, 'CAREERPH');
 					}
 					
 					$this->commonM->addMyNotif($data['row']->empID_fk, $ntx.' Please check your disciplinary records or click <a href="'.$this->config->base_url().'detailsNTE/'.$_POST['nteID'].'/" class="iframe">here</a> to view the NTE details.', 4, 1);
@@ -1651,7 +1624,7 @@ class Staff extends MY_Controller {
 						$msg = '<p>Hi,</p>';
 						$msg .= '<p>'.$this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']].'. Login to <a href="'.$this->config->base_url().'">careerPH</a> to approve leave request.</p>';
 						$msg .= '<p>Thanks!</p>';
-						$this->commonM->sendEmail('careers.cebu@tatepublishing.net', $supEmail, $this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']], $msg, 'CareerPH' );
+						$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $supEmail, $this->user->name.' filed '.$leaveTypeArr[$_POST['leaveType']], $msg, 'CareerPH' );
 					}
 										
 					$data['submitted'] = true;
@@ -1724,7 +1697,7 @@ class Staff extends MY_Controller {
 									'.$_POST['message'].'<br/><br/>
 									============================================================================================<br/>
 								';
-								$this->commonM->sendEmail('careers.cebu@tatepublishing.net', $_POST['toEmail'], $_POST['subjectEmail'], $_POST['message'], 'CareerPH' );
+								$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $_POST['toEmail'], $_POST['subjectEmail'], $_POST['message'], 'CareerPH' );
 								$this->dbmodel->updateConcat('staffLeaves', 'leaveID="'.$data['row']->leaveID.'"', 'addInfo', $addInfo);
 							}else{
 								if($_POST['status']!=$_POST['oldstatus'])
@@ -1770,12 +1743,12 @@ class Staff extends MY_Controller {
 											<p>Best Regards,</p>
 											<p>'.$this->user->name.'</p>
 										';
-									$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Leave Approved Without Pay', $eMsg, 'CareerPH Auto-Email');
+									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Leave Approved Without Pay', $eMsg, 'CareerPH Auto-Email');
 								}
 								
 								$uEmail = '<p>Hi '.$data['row']->fname.',</p>
 										<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
-								$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Leave Request', $uEmail, 'CareerPH Auto-Email');
+								$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Leave Request', $uEmail, 'CareerPH Auto-Email');
 							}
 						}else if($_POST['submitType']=='cancel'){
 							$updateArr['cancelReasons'] = $_POST['cancelReasons'];
@@ -2243,7 +2216,7 @@ class Staff extends MY_Controller {
 						<p><br/></p>
 						<p>Thanks!</p>';
 						
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Request for COE', $body, 'CareerPH Auto-Email');
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Request for COE', $body, 'CareerPH Auto-Email');
 					$data['inserted'] = true;
 				}
 			}
@@ -2296,7 +2269,7 @@ class Staff extends MY_Controller {
 				}			
 				
 				$message .= '<br/><br/>---- <i style="font-size:11px;">Message sent from CareerPH</i> ----';				
-				$this->commonM->sendEmail($from, $to, $subject, $message, $fromName);
+				$this->emailM->sendEmail($from, $to, $subject, $message, $fromName);
 				
 				$ntexts = 'From: '.$from.'<br/>
 							To: '.$to.'<br/>
@@ -2429,7 +2402,7 @@ class Staff extends MY_Controller {
 								<p>Thanks!</p>
 								<p>CareerPH</p>
 							';
-						$this->commonM->sendEmail('careers.cebu@tatepublishing.net', $to, 'Code has been generated for you.', $ebody, 'CareerPH');
+						$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $to, 'Code has been generated for you.', $ebody, 'CareerPH');
 						//add notification
 						$this->commonM->addMyNotif($insArr['forWhom'], 'Generated code for you. See details below:<br/>Code: <b>'.$res.'</b><br/>Purpose: '.addslashes($_POST['why']), 0, 1);
 					}
@@ -2693,11 +2666,11 @@ class Staff extends MY_Controller {
 				$bEmail = '<p>Hi,</p>';
 				$bEmail .= '<p>Please claim from HR printed copy of the '.$optionVal.' form you generated/conducted for '.$row->name.'.</p>';
 				$bEmail .= '<p>Thanks!</p>';
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $genEmail, ucfirst($optionVal).' Form Printed for '.$row->name, $bEmail, 'CAREERPH');
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $genEmail, ucfirst($optionVal).' Form Printed for '.$row->name, $bEmail, 'CAREERPH');
 				
 				//send message to HR
 				$hrEmail = 'Hello HR,<br/><br/>Please be informed that the '.$optionVal.' form of '.$row->name.' is printed. Coach has been informed to collect the prints from HR. Please use this ticket to monitor that the fully signed '.$optionVal.' form is signed and on file. Click <a href="'.$this->config->base_url().'coachingform/hroptions/'.$row->coachID.'/">here</a> to view coaching details.<br/><br/>Thanks!';
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', ucfirst($optionVal).' Form Printed for '.$row->name, $hrEmail, 'CAREERPH');
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', ucfirst($optionVal).' Form Printed for '.$row->name, $hrEmail, 'CAREERPH');
 				
 				
 			}else if($_POST['submitType']=='uploadCF'){				
@@ -2811,7 +2784,7 @@ class Staff extends MY_Controller {
 					$eBody = '<p>Hi,<p>';
 					$eBody .= '<p>'.$data['row']->name.'\'s coaching period started on '.date('F d, Y', strtotime($data['row']->coachedDate)).' and the performance evaluation is due on '.date('F d, Y',strtotime($data['row']->coachedEval)).'. '.$data['row']->name.' has already submitted his/her self-rating. It is now your turn to give your performance evaluation. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$data['row']->coachID.'/" class="iframe">here</a> to conduct evaluation.<p>';				
 					$eBody .= '<p>Thanks!<p>';				
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $coachEmail, 'Coaching performance evaluation', $eBody, 'CAREERPH');
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $coachEmail, 'Coaching performance evaluation', $eBody, 'CAREERPH');
 					
 					//notes
 					$this->commonM->addMyNotif($this->user->empID, 'Rated coaching evaluation. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$id.'/" class="iframe">here</a> for details.', 5);			
@@ -2827,7 +2800,7 @@ class Staff extends MY_Controller {
 						$eBody = '<p>Hi,<p>';
 						$eBody .= '<p>This is an automatic email notification to inform you that your Coach/Immediate Supervisor has provided his/her ratings. Please acknowledge that your immediate supervisor has discussed the evaluation with you by logging in to careerph/staff to acknowledge.<p>';				
 						$eBody .= '<p>Thanks!<p>';						
-						$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Aknowledge performance evaluation', $eBody, 'CAREERPH');
+						$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Aknowledge performance evaluation', $eBody, 'CAREERPH');
 					}
 					$this->dbmodel->updateQuery('staffCoaching', array('coachID'=>$id), $upArr);
 					
@@ -2891,7 +2864,7 @@ class Staff extends MY_Controller {
 			$ebody .= '<p>We look forward to processing your application soon!</p>
 						<p>Thank you very much!</p>';			
 			
-			$this->commonM->sendEmail('careers.cebu@tatepublishing.net', $insArr['emails'], $this->user->name.' invites you to apply in Tate Publishing', $ebody, 'CareerPH at Tate Publishing');
+			$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $insArr['emails'], $this->user->name.' invites you to apply in Tate Publishing', $ebody, 'CareerPH at Tate Publishing');
 			
 			$this->commonM->addMyNotif($this->user->empID, 'Send email invitation to apply to '.$insArr['emails'], 5, 0);
 			$data['submitted'] = '<br/><br/><h3>Email sent to your friend '.$insArr['firstName'].' '.$insArr['lastName'].'</h3>';	

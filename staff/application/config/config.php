@@ -25,6 +25,7 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
 	$config['demnCryptIV']	= 'TaTe';
 	$config['devmode'] = false;
+	$config['showProfiler'] = false;
 }else{
 	$config['base_url']	= 'http://129.3.252.99/staff/';
 	$config['career_url']	= 'http://129.3.252.99';
@@ -33,6 +34,7 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
 	$config['demnCryptIV']	= 'TaTe';
 	$config['devmode'] = true;
+	$config['showProfiler'] = false;
 }
 
 /*

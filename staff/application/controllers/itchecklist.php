@@ -43,7 +43,7 @@ class Itchecklist extends MY_Controller {
 									<p>Thanks!</p>
 									<p>CAREERPH</p>
 								';
-							$this->commonM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
+							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
 							
 							echo 'Status in careerph and PT has been change to "INACTIVE"';
 						}else{
@@ -57,7 +57,7 @@ class Itchecklist extends MY_Controller {
 									<p>Thanks!</p>
 									<p>CAREERPH</p>
 								';
-							$this->commonM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
+							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
 							
 							echo 'Status in careerph and PT has been change to "ACTIVE"';
 						}

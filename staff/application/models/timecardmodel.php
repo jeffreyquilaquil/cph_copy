@@ -107,6 +107,25 @@ class Timecardmodel extends CI_Model {
 	public function getMonthLogs($month, $userID){
 		return $this->dbmodel->getQueryResults('tcTimeLogByDates', '*', 'empID_fk="'.$userID.'" AND logDate LIKE "%-'.$month.'-%"');	
 	}
+	
+	public function allemployees(){			
+		if(isset($_POST['includeinactive'])) $condition = '';
+		else $condition = 'staffs.active=1';
+
+	
+		if($this->user->access==''){
+			$ids = '';
+			$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+			foreach($myStaff AS $m):
+				$ids .= $m->empID.',';
+			endforeach;
+			if($ids!=''){
+				$condition .= ((!empty($condition))?' AND ':'').'empID IN ('.rtrim($ids,',').')';
+			}
+		}
+										
+		return $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
+	}
 }
 ?>
 	

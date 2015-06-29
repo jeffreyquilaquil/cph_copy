@@ -270,14 +270,6 @@
 
 
 <script type="text/javascript">
-	function schedChange(jeena){
-		$('.schedLI').removeClass('current');
-		$(jeena).addClass('current');
-		//for contents
-		$('.schedDiv').addClass('hidden');  
-		$('#'+$(jeena).attr('id')+'DIV').removeClass('hidden');
-	}
-
 	$(function(){
 		$('.timepickA').datetimepicker({ format:'h:i a', datepicker:false });
 		

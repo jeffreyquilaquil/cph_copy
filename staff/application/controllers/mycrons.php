@@ -51,9 +51,9 @@ class MyCrons extends MY_Controller {
 				<p>CareerPH</p>';
 									
 			if($supEmail=='')
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
 			else
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $supEmail, 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $supEmail, 'Tate Career PH Leave Needs Approval', $eBody, 'CAREERPH');
 						 
 			echo '<pre>';
 			print_r($q);
@@ -98,7 +98,7 @@ class MyCrons extends MY_Controller {
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH' );
 				}
 				
 				$hremail = '<p>Hi HR,</p>
@@ -108,7 +108,7 @@ class MyCrons extends MY_Controller {
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH' );
 				
 				
 				$this->dbmodel->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($current-$used)));
@@ -130,42 +130,29 @@ class MyCrons extends MY_Controller {
 	function accessenddate(){
 		$dateToday = date('Y-m-d');
 		$dateTodayText = date('Y-m-d h:i a');
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, endDate, accessEndDate, office, shift, newPositions.title', 'staffs.active=1 AND (accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'")', 'LEFT JOIN newPositions ON posID=position');
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, endDate, accessEndDate, office, shift, staffs.active, newPositions.title', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
 		
+		//deactivate and send separation notice email if account is still active OR access end date is today OR empty access end date and end date is today
 		foreach($query AS $uInfo):
-			$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-			$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$uInfo->empID.'"');
+			if($uInfo->active==1 || $uInfo->accessEndDate==$dateToday || ($uInfo->accessEndDate=='' && $uInfo->endDate==$dateToday)){
+				$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$uInfo->empID.'"');
+				if($this->config->item('devmode')==false)
+					$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
 				
-			//send email
-			$ebody = '<p><b>Employee Separation Notice:</b></p>';
-			$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
-			
-			$ebody .= '<p>';
-			$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
-			
-			if($uInfo->accessEndDate==$dateToday) $ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($uInfo->accessEndDate)).'</b><br/>';	
-			if($uInfo->endDate!='0000-00-00') $ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($uInfo->endDate)).'</b><br/>';	
-						
-			$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
-			$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
-			$ebody .= '</p>';											
-			
-			$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
-			
-			$ebody .= '<p>Thanks!</p>';
+					
+				//send separation notice email					
+				$this->emailM->emailSeparationNotice($uInfo);
 				
-			$this->commonM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
-			
-			//cancel all in progress coaching of the employee
-			$coaching = $this->dbmodel->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$uInfo->empID.'" AND status!=1 AND status!=4');
-			if(count($coaching)>0){
-				foreach($coaching AS $c){
-					$this->dbmodel->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.$dateTodayText.'</i>'));
+				//cancel all in progress coaching of the employee
+				$coaching = $this->dbmodel->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$uInfo->empID.'" AND status!=1 AND status!=4');
+				if(count($coaching)>0){
+					foreach($coaching AS $c){
+						$this->dbmodel->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.$dateTodayText.'</i>'));
+					}
 				}
 			}
-			
 		endforeach;
-		
+		echo count($query);
 
 		exit;
 	}
@@ -213,19 +200,19 @@ class MyCrons extends MY_Controller {
 				//if evaluation is today send message to HR
 				if($q->coachedEval==$dtoday){
 					$hrEmail = 'Hello HR,<br/><br/>Please be informed that the evaluation of '.$q->name.' is due. Please use this ticket to monitor that the fully signed evaluation form is signed and on file. Click <a href="'.$this->config->base_url().'coachingform/hroptions/'.$q->coachID.'/">here</a> to view coaching details.<br/><br/>Thank you.';
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Coaching Evaluation Due', $hrEmail, 'CAREERPH');
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Coaching Evaluation Due', $hrEmail, 'CAREERPH');
 				}
 			
 				if($q->selfRating==''){
 					$mineEmail = 'Hello '.$q->name.',<br/><br/>Your self evaluation due already. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to provide.  You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH');
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH');
 				}
 				
 				if($q->selfRating!='' && $q->supervisor!=0){
 					$supervisorEmail = 'Hello,<br/><br/>The performance evaluation of '.$q->name.' is due already on '.date('F d, Y', strtotime($q->coachedEval)).'. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to '.(($q->status==2)?'finalize':'conduct').' evaluation. You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
-					$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH');
+					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH');
 				}
 			endforeach;	
 		}
@@ -237,7 +224,7 @@ class MyCrons extends MY_Controller {
 		foreach($printQ AS $p){
 			$sBody = 'Hello '.$p->fname.',<br/><br/>The '.(($p->status==1)?'coaching':'evaluation').' form for '.$p->ename.' is printed. Please claim the form from HR. You will receive this reminder daily until the said signed '.(($p->status==1)?'coaching':'evaluation').' form is returned to HR.<br/><br/><br/>Thanks!';
 			
-			$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $p->email, 'Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename.'', $sBody, 'CAREERPH');
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $p->email, 'Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename.'', $sBody, 'CAREERPH');
 		}
 		
 		echo 'Number of pending signed documents: '.count($printQ).'<br/>';
@@ -257,7 +244,7 @@ class MyCrons extends MY_Controller {
 				<p>This is an auto-email to remind you that the printed copy of the '.(($q->status==1)?'NTE':'CAR').' document you generated for '.$q->fname.' '.$q->lname.' is still pending for upload. If you don\'t have the copy yet, please get it from HR.  Else if the document is fully signed please return it to HR. Ignore this message if you already returned the document to HR.</p>
 				<p>&nbsp;</p>
 				<p>Thanks!</p>';
-			$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Return copy of '.(($q->status==1)?'NTE':'CAR').' document', $eBody, 'CAREERPH');
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Return copy of '.(($q->status==1)?'NTE':'CAR').' document', $eBody, 'CAREERPH');
 		endforeach;
 		
 		//notify immediate supervisor and employee if no response within 5 days
@@ -271,7 +258,7 @@ class MyCrons extends MY_Controller {
 						<p>&nbsp;</p>
 						<p>Thanks!</p>';
 				//send email to employee if today is the 5th day				
-				$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $qim->email, 'NTE Update', $empEmail, 'CAREERPH');
+				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $qim->email, 'NTE Update', $empEmail, 'CAREERPH');
 			}
 			
 			//send email to immediate supervisor
@@ -280,7 +267,7 @@ class MyCrons extends MY_Controller {
 					<p>&nbsp;</p>
 					<p>Thanks!</p>';
 			
-			$this->commonM->sendEmail( 'careers.cebu@tatepublishing.net', $qim->issueremail, 'NTE Update - You are required to generate CAR', $reqEmail, 'CAREERPH');
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $qim->issueremail, 'NTE Update - You are required to generate CAR', $reqEmail, 'CAREERPH');
 		endforeach;
 		
 		echo '<pre>';

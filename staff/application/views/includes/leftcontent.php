@@ -8,6 +8,17 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		echo '<li><a id="customsched" class="schedLI" href="#" onClick="schedChange(this)">Custom Schedules</a></li>';
 		echo '<li><a id="holeventsched" class="schedLI" href="#" onClick="schedChange(this)">Holiday/Event Schedules</a></li>';
 	echo '</ul>';
+?>
+	<script type="text/javascript">
+		function schedChange(jeena){
+			$('.schedLI').removeClass('current');
+			$(jeena).addClass('current');
+			//for contents
+			$('.schedDiv').addClass('hidden');
+			$('#'+$(jeena).attr('id')+'DIV').removeClass('hidden');
+		}
+	</script>
+<?php
 }else if($this->user!=false && count($row)>0){
 	$fname = '';
 

@@ -26,60 +26,7 @@ class Commonmodel extends CI_Model {
 		
 		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
 	}
-	
-	function sendEmail( $from, $to, $subject, $body, $fromName='' ){
-		$url = 'https://pt.tatepublishing.net/api.php?method=sendGenericEmail';
-		  /*
-		   * from = sender's email
-		   * fromName = sender's name
-		   * BCC = cc's
-		   * replyTo = reply to email address
-		   * sendTo = recipient email address
-		   * subject = email subject
-		   * body = email body
-		   */
 		
-		if($this->config->item('devmode')===true){
-			$subject = $subject.' to-'.$to;
-			$to = $toEmail;
-		}
-				
-		
-		$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:14px;">'.$body.'</div>';
-		$fields = array(
-			'from' => $from,
-			'sendTo' => $to,
-			'subject' => $subject,
-			'body' => $body
-		);
-
-		if( !empty($fromName) ){
-			$fields['fromName'] = $fromName;
-		}
-		//build the urlencoded data
-		$postvars='';
-		$sep='';
-		foreach($fields as $key=>$value) { 
-		   $postvars.= $sep.urlencode($key).'='.urlencode($value); 
-		   $sep='&'; 
-		}
-		//open connection
-		$ch = curl_init();
-		//set the url, number of POST vars, POST data
-		curl_setopt($ch,CURLOPT_URL,$url);
-		curl_setopt($ch,CURLOPT_POST,count($fields));
-		curl_setopt($ch,CURLOPT_POSTFIELDS,$postvars);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-		
-		//execute post
-		$result = curl_exec($ch);
-
-		//close connection
-		curl_close($ch);
-	}
-	
 	function photoResizer($source_image, $destination_filename, $width = 200, $height = 150, $quality = 70, $crop = true){
 		if( ! $image_data = getimagesize( $source_image ) ){
 			return false;

@@ -75,7 +75,7 @@
 	}
 	
 	if($_SERVER['HTTP_HOST']=='129.3.252.99')
-		$this->output->enable_profiler(TRUE);
+		$this->output->enable_profiler($this->config->item('showProfiler'));
 ?>
 <script type="text/javascript">
 	$(function(){
