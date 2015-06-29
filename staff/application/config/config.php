@@ -14,12 +14,26 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://129.3.252.99/staff/';
-$config['career_url']	= 'http://129.3.252.99';
-$config['career_uri']	= 'http://129.3.252.99'.$_SERVER['REQUEST_URI'];
-$config['toEmail']	= 'ludivina.marinas@tatepublishing.net';
-$config['demnCrypt']	= 'hiCebuITteamIamDivi';
-$config['demnCryptIV']	= 'TaTe';
+
+$host = $_SERVER['HTTP_HOST'];
+
+if($host == 'careerph.tatepublishing.net'){
+	$config['base_url']	= 'https://careerph.tatepublishing.net/staff/';
+	$config['career_url']	= 'https://careerph.tatepublishing.net';
+	$config['career_uri']	= 'https://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
+	$config['toEmail']	= '';
+	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
+	$config['demnCryptIV']	= 'TaTe';
+	$config['devmode'] = false;
+}else{
+	$config['base_url']	= 'http://129.3.252.99/staff/';
+	$config['career_url']	= 'http://129.3.252.99';
+	$config['career_uri']	= 'http://129.3.252.99'.$_SERVER['REQUEST_URI'];
+	$config['toEmail']	= 'ludivina.marinas@tatepublishing.net';
+	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
+	$config['demnCryptIV']	= 'TaTe';
+	$config['devmode'] = true;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -334,8 +348,8 @@ $config['compress_output'] = FALSE;
 | regarding date handling.
 |
 */
-$config['time_reference'] = 'local';
-
+$config['time_reference'] = 'gmt';
+date_default_timezone_set("Asia/Manila");
 
 /*
 |--------------------------------------------------------------------------

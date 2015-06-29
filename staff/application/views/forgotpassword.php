@@ -13,10 +13,8 @@
 			username = $('#username').val();
 			email = $('#email').val();
 			
-			if(username=='' && email==''){
-				alert('Please input username or email.');
-			}else if(username!='' && email!=''){
-				alert('Please input username OR email only.');
+			if((username=='' && email=='') || (username!='' && email!='')){
+				alert('Please input EITHER username OR email.');
 			}else{
 				$(this).attr('disabled', 'disabled');
 				$('#loadimg').removeClass('hidden');

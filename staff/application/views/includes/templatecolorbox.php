@@ -18,7 +18,7 @@
 		<img src="<?= $this->config->base_url() ?>css/images/please_wait.gif"/>
 	</div>
 	<div id="colorboxcontent">
-	<?php
+	<?php		
 		if($this->user==false){
 			if($content == 'forgotpassword')
 				$this->load->view('forgotpassword');
@@ -31,7 +31,10 @@
 	?>	
 	</div>
 </div>
-
+<?php
+	if($_SERVER['HTTP_HOST']=='129.3.252.99')
+		$this->output->enable_profiler(TRUE);
+?>
 <script type="text/javascript">
 	$( function () {
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });

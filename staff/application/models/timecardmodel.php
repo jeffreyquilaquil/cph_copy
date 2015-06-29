@@ -13,7 +13,7 @@ class Timecardmodel extends CI_Model {
 	
 	public function getTimeSettings(){
 		$setArr = array();
-		$setQuery = $this->staffM->getQueryResults('staffSettings', 'settingName, settingVal');
+		$setQuery = $this->dbmodel->getQueryResults('staffSettings', 'settingName, settingVal');
 		foreach($setQuery AS $s){
 			$setArr[$s->settingName] = $s->settingVal;
 		}
@@ -25,7 +25,7 @@ class Timecardmodel extends CI_Model {
 		$checkBelow = true;
 		
 		//check for leaves
-		$leaves = $this->staffM->getSingleInfo('staffLeaves', 'leaveID, leaveType, status', 'empID_fk="'.$empID.'" AND status<3 AND iscancelled!=1 AND "'.$cdate.'" BETWEEN DATE_FORMAT(leaveStart, "%Y-%m-%d") AND DATE_FORMAT(leaveEnd, "%Y-%m-%d")');
+		$leaves = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, status', 'empID_fk="'.$empID.'" AND status<3 AND iscancelled!=1 AND "'.$cdate.'" BETWEEN DATE_FORMAT(leaveStart, "%Y-%m-%d") AND DATE_FORMAT(leaveEnd, "%Y-%m-%d")');
 		if(count($leaves)>0){
 			$schedToday = 'On-Leave';
 			if($leaves->status==0){
@@ -42,12 +42,12 @@ class Timecardmodel extends CI_Model {
 			$condition = 'empID_fk="'.$empID.'"';
 			$condition .= ' AND ("'.$cdate.'" BETWEEN effectivestart AND effectiveend';
 			$condition .= ' OR (effectiveend="0000-00-00" AND effectivestart<="'.$cdate.'") )';
-			$schedQ = $this->staffM->getSingleInfo('staffSchedules', '*', $condition, '', 'assigndate DESC'); 
+			$schedQ = $this->dbmodel->getSingleInfo('tcstaffSchedules', '*', $condition, '', 'assigndate DESC'); 
 			if(!empty($schedQ)){
 				if($schedQ->staffCustomSched_fk!=0){				
-					$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'custschedID="'.$schedQ->staffCustomSched_fk.'"', 'LEFT JOIN staffCustomSched ON timeID='.strtolower(date('l', strtotime($cdate))).'');				
+					$schedT = $this->dbmodel->getSingleInfo('tcCustomSchedTime', 'timeValue', 'custschedID="'.$schedQ->staffCustomSched_fk.'"', 'LEFT JOIN tcCustomSched ON timeID='.strtolower(date('l', strtotime($cdate))).'');				
 				}else if($schedQ->staffCustomSchedTime!=0){
-					$schedT = $this->staffM->getSingleInfo('staffCustomSchedTime', 'timeValue', 'timeID="'.$schedQ->staffCustomSchedTime.'"');
+					$schedT = $this->dbmodel->getSingleInfo('tcCustomSchedTime', 'timeValue', 'timeID="'.$schedQ->staffCustomSchedTime.'"');
 				}
 				
 				if(isset($schedT->timeValue) && !empty($schedT->timeValue)){
@@ -79,19 +79,29 @@ class Timecardmodel extends CI_Model {
 	
 	//Get all logs for the given date schedule and returns an array of logs
 	//$sched is an array that contains start and end
-	public function getTimeLogs($sched, $idNum){
+	//$idNum is the employee original ID number not the empID from database
+	public function getTimeLogs($sched, $idNum, $dateToday){
 		$logArr = array();
 		if(count($sched)==2){
 			$setArr = $this->getTimeSettings();			
 			$aIn = date('Y-m-d H:i:s', strtotime($sched['start'].' '.$setArr['timeAllowedClockIn']));
 			$aOut = date('Y-m-d H:i:s', strtotime($sched['end'].' '.$setArr['timeAllowedClockOut']));
 						
-			$tlogs = $this->staffM->getQueryResults('staffTimelogs', 'logType, logtime', 'staffs_idNum_fk="'.$idNum.'" AND logtime BETWEEN "'.$aIn.'" AND "'.$aOut.'"');
-			
+			$tlogs = $this->dbmodel->getQueryResults('tcTimelogs', 'logType, logtime', 'staffs_idNum_fk="'.$idNum.'" AND logtime BETWEEN "'.$aIn.'" AND "'.$aOut.'"');
+		}else{						
+			$tlogs = $this->dbmodel->getQueryResults('tcTimelogs', 'logType, logtime', 'staffs_idNum_fk="'.$idNum.'" AND logtime LIKE "'.$dateToday.'%"');
+		}
+		
+		if(!empty($tlogs)){
 			foreach($tlogs AS $t){
 				if($t->logType=='A' && (!isset($logArr['timeIn']) || (isset($logArr['timeIn']) && $logArr['timeIn']>$t->logtime))){
 					$logArr['timeIn'] = $t->logtime;
 				}
+				if($t->logType=='Z' && (!isset($logArr['timeOut']) || (isset($logArr['timeOut']) && $logArr['timeOut']>$t->logtime))){
+					$logArr['timeOut'] = $t->logtime;
+				}
+				if($t->logType=='D' || $t->logType=='E')
+					$logArr['breaks'][] = $t->logtime;
 			}
 		}
 		
@@ -100,7 +110,7 @@ class Timecardmodel extends CI_Model {
 	
 	//get all logs in a month
 	public function getMonthLogs($month, $userID){
-		return $this->staffM->getQueryResults('staffTimeLogByDate', '*', 'staffs_idNum_fk="'.$userID.'" AND logDate LIKE "%-'.$month.'-%"');	
+		return $this->dbmodel->getQueryResults('tcTimeLogByDates', '*', 'empID_fk="'.$userID.'" AND logDate LIKE "%-'.$month.'-%"');	
 	}
 }
 ?>

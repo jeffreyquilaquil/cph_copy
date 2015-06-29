@@ -37,7 +37,7 @@
 				echo '<td>'.$i->coachedPeriod.'</td>';
 				echo '<td>'.date('F d, Y', strtotime($i->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($i->coachedEval)).'</td>';
-				echo '<td>'.$i->coachedBy.'</td>';
+				echo '<td>'.$i->coachedByName.'</td>';
 				echo '<td width="200px" class="errortext">'.$hrOptionsPending[$i->HRoptionStatus].'</td>';
 				echo '<td><a href="'.$this->config->base_url().'coachingform/hroptions/'.$i->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>';							
 			echo '</tr>';
@@ -72,7 +72,7 @@
 				echo '<td>'.$i->coachedPeriod.'</td>';
 				echo '<td>'.date('F d, Y', strtotime($i->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($i->coachedEval)).'</td>';
-				echo '<td>'.$i->coachedBy.'</td>';
+				echo '<td>'.$i->coachedByName.'</td>';
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'coachingform/acknowledgment/'.$i->coachID.'/">
 					<img src="'.$this->config->base_url().'css/images/view-icon.png">
 					</a></td>';			
@@ -110,8 +110,8 @@
 				echo '<td>'.$p->coachedPeriod.'</td>';
 				echo '<td>'.date('F d, Y', strtotime($p->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($p->coachedEval)).'</td>';
-				echo '<td>'.$p->coachedBy.'</td>';
-				echo '<td width="200px">'.$this->staffM->coachingStatus($p->coachID).'</td>';
+				echo '<td>'.$p->coachedByName.'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($p->coachID, $p).'</td>';
 				echo '<td align="center">
 					<a href="'.$this->config->base_url().'coachingform/expectation/'.$p->coachID.'/" class="iframe">
 						<img src="'.$this->config->base_url().'css/images/pdf-icon.png">
@@ -128,8 +128,10 @@
 </table>
 </div>
 
+<br/>
 <div id="tab-4" class="tab-content">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Coaching ID</td>
 		<td>Employee's Name</td>
@@ -143,6 +145,7 @@
 		<td>Evaluation Form</td>
 		<td>Details</td>
 	</tr>
+</thead>
 <?php
 	if(count($done)==0){
 		echo '<tr><td colspan=3>No coaching form.</td></tr>';
@@ -155,8 +158,8 @@
 				echo '<td>'.$d->coachedPeriod.'</td>';
 				echo '<td>'.date('F d, Y', strtotime($d->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($d->coachedEval)).'</td>';
-				echo '<td>'.$d->coachedBy.'</td>';
-				echo '<td width="200px">'.$this->staffM->coachingStatus($d->coachID).'</td>';				
+				echo '<td>'.$d->coachedByName.'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($d->coachID, $d).'</td>';				
 				
 				echo '<td align="center">';
 				$fileloc = UPLOADS.'coaching/coachingform_'.$d->coachID.'.pdf';
@@ -187,9 +190,9 @@
 </table>
 </div>
 
-
 <div id="tab-5" class="tab-content">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Coaching ID</td>
 		<td>Employee's Name</td>
@@ -201,6 +204,7 @@
 		<td>Status</td>
 		<td>Details</td>
 	</tr>
+</thead>
 <?php
 	if(count($cancelled)==0){
 		echo '<tr><td colspan=3>No coaching form.</td></tr>';
@@ -213,8 +217,8 @@
 				echo '<td>'.$c->coachedPeriod.'</td>';
 				echo '<td>'.date('F d, Y', strtotime($c->coachedDate)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($c->coachedEval)).'</td>';
-				echo '<td>'.$c->coachedBy.'</td>';
-				echo '<td width="200px">'.$this->staffM->coachingStatus($c->coachID).'</td>';
+				echo '<td>'.$c->coachedByName.'</td>';
+				echo '<td width="200px">'.$this->staffM->coachingStatus($c->coachID, $c).'</td>';
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'coachingform/acknowledgment/'.$c->coachID.'/">
 					<img src="'.$this->config->base_url().'css/images/view-icon.png">
 					</a></td>';			

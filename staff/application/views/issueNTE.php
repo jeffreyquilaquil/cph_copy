@@ -48,7 +48,7 @@ if(!file_exists($signature)){
 				echo '<tr>';
 					echo '<td><a href="'.$this->config->base_url().'detailsNTE/'.$p->nteID.'/">'.$p->nteID.'</a></td>';
 					echo '<td>'.ucfirst($p->type).'</td>';
-					echo '<td>'.$this->staffM->ordinal($p->offenselevel).'</td>';
+					echo '<td>'.$this->textM->ordinal($p->offenselevel).'</td>';
 					echo '<td>';
 						$piolo = explode('|', $p->offensedates);
 						foreach($piolo AS $o){
@@ -94,7 +94,7 @@ if(!file_exists($signature)){
 		<tr class="trawol">
 			<td>Is this what offense?</td>
 			<td>
-				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->staffM->ordinal($awolnum) ?>"/>
+				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->textM->ordinal($awolnum) ?>"/>
 				<input id="offlevel" type="hidden" name="offenselevel" value="<?= $awolnum ?>"/>
 			</td>
 		</tr>
@@ -122,8 +122,8 @@ if(!file_exists($signature)){
 		<tr class="trtardiness hidden">
 			<td>Is this what offense?</td>
 			<td>
-				<input id="offlevelord" type="text" name="offenselevel" class="forminput" disabled="disabled" value="<?= $this->staffM->ordinal($tardynum) ?>"/>
-				<input id="offlevel" type="hidden" class="forminput" disabled="disabled" value="<?= $tardynum ?>"/>
+				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->textM->ordinal($tardynum) ?>"/>
+				<input id="offlevel" type="hidden" name="offenselevel" class="forminput" value="<?= $tardynum ?>"/>
 			</td>
 		</tr>
 		<tr class="trtardiness hidden">
@@ -148,8 +148,8 @@ if(!file_exists($signature)){
 			<td colspan=2>
 				<input type="hidden" name="empID_fk" value="<?= $row->empID ?>"/>
 				<input type="hidden" name="submitType" value="issueNTE"/>
-				<input type="submit" value="Submit"/>
-				<input type="button" value="Cancel" onClick="parent.$.colorbox.close(); return false;"/>
+				<input type="submit" value="Submit" class="btnclass"/>
+				<input type="button" value="Cancel" onClick="parent.$.colorbox.close(); return false;" class="btnclass"/>
 			</td>
 		</tr>
 	<?php } ?>

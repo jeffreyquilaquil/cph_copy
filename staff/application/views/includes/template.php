@@ -28,7 +28,7 @@
 		
 		$hdata['cnotif'] = 0;
 		if($this->user!=false){
-			$notifQ = $this->staffM->getQueryResults('staffMyNotif', 'notifID', 'isNotif=1 AND empID_fk='.$this->user->empID); 
+			$notifQ = $this->dbmodel->getQueryResults('staffMyNotif', 'notifID', 'empID_fk="'.$this->user->empID.'" AND isNotif=1'); 
 			$hdata['cnotif'] = count($notifQ);
 		}
 		
@@ -73,9 +73,13 @@
 		}
 		$this->session->unset_userdata('popupnotification');
 	}
+	
+	if($_SERVER['HTTP_HOST']=='129.3.252.99')
+		$this->output->enable_profiler(TRUE);
 ?>
 <script type="text/javascript">
 	$(function(){
+		$('.datatable').dataTable();
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px" });
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });

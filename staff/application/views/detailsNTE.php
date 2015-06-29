@@ -34,7 +34,7 @@
 	</tr>
 	<tr>
 		<td>Offense Number</td>
-		<td><?= $this->staffM->ordinal($row->offenselevel).' Offense' ?></td>
+		<td><?= $this->textM->ordinal($row->offenselevel).' Offense' ?></td>
 	</tr>
 	<tr>
 		<td>Date NTE Issued</td>
@@ -82,7 +82,7 @@
 		if(isset($cc[0])){
 			echo '<tr>
 					<td>Cancelled by</td>
-					<td>'.$this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$cc[0].'"').'</td>
+					<td>'.$this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$cc[0].'"').'</td>
 				</tr>';
 		}
 		if(isset($cc[1])){
@@ -140,7 +140,7 @@
 	}
 
 	if(($this->user->access!='' || $this->user->empID==$row->issuer ) && $row->status==1 && $row->empID_fk!=$this->user->empID){
-		echo '<tr><td colspan=2><button onClick="checkCancel('.$row->nteID.')">Cancel NTE</button></td></tr>';
+		echo '<tr><td colspan=2><button onClick="checkCancel('.$row->nteID.')" class="btnclass">Cancel NTE</button></td></tr>';
 	}
 
 	if(
@@ -157,7 +157,7 @@
 		<td colspan=2>
 	<?php 
 		if($this->access->accessFullHR==true || $row->issuer==$this->user->empID){
-			echo '<button id="generateC">Generate CAR</button>';
+			echo '<button id="generateC" class="btnclass">Generate CAR</button>';
 		}else{
 			echo 'CAR not yet generated.';
 		}

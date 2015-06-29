@@ -12,7 +12,7 @@
 <table class="tableInfo">
 	<tr>
 		<td>Status</td>
-		<td><b><?= $this->staffM->getLeaveStatusText($row->status, $row->iscancelled) ?></b>&nbsp;&nbsp;
+		<td><b><?= $this->textM->getLeaveStatusText($row->status, $row->iscancelled) ?></b>&nbsp;&nbsp;
 	<?php		
 		if($this->user->empID == $row->empID_fk){
 			if($row->leaveType==4){
@@ -88,7 +88,7 @@
 ?>
 	<tr>
 		<td>Reason</td>
-		<td><?= (($row->leaveType==5)?$this->staffM->ordinal($row->reason).' child':$row->reason) ?></td>
+		<td><?= (($row->leaveType==5)?$this->textM->ordinal($row->reason).' child':$row->reason) ?></td>
 	</tr>
 	<tr>
 		<td>Date Requested</td>
@@ -97,7 +97,7 @@
 <?php 
 	if(!empty($row->code)){
 		echo '<tr><td>Code Used</td><td>'.$row->code.'</td></tr>';
-		$vreason = $this->staffM->getSingleField('staffCodes', 'why', 'code="'.trim($row->code).'"');
+		$vreason = $this->dbmodel->getSingleField('staffCodes', 'why', 'code="'.trim($row->code).'"');
 		if(!empty($vreason))
 			echo '<tr><td>Valid Reason for Code</td><td>'.$vreason.'</td></tr>';
 	}
@@ -172,7 +172,7 @@
 							<td>'.$rr->leaveStart.'</td>
 							<td>'.$rr->leaveEnd.'</td>
 							<td align="center">'.$rr->totalHours.'</td>
-							<td>'.$this->staffM->getLeaveStatusText($rr->status, $rr->iscancelled).'</td>
+							<td>'.$this->textM->getLeaveStatusText($rr->status, $rr->iscancelled).'</td>
 						</tr>';
 				}				
 			echo '</table>
@@ -232,7 +232,7 @@
 	<tr bgcolor="#eee"><td colspan=2><h3>Immediate Supervisor</h3></td></tr>
 <?php 	
 	if($row->dateApproved!='0000-00-00'){
-		$aName = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->approverID.'"');
+		$aName = $this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->approverID.'"');
 		echo '<tr>
 				<td>Date Approved</td>
 				<td>'.date('F d, Y', strtotime($row->dateApproved)).'</td>
@@ -248,7 +248,7 @@
 			</tr>';	
 		}
 	}else{
-		if(($row->iscancelled==0 || $row->iscancelled==4)&& ($this->access->accessFull==true || $this->staffM->checkStaffUnderMeByID($row->empID_fk)==true)){
+		if(($row->iscancelled==0 || $row->iscancelled==4)&& ($this->access->accessFull==true || $this->commonM->checkStaffUnderMeByID($row->empID_fk)==true)){
 			echo '<form action="" method="POST" onSubmit="return validateIS();">';
 			echo '<tr>
 					<td>Please check one:';
@@ -293,7 +293,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 <?php if($row->dateApproved=='0000-00-00' && ($row->iscancelled==0 || $row->iscancelled==4)){
 		echo '<tr><td colspan=2>Pending Supervisor\'s Approval</td></tr>';
 	}else if($row->hrdateapproved!='0000-00-00'){
-		$hrName = $this->staffM->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->hrapprover.'"');
+		$hrName = $this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$row->hrapprover.'"');
 		echo '<tr>
 				<td>Approved By</td>
 				<td>'.$hrName.'</td>

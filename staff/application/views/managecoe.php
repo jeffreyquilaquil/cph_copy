@@ -34,9 +34,10 @@
 	
 </table>
 </div>
-
+<br/>
 <div id="tab-2" class="tab-content">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Employee's Name</td>
 		<td>Date Requested</td>
@@ -46,6 +47,7 @@
 		<td>Date Generated</td>
 		<td><br/></td>
 	</tr>
+</thead>
 <?php
 	if(count($printed)==0){
 		echo '<tr><td colspan=3>No printed requests.</td></tr>';

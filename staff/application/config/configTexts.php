@@ -229,6 +229,7 @@
 				'Z' => 'Time Out',
 			);
 			
+	$config['weekdayArray'] = array('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday');
 	
 	
 ?>

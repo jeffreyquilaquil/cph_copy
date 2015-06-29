@@ -48,10 +48,10 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'root';
-$db['default']['password'] = 'summer28Thing';
-$db['default']['database'] = 'tatecareerph_db';
+$db['default']['hostname'] = 'sql01.tatepublishing.net';
+$db['default']['username'] = 'cph_app01';
+$db['default']['password'] = 'UADyB5dVTs3k3zc7';
+$db['default']['database'] = 'careerph_prod';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = FALSE;
@@ -63,6 +63,23 @@ $db['default']['dbcollat'] = 'utf8_general_ci';
 $db['default']['swap_pre'] = '';
 $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
+
+$db['defaultdev']['hostname'] = 'localhost';
+$db['defaultdev']['username'] = 'root';
+$db['defaultdev']['password'] = 'summer28Thing';
+$db['defaultdev']['database'] = 'tatecareerph_db';
+$db['defaultdev']['dbdriver'] = 'mysql';
+$db['defaultdev']['dbprefix'] = '';
+$db['defaultdev']['pconnect'] = FALSE;
+$db['defaultdev']['db_debug'] = TRUE;
+$db['defaultdev']['cache_on'] = FALSE;
+$db['defaultdev']['cachedir'] = '';
+$db['defaultdev']['char_set'] = 'utf8';
+$db['defaultdev']['dbcollat'] = 'utf8_general_ci';
+$db['defaultdev']['swap_pre'] = '';
+$db['defaultdev']['autoinit'] = TRUE;
+$db['defaultdev']['stricton'] = FALSE;
+
 
 $db['projectTracker']['hostname'] = 'ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com';
 $db['projectTracker']['username'] = 'pt';

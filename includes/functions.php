@@ -165,19 +165,22 @@ function sendEmail( $from, $to, $subject, $body, $fromName='' ){
 	   * subject = email subject
 	   * body = email body
 	   */
-	 
+	
+	$hosturl = $_SERVER['HTTP_HOST'];
+	if($hosturl=='129.3.252.99'){
+		$subject = $subject.' to-'.$to;
+		$to = 'ludivina.marinas@tatepublishing.net';
+	}
 
-	//$subject = $subject.' to-'.$to;
-	//$to = 'ludivina.marinas@tatepublishing.net';
 	$fields = array(
-	'from' => $from,
-	'sendTo' => $to,
-	'subject' => $subject,
-	'body' => $body,
+		'from' => $from,
+		'sendTo' => $to,
+		'subject' => $subject,
+		'body' => $body,
 	);
 
 	if( !empty($fromName) ){
-	$fields['fromName'] = $fromName;
+		$fields['fromName'] = $fromName;
 	}
 	//build the urlencoded data
 	$postvars='';

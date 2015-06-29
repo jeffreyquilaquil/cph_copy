@@ -34,7 +34,7 @@ if($edit==''){
 						else if($f=='terminationType' || $f=='taxstatus')
 							echo $this->staffM->infoTextVal($f, $r->$f);
 						else
-							echo $this->txtM->convertDecryptedText($f, $r->$f);
+							echo $this->textM->convertDecryptedText($f, $r->$f);
 						
 					echo '</td>
 					<td style="color:red;">'.$this->staffM->infoTextVal($r->fieldname, $r->fieldvalue).'</td>';

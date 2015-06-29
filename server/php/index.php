@@ -15,8 +15,14 @@
 
 //Online
 session_start();
-define('DIR_DOWNLOAD', $_SERVER['DOCUMENT_ROOT'].'/');
-define ('HTTP_SERVER' , 'http://'.$_SERVER['HTTP_HOST'].'/');
+
+if($hosturl=='careerph.tatepublishing.net'){
+	define('DIR_DOWNLOAD', $_SERVER['DOCUMENT_ROOT'].'/');
+	define ('HTTP_SERVER' , 'https://'.$_SERVER['HTTP_HOST'].'/');
+}else{
+	define('DIR_DOWNLOAD', $_SERVER['DOCUMENT_ROOT'].'/');
+	define ('HTTP_SERVER' , 'http://'.$_SERVER['HTTP_HOST'].'/');
+}
 
 error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');

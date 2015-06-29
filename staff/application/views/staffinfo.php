@@ -90,7 +90,7 @@
 					echo 'Update</a>';
 				}
 				
-				echo '<div style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">';
+				echo '<div class="pdetailsfld" style="padding:10px; background-color:#fff; right:0; top:26px; text-align:center; border:1px solid #ccc; float:right; position:absolute;">';
 					$ptimg = 'http://staffthumbnails.s3.amazonaws.com/'.$row->username.'.jpg';
 					if(!(@file_get_contents($ptimg, 0, NULL, 0, 1)))
 						$ptimg = $this->config->base_url().'css/images/logo.png';
@@ -228,7 +228,7 @@
 	<table class="tableInfo hidden" id="compensationtblData">
 	<?php	
 		echo $this->staffM->displayInfo('cdetails', 'sal', $row->sal, true, 'Ex. 10,000.00');
-		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->txtM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
+		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->textM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
 		
 		if($this->access->accessFullHRFinance==true || $current=='myinfo'){
 			echo $this->staffM->displayInfo('cdetails', 'taxstatus', $row->taxstatus, true);	
@@ -443,9 +443,9 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>';
 					
 					if($t->iscancelled==4){
-						echo '<a href="'.$this->config->base_url().'sendemail/addinfoleavesubmitted/'.$t->leaveID.'/'.'" class="iframe">'.$this->staffM->getLeaveStatusText($t->status, $t->iscancelled).'<br/>Click here to confirm submission of required information</a>';
+						echo '<a href="'.$this->config->base_url().'sendemail/addinfoleavesubmitted/'.$t->leaveID.'/'.'" class="iframe">'.$this->textM->getLeaveStatusText($t->status, $t->iscancelled).'<br/>Click here to confirm submission of required information</a>';
 					}else{
-						echo $this->staffM->getLeaveStatusText($t->status, $t->iscancelled);
+						echo $this->textM->getLeaveStatusText($t->status, $t->iscancelled);
 					}
 				echo '</td>
 					<td><a class="iframe" href="'.$this->config->base_url().'leavepdf/'.$t->leaveID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
@@ -481,7 +481,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 				<tr>	
 					<td>NTE</td>
 					<td>'.$dis->type.'</td>
-					<td>'.$this->staffM->ordinal($dis->offenselevel).' Offense</td>
+					<td>'.$this->textM->ordinal($dis->offenselevel).' Offense</td>
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
 			if($dis->status==0)
@@ -522,7 +522,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 				echo '<td>'.date('M d, Y H:i a', strtotime($per->dateGenerated)).'</td>';
 				echo '<td>'.date('M d, Y', strtotime($per->coachedEval)).'</td>';
 				echo '<td>'.$per->coachedByName.'</td>';
-			$stat = $this->staffM->coachingStatus($per->coachID);
+			$stat = $this->staffM->coachingStatus($per->coachID, $per);
 				if(strpos($stat,'Evaluation Due.') !== false)
 					echo '<td width="200px" bgcolor="#ff3232">'.$stat.'</td>';	
 				else

@@ -41,7 +41,7 @@ if($this->access->accessFullHR==true){
 				<tr id="trpendingprint_'.$n->nteID.'">
 					<td>'.$n->name.'</td>
 					<td>'.ucfirst($n->type).'</td>
-					<td>'.$this->staffM->ordinal($n->offenselevel).' Offense</td>
+					<td>'.$this->textM->ordinal($n->offenselevel).' Offense</td>
 					<td>'.date('F d, Y', strtotime($n->dateissued)).'</td>
 					<td>'.$n->issuerName.'</td>
 					<td>'.(($n->status==1)?'NTE':'CAR').'</td>
@@ -86,7 +86,7 @@ if($this->access->accessFullHR==true){
 				<tr id="trnteupload_'.$u->nteID.'">
 					<td>'.$u->name.'</td>
 					<td>'.ucfirst($u->type).'</td>
-					<td>'.$this->staffM->ordinal($u->offenselevel).' Offense</td>
+					<td>'.$this->textM->ordinal($u->offenselevel).' Offense</td>
 					<td>'.date('F d, Y', strtotime($u->dateissued)).'</td>
 					<td>'.$u->issuerName.'</td>
 					<td>'.$whoprinted[0].'</td>
@@ -112,14 +112,15 @@ if($this->access->accessFullHR==true){
 
 <?php } //end of code if user is not full or HR?>
 
-
+<br/>
 <div id="allactivetab" class="tab-content <?= (($this->access->accessFullHR==false)?'current':'')?>">
 <?php
 	if($cntAllActive==0){
 		echo '<br/>No NTE records.';
 	}else{
 ?>
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Employee</td>
 		<td>NTE Type</td>
@@ -129,13 +130,14 @@ if($this->access->accessFullHR==true){
 		<td>Sanction</td>
 		<td>Details</td>
 	</tr>
+</thead>
 <?php
 	foreach($allActive AS $a):
 		echo '
 			<tr id="trpendingprint_'.$a->nteID.'">
 				<td>'.$a->name.'</td>
 				<td>'.ucfirst($a->type).'</td>
-				<td>'.$this->staffM->ordinal($a->offenselevel).' Offense</td>
+				<td>'.$this->textM->ordinal($a->offenselevel).' Offense</td>
 				<td>'.date('F d, Y', strtotime($a->dateissued)).'</td>
 				<td>'.$a->issuerName.'</td>
 				<td>'.$a->sanction.'</td>

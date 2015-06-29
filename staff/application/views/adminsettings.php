@@ -14,7 +14,7 @@ if($updated!=''){
 			<input type="checkbox" name="access[]" value="finance" <? if(strpos($row->access,'finance')!==false){ echo 'checked="checked"'; } ?>/> Finance<br/>
 			<input type="checkbox" name="access[]" value="full" <? if(strpos($row->access,'full')!==false){ echo 'checked="checked"'; } ?>/> Full<br/>
 			<input type="hidden" name="submitType" value="accesstype">
-			<input type="submit" value="Submit">
+			<input type="submit" value="Submit" class="btnclass">
 		</form>
 		</td>
 	</tr>

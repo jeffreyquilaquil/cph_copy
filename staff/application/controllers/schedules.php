@@ -1,21 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Schedules extends CI_Controller {
+class Schedules extends MY_Controller {
  
 	public function __construct(){
 		parent::__construct();
-		date_default_timezone_set("Asia/Manila");
-		
-		$this->load->model('Staffmodel', 'staffM');
-		$this->load->model('Schedulemodel', 'scheduleM');			
-		$this->db = $this->load->database('default', TRUE);	
-		session_start();		
-		
-		$this->user = $this->staffM->getLoggedUser();
-		$this->access = $this->staffM->getUserAccess();
 	} 
 	
-	public function index(){		
+	public function index(){
 		$data['content'] = 'sched_schedules';
 		$data['column'] = 'withLeft';	
 		
@@ -30,14 +21,14 @@ class Schedules extends CI_Controller {
 				$where = array();
 				
 				if($_POST['submitType']=='addtimecategory'){
-					$tbl = 'staffCustomSchedTime';
+					$tbl = 'tcCustomSchedTime';
 					$insArr['timeName'] = $_POST['name'];
 					$insArr['category'] = 0;
 					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
 					
 					$note = 'You added time category '.$_POST['name'].'.';
 				}else if($_POST['submitType']=='addtime'){
-					$tbl = 'staffCustomSchedTime';
+					$tbl = 'tcCustomSchedTime';
 					$insArr['timeName'] = $_POST['name'];
 					$insArr['timeValue'] = $_POST['start'].' - '.$_POST['end'];
 					$insArr['category'] = $_POST['cat'];
@@ -62,14 +53,14 @@ class Schedules extends CI_Controller {
 					$addUp = 'addInfo';					
 					$note = 'You updated time holiday schedule '.$_POST['holidayName'].'.';						
 				}else if($_POST['submitType']=='deleteTime'){
-					$tbl = 'staffCustomSchedTime';
+					$tbl = 'tcCustomSchedTime';
 					$where = array('timeID'=>$_POST['id']);
 					$addUp = 'addInfo';
 					$upArr['status'] = 0;
 					
 					$note = 'You deleted time option '.$_POST['id'].'.';
 				}else if($_POST['submitType']=='updateTime'){					
-					$tbl = 'staffCustomSchedTime';
+					$tbl = 'tcCustomSchedTime';
 					$where = array('timeID'=>$_POST['id']);
 					$upArr['timeName'] = $_POST['timeName'];
 					$addUp = 'addInfo';
@@ -82,14 +73,14 @@ class Schedules extends CI_Controller {
 					}										
 				}else if($_POST['submitType']=='addCustomSched'){
 					unset($_POST['submitType']);
-					$tbl = 'staffCustomSched';
+					$tbl = 'tcCustomSched';
 					$insArr = $_POST;
 					$insArr['createdby'] = $this->user->empID;
 					$insArr['datecreated'] = date('Y-m-d H:i:s');
 					
 					$note = 'You added custom schedule: '.$_POST['schedName'];
 				}else if($_POST['submitType']=='updateCustomSched'){					
-					$tbl = 'staffCustomSched';
+					$tbl = 'tcCustomSched';
 					$where = array('custschedID'=>$_POST['schedID']);
 					unset($_POST['schedID']);
 					unset($_POST['submitType']);
@@ -98,14 +89,14 @@ class Schedules extends CI_Controller {
 					$addUp = 'updateData';					
 					$note = 'You added custom schedule: '.$_POST['schedName'].'.';
 				}else if($_POST['submitType']=='deleteCustomSched'){
-					$tbl = 'staffCustomSched';
+					$tbl = 'tcCustomSched';
 					$where = array('custschedID'=>$_POST['id']);
 					$upArr['status'] = 0;
 					
 					$addUp = 'updateData';					
 					$note = 'You deleted custom schedule '.$_POST['id'].'.';
 				}else if($_POST['submitType']=='getHolidayData'){
-					$beau = $this->staffM->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate', 'holidayID="'.$_POST['id'].'"');
+					$beau = $this->dbmodel->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate', 'holidayID="'.$_POST['id'].'"');
 					foreach($beau AS $k){
 						echo $k.'|';
 					}
@@ -118,21 +109,21 @@ class Schedules extends CI_Controller {
 				}
 				
 				//update and insert defined above
-				if(!empty($note)) $this->staffM->addMyNotif($this->user->empID,$note, 5);
-				if(!empty($tbl) && count($insArr)>0) $this->staffM->insertQuery($tbl, $insArr);
-				if(!empty($tbl) && count($upArr)>0 && count($where)>0) $this->staffM->updateQuery($tbl, $where, $upArr);
+				if(!empty($note)) $this->commonM->addMyNotif($this->user->empID,$note, 5);
+				if(!empty($tbl) && count($insArr)>0) $this->dbmodel->insertQuery($tbl, $insArr);
+				if(!empty($tbl) && count($upArr)>0 && count($where)>0) $this->dbmodel->updateQuery($tbl, $where, $upArr);
 				reset($where);
 				if(!empty($tbl) && count($where)>0 && !empty($addUp)){
-					$this->staffM->updateConcat($tbl, key($where).'="'.$where[key($where)].'"', $addUp, $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|');
+					$this->dbmodel->updateConcat($tbl, key($where).'="'.$where[key($where)].'"', $addUp, $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|');
 				}
 				exit;
 			}
-			$data['settingsQuery'] = $this->staffM->getQueryResults('staffSettings', '*');
-			$data['timecategory'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'category=0 AND status=1');		
-			$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');
-			$data['allCustomSched'] = $this->staffM->getQueryResults('staffCustomSched', '*', 'status=1');
-			// $data['holidaySchedArr'] = $this->staffM->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, staffHolidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
-			$data['holidaySchedArr'] = $this->staffM->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			$data['settingsQuery'] = $this->dbmodel->getQueryResults('staffSettings', '*');
+			$data['timecategory'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'category=0 AND status=1');		
+			$data['alltime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'status=1');
+			$data['allCustomSched'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status=1');
+			// $data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, staffHolidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'staffHolidaySched=0 OR (staffHolidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			$data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
 			$data['schedTypeArr'] = $this->config->item('schedType');
 			$data['allDayTypes'] = $this->config->item('holidayTypes');			
 		}
@@ -188,19 +179,19 @@ class Schedules extends CI_Controller {
 					$array_custom['saturday'] = $_POST['saturday'];
 					$array_custom['datecreated'] = date('Y-m-d H:i:s');
 					
-					$newId = $this->staffM->insertQuery("staffCustomSched", $array_custom);															
+					$newId = $this->dbmodel->insertQuery("tcCustomSched", $array_custom);															
 					$array_input['staffCustomSched_fk'] = $newId;
 														
 					for($ctr = 0; $ctr < $size; $ctr++) {
 						$array_input['empID_fk'] = $explode[$ctr];					
-						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+						$response = $this->scheduleM->insert_setscheduleforStaff("tcstaffSchedules", $array_input);						
 					}
 				}
 				else{					
 					$array_input['staffCustomSched_fk'] = $_POST['presched'];										
 					for($ctr = 0; $ctr < $size; $ctr++) {
 						$array_input['empID_fk'] = $explode[$ctr];			
-						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+						$response = $this->scheduleM->insert_setscheduleforStaff("tcstaffSchedules", $array_input);						
 					}
 				}
 			}
@@ -239,16 +230,16 @@ class Schedules extends CI_Controller {
 			
 			$idstring_trim = rtrim($idstring,",");				
 			if($idstring_trim != "")
-				$name_object[$key] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID',' empID IN ('.$idstring_trim.')' );
+				$name_object[$key] = $this->dbmodel->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID',' empID IN ('.$idstring_trim.')' );
 		}
 		
 		$data['row'] = $name_object;									
-		$data['timeNameList'] = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeName,timeID',' category = 0' );
-		$query = "SELECT * FROM  staffCustomSched";
-		$query_result = $this->db->query($query);
+		$data['timeNameList'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeName,timeID',' category = 0' );
+		$query = "SELECT * FROM  tcCustomSched";
+		$query_result = $this->dbmodel->dbQuery($query);
 		$data['customSched'] = $query_result->result();		
-		// $data['customSchedTime'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
-		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');		 
+		// $data['customSchedTime'] = $this->dbmodel->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
+		$data['alltime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'status=1');		 
 		$data['content'] = 'setstaffschedule';		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
@@ -286,19 +277,19 @@ class Schedules extends CI_Controller {
 					$array_custom['saturday'] = $_POST['saturday'];
 					$array_custom['datecreated'] = date('Y-m-d H:i:s');
 					
-					$newId = $this->staffM->insertQuery("staffCustomSched", $array_custom);															
+					$newId = $this->dbmodel->insertQuery("tcCustomSched", $array_custom);															
 					$array_input['staffCustomSched_fk'] = $newId;
 														
 					for($ctr = 0; $ctr < $size; $ctr++) {
 						$array_input['empID_fk'] = $explode[$ctr];					
-						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+						$response = $this->scheduleM->insert_setscheduleforStaff("tcstaffSchedules", $array_input);						
 					}
 				}
 				else{					
 					$array_input['staffCustomSched_fk'] = $_POST['presched'];										
 					for($ctr = 0; $ctr < $size; $ctr++) {
 						$array_input['empID_fk'] = $explode[$ctr];			
-						$response = $this->scheduleM->insert_setscheduleforStaff("staffSchedules", $array_input);						
+						$response = $this->scheduleM->insert_setscheduleforStaff("tcstaffSchedules", $array_input);						
 					}
 				}
 			}
@@ -312,13 +303,13 @@ class Schedules extends CI_Controller {
 		}
 		$idstring_trim = rtrim($idstring,",");		
 				
-		$data['row'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID ',' empID IN ('.$idstring_trim.')' );
-		$data['timeNameList'] = $this->staffM->getQueryResults('staffCustomSchedTime', 'timeName,timeID',' category = 0' );
-		$query = "SELECT * FROM  staffCustomSched";
-		$query_result = $this->db->query($query);
+		$data['row'] = $this->dbmodel->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name, empID ',' empID IN ('.$idstring_trim.')' );
+		$data['timeNameList'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeName,timeID',' category = 0' );
+		$query = "SELECT * FROM  tcCustomSched";
+		$query_result = $this->dbmodel->dbQuery($query);
 		$data['customSched'] = $query_result->result();		
-		// $data['customSchedTime'] = $this->staffM->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
-		$data['alltime'] = $this->staffM->getQueryResults('staffCustomSchedTime', '*', 'status=1');		 
+		// $data['customSchedTime'] = $this->dbmodel->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name',' empID IN ('.$idstring_trim.')' );
+		$data['alltime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'status=1');		 
 		$data['content'] = 'setstaffrescurringschedule';		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
@@ -356,7 +347,7 @@ class Schedules extends CI_Controller {
 				
 				
 			// echo $this->input->post("defineschedtime");
-			// $category_id = $this->staffM->getSingleField("staffCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
+			// $category_id = $this->dbmodel->getSingleField("tcCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
 			// echo $category_id;
 			if($this->input->post("defineschedtime") == ""){				
 				$newcatergoryInsert = array();
@@ -364,10 +355,10 @@ class Schedules extends CI_Controller {
 				$newcatergoryInsert['category'] = 0;
 				$newcatergoryInsert['status'] = 1;
 				$newcatergoryInsert['addInfo'] = $this->user->empID."--".strtotime(date('Y-m-d'))."|";
-				$category_id = $this->staffM->insertQuery("staffCustomSchedTime",$newcatergoryInsert);		
+				$category_id = $this->dbmodel->insertQuery("tcCustomSchedTime",$newcatergoryInsert);		
 			}
 			else
-				// $category_id = $this->staffM->getSingleField("staffCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
+				// $category_id = $this->dbmodel->getSingleField("tcCustomSchedTime", "category", "timeID=".$this->input->post("defineschedtime"));
 				$category_id = $this->input->post("defineschedtime");
 			
 									
@@ -377,7 +368,7 @@ class Schedules extends CI_Controller {
 			$newTimeSched['category'] = $category_id;
 			$newTimeSched['status'] = 1;
 			$newTimeSched['addInfo'] = $this->user->empID."--".strtotime(date('Y-m-d'))."|";
-			$Timeschedule = $this->staffM->insertQuery("staffCustomSchedTime",$newTimeSched);		
+			$Timeschedule = $this->dbmodel->insertQuery("tcCustomSchedTime",$newTimeSched);		
 							
 		}
 		
@@ -386,16 +377,33 @@ class Schedules extends CI_Controller {
 			foreach($value as $maonani) {							
 				$inputdata = array();
 				$inputdata['empID_fk'] = $maonani->empID;
-				$inputdata['staffCustomSchedTime'] = $Timeschedule;
+				$inputdata['tcCustomSchedTime'] = $Timeschedule;
 				$inputdata['effectivestart'] = $key;
 				$inputdata['effectiveend'] = $key;
 				$inputdata['assignby'] = $this->user->empID;
-				$this->staffM->insertQuery("staffSchedules",$inputdata);		
+				$this->dbmodel->insertQuery("tcstaffSchedules",$inputdata);		
 			}					
-		}		
-						
-			
+		}	
+	}
 	
+	public function setschedule(){
+		$data['content'] = 'sched_setschedule';
+		$today = date('Y-m-d');
+		
+		if($this->user!=false){	
+			$empID = $this->uri->segment(3);
+			if(!empty($empID)){
+				$data['info'] = $this->dbmodel->getSingleInfo('staffs', 'username, fname, lname', 'empID="'.$empID.'"');
+				$data['currentSched'] = $this->dbmodel->getSingleInfo('tcstaffSchedules', 
+						'schedID, tcCustomSched_fk',
+						'empID_fk="'.$empID.'" AND effectivestart<="'.$today.'" AND effectiveend="0000-00-00"');
+			}
+			
+			$data['customTime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeID, timeName, timeValue,category', 'status=1');
+			$data['customSched'] = $this->dbmodel->getQueryResults('tcCustomSched', 'custschedID, schedType, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'status=1');
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	

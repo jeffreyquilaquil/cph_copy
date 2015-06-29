@@ -78,21 +78,28 @@ if($page=='details'){
 </table>
 
 <?php }else{ ?>
-<a class="iframe" href="<?= $this->config->base_url().'addnewposition/' ?>"><button style="float:right;" class="padding5px">Add New Position</button></a>
-<h2>List of All Positions</h2>
-<hr/>
-<table class="tableInfo">
-	<tr class="trhead">
-		<td>ID</td>
-		<td>Organization</td>
-		<td>Department</td>
-		<td>Group</td>
-		<td>Sub Group</td>
-		<td>Title</td>
-		<td>Org Level</td>
-		<td>Status</td>
-		<td><br/></td>
-	</tr>
+<h2>List of All Positions</h2><hr/>
+
+<div style="position:absolute; right:45px;">
+	<a class="iframe" href="<?= $this->config->base_url().'addnewposition/' ?>">
+		<button class="btnclass">Add New Position</button>
+	</a>
+</div>
+
+<table class="tableInfo datatable">
+	<thead>
+		<tr class="trhead">
+			<td>ID</td>
+			<td>Organization</td>
+			<td>Department</td>
+			<td>Group</td>
+			<td>Sub Group</td>
+			<td>Title</td>
+			<td>Org Level</td>
+			<td>Status</td>
+			<td><br/></td>
+		</tr>
+	</thead>	
 <?php
 	foreach($positions AS $p):
 		echo '<tr class="trbd">

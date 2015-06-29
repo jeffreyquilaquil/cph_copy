@@ -9,7 +9,7 @@
 <?php
 	echo '<ul>';
 	foreach($upper AS $u){ 
-		echo $this->txtM->getEmps($all, $u->supervisor, 0);
+		echo $this->textM->getEmps($all, $u->supervisor, 0);
 	}
 	echo '</ul>';
 	

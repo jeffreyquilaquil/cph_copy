@@ -23,7 +23,7 @@
 <?php if(count($tquery)==0){
 	echo 'None.';
 }else{ 
-	echo $this->staffM->leaveTableDisplay($tquery, 'tquery');
+	echo $this->textM->leaveTableDisplay($tquery, 'tquery');
 } ?>
 </div>
 
@@ -34,12 +34,12 @@
 }else{ 
 	if(count($imquery)>0){
 		echo '<h3>Pending Leaves for Approval</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($imquery, 'imquery');
+		echo $this->textM->leaveTableDisplay($imquery, 'imquery');
 		echo '<br/><br/>';
 	}
 	if(count($imcancelledquery)>0){
 		echo '<h3>Pending Cancelled Leaves for Approval</h3><hr/>';
-		echo $this->staffM->leaveTableDisplay($imcancelledquery, 'imcancelledquery');
+		echo $this->textM->leaveTableDisplay($imcancelledquery, 'imcancelledquery');
 		echo '<br/><br/>';
 	}
 	
@@ -51,7 +51,7 @@
 <?php if(count($hrquery)==0){
 	echo 'No pending leaves for approval.';
 }else{ 
-	echo $this->staffM->leaveTableDisplay($hrquery, 'hrquery');
+	echo $this->textM->leaveTableDisplay($hrquery, 'hrquery');
 } ?>
 </div>
 
@@ -62,27 +62,27 @@
 }else{ 
 	if(count($allpending)>0){
 		echo '<div class="cpointer" onClick="showTbl(\'allpending\', this)"><h3>All Pending Leaves for Approval ('.count($allpending).')  <a class="fs11px">[show]</a></h3><hr/></div>';
-		echo $this->staffM->leaveTableDisplay($allpending, 'allpending');
+		echo $this->textM->leaveTableDisplay($allpending, 'allpending', true);
 		echo '<br/><br/>';
 	}
 	if(count($allapproved)>0){
 		echo '<div class="cpointer" onClick="showTbl(\'allapproved\', this)"><h3>All Approved WITH Pay Leaves ('.count($allapproved).')  <a class="fs11px">[show]</a></h3><hr/></div>';
-		echo $this->staffM->leaveTableDisplay($allapproved, 'allapproved');
+		echo $this->textM->leaveTableDisplay($allapproved, 'allapproved', true);
 		echo '<br/><br/>';
 	}
 	if(count($allapprovedNopay)>0){
 		echo '<div class="cpointer" onClick="showTbl(\'allapprovedNopay\', this)"><h3>All Approved WITHOUT Pay Leaves ('.count($allapprovedNopay).')  <a class="fs11px">[show]</a></h3><hr/></div>';
-		echo $this->staffM->leaveTableDisplay($allapprovedNopay, 'allapprovedNopay');
+		echo $this->textM->leaveTableDisplay($allapprovedNopay, 'allapprovedNopay', true);
 		echo '<br/><br/>';
 	}
 	if(count($alldisapproved)>0){
 		echo '<div class="cpointer" onClick="showTbl(\'alldisapproved\', this)"><h3>All Disapproved Leaves ('.count($alldisapproved).')  <a class="fs11px">[show]</a></h3><hr/></div>';
-		echo $this->staffM->leaveTableDisplay($alldisapproved, 'alldisapproved');
+		echo $this->textM->leaveTableDisplay($alldisapproved, 'alldisapproved', true);
 		echo '<br/><br/>';
 	}
 	if(count($allcancelled)>0){
 		echo '<div class="cpointer" onClick="showTbl(\'allcancelled\', this)"><h3>All Cancelled Leaves ('.count($allcancelled).')  <a class="fs11px">[show]</a></h3><hr/></div>';
-		echo $this->staffM->leaveTableDisplay($allcancelled, 'allcancelled');
+		echo $this->textM->leaveTableDisplay($allcancelled, 'allcancelled', true);
 		echo '<br/><br/>';
 	}
 	

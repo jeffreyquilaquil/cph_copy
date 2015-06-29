@@ -29,12 +29,12 @@
 			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 			
 		<?php
-		if($this->config->base_url()!='https://careerph.tatepublishing.net/staff/'){
+		if($this->config->item('devmode')===true){
 			echo '<li '.(($content=='myattendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>';
 			
 			echo '<ul class="dropdown">';
 			
-			if($this->access->accessFullHR==true){	
+			if($this->access->accessFullHR===true){	
 				echo '<li '.(($content=='sched_schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Schedules Settings</a></li>';				
 			}
 			
@@ -72,12 +72,12 @@
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
-					$cisNum = $this->staffM->countResults('cis');
-					$coachingNum = $this->staffM->countResults('coaching');
-					$updateRequestNum = $this->staffM->countResults('updateRequest');
-					$pendingCOENum = $this->staffM->countResults('pendingCOE');
-					$staffLeavesNum = $this->staffM->countResults('staffLeaves');
-					$nteNum = $this->staffM->countResults('nte');
+					$cisNum = $this->commonM->countResults('cis');
+					$coachingNum = $this->commonM->countResults('coaching');
+					$updateRequestNum = $this->commonM->countResults('updateRequest');
+					$pendingCOENum = $this->commonM->countResults('pendingCOE');
+					$staffLeavesNum = $this->commonM->countResults('staffLeaves');
+					$nteNum = $this->commonM->countResults('nte');
 					
 					if($this->access->accessFullHR==true){
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Staff CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';						

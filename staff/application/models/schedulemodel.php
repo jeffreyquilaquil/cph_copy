@@ -30,8 +30,8 @@ class Schedulemodel extends CI_Model {
 
 	function getCustomSchedDetails($id) {
 		$this->load->model('Staffmodel', 'staffM');
-		$query = "SELECT * FROM  staffCustomSched WHERE custschedID =".$id;
-		$query_result = $this->db->query($query);
+		$query = "SELECT * FROM  tcCustomSched WHERE custschedID =".$id;
+		$query_result = $this->dbmodel->dbQuery($query);
 		$customSchedDetails = $query_result->result();
 		
 		$weekarray = array();		
@@ -55,13 +55,13 @@ class Schedulemodel extends CI_Model {
 		$daybefore = date('Y-m-d',strtotime($date1 . "-1 days"));
 		$update_data = array();
 		$update_data['effectiveend'] = $daybefore;
-		$getexistingperpetual = $this->staffM->updateQuery("staffSchedules", $update_where, $update_data);
+		$getexistingperpetual = $this->dbmodel->updateQuery("staffSchedules", $update_where, $update_data);
         // $query = "UPDATE staffSchedules SET effectiveend = '".$daybefore."' WHERE effectiveend ='0000-00-00' AND empID_fk ='".$array_input['empID_fk']."'";
 		// echo $query;
 		// exit;
-		// $query_result = $this->db->query($query);
+		// $query_result = $this->dbmodel->dbQuery($query);
 		// $customSchedDetails = $query_result->result();		
-		$setSchedNewId = $this->staffM->insertQuery("staffSchedules", $array_input);
+		$setSchedNewId = $this->dbmodel->insertQuery("staffSchedules", $array_input);
 		
 	}
 		
@@ -75,18 +75,18 @@ class Schedulemodel extends CI_Model {
 		$nameToday = strtolower(date('l', strtotime($dateToday)));
 			
 		//leaves
-		$lquery = $this->staffM->getSingleInfo('staffLeaves', 'status','empID_fk="'.$empID.'" AND "'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND iscancelled=0 AND status BETWEEN 1 AND 2');
+		$lquery = $this->dbmodel->getSingleInfo('staffLeaves', 'status','empID_fk="'.$empID.'" AND "'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND iscancelled=0 AND status BETWEEN 1 AND 2');
 		if(count($lquery)>0){
 			if($lquery->status==1) $sched = 'Paid Day Off';
 			else $sched = 'Unpaid Day Off';
 		}else{				
 			//schedules
-			$fquery = $this->staffM->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND staffCustomSchedTime!=0 AND ("'.$dateToday.'" BETWEEN effectivestart AND effectiveend OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN staffCustomSchedTime ON timeID=staffCustomSchedTime','assigndate DESC');
+			$fquery = $this->dbmodel->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND tcCustomSchedTime!=0 AND ("'.$dateToday.'" BETWEEN effectivestart AND effectiveend OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN tcCustomSchedTime ON timeID=tcCustomSchedTime','assigndate DESC');
 			
 			if(count($fquery)>0){
 				$sched = $fquery->timeValue;
 			}else{
-				$squery = $this->staffM->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND (("'.$dateToday.'" BETWEEN effectivestart AND effectiveend) OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN staffCustomSched ON staffCustomSched_fk = custschedID LEFT JOIN staffCustomSchedTime ON timeID = staffCustomSched.'.$nameToday.'','assigndate DESC');
+				$squery = $this->dbmodel->getSingleInfo('staffSchedules','timeValue','empID_fk="'.$empID.'" AND (("'.$dateToday.'" BETWEEN effectivestart AND effectiveend) OR (effectivestart<="'.$dateToday.'" AND effectiveend="0000-00-00"))','LEFT JOIN tcCustomSched ON staffCustomSched_fk = custschedID LEFT JOIN tcCustomSchedTime ON timeID = tcCustomSched.'.$nameToday.'','assigndate DESC');
 				if(count($squery)>0) $sched = $squery->timeValue;
 			}
 		}

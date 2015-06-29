@@ -22,19 +22,19 @@
 						<table width="50%">
 							';						
 						if($schedules->sunday > 0)
-							echo "<tr><td>Sunday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->sunday)."</td></tr>";
+							echo "<tr><td>Sunday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->sunday)."</td></tr>";
 						if($schedules->monday > 0)
-							echo "<tr><td>Monday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->monday)."</td></tr>";
+							echo "<tr><td>Monday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->monday)."</td></tr>";
 						if($schedules->tuesday > 0)
-							echo "<tr><td>Tuesday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->tuesday)."</td></tr>";
+							echo "<tr><td>Tuesday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->tuesday)."</td></tr>";
 						if($schedules->wednesday > 0)
-							echo "<tr><td>Wednesday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->wednesday)."</td></tr>";
+							echo "<tr><td>Wednesday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->wednesday)."</td></tr>";
 						if($schedules->thursday > 0)
-							echo "<tr><td>Thursday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->thursday)."</td></tr>";
+							echo "<tr><td>Thursday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->thursday)."</td></tr>";
 						if($schedules->friday > 0)
-							echo "<tr><td>Friday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->friday)."</td></tr>";
+							echo "<tr><td>Friday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->friday)."</td></tr>";
 						if($schedules->saturday > 0)
-							echo "<tr><td>Saturday - </td><td>".$this->staffM->getSingleField('staffCustomSchedTime','timeValue','timeID='.$schedules->saturday)."</td></tr>";
+							echo "<tr><td>Saturday - </td><td>".$this->dbmodel->getSingleField('tcCustomSchedTime','timeValue','timeID='.$schedules->saturday)."</td></tr>";
 						
 						echo '</table>';
 					}

@@ -17,7 +17,7 @@ class Actionmodel extends CI_Model {
 	
 	public function whatIsMyAction($type, $contents=''){
 		if($type=='sendEmail'){
-			$this->staffM->addMyNotif($this->user->empID, $contents, 5, 0);
+			$this->commonM->addMyNotif($this->user->empID, $contents, 5, 0);
 		}
 	}
 	

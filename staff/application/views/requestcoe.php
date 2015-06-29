@@ -35,7 +35,7 @@ echo '<table class="tableInfo">';
 			if($row->endDate!='0000-00-00'){
 				echo '<tr><td>Separation Date</td><td class="weightbold">'.date('F d, Y',strtotime($row->endDate)).'</td></tr>';
 			}
-			$sal = (double)str_replace(',','',$this->txtM->decryptText($row->sal));
+			$sal = (double)str_replace(',','',$this->textM->decryptText($row->sal));
 			$allowance = (double)str_replace(',','',$row->allowance);
 			echo '<tr><td>Annual Salary</td><td class="weightbold">Php '.number_format(($sal*12),2).' <span class="weightnormal">(Php '.number_format($sal,2).' Monthly) (Excluding 13th month pay)</span></td></tr>';			
 			echo '<tr><td>Annual Allowance</td><td class="weightbold">Php '.number_format(($allowance*12), 2).' <span class="weightnormal">(Php '.number_format($allowance,2).' Monthly)</span></td></tr>';

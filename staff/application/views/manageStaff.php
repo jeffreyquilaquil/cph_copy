@@ -40,11 +40,11 @@
 		<td><br/></td>
 	</tr>
 </table>
-	<input type="submit" name="submitType" value="Submit Selection"/>&nbsp;&nbsp;&nbsp;
+	<input type="submit" name="submitType" value="Submit Selection" class="btnclass"/>&nbsp;&nbsp;&nbsp;
 	<a id="sall" href="javascript:void(0)">Select All</a>&nbsp;&nbsp;&nbsp;
 	<a id="dall" href="javascript:void(0)">Deselect All</a>&nbsp;&nbsp;&nbsp;
 	<a id="shide" href="javascript:void(0)">Hide</a>&nbsp;&nbsp;&nbsp;
-	<input type="submit" name="submitType" value="Generate Employee Report"/>&nbsp;&nbsp;&nbsp;
+	<input type="submit" name="submitType" value="Generate Employee Report" class="btnclass"/>&nbsp;&nbsp;&nbsp;
 	<input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive'])) ? 'checked':'') ?>/> Include Separated Employees
 </form>
 <hr/><br/>
@@ -52,7 +52,7 @@
 
 <table class="dTable display stripe hover">
 	<thead>
-	<tr>
+	<tr bgcolor="#fff">
 	<?php
 		echo '<th>Name</th>';
 		$cntFeel = count($fvalue);
@@ -77,7 +77,7 @@
 				else if($fvalue[$i]=='active') echo (($row->active=='1')?'Yes':'No');
 				else if($fvalue[$i]=='username') echo strtolower($row->$fvalue[$i]);
 				else if($fvalue[$i]=='terminationType') echo $this->staffM->infoTextVal('terminationType', $row->$fvalue[$i]);
-				else if($fvalue[$i]=='sal') echo $this->txtM->convertDecryptedText('sal',$row->$fvalue[$i]);
+				else if($fvalue[$i]=='sal') echo $this->textM->convertDecryptedText('sal',$row->$fvalue[$i]);
 				else echo ucfirst($row->$fvalue[$i]);	
 			echo '</td>';
 		}		

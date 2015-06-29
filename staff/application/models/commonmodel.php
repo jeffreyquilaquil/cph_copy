@@ -1,0 +1,311 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Commonmodel extends CI_Model {
+	
+    function __construct() {
+        // Call the Model constructor
+        parent::__construct();	
+    }
+	
+	/***
+		$ntype 0-other, 1-salary, 2-performance, 3-timeoff, 4-disciplinary, 5-actions
+	***/
+	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0, $sID=''){
+		$insArr['empID_fk'] = $empID;
+		
+		if($sID!='')$insArr['sID'] = $sID;
+		else $insArr['sID'] = $this->user->empID;
+		
+		$insArr['ntexts'] = addslashes($ntexts);
+		$insArr['dateissued'] = date('Y-m-d H:i:s');
+		$insArr['ntype'] = $ntype;
+		$insArr['isNotif'] = $isNotif;
+		if($insArr['sID']==0){
+			$insArr['userSID'] = $this->user->username.'|'.$this->user->name;
+		}
+		
+		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
+	}
+	
+	function sendEmail( $from, $to, $subject, $body, $fromName='' ){
+		$url = 'https://pt.tatepublishing.net/api.php?method=sendGenericEmail';
+		  /*
+		   * from = sender's email
+		   * fromName = sender's name
+		   * BCC = cc's
+		   * replyTo = reply to email address
+		   * sendTo = recipient email address
+		   * subject = email subject
+		   * body = email body
+		   */
+		
+		if($this->config->item('devmode')===true){
+			$subject = $subject.' to-'.$to;
+			$to = $toEmail;
+		}
+				
+		
+		$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:14px;">'.$body.'</div>';
+		$fields = array(
+			'from' => $from,
+			'sendTo' => $to,
+			'subject' => $subject,
+			'body' => $body
+		);
+
+		if( !empty($fromName) ){
+			$fields['fromName'] = $fromName;
+		}
+		//build the urlencoded data
+		$postvars='';
+		$sep='';
+		foreach($fields as $key=>$value) { 
+		   $postvars.= $sep.urlencode($key).'='.urlencode($value); 
+		   $sep='&'; 
+		}
+		//open connection
+		$ch = curl_init();
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch,CURLOPT_URL,$url);
+		curl_setopt($ch,CURLOPT_POST,count($fields));
+		curl_setopt($ch,CURLOPT_POSTFIELDS,$postvars);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+		
+		//execute post
+		$result = curl_exec($ch);
+
+		//close connection
+		curl_close($ch);
+	}
+	
+	function photoResizer($source_image, $destination_filename, $width = 200, $height = 150, $quality = 70, $crop = true){
+		if( ! $image_data = getimagesize( $source_image ) ){
+			return false;
+		}
+		
+		switch( $image_data['mime'] )
+		{
+			case 'image/gif':
+				$get_func = 'imagecreatefromgif';
+				$suffix = ".gif";
+			break;
+			case 'image/jpeg';
+				$get_func = 'imagecreatefromjpeg';
+				$suffix = ".jpg";
+			break;
+			case 'image/png':
+				$get_func = 'imagecreatefrompng';
+				$suffix = ".png";
+			break;
+		}
+		
+		$img_original = call_user_func( $get_func, $source_image );
+		$old_width = $image_data[0];
+		$old_height = $image_data[1];
+		$new_width = $width;
+		$new_height = $height;
+		$src_x = 0;
+		$src_y = 0;
+		$current_ratio = round( $old_width / $old_height, 2 );
+		$desired_ratio_after = round( $width / $height, 2 );
+		$desired_ratio_before = round( $height / $width, 2 );
+		/**
+		 * If the crop option is left on, it will take an image and best fit it
+		 * so it will always come out the exact specified size.
+		 */
+		if( $crop ){
+			/**
+			 * create empty image of the specified size
+			 */
+			$new_image = imagecreatetruecolor( $width, $height );
+			/**
+			 * Landscape Image
+			 */
+			if( $current_ratio > $desired_ratio_after ){
+				$new_width = $old_width * $height / $old_height;
+			}
+			/**
+			 * Nearly square ratio image.
+			 */
+			if( $current_ratio > $desired_ratio_before && $current_ratio < $desired_ratio_after ){
+				if( $old_width > $old_height ){
+					$new_height = max( $width, $height );
+					$new_width = $old_width * $new_height / $old_height;
+				}else{
+					$new_height = $old_height * $width / $old_width;
+				}
+			}
+			/**
+			 * Portrait sized image
+			 */
+			if( $current_ratio < $desired_ratio_before  ){
+				$new_height = $old_height * $width / $old_width;
+			}
+			/**
+			 * Find out the ratio of the original photo to it's new, thumbnail-based size
+			 * for both the width and the height. It's used to find out where to crop.
+			 */
+			$width_ratio = $old_width / $new_width;
+			$height_ratio = $old_height / $new_height;
+			/**
+			 * Calculate where to crop based on the center of the image
+			 */
+			$src_x = floor( ( ( $new_width - $width ) / 2 ) * $width_ratio );
+			$src_y = round( ( ( $new_height - $height ) / 2 ) * $height_ratio );
+		}
+		/**
+		 * Don't crop the image, just resize it proportionally
+		 */
+		else{
+			if( $old_width > $old_height ){
+				$ratio = max( $old_width, $old_height ) / max( $width, $height );
+			}else{
+				$ratio = max( $old_width, $old_height ) / min( $width, $height );
+			}
+			$new_width = $old_width / $ratio;
+			$new_height = $old_height / $ratio;
+			$new_image = imagecreatetruecolor( $new_width, $new_height );
+		}
+				
+		if($image_data['mime']=='image/png'){
+			imagealphablending( $new_image, false );
+			imagesavealpha( $new_image, true );
+		}
+		
+		/**
+		 * Where all the real magic happens
+		 */
+		imagecopyresampled( $new_image, $img_original, 0, 0, $src_x, $src_y, $new_width, $new_height, $old_width, $old_height );
+		
+		switch( $image_data['mime'] )
+		{
+			case 'image/gif':
+				imagegif($tmp, $path);
+			break;
+			case 'image/jpeg';
+				imagejpeg( $new_image, $destination_filename, $quality );				
+			break;
+			case 'image/png':
+				imagepng( $new_image, $destination_filename, 0 );
+			break;
+		}
+		
+		imagedestroy( $new_image );
+		imagedestroy( $img_original );
+		/**
+		 * Return true because it worked and we're happy. Let the dancing commence!
+		 */
+		return true;
+	}
+	
+	function countResults($type){
+		$cnt = 0;
+		if($type=='cis'){
+			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0');
+		}else if($type=='coaching'){
+			$condition = '';
+			if($this->access->accessHR==false){
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
+			}			
+			$cnt = $this->dbmodel->getSingleField('staffCoaching', 'COUNT(coachID) AS cnt', 'status=0 AND coachedEval<="'.date('Y-m-d').'"'.$condition);
+		}else if($type=='updateRequest'){
+			$cnt = $this->dbmodel->getSingleField('staffUpdated', 'COUNT(updateID) AS cnt', 'status=0');
+		}else if($type=='pendingCOE'){
+			$cnt = $this->dbmodel->getSingleField('staffCOE', 'COUNT(coeID) AS cnt', 'status=0');
+		}else if($type=='staffLeaves'){
+			if($this->access->accessFull==true){
+				$query = $this->dbmodel->dbQuery('SELECT COUNT(leaveID) AS cnt FROM staffLeaves LEFT JOIN staffs ON empID=empID_fk WHERE status=0 AND iscancelled=0 AND supervisor="'.$this->user->empID.'" LIMIT 1');
+				$r = $query->row();
+				$cnt = $r->cnt;
+			}else{
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				
+				$cnt = $this->dbmodel->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', 'status=0 AND iscancelled=0 AND empID_fk IN ('.rtrim($ids,',').')');
+			}
+			
+			if($this->access->accessHR==true){
+				$cnt += $this->dbmodel->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
+			}
+		}else if($type=='nte'){	
+			//if HR
+			if($this->access->accessHR==true){
+				$cnt = $this->dbmodel->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', '(status=1 AND (nteprinted="" OR (nteprinted!="" AND nteuploaded=""))) OR ((status=0 OR status=3) AND (carprinted="" OR (carprinted!="" AND caruploaded="")))', 'LEFT JOIN staffs ON empID=empID_fk');				
+			}else{
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				
+				$cnt = $this->dbmodel->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', 'empID_fk IN ('.rtrim($ids,',').') AND ((status=1 AND nteprinted="") OR (status=0 AND carprinted="") OR (status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded=""))');
+			}			
+		}
+		
+		return $cnt;
+	}
+	
+	function getStaffUnder($empID, $level){
+		$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+		return $query->result();
+	}
+	
+	function getSupervisors(){
+		$query = $this->dbmodel->dbQuery('SELECT CONCAT(fname," ",lname) AS name, empID FROM staffs WHERE empID IN (SELECT DISTINCT supervisor FROM staffs WHERE supervisor != 0)');
+		$a = array();
+		foreach($query->result() AS $q):
+			$a[$q->empID] = $q->name;
+		endforeach;
+		return $a;		
+	}
+		
+	function checkStaffUnderMe($username){
+		$valid = true;
+		if(md5($username.'dv') != $this->session->userdata('u')){
+			$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND username="'.$username.'"');
+			$row = $query->row();
+			if(!isset($row->username)) $valid = false;
+		}	
+		return $valid;
+	}
+		
+	function checkStaffUnderMeByID($empID){
+		$query = $this->dbmodel->dbQuery('SELECT empID FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND empID="'.$empID.'"');
+		$r = $query->row();
+		if(isset($r->empID))
+			return true;
+		else
+			return false;		
+	}
+	
+	function getStaffSupervisorsID($id){
+		$cnt = 0;
+		$supArr = array();		
+		$sup = $this->dbmodel->getSingleField('staffs', 'supervisor', 'empID="'.$id.'"');	
+		//get supervisors id until 2nd level manager
+		while($sup !=0 && $cnt<2){
+			$supArr[] = $sup;
+			$sup = $this->dbmodel->getSingleField('staffs', 'supervisor', 'empID="'.$sup.'"');
+			$cnt++;
+		}
+		return $supArr;
+	}
+	
+	public function getImSupervisor($supervisor){
+		$grow = $this->dbmodel->getSingleInfo('staffs', 'email, CONCAT(fname," ",lname) AS name, supervisor, (SELECT s.email FROM staffs s WHERE s.empID=staffs.supervisor LIMIT 1) AS supEmail', 'empID="'.$supervisor.'"');
+		
+		return $grow;		
+	}
+}
+
+?>
