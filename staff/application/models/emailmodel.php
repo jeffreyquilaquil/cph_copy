@@ -91,5 +91,14 @@ class Emailmodel extends CI_Model {
 		}
 	}
 
+	public function emailForgotPassword($email, $fname, $username){
+		$body = '<p>Hi '.$fname.',</p>
+				<p>Click <a href="'.$this->config->base_url().'forgotpassword/'.md5($username).'/'.'">here</a> to reset password.</p>
+				<p><br/></p>
+				<p>Thanks!</p>
+				<p>CareerPH</p>
+		';
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $email, 'CareerPH Forgot Password', $body, 'CareerPH' );
+	}
 }
 ?>

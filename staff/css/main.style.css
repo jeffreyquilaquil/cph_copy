@@ -371,7 +371,7 @@ footer{
 .dataTables_filter{font-weight:bold; margin-bottom:10px; float:left!important; margin-left:20px; }
 .dataTables_filter input{ padding:5px; }
 .dataTables_length select{ padding:5px; }
-.schedSelect{ width:105px; text-overflow:ellipsis; font-size:11px; }
+.schedSelect{ width:105px; text-overflow:ellipsis; font-size:9px; }
 
 
 

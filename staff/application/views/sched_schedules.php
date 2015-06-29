@@ -131,17 +131,6 @@
 	<div id="addCustomSchedDiv" class="hidden">	
 		<h3>Add Custom Schedule</h3><hr class="gray"/>
 		Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
-		Every&nbsp;&nbsp;&nbsp;
-		<select id="schedType" class="padding5px" style="width:260px;">
-			<option value=0></option>
-			<option value=1>First</option>
-			<option value=2>Second</option>
-			<option value=3>Third</option>
-			<option value=4>Fourth</option>
-			<option value=5>Last</option>
-		</select>	
-		&nbsp;&nbsp;&nbsp;(Select an option if specific day of the month)
-		<br/><br/>	
 		<table class="tableInfo">
 			<tr class="trlabel" align="center">
 				<td>Sunday</td>
@@ -153,13 +142,13 @@
 				<td>Saturday</td>			
 			</tr>
 			<tr>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'sunday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'monday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'tuesday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'wednesday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'thursday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'friday') ?></td>
-				<td><?= $this->scheduleM->customTimeDisplay($time, 'saturday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'sunday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'monday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'tuesday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'wednesday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'thursday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'friday') ?></td>
+				<td><?= $this->textM->customTimeDisplay($time, 'saturday') ?></td>
 			</tr>
 		</table>
 		<br/>
@@ -186,28 +175,6 @@
 					<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
 				</td>
 			</tr>';
-		if($acs->schedType!=0){
-			echo '<tr class="ctimetr'.$acs->custschedID.'"><td colspan="7">Every '.$schedTypeArr[$acs->schedType];
-				if($acs->sunday!=0 ) echo ' Sunday ';
-				else if($acs->monday!=0 ) echo ' Monday ';
-				else if($acs->tuesday!=0 ) echo ' Tuesday ';
-				else if($acs->wednesday!=0 ) echo ' Wednesday ';
-				else if($acs->thursday!=0 ) echo ' Thursday ';
-				else if($acs->friday!=0 ) echo ' Friday ';
-				else if($acs->saturday!=0 ) echo ' Saturday ';
-				echo 'of the Month';
-				
-				echo '&nbsp;&nbsp;&nbsp;<select id="schedType" class="padding5px ikalawa hidden" style="width:150px;">
-					<option value=0></option>
-					<option value=1 '.(($acs->schedType==1)?'selected="selected"':'').'>First</option>
-					<option value=2 '.(($acs->schedType==2)?'selected="selected"':'').'>Second</option>
-					<option value=3 '.(($acs->schedType==3)?'selected="selected"':'').'>Third</option>
-					<option value=4 '.(($acs->schedType==4)?'selected="selected"':'').'>Fourth</option>
-					<option value=5 '.(($acs->schedType==5)?'selected="selected"':'').'>Last</option>
-				</select>';
-				
-			echo '</td></tr>';
-		}
 		echo '<tr align="center" class="trlabel">
 				<td>Sunday</td>
 				<td>Monday</td>
@@ -218,13 +185,13 @@
 				<td>Saturday</td>			
 			</tr>';
 		echo '<tr class="ctimetr'.$acs->custschedID.'">
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'wednesday', $acs->wednesday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'thursday', $acs->thursday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'friday', $acs->friday, false).'</td>
-			<td>'.$this->scheduleM->customTimeDisplay($time, 'saturday', $acs->saturday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'wednesday', $acs->wednesday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'thursday', $acs->thursday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'friday', $acs->friday, false).'</td>
+			<td>'.$this->textM->customTimeDisplay($time, 'saturday', $acs->saturday, false).'</td>
 		</tr>';
 		echo '<tr><td colspan=7><br/></td></tr>';
 	}
@@ -318,7 +285,6 @@
 				$.post('<?= $this->config->item('career_uri') ?>',{ 
 					submitType:'addCustomSched',
 					schedName:$('#schedname').val(),
-					schedType:$('#schedType').val(),
 					sunday:$('#sunday').val(),
 					monday:$('#monday').val(),
 					tuesday:$('#tuesday').val(),
@@ -403,7 +369,6 @@
 				submitType:'updateCustomSched',
 				schedID:id,
 				schedName:$('#inputschedName'+id).val(),
-				schedType:$('.ctimetr'+id+' #schedType').val(),
 				sunday:$('.ctimetr'+id+' #sunday').val(),
 				monday:$('.ctimetr'+id+' #monday').val(),
 				tuesday:$('.ctimetr'+id+' #tuesday').val(),
