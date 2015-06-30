@@ -19,7 +19,7 @@ $filter .= !empty($year)?" AND a.date_created LIKE '$year%' ":"";
 $filter .= !empty($month)?" AND a.date_created LIKE '%-$month%' ":"";
 $filter .= !empty($position)?" AND a.position = $position ":"";
 $filter .= !empty($status)?" AND a.status = $status ":"";
-$result = $db->selectQuery("applicants a LEFT JOIN positions p ON p.id = a.position LEFT JOIN applicant_status a_s ON a_s.id=a.status","CONCAT(fname,' ',mname,' ',lname,' ',suffix) AS name,bdate,address,mnumber,email,p.title AS position,source,expected_salary,last_employer,employment_period,a.date_created,a_s.status","1 $filter");
+$result = $db->selectQuery("applicants a LEFT JOIN positions p ON p.id = a.position LEFT JOIN applicant_status a_s ON a_s.id=a.status","a.id, CONCAT(fname,' ',mname,' ',lname,' ',suffix) AS name,bdate,address,mnumber,email,p.title AS position,source,expected_salary,last_employer,employment_period,a.date_created,a_s.status","1 $filter");
 require "includes/header.php";
 ?>
 <?php 
@@ -97,6 +97,7 @@ $(document).ready( function () {
 <table id='reports' style='width:100%'>
 	<thead>
 	<tr>
+		<th>ID</th>
 		<th>Name</th>
 		<th>Birth Date</th>
 		<th>Address</th>
@@ -117,6 +118,7 @@ $(document).ready( function () {
 			foreach($result AS $k=>$v):
 	?>
 	<tr>
+		<td><?php echo $v['id']?></td>
 		<td><?php echo $v['name']?></td>
 		<td><?php echo $v['bdate']?></td>
 		<td><?php echo $v['address']?></td>
