@@ -102,7 +102,7 @@ class Databasemodel extends CI_Model {
 	}
 	
 	function updateConcat($table, $where=1, $field, $fieldvalue){
-		$this->staffM->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.addslashes($fieldvalue).'") WHERE '.$where.'');
+		$this->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.addslashes($fieldvalue).'") WHERE '.$where.'');
 	}	
 }
 
