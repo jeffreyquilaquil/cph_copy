@@ -28,7 +28,9 @@ echo '<table class="tableInfo">';
 	
 	<form action="" method="POST" onSubmit="return validateForm()">
 	<?php if($toupdate==false){ ?>
-		<tr><td>Purpose of the Request</td><td><textarea class="forminput" name="purpose"></textarea></td></tr>
+		<tr><td>Purpose of the Request<br/>
+			<i class="errortext">Please provide a SPECIFIC purpose for requesting COE. Requests with generalized purposes such as "whatever purpose it may serve" shall not be processed.</i>
+		</td><td><textarea class="forminput" name="purpose"></textarea></td></tr>
 		<tr><td>Note for HR</td><td><textarea class="forminput" name="notesforHR"></textarea></td></tr>
 		<tr><td><br/></td><td><input type="hidden" name="submitType" value="request"/><input type="submit" value="Request" class="padding5px"/></td></tr>
 	<?php }else if($toupdate==true && $this->access->accessFullHR==true){ 
