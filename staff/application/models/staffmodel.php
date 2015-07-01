@@ -399,17 +399,17 @@ class Staffmodel extends CI_Model {
 		$pdf->SetFont('Arial','B',11);
 		if(strlen($isupname)<21) $pdf->setXY(20, 209);
 		else $pdf->setXY(20, 205);
-		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false);
+		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false); //immediate supervisor
 		
 		if(strlen($nsupname)<21) $pdf->setXY(80, 209);
 		else $pdf->setXY(80, 205);
-		$pdf->MultiCell(50, 4, strtoupper($nsupname),0,'C',false);
+		$pdf->MultiCell(50, 4, strtoupper($nsupname),0,'C',false); //second level manager
 			
-		$pdf->setXY(132, 209);
-		$pdf->MultiCell(60, 4, strtoupper($cis->prepby),0,'C',false);
+		$pdf->setXY(128, 209);
+		$pdf->MultiCell(70, 4, strtoupper($this->user->name),0,'C',false); //Reviewed by
 	
 		$pdf->setXY(45, 240);	
-		$pdf->MultiCell(120, 4, strtoupper($cis->name) ,0,'C',false);
+		$pdf->MultiCell(120, 4, strtoupper($cis->name) ,0,'C',false); //name of employee
 			
 		
 		$pdf->Output('CIS_'.str_replace(' ','_',$cis->name).'.pdf', $t);
