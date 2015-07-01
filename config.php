@@ -14,6 +14,7 @@ $dbname="projectTracker";
 $user="pt";
 $pass="januaryRun&34";
 $host="ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com";
+$ptDb = new database($dbname, $user, $pass, $host);
 
 if($hosturl=='careerph.tatepublishing.net'){
 	$dbname="careerph_prod";
@@ -26,8 +27,6 @@ if($hosturl=='careerph.tatepublishing.net'){
 	$pass="summer28Thing";
 	$host="localhost";
 }	
-
-$ptDb = new database($dbname, $user, $pass, $host);
 $db = new database($dbname, $user, $pass, $host);
 
 $form = new formHelper();
