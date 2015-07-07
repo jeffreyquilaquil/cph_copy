@@ -74,7 +74,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';			
 			echo '<li><a href="'.$this->config->base_url().'setcoach/'.$row->empID.'/" class="iframe">Set/Add as Coach</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/" class="iframe">Generate Coaching Form</a></li>';
-		}else if($this->user->is_coach==1){
+		}else if($this->user->is_coach==1 && $this->user->username != $row->username){
 			echo '<li><a href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/" class="iframe">Generate Coaching Form</a></li>';
 		}
 		

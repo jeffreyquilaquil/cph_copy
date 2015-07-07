@@ -284,7 +284,7 @@ class Staff extends MY_Controller {
 				}
 				
 			
-				$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
+				$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, supervisor, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
 								
 				if(isset($_POST) && !empty($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report'){					
 					header("Content-Type: application/xls");    
@@ -318,8 +318,7 @@ class Staff extends MY_Controller {
 					exit;
 				}				
 			}
-		}
-		
+		}		
 		
 		$this->load->view('includes/template', $data);			
 	}
@@ -630,7 +629,7 @@ class Staff extends MY_Controller {
 				$data['pfUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
 				$data['nteUploadedFiles'] = $this->dbmodel->getQueryResults('staffNTE', 'nteuploaded, caruploaded', 'empID_fk="'.$data['row']->empID.'"');
 				$data['coachingUploadedFiles'] = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, HRstatusData, HRoptionStatus', 'empID_fk="'.$data['row']->empID.'" AND HRoptionStatus>=2');
-				$data['coachedNames'] = $this->dbmodel->getQueryResults('staffs', 'CONCAT(fname," ",lname) as name', 'coach="'.$data['row']->empID.'" AND active=1');
+				$data['coachedNames'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) as name', 'coach="'.$data['row']->empID.'" AND active=1');
 								
 				$data['isUnderMe'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 										
@@ -1943,7 +1942,7 @@ class Staff extends MY_Controller {
 		if($this->user!=false){
 			$id = $this->uri->segment(2);	
 				
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as name, title, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) as name, title, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
 									
 			if(!empty($_POST)){
 				$updatetext = array();
@@ -2037,14 +2036,19 @@ class Staff extends MY_Controller {
 				exit;
 			}
 			
-			if(count($data['row'])>0){
-				$data['departments'] = $this->dbmodel->getQueryResults('newPositions', 'posID, title, org, dept, grp, subgrp, active', '1', '', 'title');
-				$data['supervisorsArr'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'levelID_fk>0', '', 'fname');
-			}
-			
-			if($this->uri->segment(3)!=''){
-				$data['wonka'] = $this->dbmodel->getSingleInfo('staffUpdated', 'empID_fk, fieldname, fieldvalue, CONCAT(fname," ",lname) AS name', 'updateID="'.$this->uri->segment(3).'"', 'LEFT JOIN staffs ON empID=empID_fk');
-			}
+			//check if you are allowed to issue nte
+			if($this->user->access=='' && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
+				$data['access'] = false;
+			}else{
+				if(count($data['row'])>0){
+					$data['departments'] = $this->dbmodel->getQueryResults('newPositions', 'posID, title, org, dept, grp, subgrp, active', '1', '', 'title');
+					$data['supervisorsArr'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'levelID_fk>0', '', 'fname');
+				}
+				
+				if($this->uri->segment(3)!=''){
+					$data['wonka'] = $this->dbmodel->getSingleInfo('staffUpdated', 'empID_fk, fieldname, fieldvalue, CONCAT(fname," ",lname) AS name', 'updateID="'.$this->uri->segment(3).'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				}
+			}			
 		}
 		$this->load->view('includes/templatecolorbox', $data);
 	}

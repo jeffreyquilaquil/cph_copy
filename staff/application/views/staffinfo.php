@@ -196,7 +196,7 @@
 			if(count($coachedNames)>0){
 				$cul = '<ul>';
 				foreach($coachedNames AS $cc){
-					$cul .= '<li>'.$cc->name.'</li>';
+					$cul .= '<li><a href="'.$this->config->base_url().'generatecoaching/'.$cc->empID.'/" class="iframe">'.$cc->name.'</a></li>';
 				}
 				$cul .= '</ul>';
 				if($this->user->username != $row->username && ($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username))){

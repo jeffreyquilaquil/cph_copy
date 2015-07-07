@@ -86,10 +86,13 @@
 					<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
 						<ul class="dropleft">
 							<li><a href="'.$this->config->base_url().'staffinfo/'.trim($row->username).'/" target="_blank">Visit Page</a></li>
-							<li><a href="'.$this->config->base_url().'sendEmail/'.$row->empID.'/" class="iframe2">Send Email</a></li>
-							<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
-							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>
-							<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching</a></li>';
+							<li><a href="'.$this->config->base_url().'sendEmail/'.$row->empID.'/" class="iframe2">Send Email</a></li>';
+						
+							echo '<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
+							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>';
+							
+						echo '<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching</a></li>';
+						
 						if($this->access->accessFull==true){
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'schedules/setstaffschedule/'.$row->empID.'/">Set Schedule</a></li>';
