@@ -199,7 +199,7 @@
 					$cul .= '<li>'.$cc->name.'</li>';
 				}
 				$cul .= '</ul>';
-				if($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username)){
+				if($this->user->username != $row->username && ($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username))){
 					$cul .= '<a href="'.$this->config->base_url().'setcoach/'.$row->empID.'/" class="iframe">Add Names</a>';
 				}
 				echo $this->staffM->displayInfo('jdetails', 'coachedOf', $cul, false);
