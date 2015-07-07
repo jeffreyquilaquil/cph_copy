@@ -26,9 +26,7 @@
 	</tr>
 <?php
 	$hrOptionsPending = $this->textM->constantArr('hrOptionPending');
-	if(count($forprinting)==0){
-		echo '<tr><td colspan=3>No pending requests.</td></tr>';
-	}else{	
+	if(count($forprinting)>0){	
 		foreach($forprinting AS $i):
 			echo '<tr id="tr_'.$i->coachID.'">';
 				echo '<td>'.$i->coachID.'</td>';
@@ -61,9 +59,7 @@
 		<td>Details</td>
 	</tr>
 <?php
-	if(count($inprogress)==0){
-		echo '<tr><td colspan=3>No pending requests.</td></tr>';
-	}else{	
+	if(count($inprogress)>0){	
 		foreach($inprogress AS $i):
 			echo '<tr>';
 				echo '<td>'.$i->coachID.'</td>';
@@ -99,9 +95,7 @@
 		<td>Details</td>
 	</tr>
 <?php
-	if(count($pending)==0){
-		echo '<tr><td colspan=3>No pending coaching for evaluation.</td></tr>';
-	}else{	
+	if(count($pending)>0){	
 		foreach($pending AS $p):
 			echo '<tr>';
 				echo '<td>'.$p->coachID.'</td>';
@@ -147,9 +141,7 @@
 	</tr>
 </thead>
 <?php
-	if(count($done)==0){
-		echo '<tr><td colspan=3>No coaching form.</td></tr>';
-	}else{	
+	if(count($done)>0){	
 		foreach($done AS $d):
 			echo '<tr>';
 				echo '<td>'.$d->coachID.'</td>';
@@ -206,9 +198,7 @@
 	</tr>
 </thead>
 <?php
-	if(count($cancelled)==0){
-		echo '<tr><td colspan=3>No coaching form.</td></tr>';
-	}else{	
+	if(count($cancelled)>0){	
 		foreach($cancelled AS $c):
 			echo '<tr>';
 				echo '<td>'.$c->coachID.'</td>';
