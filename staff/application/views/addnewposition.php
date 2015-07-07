@@ -19,7 +19,7 @@ if(isset($added)){
 	<tr>
 		<td width="20%">Name of the position</td>
 		<td class="tload" width="25px"></td>
-		<td><input type="text" name="title" class="forminput" value="<?= ((isset($row->title))?$row->title:'')?>"/></td>
+		<td><?php $this->textM->formfield('text', 'title', ((isset($row->title))?$row->title:''), 'forminput') ?></td>
 	</tr>
 	<tr class="trorg">
 		<td class="tlabel">Organization</td>
@@ -39,52 +39,61 @@ if(isset($added)){
 	<tr class="trdept <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Department</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="dept" onChange="changeInput('dept', 'grp')">
-			<?php
-				if($page=='edit' && isset($depts)){
-					foreach($depts AS $d):
-						echo '<option value="'.$d->dept.'" '.(($row->dept==$d->dept)?'selected="selected"':'').'>'.$d->dept.'</option>';
-					endforeach;
-				}
-			?>
-		</select></td>
+		<td>
+		<?php
+			$dval = '';
+			if($page=='edit' && isset($depts)){
+				foreach($depts AS $d):
+					$dval .= '<option value="'.$d->dept.'" '.(($row->dept==$d->dept)?'selected="selected"':'').'>'.$d->dept.'</option>';
+				endforeach;
+			}
+			
+			$this->textM->formfield('select', 'dept', $dval, 'forminput', '', 'onChange="changeInput(\'dept\', \'grp\')"');
+		?>		
+		</td>
 	</tr>
 	<tr class="trgrp <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Group</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="grp" onChange="changeInput('grp', 'subgrp')">
-			<?php
-				if($page=='edit' && isset($grps)){
-					foreach($grps AS $g):
-						echo '<option value="'.$g->grp.'" '.(($row->grp==$g->grp)?'selected="selected"':'').'>'.$g->grp.'</option>';
-					endforeach;
-				}
-			?>
-		</select></td>
+		<td>
+		<?php
+			$gval = '';
+			if($page=='edit' && isset($grps)){
+				foreach($grps AS $g):
+					$gval .= '<option value="'.$g->grp.'" '.(($row->grp==$g->grp)?'selected="selected"':'').'>'.$g->grp.'</option>';
+				endforeach;
+			}
+			
+			$this->textM->formfield('select', 'grp', $gval, 'forminput', '', 'onChange="changeInput(\'grp\', \'subgrp\')"');
+		?>
+		</td>
 	</tr>
 	<tr class="trsubgrp <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Sub-group</td>
 		<td class="tload"></td>
-		<td><select class="forminput" name="subgrp">
-			<?php
-				if($page=='edit' && isset($subgrps)){
-					foreach($subgrps AS $s):
-						echo '<option value="'.$s->subgrp.'" '.(($row->subgrp==$s->subgrp)?'selected="selected"':'').'>'.$s->subgrp.'</option>';
-					endforeach;
-				}
-			?>
-		</select></td>
+		<td>
+		<?php
+			$sval = '';
+			if($page=='edit' && isset($subgrps)){
+				foreach($subgrps AS $s):
+					$sval .= '<option value="'.$s->subgrp.'" '.(($row->subgrp==$s->subgrp)?'selected="selected"':'').'>'.$s->subgrp.'</option>';
+				endforeach;
+			}
+			
+			$this->textM->formfield('select', 'subgrp', $gval, 'forminput');
+		?>
+		</td>
 	</tr>
 	<tr class="trall <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Level</td>
 		<td class="tload"></td>
 		<td>
 		<?php
-			echo '<select name="orgLevel_fk" class="forminput">';
+			$lval = '';
 			foreach($orgLevel AS $lv):
-				echo '<option value="'.$lv->levelID.'" '.(($page=='edit' && $row->orgLevel_fk==$lv->levelID)?'selected="selected"':'').'>'.$lv->levelName.'</option>';
+				$lval .= '<option value="'.$lv->levelID.'" '.(($page=='edit' && $row->orgLevel_fk==$lv->levelID)?'selected="selected"':'').'>'.$lv->levelName.'</option>';
 			endforeach;
-			echo '</select>';
+			$this->textM->formfield('select', 'orgLevel_fk', $lval, 'forminput');
 		?>
 		</td>
 	</tr>
@@ -93,7 +102,8 @@ if(isset($added)){
 		</td>
 		<td class="tload"></td>
 		<td>
-			<textarea name="desc" rows="10"><?= (($page=='edit')?$row->desc:'') ?></textarea><br/>
+			<?= $this->textM->formfield('textarea', 'desc', (($page=='edit')?$row->desc:''), '' , '', 'rows="10"') ?>
+			<br/>
 			<i style="color:#555;">A position cannot be created without a complete job description. This helps HR find the most suitable candidates, and also will help the respective PHL department in managing the new employee.
 		</td>
 	</tr>
@@ -102,10 +112,11 @@ if(isset($added)){
 		echo '<tr>';
 		echo '<td class="tlabel">Is Active?</td>';
 		echo '<td class="tload"></td>';
-		echo '<td><select name="active" class="forminput">
-			<option value="1" '.(($row->active==1)?'selected="selected"':'').'>Yes</option>
-			<option value="0" '.(($row->active==0)?'selected="selected"':'').'>No</option>
-		</select></td>';
+		
+		$sval = '<option value="1" '.(($row->active==1)?'selected="selected"':'').'>Yes</option>
+				<option value="0" '.(($row->active==0)?'selected="selected"':'').'>No</option>';
+		
+		echo '<td>'.$this->textM->formfield('select','active', $sval, 'forminput').'</td>';
 		echo '</tr>';
 	}
 ?>
@@ -153,11 +164,11 @@ if(isset($added)){
 		<td colspan=3 align="right">
 		<?php
 			if($page=='edit'){
-				echo '<input type="hidden" name="submitType" value="editposition"/>';
-				echo '<input type="submit" value="Edit Position" class="padding5px"/>';
+				$this->textM->formfield('hidden', 'submitType', 'editposition');
+				$this->textM->formfield('submit', '', 'Edit Position', 'padding5px');
 			}else{
-				echo '<input type="hidden" name="submitType" value="addposition"/>';
-				echo '<input type="submit" value="Add Position" class="padding5px"/>';
+				$this->textM->formfield('hidden', 'submitType', 'addposition');
+				$this->textM->formfield('submit', '', 'Add Position', 'padding5px');
 			}
 		?>
 		</td>

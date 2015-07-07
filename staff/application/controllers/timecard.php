@@ -10,29 +10,31 @@ class Timecard extends MY_Controller {
 	public function _remap($method){
 		$segment3 = $this->uri->segment(3);
 		$segment4 = $this->uri->segment(4);
-		$data['today'] = date('Y-m-d');
-		$data['visitID'] = '';
+		$data['currentDate'] = date('Y-m-d'); //this is the exact date today
+		$data['today'] = date('Y-m-d'); //this is the customized date according to passed url
+		$data['visitID'] = $this->user->empID;
 		
+		if(preg_match("/^[0-9]{4}-([0-9]{1,2})-([0-9]{1,2})$/",$segment3)) 
+			$data['today'] = $segment3;
+		else if(preg_match("/^[0-9]{4}-([0-9]{1,2})-([0-9]{1,2})$/",$segment4)) 
+			$data['today'] = $segment4;
+	
 		if(is_numeric($method)){
 			$data['column'] = 'withLeft';
 			$data['visitID'] = $method;
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs','empID,username, fname, CONCAT(fname," ",lname) AS name', 'empID="'.$method.'"');
 						
-			if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$segment4)) $data['today'] = $segment4;
-			
 			if(empty($segment3)){
 				$this->timelogs($data);
 			}else{
 				$this->$segment3($data);
 			}
 		}else{
-			$data['visitID'] = $this->user->empID;	
-			if(preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/",$segment3)) $data['today'] = $segment3;
 			if($method=='index')
 				$this->timelogs($data);
 			else
 				$this->$method($data);
-		}		
+		}	
 	}
 	
 	public function cronInsertingTostaffTimeLogByDate(){
@@ -49,7 +51,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function timelogs($data){		
-		$data['content'] = 'tc_timelogs';	
+		$data['content'] = 'v_timecard/v_timelogs';	
 				
 		if($this->user!=false){	
 			$data['tpage'] = 'timelogs';
@@ -62,7 +64,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function attendance($data){		
-		$data['content'] = 'tc_attendance';		
+		$data['content'] = 'v_timecard/v_attendance';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'attendance';	
@@ -74,41 +76,108 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function calendar($data){		
-		$data['content'] = 'tc_calendar';		
-				
+		$data['content'] = 'v_timecard/v_calendar';		
+		$data['tpage'] = 'calendar';
+		
 		if($this->user!=false){	
-			$data['tpage'] = 'calendar';											
+														
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function schedules($data){		
-		$data['content'] = 'tc_schedules';		
+	public function schedules($data){
+		$data['content'] = 'v_timecard/v_schedules';	
+		$data['tpage'] = 'schedules';
 				
 		if($this->user!=false){	
-			$data['tpage'] = 'schedules';
+			$data['timeArr'] = $this->commonM->getSchedTimeArray();			
+			$data['schedData'] = $this->dbmodel->getQueryResults('tcstaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk'); //for schedule history
+			
+			//getting calendar schedule
+			$data['dayArr'] = $this->timeM->getScheduleArrayByDates($data['visitID'], $data['today']);
+						
+			//this is for link on the dates
+			$data['dayEditOptionArr'] = array();
+			$month = date('m', strtotime($data['today']));
+			$year = date('Y', strtotime($data['today']));
+			$dEnd = date('t', strtotime($data['today']));
+			for($i=1; $i<=$dEnd; $i++){
+				$dtoday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
+				if(strtotime($dtoday)>=strtotime($data['currentDate']))
+					$data['dayEditOptionArr'][$i] = $this->config->base_url().'schedules/customizebyday/'.$data['visitID'].'/'.$dtoday.'/';
+			}
 		}
-	
+				
+		$data['datelink'] = $this->config->base_url().'timecard/'.$data['visitID'].'/schedules/';
 		$this->load->view('includes/template', $data);
 	}
 	
 	public function scheduling($data){		
-		$data['content'] = 'tc_scheduling';
+		$data['content'] = 'v_timecard/v_scheduling';
 		$data['tpage'] = 'scheduling';		
 	
-		if($this->user!=false){							
-			if(!isset($data['allStaffs']))
-				$data['allStaffs'] = $this->timeM->allemployees(); 
-								
-			$data['dataArr'] = array();			
+		if($this->user!=false){	
+			$data['allStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, fname, lname', 'active=1', '', 'lname'); 
+			//get start and end of the week
+			$start_week = strtotime("last sunday midnight",strtotime($data['today']));
+			$end_week = strtotime("next saturday",strtotime($data['today']));
+			$data['start'] = date("Y-m-d",$start_week); 
+			$data['end'] = date("Y-m-d",$end_week);	
+			
+			//variable declarations
+			$data['schedData'] = array();
+			$time = $this->commonM->getSchedTimeArray();
+			$sunday = strtotime($data['start']);
+			$monday = strtotime($data['start'].' +1 day');
+			$tuesday = strtotime($data['start'].' +2 day');
+			$wednesday = strtotime($data['start'].' +3 day');
+			$thursday = strtotime($data['start'].' +4 day');
+			$friday = strtotime($data['start'].' +5 day');
+			$saturday = strtotime($data['start'].' +6 day');
+			
+			$data['sunday'] = $data['start'];
+			$data['monday'] = date('Y-m-d', $monday);		
+			$data['tuesday'] = date('Y-m-d', $tuesday);		
+			$data['wednesday'] = date('Y-m-d', $wednesday);		
+			$data['thursday'] = date('Y-m-d', $thursday);		
+			$data['friday'] = date('Y-m-d', $friday);		
+			$data['saturday'] = date('Y-m-d', $saturday);		
+			
+			//get staff template schedules
+			$query = $this->dbmodel->getQueryResults('tcstaffSchedules', 'empID_fk, sunday, monday, tuesday, wednesday, thursday, friday, saturday, effectivestart, effectiveend',$this->textM->getTodayBetweenSchedCondition($data['start'], $data['end']), 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk');
+						
+			foreach($query AS $q){
+				$arr = array();	
+				$eStart = strtotime($q->effectivestart);
+				if($q->effectiveend=='0000-00-00') $eEnd = strtotime($data['end']);
+				else $eEnd = strtotime($q->effectiveend);
+				
+				if($q->sunday!=0 && $sunday>=$eStart && $sunday<=$eEnd) $arr[$data['sunday']] = $time[$q->sunday];
+				if($q->monday!=0 && $monday>=$eStart && $monday<=$eEnd) $arr[$data['monday']] = $time[$q->monday];
+				if($q->tuesday!=0 && $tuesday>=$eStart && $tuesday<=$eEnd) $arr[$data['tuesday']] = $time[$q->tuesday];
+				if($q->wednesday!=0 && $wednesday>=$eStart && $wednesday<=$eEnd) $arr[$data['wednesday']] = $time[$q->wednesday];
+				if($q->thursday!=0 && $thursday>=$eStart && $thursday<=$eEnd) $arr[$data['thursday']] = $time[$q->thursday];
+				if($q->friday!=0 && $friday>=$eStart && $friday<=$eEnd) $arr[$data['friday']] = $time[$q->friday];
+				if($q->saturday!=0 && $saturday>=$eStart && $saturday<=$eEnd) $arr[$data['saturday']] = $time[$q->saturday];				
+				
+				$data['schedData'][$q->empID_fk] = $arr;
+			}
+			
+			//get schedules by dates
+			$query2 = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'empID_fk, dateToday, timeValue', 'dateToday BETWEEN "'.$data['start'].'" AND "'.$data['end'].'"', 'LEFT JOIN tcCustomSchedTime ON timeID=timeID_fk');
+			
+			foreach($query2 AS $q2){
+				$data['schedData'][$q2->empID_fk][$q2->dateToday] = $q2->timeValue;
+			}
+			
 		}
 	
 		$this->load->view('includes/template', $data);
 	}
 	
 	public function payslips($data){		
-		$data['content'] = 'tc_payslips';		
+		$data['content'] = 'v_timecard/v_payslips';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'payslips';			
@@ -120,7 +189,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function payrolls($data){		
-		$data['content'] = 'tc_payrolls';		
+		$data['content'] = 'v_timecard/v_payrolls';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'payrolls';			
@@ -132,7 +201,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function reports($data){		
-		$data['content'] = 'tc_reports';		
+		$data['content'] = 'v_timecard/v_reports';		
 	
 		if($this->user!=false){	
 			$data['tpage'] = 'reports';			
@@ -142,62 +211,6 @@ class Timecard extends MY_Controller {
 	
 		$this->load->view('includes/template', $data);
 	}
-	
-	public function addschedule($data){
-		$data['content'] = 'tc_addschedule';
-		$data['tpage'] = 'addschedule';	
-		if($this->user!=false){	
-			if(isset($_POST) && !empty($_POST)){
-				if(!empty($_POST['customSched'])){
-					$cSched = explode(',', $_POST['customSched']);
-					$insCust['schedName'] = 'Custom Schedule of '.$data['row']->username;
-					$insCust['sunday'] = $cSched[0];
-					$insCust['monday'] = $cSched[1];
-					$insCust['tuesday'] = $cSched[2];
-					$insCust['wednesday'] = $cSched[3];
-					$insCust['thursday'] = $cSched[4];
-					$insCust['friday'] = $cSched[5];
-					$insCust['saturday'] = $cSched[6];
-					$insCust['forEmp'] = '++'.$data['visitID'].'++';
-					$insCust['createdby'] = $this->user->empID;
-					$insCust['datecreated'] = date('Y-m-d H:i:s');
-					$insArr['tcCustomSched_fk'] = $this->dbmodel->insertQuery('tcCustomSched', $insCust);					
-				}else{
-					$insArr['tcCustomSched_fk'] = $_POST['schedTemplate'];
-				}
-				
-				$insArr['empID_fk'] = $data['visitID'];
-				$insArr['effectivestart'] = date('Y-m-d', strtotime($_POST['startDate']));
-				if(!empty($_POST['endDate']))
-					$insArr['effectiveend'] = date('Y-m-d', strtotime($_POST['endDate']));
-				$insArr['assignby'] = $this->user->empID;
-				$insArr['assigndate'] = date('Y-m-d H:i:s');
-				
-				$this->dbmodel->insertQuery('tcstaffSchedules', $insArr);
-				
-				if(isset($_POST['schedID'])){					
-					$this->dbmodel->updateQuery('tcstaffSchedules', array('schedID'=>$_POST['schedID']), array('effectiveend'=>date('Y-m-d', strtotime($_POST['startDate'].' -1 day'))));
-				}
-				
-				echo '<script>
-					alert("Schedule has been added");
-					parent.$.fn.colorbox.close();
-					parent.window.location.reload();
-				</script>';
-				exit;
-			}		
-			
-			$data['schedTemplates'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status=1 OR (status=0 AND forEmp LIKE "%++'.$data['visitID'].'++%")');
-			$data['schedTimes'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1);
-			$data['currentSched'] = $this->dbmodel->getSingleInfo('tcstaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'empID_fk="'.$data['visitID'].'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custschedID=tcCustomSched_fk');
-			$data['dataArr'] = array();			
-		}
-	
-		$this->load->view('includes/templatecolorbox', $data);
-	}
-		
-	
-	
 	
 }
 ?>

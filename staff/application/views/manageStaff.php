@@ -57,9 +57,9 @@
 		echo '<th>Name</th>';
 		$cntFeel = count($fvalue);
 		for($i=0;$i<$cntFeel;$i++){
-			echo '<th>'.$this->config->item('txt_'.$fvalue[$i]).'</th>';
+			echo '<th>'.$this->textM->constantText('txt_'.$fvalue[$i]).'</th>';
 		}
-		echo '<th><br/></th>';
+		echo '<th width="20px"><br/></th>';
 	?>
 	</tr>
 	</thead>

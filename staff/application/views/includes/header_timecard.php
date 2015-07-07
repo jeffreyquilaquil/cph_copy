@@ -5,9 +5,16 @@
 <hr/>
 <ul class="tabs2">
 <?php
-	
-	if(empty($visitID)) $tnt='My ';
-	else $tnt = trim($row->fname).'\'s ';
+	if($visitID==$this->user->empID) $tnt='My ';
+	else{
+		$tnt = trim($row->fname);
+		$tnt = strtok($tnt, ' ');
+		
+		if($this->access->accessFullHR && strlen($tnt)>6) 
+			$tnt = substr($tnt,0,6).'..';
+		
+		$tnt .= '\'s ';
+	}
 
 	if(!isset($row->empID) || $row->empID==$this->user->empID) echo '<li class="tab-link '.(($tpage=='index' || $tpage=='timelogs')?'current':'').'" data-tab="timelogs">'.$tnt.'Time Logs</li> ';
 		
@@ -18,7 +25,7 @@
 	if($this->user->is_supervisor==1 || $this->access->accessFullHRFinance==true)
 		echo '<li class="tab-link admin '.(($tpage=='attendance')?'current':'').'" data-tab="attendance">Attendance</li> ';
 	
-	if($this->access->accessFullHR==true && empty($visitID)){		
+	if($this->access->accessFullHR==true){		
 		echo '<li class="tab-link admin '.(($tpage=='scheduling')?'current':'').'" data-tab="scheduling">Scheduling</li> ';
 		echo '<li class="tab-link admin '.(($tpage=='payrolls')?'current':'').'" data-tab="payrolls">Payrolls</li> ';
 		echo '<li class="tab-link admin '.(($tpage=='reports')?'current':'').'" data-tab="reports">Reports</li> ';

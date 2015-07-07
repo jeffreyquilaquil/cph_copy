@@ -178,8 +178,8 @@ class MyCrons extends MY_Controller {
 			$chQuery = json_decode($q->changes);
 			foreach($chQuery AS $k=>$c):
 				if($k!='salary'){
-					$chtext .= 'Previous '.$this->config->item('txt_'.$k).': '.$c->c.'<br/>';
-					$chtext .= 'New '.$this->config->item('txt_'.$k).': <b>'.$c->n.'</b><br/>';
+					$chtext .= 'Previous '.$this->textM->constantText('txt_'.$k).': '.$c->c.'<br/>';
+					$chtext .= 'New '.$this->textM->constantText('txt_'.$k).': <b>'.$c->n.'</b><br/>';
 				}
 			endforeach;
 				

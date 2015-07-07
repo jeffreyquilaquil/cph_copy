@@ -2,17 +2,7 @@
 	if(count($row)==0){
 		echo 'No staff selected.';
 	}else{
-		$weekArr = $this->config->item('weekdayArray');
-		$timeArr = array();
-		$stime = array();
-		foreach($schedTimes AS $t):
-			if($t->category==0)
-				$timeArr[$t->timeID]['name'] = $t->timeName;
-			else
-				$timeArr[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
-			$stime[$t->timeID] = $t->timeValue;
-		endforeach;
-	
+		$weekArr = $this->textM->constantArr('weekdayArray');		
 ?>
 	
 <?php
@@ -61,7 +51,7 @@
 				<option value="">- Custom -</option>
 			<?php
 				foreach($schedTemplates AS $sched){
-					echo '<option value="'.$sched->custschedID.'">'.$sched->schedName.'</option>';
+					echo '<option value="'.$sched->custSchedID.'">'.$sched->schedName.'</option>';
 				}
 			?>
 			</select>
@@ -75,17 +65,22 @@
 					foreach($weekArr AS $w) echo '<td>'.ucfirst($w).'</td>';
 				echo '</tr>';
 				echo '<tr class="trs trsched_">';
-					foreach($weekArr AS $w) echo '<td>
-						'.$this->textM->customTimeDisplay($timeArr, $w).'</td>';
+					foreach($weekArr AS $w){
+						echo '<td>';
+							echo '<select id="'.$w.'" class="schedSelect everyday padding5px">';
+								echo $this->textM->customTimeSelect();
+							echo '</select>';
+						echo '</td>';
+					}
 				echo '</tr>';
 				
 				//templates
 				foreach($schedTemplates AS $st){
-					echo '<tr class="trs hidden trlabel trsched_'.$st->custschedID.'">';
+					echo '<tr class="trs hidden trlabel trsched_'.$st->custSchedID.'">';
 					foreach($weekArr AS $w) echo '<td>'.ucfirst($w).'</td>';
 					echo '</tr>';
 					
-					echo '<tr class="trs hidden trsched_'.$st->custschedID.'">';
+					echo '<tr class="trs hidden trsched_'.$st->custSchedID.'">';
 					foreach($weekArr AS $w) echo '<td>'.(($st->$w!=0)?$stime[$st->$w]:'').'</td>';
 					echo '</tr>';
 				}
@@ -105,7 +100,6 @@
 		</tr>
 	</table>
 	</form>
-
 <script type="text/javascript">
 $(function(){
 	$('.datepick').datetimepicker({ 
@@ -136,7 +130,7 @@ function validateForm(){
 	valid = true;
 	var arrSched = [];
 		
-	if($('input[name="endDate"]').val()!='' && $('input[name="startDate"]').val()<$('input[name="endDate"]').val()){
+	if($('input[name="endDate"]').val()!='' && $('input[name="startDate"]').val()>$('input[name="endDate"]').val()){
 		alert('Invalid End Date.');
 		valid = false;
 	}

@@ -26,9 +26,12 @@
 				<select id="whocoached" class="forminput">
 				<?php
 					$stitle = '';
+					if($row->coach!=0) $cID = $row->coach;
+					else $cID = $row->supervisor;
 					foreach($supervisors AS $s):
-						if($s->empID==$row->supervisor) $stitle = $s->title;
-						echo '<option value="'.$s->empID.'" '.(($s->empID==$row->supervisor)?'selected="selected"':'').' data-title="'.$s->title.'">'.$s->name.'</option>';
+						if($s->empID==$cID) $stitle = $s->title;
+						
+						echo '<option value="'.$s->empID.'" '.(($s->empID==$cID)?'selected="selected"':'').' data-title="'.$s->title.'">'.$s->name.'</option>';
 					endforeach;
 				?>
 				</select>

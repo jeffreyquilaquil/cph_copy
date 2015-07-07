@@ -230,6 +230,8 @@
 			);
 			
 	$config['weekdayArray'] = array('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday');
+	$config['weekShortArray'] = array('sunday'=>'sun', 'monday'=>'mon', 'tuesday'=>'tue', 'wednesday'=>'wed', 'thursday'=>'thu', 'friday'=>'fri', 'saturday'=>'sat');
+	$config['monthArray'] = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
 	
 	
 ?>

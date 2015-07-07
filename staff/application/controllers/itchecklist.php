@@ -7,19 +7,19 @@ class Itchecklist extends MY_Controller {
 	}
 		
 	public function index(){
-		$data['content'] = 'itchecklist';
+		$data['content'] = 'v_itchecklist/v_itchecklist';
 				
 		$this->load->view('includes/template', $data);
 	}
 	
 	public function deactivateuser(){
-		$data['content'] = 'itdeactivateuser';
+		$data['content'] = 'v_itchecklist/v_itdeactivateuser';
 		
 		if($this->user!=false){
 			if($this->user->dept!='IT'){
 				$data['access'] = false;
 			}else{
-				if(isset($_POST) && !empty($_POST)){
+				if(!empty($_POST)){
 					if($_POST['submitType']=='activeStatus'){
 						$info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name', 'empID="'.$_POST['empID'].'"');
 						if($_POST['status']==0){
@@ -74,13 +74,13 @@ class Itchecklist extends MY_Controller {
 	}
 
 	public function newhirestatus(){
-		$data['content'] = 'itnewhirestatus';
+		$data['content'] = 'v_itchecklist/V_itnewhirestatus';
 		
 		if($this->user!=false){
 			if($this->user->dept!='IT'){
 				$data['access'] = false;
 			}else{
-				if(isset($_POST) && !empty($_POST)){
+				if(!empty($_POST)){
 						if($_POST['type']=='seatplan' || $_POST['type']=='status'){
 							$retvalue = $_POST['sval'];
 						}else{

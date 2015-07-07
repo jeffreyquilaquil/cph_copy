@@ -460,8 +460,20 @@ ul.tabs2 li.current{
 }
 
 
-.attendancetbl{ width:100%; text-align:center; border:1px solid #000; border-collapse:collapse; }
-.attendancetbl td{ border:1px solid #000; padding:10px 0; }
+.calendartbl{ width:100%; border:1px solid #000; border-collapse:collapse; }
+.calendartbl .calendarheader td{ padding:10px 0; }
+.calendartbl .trhead{ background-color:#800000; font-weight:bold; color:#fff; }
+.calendartbl td{ border:1px solid #000; vertical-align:top; }
+.calendartbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:#bbb; }
+.calendartbl .istoday{ background-color:#ffb2b2; }
+.calendartbl .dayEdit{ text-decoration:none; }
+.calendartbl .dayEdit:hover div{ background-color:#ffb2b2; }
+.calendartbl  .daycontent{ min-height:80px; position:relative; text-align:center; padding-top:5px; }
+.calendartbl  .daycontent .daynumoption{ padding-top:10px; }
+.calendartbl  .daysched{ text-align:center; background-color:green; padding:3px; border-radius:3px; color:#fff; font-size:10px; font-weight:bold; }
+
+
+.attendancetbl{ width:100%; border:1px solid #000; border-collapse:collapse; }
 .attendancetbl button{ padding:5px 10px; }
 .attendancetbl{ width:100%; border-collapse:collapse; }
 .attendancetbl tr.weekname td{ padding:0px; }

@@ -48,7 +48,7 @@ class Projecttracker extends MY_Controller {
 		if($empID!=''){
 			$myNotes = $this->dbmodel->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
 					
-			$noteType = $this->config->item('noteType');
+			$noteType = $this->textM->constantArr('noteType');
 			$types = array();
 			foreach($noteType AS $k=>$n):
 				$types[$n] = $k;

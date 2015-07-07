@@ -79,12 +79,16 @@
 ?>
 <script type="text/javascript">
 	$(function(){
-		$('.datatable').dataTable();
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px" });
+		$('.datatable').dataTable();		
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
 		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });
+		
+		/* $('.datepick').change(function(){ alert('fdfdf');
+			//$(this).datetimepicker('hide');
+		}); */
 		
 		$('#insearch').click(function(){
 			window.open('http://employee.tatepublishing.net/?s='+$('#searchindex').val(),'_blank');

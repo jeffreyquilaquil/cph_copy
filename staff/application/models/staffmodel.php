@@ -10,7 +10,7 @@ class Staffmodel extends CI_Model {
 	function compareResults($new, $orig){
 		unset($new['empID']);
 		unset($new['submitType']);
-		$encArr = $this->config->item('encText');
+		$encArr = $this->textM->constantArr('encText');
 		$updated = array();
 		if(count($orig)>0){			
 			foreach($new AS $k=>$v):
@@ -32,7 +32,7 @@ class Staffmodel extends CI_Model {
 	}
 		
 	function createLeavepdf($leave){
-		$leaveArr = $this->config->item('leaveType');
+		$leaveArr = $this->textM->constantArr('leaveType');
 			
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -496,7 +496,7 @@ class Staffmodel extends CI_Model {
 		if(in_array($fld,array('bdate', 'startDate', 'endDate', 'accessEndDate', 'regDate'))) $aclass = 'datepick';
 		
 		$disp = '<tr class="'.$c.'tr '.$showhide.'">
-					<td width="30%">'.$this->config->item('txt_'.$fld).'</td>
+					<td width="30%">'.$this->textM->constantText('txt_'.$fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
 					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'staffHolidaySched', 'levelID_fk', 'terminationType', 'taxstatus'))){
@@ -523,7 +523,7 @@ class Staffmodel extends CI_Model {
 								}
 							endforeach;
 						}else{ 
-							$arr = $this->config->item($fld);							
+							$arr = $this->textM->constantArr($fld);							
 							foreach($arr AS $k=>$va):
 								if($k==$v) $vvalue=$va;
 								$disp .= '<option value="'.$k.'" '.(($k==$v) ? 'selected="selected"' : '').'>'.$va.'</option>';
@@ -538,7 +538,7 @@ class Staffmodel extends CI_Model {
 					$disp .= '</span>';
 				}else{
 					if($fld=='staffHolidaySched'){
-						$farr = $this->config->item($fld);
+						$farr = $this->textM->constantArr($fld);
 						$disp .= $farr[$vvalue];
 					}else
 						$disp .= $vvalue;
@@ -551,7 +551,7 @@ class Staffmodel extends CI_Model {
 	
 	public function mergeMyNotes($empID, $username){
 		$notesArr = array();
-		$noteType = $this->config->item('noteType');
+		$noteType = $this->textM->constantArr('noteType');
 		$myNotes = $this->dbmodel->getQueryResults('staffMyNotif', 'staffMyNotif.*, username, CONCAT(fname," ",lname) AS name', 'empID_fk="'.$empID.'"','LEFT JOIN staffs ON empID=sID', 'dateissued DESC');
 		$ptNotes = $this->dbmodel->getPTQueryResults('eNotes', 'eNotes.*, eData.u, "" AS userSID', 'u="'.$username.'"', 'LEFT JOIN eData ON eKey=eNoteOwner', 'eNoteStamp DESC');
 		
@@ -603,10 +603,10 @@ class Staffmodel extends CI_Model {
 		else if($type=='levelID_fk')
 			$was = $this->dbmodel->getSingleField('orgLevel', 'levelName AS name', 'levelID="'.$tval.'"');
 		else if($type=='terminationType' || ( $type=='taxstatus' && !empty($tval))){
-			$tarr = $this->config->item($type); 
+			$tarr = $this->textM->constantArr($type); 
 			$was = $tarr[$tval];
 		}else if($type=='staffHolidaySched'){
-			$schedLoc = $this->config->item('staffHolidaySched');
+			$schedLoc = $this->textM->constantArr('staffHolidaySched');
 			$was = $schedLoc[$tval];
 		}else 
 			$was = $this->textM->convertDecryptedText($type, $tval);

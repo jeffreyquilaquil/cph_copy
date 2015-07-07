@@ -38,9 +38,12 @@ class Databasemodel extends CI_Model {
 		return $f;
 	}
 			
-	function getSingleInfo($table, $fields, $where=1, $join='', $orderby=''){
+	function getSingleInfo($table, $fields, $where=1, $join='', $orderby='', $display=false){
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
-		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby." LIMIT 1");
+		$sql = "SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby." LIMIT 1";
+		if($display===true) echo $sql;
+		
+		$query = $this->db->query($sql);
 		return $query->row();
 	}
 	

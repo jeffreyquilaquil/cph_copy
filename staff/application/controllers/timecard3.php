@@ -57,7 +57,7 @@ class Timecard3 extends MY_Controller {
 			$data['schedToday'] = $this->timeM->getDaySched($ddtoday, $this->user->empID);
 			$data['schedTodayArr'] = $this->timeM->getSchedArr($ddtoday, $data['schedToday']);
 			
-			if(isset($_POST) && !empty($_POST)){
+			if(!empty($_POST)){
 				if($_POST['submitType']=='clockIn' || $_POST['submitType']=='takeAbreak' || $_POST['submitType']=='backToWork' || $_POST['submitType']=='clockOut'){
 					$this->dbmodel->insertQuery('tcTimelogs', array('staffs_idNum_fk'=>$this->user->idNum, 'logtime'=>date('Y-m-d H:i:s'), 'logtype'=>$_POST['tval']));
 				}
@@ -106,7 +106,7 @@ class Timecard3 extends MY_Controller {
 			
 			$calHolidaysQuery = $this->dbmodel->getQueryResults('staffHolidays', 'holidayName, SUBSTR(holidayDate,-2) AS holidayDate, holidayType, holidayWork', '(holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y-m-', strtotime($data['today'])).'%")) AND SUBSTR(holidayDate,6) LIKE "'.date('m', strtotime($data['today'])).'-%"', '');
 			$data['calHoliday'] = array();
-			$holidayTypesArr = $this->config->item('holidayTypes');
+			$holidayTypesArr = $this->textM->constantArr('holidayTypes');
 			foreach($calHolidaysQuery AS $calHol){
 				$holdayInt = $calHol->holidayDate;
 				$data['calHoliday'][$holdayInt]['holidayTypeNum'] = $calHol->holidayType;

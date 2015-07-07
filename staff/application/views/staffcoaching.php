@@ -25,7 +25,7 @@
 		<td></td>
 	</tr>
 <?php
-	$hrOptionsPending = $this->config->item('hrOptionPending');
+	$hrOptionsPending = $this->textM->constantArr('hrOptionPending');
 	if(count($forprinting)==0){
 		echo '<tr><td colspan=3>No pending requests.</td></tr>';
 	}else{	

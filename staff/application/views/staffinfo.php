@@ -70,7 +70,7 @@
 		<tr class="trhead"><td>Fields</td><td>Details</td><td>Date Update Requested</td><td><br/></td></tr>
 <?php	foreach($updatedVal AS $u){
 			echo '<tr>
-					<td>'.$this->config->item('txt_'.$u->fieldname).'</td>';
+					<td>'.$this->textM->constantText('txt_'.$u->fieldname).'</td>';
 				echo '<td>'.$this->staffM->infoTextVal($u->fieldname, $u->fieldvalue).'</td>';
 				echo '<td>'.date('d M Y H:i',strtotime($u->daterequested)).'</td>
 					<td><input type="button" value="Cancel" onClick="cancelRequest('.$u->updateID.', \''.$u->fieldname.'\', \''.$u->fieldvalue.'\')"></td>
@@ -191,7 +191,20 @@
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);			
 			echo $this->staffM->displayInfo('jdetails', 'department', $row->department, false);
 			echo $this->staffM->displayInfo('jdetails', 'title', $row->title, true);			
-			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);	
+			echo $this->staffM->displayInfo('jdetails', 'levelID_fk', $row->levelID_fk, true);
+			
+			if(count($coachedNames)>0){
+				$cul = '<ul>';
+				foreach($coachedNames AS $cc){
+					$cul .= '<li>'.$cc->name.'</li>';
+				}
+				$cul .= '</ul>';
+				if($this->user->username != $row->username && ($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username))){
+					$cul .= '<a href="'.$this->config->base_url().'setcoach/'.$row->empID.'/" class="iframe">Add Names</a>';
+				}
+				echo $this->staffM->displayInfo('jdetails', 'coachedOf', $cul, false);
+			}
+			
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			
 			if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
@@ -501,7 +514,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 ?>
 
 <!----------------------- PERFORMANCE TRACK RECORDS ----------------------->
-<?php if(count($perfTrackRecords)>0 && ($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true)){ ?>
+<?php if(count($perfTrackRecords)>0 && ($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true || $row->coach==$this->user->empID)){ ?>
 	<table class="tableInfo" id="perfTrack">
 		<tr class="trlabel">
 			<td>Performance Track Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('perfTrack', this)" class="droptext">Show</a>]</td>

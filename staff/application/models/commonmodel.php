@@ -253,6 +253,49 @@ class Commonmodel extends CI_Model {
 		
 		return $grow;		
 	}
+	
+	public function getAllStaffs(){			
+		if(isset($_POST['includeinactive'])) $condition = '';
+		else $condition = 'staffs.active=1';
+
+	
+		if($this->user->access==''){
+			$ids = '';
+			$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+			foreach($myStaff AS $m):
+				$ids .= $m->empID.',';
+			endforeach;
+			if($ids!=''){
+				$condition .= ((!empty($condition))?' AND ':'').'empID IN ('.rtrim($ids,',').')';
+			}
+		}
+										
+		return $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
+	}
+	
+	
+	public function getSchedTimeArray(){
+		$arr = array();
+		$arr[0] = '';
+		$query = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeID, timeValue');
+		foreach($query AS $q){
+			$arr[$q->timeID] = $q->timeValue;
+		}
+		return $arr;
+	}
+	
+	function customTimeArrayByCat(){
+		$timeArr = array();
+		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1);
+		foreach($schedTimes AS $t):
+			if($t->category==0)
+				$timeArr[$t->timeID]['name'] = $t->timeName;
+			else
+				$timeArr[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
+		endforeach;
+		return $timeArr;
+	}
+	
 }
 
 ?>

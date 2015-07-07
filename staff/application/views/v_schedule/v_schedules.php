@@ -142,13 +142,15 @@
 				<td>Saturday</td>			
 			</tr>
 			<tr>
-				<td><?= $this->textM->customTimeDisplay($time, 'sunday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'monday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'tuesday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'wednesday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'thursday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'friday') ?></td>
-				<td><?= $this->textM->customTimeDisplay($time, 'saturday') ?></td>
+			<?php
+				foreach($weekdayArray AS $w){
+					echo '<td>';
+						echo '<select id="'.$w.'" class="schedSelect everyday padding5px">';
+							echo $this->textM->customTimeSelect();
+						echo '</select>';
+					echo '</td>';
+				}
+			?>
 			</tr>
 		</table>
 		<br/>
@@ -163,15 +165,15 @@
 	<table class="tableInfo">
 <?php
 	foreach($allCustomSched AS $acs){
-		echo '<tr class="trhead ctimetr'.$acs->custschedID.'">
+		echo '<tr class="trhead ctimetr'.$acs->custSchedID.'">
 				<td colspan=6>
 					<span class="una">'.$acs->schedName.'</span>
-					<input id="inputschedName'.$acs->custschedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
+					<input id="inputschedName'.$acs->custSchedID.'" type="text" value="'.$acs->schedName.'" style="width:250px;" class="padding5px ikalawa hidden"/></td>
 				<td align="right">
-					<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->custschedID.')"/>
-					<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->custschedID.')"/>
-					<button class="hidden ikalawa" onClick="updateCustSched('.$acs->custschedID.')">Update</button>
-					<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->custschedID.')">Cancel</button>
+					<img src="'.$this->config->base_url().'css/images/view-icon.png" width="28px" class="cpointer una" onClick="editCustSched('.$acs->custSchedID.')"/>
+					<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer una" onClick="deleteCustSched('.$acs->custSchedID.')"/>
+					<button class="hidden ikalawa" onClick="updateCustSched('.$acs->custSchedID.')">Update</button>
+					<button class="hidden ikalawa" onClick="cancelCustSched('.$acs->custSchedID.')">Cancel</button>
 					<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px" class="hidden loading"/>
 				</td>
 			</tr>';
@@ -184,15 +186,26 @@
 				<td>Friday</td>
 				<td>Saturday</td>			
 			</tr>';
-		echo '<tr class="ctimetr'.$acs->custschedID.'">
-			<td>'.$this->textM->customTimeDisplay($time, 'sunday', $acs->sunday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'monday', $acs->monday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'tuesday', $acs->tuesday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'wednesday', $acs->wednesday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'thursday', $acs->thursday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'friday', $acs->friday, false).'</td>
-			<td>'.$this->textM->customTimeDisplay($time, 'saturday', $acs->saturday, false).'</td>
-		</tr>';
+		echo '<tr align="center" class="ctimetrtext_'.$acs->custSchedID.' fs11px">
+				<td>'.$timeArr[$acs->sunday].'</td>
+				<td>'.$timeArr[$acs->monday].'</td>
+				<td>'.$timeArr[$acs->tuesday].'</td>
+				<td>'.$timeArr[$acs->wednesday].'</td>
+				<td>'.$timeArr[$acs->thursday].'</td>
+				<td>'.$timeArr[$acs->friday].'</td>
+				<td>'.$timeArr[$acs->saturday].'</td>
+			</tr>';
+			
+		echo '<tr class="ctimetredit'.$acs->custSchedID.' hidden">';
+			foreach($weekdayArray AS $w){
+				echo '<td>';
+					echo '<select id="'.$w.'" class="schedSelect everyday padding5px disabled">';
+						echo $this->textM->customTimeSelect($acs->$w);
+					echo '</select>';
+				echo '</td>';
+			}
+		echo '</tr>';
+		
 		echo '<tr><td colspan=7><br/></td></tr>';
 	}
 ?>
@@ -203,7 +216,7 @@
 <!-------------------------- Start of Holiday/Event Schedule ------------------------>
 <div id="holeventschedDIV" class="schedDiv hidden" style="margin-top:15px;">
 	<div id="addHolidaySchedDiv" class="hidden">
-		<?php $this->load->view('sched_holiday'); ?>
+		<?php $this->load->view('v_schedule/v_holiday'); ?>
 	</div>
 	<h3>All Holiday/Event Schedules
 		<button id="addHolidaybtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
@@ -339,15 +352,21 @@
 	}
 	
 	function editCustSched(id){
-		$('.ctimetr'+id+' .everyday').removeAttr('disabled');
+		$('.ctimetredit'+id+' .everyday').removeAttr('disabled');
 		$('.ctimetr'+id+' .una').addClass('hidden');
 		$('.ctimetr'+id+' .ikalawa').removeClass('hidden');
+		
+		$('.ctimetredit'+id).removeClass('hidden');
+		$('.ctimetrtext_'+id).addClass('hidden');		
 	}
 	
 	function cancelCustSched(id){
-		$('.ctimetr'+id+' .everyday').attr('disabled','disabled');
+		$('.ctimetredit'+id+' .everyday').attr('disabled','disabled');
 		$('.ctimetr'+id+' .una').removeClass('hidden');
 		$('.ctimetr'+id+' .ikalawa').addClass('hidden');
+		
+		$('.ctimetredit'+id).addClass('hidden');
+		$('.ctimetrtext_'+id).removeClass('hidden');
 	}
 	
 	function updateCustSched(id){
@@ -355,8 +374,8 @@
 		if($('#inputschedName'+id).val()==''){
 			celebrity += 'Name is empty.\n';
 		}
-		if($('.ctimetr'+id+'#sunday').val()=='' && $('.ctimetr'+id+'#monday').val()=='' && $('.ctimetr'+id+'#tuesday').val()=='' && $('.ctimetr'+id+'#wednesday').val()=='' && 
-			$('.ctimetr'+id+'#thursday').val()=='' && $('.ctimetr'+id+'#friday').val()=='' && $('.ctimetr'+id+'#saturday').val()==''){
+		if($('.ctimetredit'+id+'#sunday').val()=='' && $('.ctimetredit'+id+'#monday').val()=='' && $('.ctimetredit'+id+'#tuesday').val()=='' && $('.ctimetredit'+id+'#wednesday').val()=='' && 
+			$('.ctimetredit'+id+'#thursday').val()=='' && $('.ctimetredit'+id+'#friday').val()=='' && $('.ctimetredit'+id+'#saturday').val()==''){
 			celebrity += 'Schedules are empty.';
 		}
 		if(celebrity!=''){
@@ -369,13 +388,13 @@
 				submitType:'updateCustomSched',
 				schedID:id,
 				schedName:$('#inputschedName'+id).val(),
-				sunday:$('.ctimetr'+id+' #sunday').val(),
-				monday:$('.ctimetr'+id+' #monday').val(),
-				tuesday:$('.ctimetr'+id+' #tuesday').val(),
-				wednesday:$('.ctimetr'+id+' #wednesday').val(),
-				thursday:$('.ctimetr'+id+' #thursday').val(),
-				friday:$('.ctimetr'+id+' #friday').val(),
-				saturday:$('.ctimetr'+id+' #saturday').val()
+				sunday:$('.ctimetredit'+id+' #sunday').val(),
+				monday:$('.ctimetredit'+id+' #monday').val(),
+				tuesday:$('.ctimetredit'+id+' #tuesday').val(),
+				wednesday:$('.ctimetredit'+id+' #wednesday').val(),
+				thursday:$('.ctimetredit'+id+' #thursday').val(),
+				friday:$('.ctimetredit'+id+' #friday').val(),
+				saturday:$('.ctimetredit'+id+' #saturday').val()
 			}, function(){
 				location.reload(true);
 				alert('Custom schedule has been updated.');

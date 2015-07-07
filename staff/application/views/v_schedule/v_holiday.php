@@ -45,7 +45,7 @@
 		<td>
 			<select id="holidayWork" class="forminput">
 			<?php
-				$yesno01 = $this->config->item('yesno01');
+				$yesno01 = $this->textM->constantArr('yesno01');
 				foreach($yesno01 AS $y=>$yval){
 					echo '<option value="'.$y.'">'.$yval.'</option>';
 				}

@@ -27,7 +27,7 @@ if($edit==''){
 			echo '
 				<tr>
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$r->username.'/">'.$r->fname.' '.$r->lname.'</a></td>
-					<td>'.$this->config->item('txt_'.$r->fieldname).'</td>
+					<td>'.$this->textM->constantText('txt_'.$r->fieldname).'</td>
 					<td>';
 						if($f=='levelID_fk')
 							echo $r->levelName;
