@@ -2895,11 +2895,12 @@ class Staff extends MY_Controller {
 						$this->dbmodel->dbQuery('UPDATE staffs SET coach="'.$id.'" WHERE empID IN ('.$ids.')');
 						$this->dbmodel->dbQuery('UPDATE staffs SET is_coach="1" WHERE empID="'.$id.'"');
 					}
+					
+					$this->commonM->addMyNotif($this->user->empID, 'You added "'.$id.'" AS coach to '.$ids.'. <br/><i>-CareerPH notes only</i>' , 5);
 				}else if($_POST['submitType']=='remove'){
 					$this->dbmodel->dbQuery('UPDATE staffs SET coach="0" WHERE empID="'.$_POST['id'].'"');
 					exit;
-				}
-				
+				}				
 			}
 			
 			$data['coach'] = $this->dbmodel->getSingleInfo('staffs', 'fname, lname, supervisor, levelID_fk', 'empID="'.$id.'"');
