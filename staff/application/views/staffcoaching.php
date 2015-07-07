@@ -11,8 +11,11 @@
 	<li class="tab-link" data-tab="tab-4">Done <?= ((count($done)>0)?'('.count($done).')':'')?></li>
 	<li class="tab-link" data-tab="tab-5">Cancelled <?= ((count($cancelled)>0)?'('.count($cancelled).')':'')?></li>
 </ul>
+
+<br/>
 <div id="tab-1" class="tab-content <?= (($this->access->accessFullHR==false)?'hidden':'current') ?>">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Coaching ID</td>
 		<td>Employee's Name</td>
@@ -24,6 +27,7 @@
 		<td>Status</td>
 		<td></td>
 	</tr>
+</thead>
 <?php
 	$hrOptionsPending = $this->textM->constantArr('hrOptionPending');
 	if(count($forprinting)>0){	
@@ -47,7 +51,8 @@
 </div>
 
 <div id="tab-2" class="tab-content <?= (($this->access->accessFullHR==false)?'current':'') ?>">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Coaching ID</td>
 		<td>Employee's Name</td>
@@ -58,6 +63,7 @@
 		<td>Immediate Supervisor</td>
 		<td>Details</td>
 	</tr>
+</thead>
 <?php
 	if(count($inprogress)>0){	
 		foreach($inprogress AS $i):
@@ -81,7 +87,8 @@
 </div>
 
 <div id="tab-3" class="tab-content">	
-<table class="tableInfo">
+<table class="tableInfo datatable">
+<thead>
 	<tr class="trhead">
 		<td>Coaching ID</td>
 		<td>Employee's Name</td>
@@ -94,6 +101,7 @@
 		<td>Coaching Form</td>
 		<td>Details</td>
 	</tr>
+</thead>
 <?php
 	if(count($pending)>0){	
 		foreach($pending AS $p):
@@ -122,7 +130,6 @@
 </table>
 </div>
 
-<br/>
 <div id="tab-4" class="tab-content">	
 <table class="tableInfo datatable">
 <thead>
