@@ -192,7 +192,7 @@ class MyCrons extends MY_Controller {
 	
 	public function coachingEvaluation(){
 		$dtoday = date('Y-m-d');
-		$query = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2)', 'LEFT JOIN staffs ON empID=empID_fk');
+		$query = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2) AND active=1', 'LEFT JOIN staffs ON empID=empID_fk');
 		
 		
 		if(count($query)>0){
@@ -219,7 +219,7 @@ class MyCrons extends MY_Controller {
 		echo 'Number of pending evaluations: '.count($query).'<br/>';
 		
 		//query for daily reminder to supervisors to get from HR printed docs for signing
-		$printQ = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, status, fname, email, supervisor, (SELECT CONCAT(fname," ", lname) AS cname FROM staffs s WHERE s.empID=staffCoaching.empID_fk) AS ename', '(status=0 AND HRoptionStatus = 1) OR (status=3 AND HRoptionStatus = 3)', 'LEFT JOIN staffs ON empID=(SELECT supervisor FROM staffs WHERE empID=empID_fk AND supervisor!=0)');
+		$printQ = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, status, fname, email, supervisor, (SELECT CONCAT(fname," ", lname) AS cname FROM staffs s WHERE s.empID=staffCoaching.empID_fk) AS ename', 'active=1 AND (status=0 AND HRoptionStatus = 1) OR (status=3 AND HRoptionStatus = 3)', 'LEFT JOIN staffs ON empID=(SELECT supervisor FROM staffs WHERE empID=empID_fk AND supervisor!=0)');
 				
 		foreach($printQ AS $p){
 			$sBody = 'Hello '.$p->fname.',<br/><br/>The '.(($p->status==1)?'coaching':'evaluation').' form for '.$p->ename.' is printed. Please claim the form from HR. You will receive this reminder daily until the said signed '.(($p->status==1)?'coaching':'evaluation').' form is returned to HR.<br/><br/><br/>Thanks!';
