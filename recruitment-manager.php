@@ -24,8 +24,27 @@ if(isset($_POST) && !empty($_POST)){
 		$db->insertQuery('applicant_feedbacks', $insertArr);
 	}
 }
-$appOpenJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, applicants.date_created, title, processText, processStat FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=1 AND isNew = 1 AND jobReqData.status=0 GROUP BY applicants.id ORDER BY applicants.date_created DESC');
-$appNoJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=1 AND isNew = 1 AND jobReqData.status!=0 GROUP BY applicants.id ORDER BY applicants.date_created DESC');
+$openJobs = $db->selectQueryArray('SELECT reqID, positionID FROM jobReqData WHERE status=0');
+$hahe = array();
+foreach($openJobs AS $o){
+	$hahe[] = $o['positionID'];
+}
+$openJobsText = implode(',', $hahe);
+
+$appOpenJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, applicants.date_created, title, processText, processStat 
+		FROM applicants 
+		LEFT JOIN recruitmentProcess ON processID=process 
+		LEFT JOIN newPositions ON posID=position 
+		WHERE processStat=1 AND isNew = 1 AND position IN ('.$openJobsText.') 
+		ORDER BY applicants.date_created DESC');
+
+$appNoJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat 
+		FROM applicants 
+		LEFT JOIN newPositions ON posID=position 
+		LEFT JOIN recruitmentProcess ON processID=process 
+		WHERE processStat=1 AND isNew = 1 AND position NOT IN ('.$openJobsText.')
+		ORDER BY applicants.date_created DESC');
+		
 $petrifiedQ = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=0 AND processText IN ("Failed IQ Test", "Failed Typing Test", "Failed Written Comprehension Test", "Failed HR Interview") GROUP BY applicants.id ORDER BY applicants.date_created DESC');
 $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', lname) AS name, email, mnumber, applicants.date_created, isNew, process, processType, processText, processStat, IF(isNew = 0, (SELECT title FROM positions WHERE position=positions.id LIMIT 1), (SELECT title FROM newPositions WHERE position=posID LIMIT 1)) as title", "1 ORDER BY date_created DESC", "LEFT JOIN recruitmentProcess ON processID=process");
 
