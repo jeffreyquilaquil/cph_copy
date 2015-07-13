@@ -74,7 +74,7 @@ class Itchecklist extends MY_Controller {
 	}
 
 	public function newhirestatus(){
-		$data['content'] = 'v_itchecklist/V_itnewhirestatus';
+		$data['content'] = 'v_itchecklist/v_itnewhirestatus';
 		
 		if($this->user!=false){
 			if($this->user->dept!='IT'){
