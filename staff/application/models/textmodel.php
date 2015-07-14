@@ -26,7 +26,7 @@ class Textmodel extends CI_Model {
 			$t = '<textarea name="'.$name.'" class="'.$class.'" '.$additional.' placeholder="'.$placeholder.'">'.$val.'</textarea>';
 		}		
 		
-		echo $t;
+		return $t;
 	}
 		
 	function getEmps($all, $id, $n){
@@ -417,6 +417,7 @@ class Textmodel extends CI_Model {
 					);
 		}else if($a=='empStatus'){
 			$arr = array(
+						'contract' => 'Contract', 
 						'probationary' => 'Probationary', 
 						'regular' => 'Regular',
 						'part-time' => 'Part-Time'

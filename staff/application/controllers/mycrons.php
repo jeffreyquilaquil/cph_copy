@@ -130,27 +130,27 @@ class MyCrons extends MY_Controller {
 	function accessenddate(){
 		$dateToday = date('Y-m-d');
 		$dateTodayText = date('Y-m-d h:i a');
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, endDate, accessEndDate, office, shift, staffs.active, newPositions.title', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
-		
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
+				
 		//deactivate and send separation notice email if account is still active OR access end date is today OR empty access end date and end date is today
 		foreach($query AS $uInfo):
-			if($uInfo->active==1 || $uInfo->accessEndDate==$dateToday || ($uInfo->accessEndDate=='' && $uInfo->endDate==$dateToday)){
-				$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$uInfo->empID.'"');
-				if($this->config->item('devmode')==false)
-					$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-				
-					
-				//send separation notice email					
-				$this->emailM->emailSeparationNotice($uInfo);
-				
-				//cancel all in progress coaching of the employee
-				$coaching = $this->dbmodel->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$uInfo->empID.'" AND status!=1 AND status!=4');
-				if(count($coaching)>0){
-					foreach($coaching AS $c){
-						$this->dbmodel->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.$dateTodayText.'</i>'));
-					}
+						
+			if($uInfo->endDate==$dateToday){
+				$this->emailM->emailSeparationDateAlert($uInfo);
+			}
+			
+			if($uInfo->accessEndDate==$dateToday || ($uInfo->accessEndDate=='0000-00-00' && $uInfo->endDate==$dateToday)){
+				$this->emailM->emailAccessEndDateAlert($uInfo);
+			}
+			
+			//cancel all in progress coaching of the employee
+			$coaching = $this->dbmodel->getQueryResults('staffCoaching', 'coachID', 'empID_fk="'.$uInfo->empID.'" AND status!=1 AND status!=4');
+			if(count($coaching)>0){
+				foreach($coaching AS $c){
+					$this->dbmodel->updateQuery('staffCoaching', array('coachID'=>$c->coachID), array('status'=>4, 'canceldata'=>'CANCELLED DUE TO TERMINATION<br/><i>careerPH '.$dateTodayText.'</i>'));
 				}
 			}
+			
 		endforeach;
 		echo count($query);
 

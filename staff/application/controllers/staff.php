@@ -415,23 +415,13 @@ class Staff extends MY_Controller {
 										$_POST[$en] = $this->textM->encryptText($_POST[$en]);
 								}
 								
+								//UPDATE STAFFS TABLE
 								$this->dbmodel->updateQuery('staffs', array('empID'=>$empID), $_POST);
-								
-								//if access end date or end date is set
-								if((isset($what2update['endDate']) && $what2update['endDate']!='0000-00-00') || 
-									isset($what2update['accessEndDate']) && $what2update['accessEndDate']!='0000-00-00'
-								){
-									$uInfo = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$empID.'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
-									if(count($uInfo)>0){										
-										//set PT and careerph user inactive
-										if($this->config->item('devmode')==false)
-											$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-										$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$empID.'"');
 										
-										//send separation notice email
-										$this->emailM->emailSeparationNotice($uInfo);										
-									}
-								}	
+								//send email notification if access or end date is set
+								if(isset($what2update['endDate']) || isset($what2update['accessEndDate'])){
+									$this->emailM->emailSeparationNotice($empID);
+								}
 								
 								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
 								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
@@ -450,22 +440,7 @@ class Staff extends MY_Controller {
 										else $this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$data['row']->username.'"');
 									}
 									
-									$abody = '<p>Hi,</p>';
-									
-									if($what2update['active']==1){
-										$subject = 'ACTIVATED PT USER';
-										$abody .= $this->user->name.' ACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
-									}else{
-										$subject = 'DEACTIVATED PT USER';
-										$abody .= $this->user->name.' DEACTIVATED the account of "'.$data['row']->name.'". Please check if this is correct.';
-									}
-									
-									$abody .= '<p><br/></p>
-											<p>Thanks!</p>
-											<p>CAREERPH</p>';
-									
-									$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
-									$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH');
+									$this->emailM->sendDeActivateEmail($what2update['active'], $data['row']->name);									
 								}
 								
 								if($submitType=='jdetails') $upNote = 'Job details';
@@ -669,22 +644,10 @@ class Staff extends MY_Controller {
 					$ntext .= $this->staffM->infoTextVal($_POST['fieldN'], $_POST['fieldV']);
 											
 					$this->commonM->addMyNotif($_POST['empID'], $ntext, 0, 1);
-					
 										
-					if(($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate')){
-						$uInfo = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name, fname, office, newPositions.title, shift, endDate, accessEndDate', 'empID="'.$_POST['empID'].'" AND staffs.active=1', 'LEFT JOIN newPositions ON posID=position');
-						if(count($uInfo)>0){
-							//send separation notice email if access end date or end date is set
-							$this->emailM->emailSeparationNotice($uInfo);
-							
-							//deactivate PT and careerPH if access end date and separation date is set and date is before today	
-							if($_POST['fieldV']<=date('Y-m-d') && $_POST['fieldV']!='0000-00-00'){
-								//set PT and careerph user inactive
-								if($this->config->item('devmode')==false)
-									$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$uInfo->username.'"');
-								$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$_POST['empID'].'"');	
-							}
-						}												
+					//send separation notice email if access end date or end date is set					
+					if($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate'){
+						$this->emailM->emailSeparationNotice($_POST['empID']);							
 					}
 							
 

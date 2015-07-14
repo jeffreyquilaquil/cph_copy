@@ -187,7 +187,8 @@ $(function () {
 			validtxt += 'Position title is empty.\n';
 		if($('#empStatus').val()=='regular' && $('#regDate').val()=='')
 			validtxt += 'Regularization date is empty.\n';
-		
+		if($('#endDate').val()!='' && ($('#terminationType').val()=='' || $('#terminationType').val()==0))
+			validtxt += 'Termination reason is empty.\n';
 		
 		if(validtxt!=''){
 			alert(validtxt);

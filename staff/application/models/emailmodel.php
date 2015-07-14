@@ -7,7 +7,7 @@ class Emailmodel extends CI_Model {
         parent::__construct();	
     }
 	
-	function sendEmail( $from, $to, $subject, $body, $fromName='' ){
+	function sendEmail( $from, $to, $subject, $body, $fromName='', $CC='', $BCC='' ){
 		$url = 'https://pt.tatepublishing.net/api.php?method=sendGenericEmail';
 		  /*
 		   * from = sender's email
@@ -22,6 +22,16 @@ class Emailmodel extends CI_Model {
 		if($this->config->item('devmode')===true){
 			$subject = $subject.' to-'.$to;
 			$to = $this->config->item('toEmail');
+			
+			if(!empty($CC)){
+				$subject .= '==CC: -'.$CC;
+				$CC = '';
+			}
+			
+			if(!empty($BCC)){
+				$subject .= '==BCC: -'.$BCC;
+				$BCC = '';
+			}
 		}
 				
 		
@@ -30,7 +40,9 @@ class Emailmodel extends CI_Model {
 			'from' => $from,
 			'sendTo' => $to,
 			'subject' => $subject,
-			'body' => $body
+			'body' => $body,
+			'CC' => $CC,
+			'BCC' => $BCC
 		);
 
 		if( !empty($fromName) ){
@@ -60,35 +72,141 @@ class Emailmodel extends CI_Model {
 		curl_close($ch);
 	}
 	
-	/******
-		$uInfo should have name, title, accessEndDate, endDate, shift, office
-	******/
-	public function emailSeparationNotice($uInfo){
-		if(isset($uInfo->name) && isset($uInfo->title) && isset($uInfo->accessEndDate) && isset($uInfo->endDate) && isset($uInfo->shift) && isset($uInfo->office)){
-			$dateToday = date('Y-m-d');
-			$ebody = '<p><b>Employee Separation Notice:</b></p>';
-			$ebody .= '<p>Employee: <b>'.$uInfo->name.'</b></p>';
-			
-			$ebody .= '<p>';
-			$ebody .= 'Position: <b>'.$uInfo->title.'</b><br/>';
-			
-			if($uInfo->accessEndDate==$dateToday) $ebody .= 'Access End Date: <b>'.date('F d, Y', strtotime($uInfo->accessEndDate)).'</b><br/>';	
-			if($uInfo->endDate!='0000-00-00') $ebody .= 'Separation Date: <b>'.date('F d, Y', strtotime($uInfo->endDate)).'</b><br/>';	
-						
-			$ebody .= 'Shift: <b>'.$uInfo->shift.'</b><br/>';
-			$ebody .= 'Office Branch : <b>'.$uInfo->office.'</b><br/>';											
-			$ebody .= '</p>';											
-			
-			$ebody .= '<p><b>IT Staff:</b> Please terminate this employee\'s access to Email, ProjectTracker, and the phone system on the date of separation. Further, collect any equipment issued or checked out to the employee on their last day of work. Please coordinate with the employee\'s immediate supervisor to establish forwarding of phone and email if applicable.</p>';
-			
-			$ebody .= '<p>Thanks!</p>';
-				
-			$this->emailM->sendEmail('hr.cebu@tatepublishing.net', 'helpdesk.cebu@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
-			
-			//send email to Andrew and Marjune
-			$this->emailM->sendEmail('hr.cebu@tatepublishing.net', 'it.security@tatepublishing.net', 'Separation Notice for '.$uInfo->name, $ebody, 'Tate Publishing Human Resources (CareerPH)');
-			
+	//send email notification notice
+	public function emailSeparationNotice($empID){
+		$dateToday = date('Y-m-d');
+		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail', 'empID="'.$empID.'"','LEFT JOIN newPositions ON posID=position');
+		
+		//On separation date send Separation Date Alert
+		if($info->endDate==$dateToday){
+			$this->emailM->emailSeparationDateAlert($info);
 		}
+		
+		//On Access End Date send access End date alert
+		if(($info->accessEndDate!='0000-00-00' && $info->accessEndDate==$dateToday) ||
+			($info->accessEndDate=='0000-00-00' && $info->endDate==$dateToday)
+		){
+			$this->emailM->emailAccessEndDateAlert($info);
+		}
+		
+		//send end of employment notice if access or end date entered and date is after today
+		if(($info->endDate!='0000-00-00' && strtotime($info->endDate)>strtotime($dateToday)) ||
+			($info->accessEndDate!='0000-00-00' && strtotime($info->accessEndDate)>strtotime($dateToday))
+		){
+			$this->emailM->emailEndEmploymentNotice($info);
+		}
+		
+		//send urgent terminate all access for employee email if separation or access date entered before today
+		if( ($info->accessEndDate!='0000-00-00' && strtotime($info->accessEndDate)<=strtotime($dateToday)) ||
+			($info->accessEndDate=='0000-00-00' && $info->endDate!='0000-00-00' && strtotime($info->endDate)<=strtotime($dateToday))
+		){
+			$this->emailM->emailUrgentTerminateAllAccess($info);
+		}	
+	}
+	
+	//send email if end date is today
+	public function emailSeparationDateAlert($info){
+		$de = 'kent.ybanez@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net';
+		$sujet = 'Separation Date Alert ('.$info->name.')';
+		
+		$termArr = $this->textM->constantArr('terminationType');
+		$corps = '<h2 style="color:red;">Separation Date Alert ('.date('F d, Y', strtotime($info->endDate)).')</h2>';
+		$corps .= '<b>Employee Name:</b> '.$info->name.'<br/>';
+		$corps .= '<b>Department:</b> '.$info->dept.'<br/>';
+		$corps .= '<b>Position:</b> '.$info->title.'<br/>';
+		$corps .= '<b>Access Ended:</b> '.(($info->accessEndDate!='0000-00-00')?date('F d, Y', strtotime($info->accessEndDate)):date('F d, Y', strtotime($info->endDate))).'<br/>';
+		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
+		
+		$corps .= '<br/><br/>';
+		$corps .= '<p>Please verify that all access has been terminated for the above employee and that all email and phone forwarding is functioning properly.</p>';
+		
+		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');		
+	}
+	
+	//send email if access end date is today AND deactivate staff and PT accesses
+	public function emailAccessEndDateAlert($info){
+		$de = 'kent.ybanez@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net';
+		$sujet = 'Access End Date Alert for '.$info->name;
+		
+		$termArr = $this->textM->constantArr('terminationType');
+		$adate = (($info->accessEndDate!='0000-00-00')?$info->accessEndDate:$info->endDate);
+		
+		$corps = '<h2 style="color:red;">Access End Date Alert ('.date('F d, Y', strtotime($adate)).')</h2>';
+		$corps .= '<b>Employee Name:</b> '.$info->name.'<br/>';
+		$corps .= '<b>Department:</b> '.$info->dept.'<br/>';
+		$corps .= '<b>Position:</b> '.$info->title.'<br/>';
+		if($info->endDate!='0000-00-00') $corps .= '<b>Separation Date:</b> '.date('F d, Y', strtotime($info->endDate)).'<br/>';
+		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
+		
+		$corps .= '<br/><br/>';
+		$corps .= '<b>Access Termination Checklist</b><br/>';
+		$corps .= 'IT Staff, please verify that the following tasks are completed today:<br/>';
+		$corps .= '<ul>';
+		$corps .= '<li>PT Account is deactivated</li>';
+		$corps .= '<li>CareerPH account is deactivated</li>';
+		$corps .= '<li>Email account is deactivated (if applicable)</li>';
+		$corps .= '<li>Phone account is deactivated (if applicable)</li>';
+		$corps .= '<li>Access to servers is revoked</li>';
+		$corps .= '<li>Access to workstation is revoked</li>';
+		$corps .= '</ul>';
+		$corps .= '<p>Please contact the employee\'s immediate supervisor or the department head to ensure that emails and phone calls are forwarded/redirected to the appropriate individual.</p>';
+		
+		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
+		
+		//deactivate staff and PT accesses
+		$this->dbmodel->updateQuery('staffs', array('empID'=>$info->empID), array('active'=>'0'));
+		if($this->config->item('devmode')==false) $this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$info->username.'"');
+	}
+	
+	//send email if access and end date entered after today
+	public function emailEndEmploymentNotice($info){
+		$de = 'kent.ybanez@tatepublishing.net';
+		$sur = 'helpdesk.cebu@tatepublishing.net,'.$info->supEmail;
+		$sujet = 'End of Employment Notice';		
+		
+		$termArr = $this->textM->constantArr('terminationType');
+		$corps = '<h2 style="color:red;">End of Employment Notice</h2>';
+		$corps .= '<b>Employee Name:</b> '.$info->name.'<br/>';
+		$corps .= '<b>Department:</b> '.$info->dept.'<br/>';
+		$corps .= '<b>Position:</b> '.$info->title.'<br/>';
+		if($info->endDate!='0000-00-00') $corps .= '<b>Separation Date:</b> '.date('F d, Y', strtotime($info->endDate)).'<br/>';
+		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
+				
+		$corps .= '<p style="color:red;"><b>Access End Date:</b> '.(($info->accessEndDate=='0000-00-00')?date('F d, Y', strtotime($info->endDate)):date('F d, Y', strtotime($info->accessEndDate))).'</p>';
+		$corps .= '<p>IT Staff, please prepare to terminate this employee\'s access to all company systems on the access end date above.</p>';
+		
+		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
+	}
+	
+	//send email if access and end date entered on or before
+	public function emailUrgentTerminateAllAccess($info){
+		$de = 'kent.ybanez@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net,helpdesk,cebu@tatepublishing.net';
+		$cc = 'marianne.velasco@tatepublishing.net,diana.bartulin@tatepublishing.net,curtis.winkle@tatepublishing.net';
+		$sujet = 'URGENT: Terminate All Access For '.$info->name.' Immediately';
+				
+		$termArr = $this->textM->constantArr('terminationType');
+		$dateToday = date('Y-m-d');
+		$acdate = (($info->accessEndDate!='0000-00-00')?$info->accessEndDate:$info->endDate);
+		
+		$corps = '<h2 style="color:red;">ALERT: Terminate All Access For '.$info->name.' Immediately</h2>';
+		$corps .= '<b>Employee Name:</b> '.$info->name.'<br/>';
+		$corps .= '<b>Department:</b> '.$info->dept.'<br/>';
+		$corps .= '<b>Position:</b> '.$info->title.'<br/>';
+		if($info->endDate!='0000-00-00') $corps .= '<span style="color:red;"><b>Separation Date:</b> '.date('F d, Y', strtotime($info->endDate)).'</span><br/>';
+		$corps .= '<span style="color:red;"><b>Access End Date:</b> '.date('F d, Y', strtotime($acdate)).'</span><br/>';
+		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
+		if($acdate==$dateToday){
+			$corps .= '<p>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to end today, '.date('F d, Y', strtotime($acdate)).'.</p>';
+		}else{
+			$datediff = strtotime($dateToday) - strtotime($acdate);
+			$ago = floor($datediff/(60*60*24));
+			
+			$corps .= '<p>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to on '.date('F d, Y', strtotime($acdate)).', which was '.$ago.' days ago.</p>';
+		}
+		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH', $cc);		
 	}
 
 	public function emailForgotPassword($email, $fname, $username){
@@ -99,6 +217,24 @@ class Emailmodel extends CI_Model {
 				<p>CareerPH</p>
 		';
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $email, 'CareerPH Forgot Password', $body, 'CareerPH' );
+	}
+	
+	function sendDeActivateEmail($active, $name){
+		$abody = '<p>Hi,</p>';
+									
+		if($active==1){
+			$subject = 'ACTIVATED PT USER';
+			$abody .= $this->user->name.' ACTIVATED the account of "'.$name.'". Please check if this is correct.';
+		}else{
+			$subject = 'DEACTIVATED PT USER';
+			$abody .= $this->user->name.' DEACTIVATED the account of "'.$name.'". Please check if this is correct.';
+		}
+		
+		$abody .= '<p><br/></p>
+				<p>Thanks!</p>
+				<p>CAREERPH</p>';
+		
+		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH', 'helpdesk.cebu@tatepublishing.net');
 	}
 }
 ?>
