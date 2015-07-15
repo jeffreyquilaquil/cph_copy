@@ -353,7 +353,7 @@
 	<?php if($info['process']<6 && $info['processStat']>0){ ?>
 		<div style="margin-bottom:10px;">
 		<?php
-			if($info['process']>0 && ($info['process']==5 && $info['agencyID']==0)) echo '<button id="rep" class="pad5px">Reprofile</button>&nbsp;&nbsp;&nbsp;';
+			if($info['process']>0 || ($info['process']==5 && $info['agencyID']==0)) echo '<button id="rep" class="pad5px">Reprofile</button>&nbsp;&nbsp;&nbsp;';
 			if($info['processStat']==2) echo '<button id="freeze" class="pad5px">Freeze Application</button>';
 			else echo '<button id="cancelApp" class="pad5px">Cancel Application</button>';
 			if($info['process']==5 && $info['agencyID']==0) echo '&nbsp;&nbsp;&nbsp;<button id="agencyhire" class="pad5px">Hire through Agency</button>';
