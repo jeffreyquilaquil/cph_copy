@@ -1,8 +1,6 @@
 <?php
 require 'config.php';
 
-
-
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	header("Location: login.php");
 	exit();
@@ -11,41 +9,44 @@ if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 
 if(isset($_POST) AND !empty($_POST)){
 	date_default_timezone_set("Asia/Manila");
-	$hire = $db->selectSingleQueryArray('applicants', 'id, fname, lname, mname, suffix, bdate, address, mnumber, email, gender, isNew, position, title, org, dept, grp, subgrp, startDate, salaryOffer' , 'id='.$_GET['id'], 'LEFT JOIN newPositions ON position=posID');
+	$hire = $db->selectSingleQueryArray('applicants', 'id, fname, lname, mname, suffix, bdate, address, mnumber, email, gender, isNew, position, title, org, dept, grp, subgrp, startDate, salaryOffer, agencyID, endorsementLetter, signedGuidelines, endDate' , 'id='.$_GET['id'], 'LEFT JOIN newPositions ON position=posID');
 	$startD = $db->selectSingleQuery('generatedJO', 'startDate' , 'appID='.$_GET['id'].' ORDER BY timestamp DESC');
 
 	$postSuccess = 'yes';
 	$postError = '';
 		
-	$insertStaff = array(
-				'username' => $_POST['username'],
-				'password' => md5($_POST['password']),
-				'sFirst' => $hire['fname'],
-				'sLast' => $hire['lname'],
-				'sMaidenLast' => $hire['mname'],
-				'emailCom' => $_POST['username'].'@tatepublishing.com',
-				'email' => $_POST['email'],
-				'office' => (($_POST['office']=='cebu')?'PH-Cebu':$_POST['office'])
-				);
-	
-	if( $_POST['accountType'] == 2 ){ //mimic user
-		$exept = array('uid', 'username', 'password', 'sFirst', 'sLast', 'sMaidenLast', 'emailCom', 'email', 'directPhone', 'directPhoneExt', 'active', 'office', 'timestamp', 'tempPassword', 'maxNumUnits');
-		$mUser = $ptDb->selectSingleQueryArray('staff', '*' , 'username="'.$_POST['mimicUser'].'"');
-		foreach($mUser AS $cName=>$val){
-			if (!in_array($cName, $exept)){
-				if (strpos($cName, 'Num') !== false){
-					if($val>0){
-						$valNew = $ptDb->selectQueryArray('SELECT DISTINCT '.$cName.' FROM staff WHERE '.$cName.' > 0 ORDER BY '.$cName.' DESC LIMIT 1');
-						if(count($valNew)==1){
-							$insertStaff[$cName] = (int) $valNew[0][$cName] + 1;
+	if($hire['agencyID']==0){
+		$insertStaff = array(
+					'username' => $_POST['username'],
+					'password' => md5($_POST['password']),
+					'sFirst' => $hire['fname'],
+					'sLast' => $hire['lname'],
+					'sMaidenLast' => $hire['mname'],
+					'emailCom' => $_POST['username'].'@tatepublishing.com',
+					'email' => $_POST['email'],
+					'office' => (($_POST['office']=='cebu')?'PH-Cebu':$_POST['office'])
+					);
+		
+		if( $_POST['accountType'] == 2 ){ //mimic user
+			$exept = array('uid', 'username', 'password', 'sFirst', 'sLast', 'sMaidenLast', 'emailCom', 'email', 'directPhone', 'directPhoneExt', 'active', 'office', 'timestamp', 'tempPassword', 'maxNumUnits');
+			$mUser = $ptDb->selectSingleQueryArray('staff', '*' , 'username="'.$_POST['mimicUser'].'"');
+			foreach($mUser AS $cName=>$val){
+				if (!in_array($cName, $exept)){
+					if (strpos($cName, 'Num') !== false){
+						if($val>0){
+							$valNew = $ptDb->selectQueryArray('SELECT DISTINCT '.$cName.' FROM staff WHERE '.$cName.' > 0 ORDER BY '.$cName.' DESC LIMIT 1');
+							if(count($valNew)==1){
+								$insertStaff[$cName] = (int) $valNew[0][$cName] + 1;
+							}
 						}
+					}else if( $val!= '' || $val!= 0 || $val!= NULL || $val!= 'N' || $val!= 'none' ){
+						$insertStaff[$cName] = $val;
 					}
-				}else if( $val!= '' || $val!= 0 || $val!= NULL || $val!= 'N' || $val!= 'none' ){
-					$insertStaff[$cName] = $val;
-				}
-			}			
-		}
+				}			
+			}
+		} 
 	} 
+	
 
 	$jobReq = $db->selectSingleQueryArray('jobReqData', 'reqID, supervisor, requestor' , 'positionID="'.$hire['position'].'" AND status=0 AND appID=0', 'LEFT JOIN newPositions ON positionID = posID'); 
 	
@@ -70,29 +71,32 @@ if(isset($_POST) AND !empty($_POST)){
 		if($_POST['office']== 'cebu') $s = 'PH-Cebu';
 		else $s = 'OKC';	
 		
-		$eDataArr = array(
-					'u' => $_POST['username'],
-					'ad' => $hire['address'],
-					's' => $s,
-					'p1' => $hire['mnumber'],
-					'sD' => date('Y-m-d', strtotime($startD)),
-					'bD' => $hire['bdate'],
-					'sup' => $ptDb->selectSingleQuery('eData','eKey', 'CONCAT( sFirst,  " ", sLast ) =  "'.$jobReq['supervisor'].'"', 'LEFT JOIN staff ON username = u'),
-					'shift' => $_POST['shift'],
-					'comp_email' => $_POST['email'],
-					'title' => $hire['title'],
-					'SSS' => $_POST['sss'],
-					'TIN' => $_POST['tin'],
-					'Philhealth' => $_POST['philhealth'],
-					'HDMF' => $_POST['hdmf'],
-					'py' => $_POST['payroll']
-					); 
+		if($hire['agencyID']==0){
+			$eDataArr = array(
+						'u' => $_POST['username'],
+						'ad' => $hire['address'],
+						's' => $s,
+						'p1' => $hire['mnumber'],
+						'sD' => date('Y-m-d', strtotime($startD)),
+						'bD' => $hire['bdate'],
+						'sup' => $ptDb->selectSingleQuery('eData','eKey', 'CONCAT( sFirst,  " ", sLast ) =  "'.$jobReq['supervisor'].'"', 'LEFT JOIN staff ON username = u'),
+						'shift' => $_POST['shift'],
+						'comp_email' => $_POST['email'],
+						'title' => $hire['title'],
+						'SSS' => $_POST['sss'],
+						'TIN' => $_POST['tin'],
+						'Philhealth' => $_POST['philhealth'],
+						'HDMF' => $_POST['hdmf'],
+						'py' => $_POST['payroll']
+						); 
+			
 		
-	
-		$insertID = $ptDb->insertQuery('staff', $insertStaff);
-		$ptDb->insertQuery('eData', $eDataArr);
-		$ptDb->executeQuery("INSERT INTO dept(uid, cps_id) SELECT username, '0' FROM staff WHERE username='".$_POST['username']."' AND '".$_POST['username']."' NOT IN(SELECT uid FROM dept)");
-
+			$insertID = $ptDb->insertQuery('staff', $insertStaff);
+			$ptDb->insertQuery('eData', $eDataArr);
+			$ptDb->executeQuery("INSERT INTO dept(uid, cps_id) SELECT username, '0' FROM staff WHERE username='".$_POST['username']."' AND '".$_POST['username']."' NOT IN(SELECT uid FROM dept)");
+		}
+		
+		//updating job requisitions
 		$db->updateQuery('jobReqData', array('status'=>'1', 'appID'=>$_GET['id'], 'dateClosed'=>date('Y-m-d'), 'closedBy'=>$_SESSION['u']), 'reqID='.$jobReq['reqID']);
 		
 		//inserting to careerph staffs table
@@ -121,8 +125,25 @@ if(isset($_POST) AND !empty($_POST)){
 					'hdmf' => encryptText($_POST['hdmf']),
 					'maritalStatus' => $_POST['maritalStatus']
 				);
+		if($hire['agencyID']!=0){
+			$cstaffData['endDate'] = $hire['endDate'];
+			$cstaffData['agencyID_fk'] = $hire['agencyID'];
+			$cstaffData['empStatus'] = 'contract';
+		}
+		
+		//INSERTING TO STAFFS TABLE
 		$lastIDinserted = $db->insertQuery('staffs', $cstaffData);
 		$db->insertQuery('staffNewEmployees', array('empID_fk'=>$lastIDinserted)); //insert to staffNewEmployees for IT checklist
+		//insert uploaded files if agency hired
+		if($hire['agencyID']!=0){
+			$srcDIR = 'uploads/applicants/'.$hire['id'].'/';
+			$destDIR = 'staff/uploads/staffs/'.$_POST['username'];
+			mkdir($destDIR, 0755, true);
+			chmod($destDIR.'/', 0777);
+			
+			copy($srcDIR.$hire['endorsementLetter'], $destDIR.'/'.$hire['endorsementLetter']);
+			copy($srcDIR.$hire['signedGuidelines'], $destDIR.'/'.$hire['signedGuidelines']);
+		}
 		
 		$supEmail = $ptDb->selectSingleQuery('staff', 'email' , 'CONCAT(sFirst," ",sLast)="'.$jobReq['supervisor'].'"');
 		$reqEmail = $ptDb->selectSingleQuery('staff', 'email' , 'username="'.$jobReq['requestor'].'"');	

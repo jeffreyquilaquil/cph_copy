@@ -385,6 +385,7 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_hmoNumber') $txt = 'HMO Policy Number';
 		else if($t=='txt_terminationType') $txt = 'Termination Reason';
 		else if($t=='txt_taxstatus') $txt = 'Tax Status';			
+		else if($t=='txt_agencyID_fk') $txt = 'Agency';			
 		
 		return $txt;
 	}

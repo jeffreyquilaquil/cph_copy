@@ -183,11 +183,7 @@
 			
 			
 			echo $this->staffM->displayInfo('jdetails', 'shift', $row->shift, true, 'Ex. 07:00am - 04:00pm Mon-Fri');
-			
-			if($this->user->empID==$row->empID || $this->access->accessFullHR==true || $isUnderMe==true){
-				echo $this->staffM->displayInfo('jdetails', 'startDate', (($row->startDate!='0000-00-00')? date('F d, Y',strtotime($row->startDate)) : ''), true);
-			}
-			
+						
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);			
 			echo $this->staffM->displayInfo('jdetails', 'department', $row->department, false);
 			echo $this->staffM->displayInfo('jdetails', 'title', $row->title, true);			
@@ -206,7 +202,14 @@
 			}
 			
 			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
+			if($row->agencyID_fk!=0){
+				$agencyName = $this->dbmodel->getSingleField('agencies', 'agencyName', 'agencyID="'.$row->agencyID_fk.'"');
+				echo $this->staffM->displayInfo('jdetails', 'agencyID_fk', $agencyName, false);
+			}
 			
+			if($this->user->empID==$row->empID || $this->access->accessFullHR==true || $isUnderMe==true){
+				echo $this->staffM->displayInfo('jdetails', 'startDate', (($row->startDate!='0000-00-00')? date('F d, Y',strtotime($row->startDate)) : ''), true);
+			}			
 			if($current=='myinfo' || $this->access->accessFullHR==true || $isUnderMe==true){
 				echo $this->staffM->displayInfo('jdetails', 'regDate', (($row->regDate!='0000-00-00')? date('F d, Y',strtotime($row->regDate)) : ''), true);			
 				echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');

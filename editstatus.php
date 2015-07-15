@@ -58,11 +58,14 @@
 			$sched = date('Y-m-d H:i', strtotime($_POST['dateNtime']));
 			$timezone = $_POST['timezone'];
 			$db->updateQuery('applicants', array('interviewSched' => $interviewer.'|'.$sched.'|'.$timezone), 'id="'.$_POST['appID'].'"');
+		}else if($_GET['pos']=='agencySelect'){
+			$sel = $db->selectQuery('agencies', '*', 'agencyID="'.$_POST['id'].'"');
+			echo(json_encode($sel));
 		}
 		exit;		
 	}
 	
-	if(isset($_POST) && !empty($_POST)){		
+	if(isset($_POST) && !empty($_POST)){
 		if($_POST['formSubmit']=='reprofile'){
 			$db->updateQuery('applicants', array('position' => $_POST['newPos'], 'isNew' => 1), 'id='.$id);
 			
@@ -198,7 +201,42 @@
 			if(isset($_POST['biometricsEnrolled']) && $_POST['biometricsEnrolled']=='on') $uArr['biometricsEnrolled'] = true;
 			
 			$db->updateQuery('applicants', $uArr, 'id='.$_POST['appID']);			
+		}else if($_POST['formSubmit']=='agencyUpload'){			
+			$filname = '';			
+			$toupload = '';			
+			$tochange = '';			
+			if(!empty($_FILES['letter']['name'])){
+				$n = array_reverse(explode('.', $_FILES['letter']['name']));	
+				$filname = 'endorsementletter.'.$n[0];
+				$toupload = $_FILES['letter']['tmp_name'];
+				$tochange = 'endorsementLetter';
+			}else if(!empty($_FILES['signed']['name'])){
+				$n = array_reverse(explode('.', $_FILES['signed']['name']));	
+				$filname = 'signedguideline.'.$n[0];
+				$toupload = $_FILES['signed']['tmp_name'];
+				$tochange = 'signedGuidelines';
+			}
+			
+			if(!empty($toupload)){
+				$uploadDIR = 'uploads/applicants/'.$id.'/';
+				if (!file_exists($uploadDIR)) {
+					mkdir($uploadDIR, 0755, true);
+					chmod($uploadDIR.'/', 0777);
+				}
+				
+				move_uploaded_file($toupload, $uploadDIR.'/'.$filname);
+				$db->updateQuery('applicants', array($tochange=>$filname), 'id="'.$id.'"');
+			}
+			echo '<script> alert("Uploaded.");</script>';
+			
+		}else if($_POST['formSubmit']=='removeFile'){
+			$uploadDIR = 'uploads/applicants/'.$id.'/';
+			unlink($uploadDIR.$info[$_POST['fld']]);
+			
+			$db->updateQuery('applicants', array($_POST['fld']=>''), 'id="'.$id.'"');
+			exit;			
 		}
+		
 		
 		if(isset($_POST['formSubmit']) && $_POST['process']==4){
 			echo '<script>alert("Please input final interview schedule.");</script>';
@@ -269,6 +307,7 @@
 		return $txt;
 	}
 	
+	$showhire = 1;	
 ?>
 
 <!DOCTYPE html>
@@ -314,12 +353,15 @@
 	<?php if($info['process']<6 && $info['processStat']>0){ ?>
 		<div style="margin-bottom:10px;">
 		<?php
-			if($info['process']>0) echo '<button id="rep" class="pad5px">Reprofile</button>&nbsp;&nbsp;&nbsp;';
+			if($info['process']>0 && ($info['process']==5 && $info['agencyID']==0)) echo '<button id="rep" class="pad5px">Reprofile</button>&nbsp;&nbsp;&nbsp;';
 			if($info['processStat']==2) echo '<button id="freeze" class="pad5px">Freeze Application</button>';
 			else echo '<button id="cancelApp" class="pad5px">Cancel Application</button>';
+			if($info['process']==5 && $info['agencyID']==0) echo '&nbsp;&nbsp;&nbsp;<button id="agencyhire" class="pad5px">Hire through Agency</button>';
 		?>
 		</div>
 	<?php }else if($info['processStat']==0 && $info['processText']=='Failed Final Interview'){ echo '<button id="rep" class="pad5px">Reprofile</button>'; } ?>
+	
+		<?php //REPROFILE DIV ?>
 		<div id="reprofile" style="display:none;">
 			<form id="reprofileForm" action="" method="POST">
 			<table>
@@ -373,6 +415,7 @@
 			<hr/>
 		</div>
 		
+		<?php //CANCEL APPLICATION DIV ?>
 		<div id="cancelApplication" style="display:none">
 			<form action="" method="POST" onSubmit="return checkCancelReason()">
 				<b>Why do you want to cancel the application?</b><br/>
@@ -388,7 +431,7 @@
 				<textarea rows="8" cols=30 name="reason" id="cancelReason"></textarea></br>
 				<input type="hidden" name="formSubmit" value="cancel">
 				<input type="submit" value="Submit"/>&nbsp;&nbsp;&nbsp;	
-				<input type="button" value="Cancel" onClick="location.reload();"/>			
+				<input type="button" value="Cancel" onClick="cancelCancelApplication();"/>			
 				<hr/>
 			</form>
 		</div>
@@ -426,15 +469,19 @@
 
 		}
 		
+		//IF CANCELLED APPLICATION
 		if($info['process']<6 && $info['processStat']==0){ 
 	?>
 		<div>
 			<?php if(!empty($info['processText'])){ echo '<b>Status:</b> '.$info['processText'].'</br>';} ?>
 			<b>Application has been cancelled.</b>
 		</div>
-		<?php }else if($info['process']<=6){?>
+		<?php }else if($info['process']<=6){
+			//THIS IS THE PROCESS
+		?>
 			<div id="processDiv" style="margin-top:20px;">
 				<?php
+				//PROFILE FOR OPEN POSITION STATUS
 				if($info['process']==1){
 					$openPos = $db->selectSingleQuery('jobReqData', 'positionID' , 'positionID="'.$info['position'].'"');
 					if(empty($openPos)){
@@ -443,7 +490,7 @@
 					}else{
 						echo '<input type="hidden" id="submitForm" value="yes"/>';
 					}
-				}else if($info['process']==2 || $info['process']==3){
+				}else if($info['process']==2 || $info['process']==3){ //TECHNICAL TESTING OR HR INTERVIEWING STATUS
 					$tests = 'iq,typing,written';
 					if(!empty($info['requiredTest'])) $tests .= ','.$info['requiredTest'];
 					
@@ -480,7 +527,7 @@
 					
 					$isTestEmpty = $tests;
 					echo '<input type="hidden" id="processTests" value="'.$tests.'"/>';
-				}else if($info['process']==4){ 	
+				}else if($info['process']==4){ //FINAL INTERVIEWING STATUS
 									
 					if(!empty($info['interviewSched'])){ 
 						$intDetails = explode('|', $info['interviewSched']);
@@ -531,161 +578,232 @@
 						<?php echo techTest('final', 1, '8'); ?>
 					</table>
 				<?php 
-				}else if($info['process']==5){ 
-					$jo = $db->selectSingleQueryArray('jobReqData', 'salary, startDate' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON minSal=salID');
-					$joStat = $db->selectSingleQuery('processStatusData', 'testStatus' , 'appID="'.$id.'" AND type="jobOffer" AND positionID='.$info['position']);
-					$maxSal = $db->selectSingleQuery('jobReqData', 'salary' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON maxSal=salID');
-				
-					$gen = $db->selectQueryArray('SELECT * FROM generatedJO WHERE appID='.$id.' ORDER BY timestamp DESC');
-				?>
-					<table width="50%" cellspacing=10 cellpadding=10>					
-						<tr>
-							<td width="40%"><br/></td>
-							<td><button id="generate" class="pad5px btn btn-xs btn-primary"><?php if(count($gen)==0){ echo 'Generate Job Offer'; }else{ echo 'Regenerate Job Offer'; } ?></button></td>
-						</tr>
-					<form method="POST" action="" onSubmit="return validGen()">
-						<tr class="gen">
-							<td>Position Title</td>
-							<td><input type="text" name="position" value="<?= $position ?>" class="form-control" readonly /></td>
-						</tr>
-						<tr class="gen">
-							<td>Name Prefix</td>
-							<td><select name="prefix" class="form-control"><option value="Ms.">Ms.</option><option value="Mr.">Mr.</option></select></td>
-						</tr>
-						<tr class="gen">
-							<td>Basic Salary Offer</td>						
-							<td>
-								<input type="text" value="<?= $jo['salary'] ?>" name="salary" id="salary" class="form-control" placeholder="Ex. 10,000.00"/>
-								<input type="hidden" value="<?= $jo['salary'] ?>" id="minsalary"/>
-								<input type="hidden" value="<?= $maxSal ?>" id="maxsalary"/>
-								<textarea class="form-control" name="salReason" id="salReason" style="display:none;"></textarea>
-							</td>
-						</tr>
-						<tr class="gen">
-							<td>Start Date</td>
-							<?php
-								if(date('N')<4){
-									$sD = date('F d, Y', strtotime("next monday"));
-								}else{
-									$sD = date('F d, Y', strtotime("next monday + 1 week"));
-								}
-							?>
-							<td><input type="text" id="startDate" name="startDate" value="<?= $sD ?>" class="form-control"/></td>
-						</tr>
-					<?php if(count($gen)>0){ ?>
-						<tr class="gen">
-							<td>Reason</td>
-							<td><textarea class="form-control" name="genReason" id="genReason"></textarea></td>
-						</tr>
-					<?php } ?>
-						<tr class="gen">
-							<td><br/></td><td><input type="submit" name="formSubmit" value="<? if(count($gen)==0){ echo 'Generate'; }else{ echo 'Regenerate'; } ?>"/></td>
-						</tr>
-					<?php if(count($gen)>0){ ?>
-						<tr>
-							<td colspan=2>		
-								<h5>Generated Job Offers</h5>
-								<table width="100%" cellpadding=5>					
-									<thead>
-										<th>Generated by</th>
-										<th>Offer</th>
-										<th>Start Date</th>
-										<th>View</th>
-									</thead>
-								<?php
-									$c=0;
-									foreach($gen AS $g):
-										if($c==0) echo '<tr bgcolor="#ce2029" style="color:#fff; font-weight:bold;">';
-										else if($c%2==0) echo '<tr bgcolor="#dcdcdc">';
-										else echo '<tr>';
-										echo '
-												<td>'.$g['offeredBy'].' | <span style="font-size:10px;">'.$g['timestamp'].'</span></td>
-												<td>Php '.$g['offer'].'</td>
-												<td>'.date('F d, Y', strtotime($g['startDate'])).'</td>';
-										
-										$filename = 'uploads/joboffers/JobOffer'.$g['joID'].'.pdf';
-										if(file_exists($filename))
-											echo '<td><a href="'.HOME_URL.$filename.'" target="_blank"><img src="img/attach_file.png"></a></td>';
-										else
-											echo '<td><br/></td>';
-										
-										echo '</tr>';
-										
-										$c++;
-									endforeach;
-								?>
-								</table>							
-							</td>
-						</tr>
-					<?php } ?>						
+				}else if($info['process']==5){ //JOB OFFERING STATUS
+					if($info['agencyID']!=0){
+						$uploadDIR = 'uploads/applicants/'.$id.'/';
 						
-						<tr <?= empty($joStat) ? '': 'class="gen"'?>><td colspan=2><hr/></td></tr>	
-						<?php echo techTest('jobOffer', 1, '8', 'accepted|declined'); ?>						
-					</table>
-					</form>
-					<?php
-						$offID = $db->selectSingleQuery('generatedJO', 'joID' , 'appID='.$id.' ORDER BY timestamp DESC');
-						$isAccepted = $db->selectSingleQuery('processStatusData', 'testStatus' , 'appID="'.$id.'" AND type="jobOffer" AND positionID='.$offID);
-						
-						if($isAccepted== 'accepted'){
-							$last_payID = $ptDb->selectSingleQuery('eData', 'py' , 's="PH" ORDER BY py DESC');
-													
-						$dir = 'uploads/applicants/'.$id.'/picture/';
-						if($info['pictureTaken']==0 && is_dir($dir)){
-							$fctr = 0;
-							foreach(scandir($dir) AS $f):
-								$a = getimagesize($dir.$f);
-								$image_type = $a[2];								 
-								if(in_array($image_type , array(IMAGETYPE_GIF , IMAGETYPE_JPEG ,IMAGETYPE_PNG , IMAGETYPE_BMP))){
-									rename($dir.$f, "uploads/applicants/".$id."/".$f);
-									unlink($dir.$f);
-									$fctr++;
-								}
-							endforeach;
-							
-							
-							if($fctr!=0){
-								$db->updateQuery('applicants', array('pictureTaken' =>  '1'), 'id='.$id);
-								$info['pictureTaken'] = 1;									
-							}							
-						}
-						
-					?>					
-					<form method="POST" action="">
-						<table width="40%">
-							<tr><td colspan=2><h4>Checklist</h4></td></tr>
-							<tr><td width="10%" valign="top"><input type="checkbox" name="pHEnrolled" id="pHEnrolled" <? if($info['pHEnrolled']){ echo 'checked'; } ?>/></td><td>Enrolled in PayrollHero<br/>
-								<i><span style="font-size:10px; color:#808080;">(Cebu's last payroll ID is <b><?= $last_payID ?></b>)<br/>
-									(Use username <b><?= $potentialUsername ?></b>)<br/>
-									(Use email address <b><?= $email ?></b>)
-								</span></i>
-							</td></tr>
-							<tr><td><input type="checkbox" name="pHBDay" id="pHBDay" <? if($info['pHBDay']){ echo 'checked'; } ?>/></td><td>Updated PayrollHero Date of Birth</td></tr>
-							<tr><td><input type="checkbox" name="pHCompensation" id="pHCompensation" <? if($info['pHCompensation']){ echo 'checked'; } ?>/></td><td>Double Check PayrollHero Compensation Amount</td></tr>
-							<tr><td><input type="checkbox" name="batchID" id="batchID" <? if($info['batchID']){ echo 'checked'; } ?>/></td><td>Updated Batch ID</td></tr>
-							<tr><td valign="top"><input type="checkbox" name="pictureTaken" id="pictureTaken" <? if($info['pictureTaken']){ echo 'checked'; } ?>/></td><td>Picture Taken<br/>
-							<?php
-								if($info['pictureTaken']==0){
-									echo '<a href="uploadpicture.php?id='.$id.'">Click here to upload file</a>';
-								}
-							?>
-							</td></tr>
-							<tr><td><input type="checkbox" name="biometricsEnrolled" id="biometricsEnrolled" <? if($info['biometricsEnrolled']){ echo 'checked'; } ?>/></td><td>Biometrics Enrolled</td></tr>							
-							<tr><td><input type="checkbox" name="referral" id="referral" <? if($info['referral']){ echo 'checked'; } ?>/></td><td>Employee Referral Program (<a href="http://goo.gl/BEK3q3">http://goo.gl/BEK3q3</a>)</td></tr>
-						</table>
-						<input type="hidden" name="formSubmit" value="checklist"/>
-						<input type="hidden" name="appID" value="<?= $id ?>"/>
-						<input type="submit" value="Update Checklist" class="btn btn-xs btn-warning">
-					</form>
-					<? } ?>
+				?>		
+					<div style="width:40%; text-align:left; margin:auto;">
+						<b style="text-align:center;">This application cannot be moved to HIRED until the following documents are received and uploaded:</b><br/><br/>	
+						<form id="agencyUploadForm" action="" method="POST" enctype="multipart/form-data">
+						<?php
+							if(empty($info['endorsementLetter']) || !file_exists($uploadDIR.$info['endorsementLetter'])){
+								$showhire = 0;
+								echo '<input id="letterID" type="file" name="letter" style="display:none;"/>		
+									<input type="button" id="letterBtn" onClick="$(\'#letterID\').trigger(\'click\');" value="Upload" class="btn btn-xs btn-primary"/>&nbsp;&nbsp;';
+							}else{
+								echo '<input type="button" value="View" class="btn btn-xs btn-success" onClick="location.href=\''.$uploadDIR.$info['endorsementLetter'].'\'"/>  <a href="javascript:void(0);" onClick="removeUfile(\'endorsementLetter\', this)">Remove</a>&nbsp;&nbsp;';
+							}
+							echo '<span style="color:red;">1. Letter of Endorsement from Agency</span><br/><br/>';							
+						?>
+
+						<?php
+							if(empty($info['signedGuidelines']) || !file_exists($uploadDIR.$info['signedGuidelines'])){
+								$showhire = 0;
+								echo '<input id="signedID" type="file" name="signed" style="display:none;"/>		
+									<input type="button" id="signedBtn" onClick="$(\'#signedID\').trigger(\'click\');" value="Upload" class="btn btn-xs btn-primary"/>&nbsp;&nbsp;';
+							}else{
+								echo '<input type="button" value="View" class="btn btn-xs btn-success" onClick="location.href=\''.$uploadDIR.$info['signedGuidelines'].'\'"/>  <a href="javascript:void(0);" onClick="removeUfile(\'signedGuidelines\', this)">Remove</a>&nbsp;&nbsp;';
+							}
+							echo '<span style="color:red;">2. Signed Company Policy and Guidelines</span>';							
+						?>							
+							<input type="hidden" name="formSubmit" value="agencyUpload"/>
+						</form>	 
+					</div>
 					
+					<?php
+						if($showhire==1 ){
+							echo '<input type="hidden" id="jobOffer" value="agency"/>';
+						} 
+					?>
+					
+					<script type="text/javascript">
+						$(function(){
+							$('#letterID').change(function(){
+								$('#agencyUploadForm').submit();
+							});
+							
+							$('#signedID').change(function(){
+								$('#agencyUploadForm').submit();
+							});
+						});
+						
+						function removeUfile(f, t){
+							if(confirm('Are you sure you want to remove this file?')){
+								$(t).replaceWith('<img src="images/loading.gif"/>');
+								$.post(window.location, {formSubmit:'removeFile', fld:f},
+								function(){
+									alert('File Removed');
+									location.reload();
+								});
+							}
+						}
+					</script>
+					
+				<?php 		
+					}else{						
+						//FOR HIRE THROUGH AGENCY 
+						echo '<div id="agencyhirediv" style="width:70%; display:none;">';
+						include('hirethruagency.php');
+						echo '</div>';
+				
+						$jo = $db->selectSingleQueryArray('jobReqData', 'salary, startDate' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON minSal=salID');
+						$joStat = $db->selectSingleQuery('processStatusData', 'testStatus' , 'appID="'.$id.'" AND type="jobOffer" AND positionID='.$info['position']);
+						$maxSal = $db->selectSingleQuery('jobReqData', 'salary' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON maxSal=salID');
+					
+						$gen = $db->selectQueryArray('SELECT * FROM generatedJO WHERE appID='.$id.' ORDER BY timestamp DESC');
+					//NORMAL JOB OFFER VIEW
+					?>
+					<div id="genjobofferdiv">
+						<table width="50%" cellspacing=10 cellpadding=10>					
+							<tr>
+								<td width="40%"><br/></td>
+								<td><button id="generate" class="pad5px btn btn-xs btn-primary"><?php if(count($gen)==0){ echo 'Generate Job Offer'; }else{ echo 'Regenerate Job Offer'; } ?></button></td>
+							</tr>
+						<form method="POST" action="" onSubmit="return validGen()">
+							<tr class="gen">
+								<td>Position Title</td>
+								<td><input type="text" name="position" value="<?= $position ?>" class="form-control" readonly /></td>
+							</tr>
+							<tr class="gen">
+								<td>Name Prefix</td>
+								<td><select name="prefix" class="form-control"><option value="Ms.">Ms.</option><option value="Mr.">Mr.</option></select></td>
+							</tr>
+							<tr class="gen">
+								<td>Basic Salary Offer</td>						
+								<td>
+									<input type="text" value="<?= $jo['salary'] ?>" name="salary" id="salary" class="form-control" placeholder="Ex. 10,000.00"/>
+									<input type="hidden" value="<?= $jo['salary'] ?>" id="minsalary"/>
+									<input type="hidden" value="<?= $maxSal ?>" id="maxsalary"/>
+									<textarea class="form-control" name="salReason" id="salReason" style="display:none;"></textarea>
+								</td>
+							</tr>
+							<tr class="gen">
+								<td>Start Date</td>
+								<?php
+									if(date('N')<4){
+										$sD = date('F d, Y', strtotime("next monday"));
+									}else{
+										$sD = date('F d, Y', strtotime("next monday + 1 week"));
+									}
+								?>
+								<td><input type="text" id="startDate" name="startDate" value="<?= $sD ?>" class="form-control datepick"/></td>
+							</tr>
+						<?php if(count($gen)>0){ ?>
+							<tr class="gen">
+								<td>Reason</td>
+								<td><textarea class="form-control" name="genReason" id="genReason"></textarea></td>
+							</tr>
+						<?php } ?>
+							<tr class="gen">
+								<td><br/></td><td><input type="submit" name="formSubmit" value="<? if(count($gen)==0){ echo 'Generate'; }else{ echo 'Regenerate'; } ?>"/></td>
+							</tr>
+						<?php if(count($gen)>0){ ?>
+							<tr>
+								<td colspan=2>		
+									<h5>Generated Job Offers</h5>
+									<table width="100%" cellpadding=5>					
+										<thead>
+											<th>Generated by</th>
+											<th>Offer</th>
+											<th>Start Date</th>
+											<th>View</th>
+										</thead>
+									<?php
+										$c=0;
+										foreach($gen AS $g):
+											if($c==0) echo '<tr bgcolor="#ce2029" style="color:#fff; font-weight:bold;">';
+											else if($c%2==0) echo '<tr bgcolor="#dcdcdc">';
+											else echo '<tr>';
+											echo '
+													<td>'.$g['offeredBy'].' | <span style="font-size:10px;">'.$g['timestamp'].'</span></td>
+													<td>Php '.$g['offer'].'</td>
+													<td>'.date('F d, Y', strtotime($g['startDate'])).'</td>';
+											
+											$filename = 'uploads/joboffers/JobOffer'.$g['joID'].'.pdf';
+											if(file_exists($filename))
+												echo '<td><a href="'.HOME_URL.$filename.'" target="_blank"><img src="img/attach_file.png"></a></td>';
+											else
+												echo '<td><br/></td>';
+											
+											echo '</tr>';
+											
+											$c++;
+										endforeach;
+									?>
+									</table>							
+								</td>
+							</tr>
+						<?php } ?>						
+							
+							<tr <?= empty($joStat) ? '': 'class="gen"'?>><td colspan=2><hr/></td></tr>	
+							<?php echo techTest('jobOffer', 1, '8', 'accepted|declined'); ?>						
+						</table>
+						</form>
+						<?php
+							$offID = $db->selectSingleQuery('generatedJO', 'joID' , 'appID='.$id.' ORDER BY timestamp DESC');
+							$isAccepted = $db->selectSingleQuery('processStatusData', 'testStatus' , 'appID="'.$id.'" AND type="jobOffer" AND positionID='.$offID);
+							
+							if($isAccepted== 'accepted'){
+								$last_payID = $ptDb->selectSingleQuery('eData', 'py' , 's="PH" ORDER BY py DESC');
+														
+							$dir = 'uploads/applicants/'.$id.'/picture/';
+							if($info['pictureTaken']==0 && is_dir($dir)){
+								$fctr = 0;
+								foreach(scandir($dir) AS $f):
+									$a = getimagesize($dir.$f);
+									$image_type = $a[2];								 
+									if(in_array($image_type , array(IMAGETYPE_GIF , IMAGETYPE_JPEG ,IMAGETYPE_PNG , IMAGETYPE_BMP))){
+										rename($dir.$f, "uploads/applicants/".$id."/".$f);
+										unlink($dir.$f);
+										$fctr++;
+									}
+								endforeach;
+								
+								
+								if($fctr!=0){
+									$db->updateQuery('applicants', array('pictureTaken' =>  '1'), 'id='.$id);
+									$info['pictureTaken'] = 1;									
+								}							
+							}
+							
+						?>					
+						<form method="POST" action="">
+							<table width="40%">
+								<tr><td colspan=2><h4>Checklist</h4></td></tr>
+								<tr><td width="10%" valign="top"><input type="checkbox" name="pHEnrolled" id="pHEnrolled" <? if($info['pHEnrolled']){ echo 'checked'; } ?>/></td><td>Enrolled in PayrollHero<br/>
+									<i><span style="font-size:10px; color:#808080;">(Cebu's last payroll ID is <b><?= $last_payID ?></b>)<br/>
+										(Use username <b><?= $potentialUsername ?></b>)<br/>
+										(Use email address <b><?= $email ?></b>)
+									</span></i>
+								</td></tr>
+								<tr><td><input type="checkbox" name="pHBDay" id="pHBDay" <? if($info['pHBDay']){ echo 'checked'; } ?>/></td><td>Updated PayrollHero Date of Birth</td></tr>
+								<tr><td><input type="checkbox" name="pHCompensation" id="pHCompensation" <? if($info['pHCompensation']){ echo 'checked'; } ?>/></td><td>Double Check PayrollHero Compensation Amount</td></tr>
+								<tr><td><input type="checkbox" name="batchID" id="batchID" <? if($info['batchID']){ echo 'checked'; } ?>/></td><td>Updated Batch ID</td></tr>
+								<tr><td valign="top"><input type="checkbox" name="pictureTaken" id="pictureTaken" <? if($info['pictureTaken']){ echo 'checked'; } ?>/></td><td>Picture Taken<br/>
+								<?php
+									if($info['pictureTaken']==0){
+										echo '<a href="uploadpicture.php?id='.$id.'">Click here to upload file</a>';
+									}
+								?>
+								</td></tr>
+								<tr><td><input type="checkbox" name="biometricsEnrolled" id="biometricsEnrolled" <? if($info['biometricsEnrolled']){ echo 'checked'; } ?>/></td><td>Biometrics Enrolled</td></tr>							
+								<tr><td><input type="checkbox" name="referral" id="referral" <? if($info['referral']){ echo 'checked'; } ?>/></td><td>Employee Referral Program (<a href="http://goo.gl/BEK3q3">http://goo.gl/BEK3q3</a>)</td></tr>
+							</table>
+							<input type="hidden" name="formSubmit" value="checklist"/>
+							<input type="hidden" name="appID" value="<?= $id ?>"/>
+							<input type="submit" value="Update Checklist" class="btn btn-xs btn-warning">
+						</form>
+						<? } ?>
+					</div>	<?php //END OF genjobofferdiv ?>
+				<?php } ?>				
 				<?php
-				}else if($info['process']==6 && $info['processStat']==0){ ?>	
+				}else if($info['process']==6 && $info['processStat']==0){ //HIRED AND CLOSED STATUS ?>	
 					<div>
 						<b>Applicant is successfully hired on <?= date('F d, Y', strtotime($info['hiredDate'])) ?>. Start date is on <?= date('F d, Y', strtotime($info['startDate'])) ?>.<br/>An email has been sent to careerph.tatepublishing.net, immediate supervisor, IT, and the Job Requisition requester.</b>
 					</div>				
 				<?php
-				}else if($info['process']==6 && $info['processStat']==1){	
+				}else if($info['process']==6 && $info['processStat']==1){ //HIRED STATUS NOT YET CLOSED	
 					$jobReq = $db->selectSingleQueryArray('jobReqData', 'shift', 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate');
 					
 					$startD = $db->selectSingleQuery('generatedJO', 'startDate' , 'appID='.$id.' ORDER BY timestamp DESC');
@@ -731,14 +849,15 @@
 						</tr>
 						<tr>
 							<td>Start Date *</td>
-							<td><input type="text" name="startdate" id="startdate" class="form-control" value="<?= date('F d, Y', strtotime($startD)); ?>" disabled></td>
+							<td><input type="text" name="startdate" id="startdate" class="form-control datepick" value="<?= date('F d, Y', strtotime($startD)); ?>" disabled></td>
 						</tr>
 						<tr>
 							<td>Shift *</td>
 							<td>
 								<input type="text" name="shift" id="shift" value="<?php if(isset($_POST['shift'])){ echo $_POST['shift']; }else{ echo $jobReq['shift']; } ?>" class="form-control"/>
 							</td>
-						</tr>		
+						</tr>	
+					<?php if($info['agencyID']==0){ ?>
 						<tr>
 							<td>Type of Account *</td>
 							<td>
@@ -762,6 +881,7 @@
 								</select>
 							</td>
 						</tr>
+					<?php } ?>
 						<tr>
 							<td><b>Other Info</b></td>
 							<td><br/></td>
@@ -812,7 +932,7 @@
 						<tr>
 							<td colspan=2 align="right">
 								<input type="hidden" name="appID" value="<?= $_GET['id'] ?>"/>
-								<input type="submit" value="Create PT Account"/>
+								<input type="submit" value="Create Staff Account"/>
 							</td>
 						</tr>
 					</table>
@@ -822,7 +942,7 @@
 				?>
 			</div>
 			
-			<?php if($info['processStat']==1 && $info['process']<6 && is_admin()){ 
+			<?php if($info['processStat']==1 && $info['process']<6 && is_admin() && $showhire==1){ 
 				if(!empty($isTestEmpty)){
 					if($info['process']==2){
 						echo '<br/><input type="submit" value="Submit Later" onClick="window.location.href=\'editstatus.php?id='.$id.'&pos=back&stat=3\'" class="btn btn-xs btn-warning">';
@@ -847,12 +967,7 @@
 
 <script type="text/javascript">
 	$(function () { 
-		$('#startDate').datetimepicker({
-			format:'F d, Y',
-			timepicker:false
-		}); 
-
-		$('#startdate').datetimepicker({
+		$('.datepick').datetimepicker({
 			format:'F d, Y',
 			timepicker:false
 		}); 
@@ -866,7 +981,7 @@
 			$('#mimictr').css('display', '');
 		}
 		
-		$('#office').change(function() {
+		$('#office').change(function(){
 			$('#payroll').val('');
 			$('#cebuPay').css('display', 'none');
 			if( $('#office').val() == 'cebu' ){
@@ -920,8 +1035,14 @@
 					}
 				});
 			}
-		});	
-	
+		});
+
+		$('#agencyhire').click(function(){
+			$('#genjobofferdiv').css('display', 'none');
+			$('#advanceProcessDiv').css('display', 'none');
+			$('#agencyhirediv').css('display', '');			
+		});		
+		
 	});
 	
 	function validateAdvance(){
@@ -951,7 +1072,8 @@
 				valid = false;
 			}				
 		}else if(process==5){
-			if($('#jobOffer').val()=='' || $('#jobOffer').val()=='Declined' || $('#jobOffer').is(':disabled')==false){
+			if($('#jobOffer').val()!='agency' && 
+				($('#jobOffer').val()=='' || $('#jobOffer').val()=='Declined' || $('#jobOffer').is(':disabled')==false)){
 				alert('Unable to advance to the next status.  Please check Job Offer result.');
 				valid = false;
 			}else{
@@ -1046,9 +1168,7 @@
 			validText += '\t- Password\n';
 		if($('#email').val()=='')
 			validText += '\t- Email\n';
-		if($('#accountType').val()=='')
-			validText += '\t- Type of account\n';
-		else if($('#accountType').val()=='2' && $('#mimicUser').val()=='')
+		if($('#accountType').val()=='2' && $('#mimicUser').val()=='')
 			validText += '\t- Existing username\n';
 		if(isNew==0 && $('#position').val()==''){
 			validText += '\t- Assign to job requisition\n';
@@ -1148,7 +1268,13 @@
 			},function(){
 				window.location.href="<?= HOME_URL ?>emailTemplate.php?id=<?= $_GET['id'] ?>&type=finalInterviewerSched";
 			});
-		}
+		}		
+	}
+	
+	function cancelCancelApplication(){
+		$('#cancelApplication').hide();
+		$('#cancelMessage').val('');
+		$('#cancelReason').val('');
 		
 	}
 </script>

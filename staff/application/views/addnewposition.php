@@ -19,7 +19,7 @@ if(isset($added)){
 	<tr>
 		<td width="20%">Name of the position</td>
 		<td class="tload" width="25px"></td>
-		<td><?php $this->textM->formfield('text', 'title', ((isset($row->title))?$row->title:''), 'forminput') ?></td>
+		<td><?php echo $this->textM->formfield('text', 'title', ((isset($row->title))?$row->title:''), 'forminput') ?></td>
 	</tr>
 	<tr class="trorg">
 		<td class="tlabel">Organization</td>
@@ -48,7 +48,7 @@ if(isset($added)){
 				endforeach;
 			}
 			
-			$this->textM->formfield('select', 'dept', $dval, 'forminput', '', 'onChange="changeInput(\'dept\', \'grp\')"');
+			echo $this->textM->formfield('select', 'dept', $dval, 'forminput', '', 'onChange="changeInput(\'dept\', \'grp\')"');
 		?>		
 		</td>
 	</tr>
@@ -64,7 +64,7 @@ if(isset($added)){
 				endforeach;
 			}
 			
-			$this->textM->formfield('select', 'grp', $gval, 'forminput', '', 'onChange="changeInput(\'grp\', \'subgrp\')"');
+			echo $this->textM->formfield('select', 'grp', $gval, 'forminput', '', 'onChange="changeInput(\'grp\', \'subgrp\')"');
 		?>
 		</td>
 	</tr>
@@ -80,7 +80,7 @@ if(isset($added)){
 				endforeach;
 			}
 			
-			$this->textM->formfield('select', 'subgrp', $gval, 'forminput');
+			echo $this->textM->formfield('select', 'subgrp', $gval, 'forminput');
 		?>
 		</td>
 	</tr>
@@ -93,7 +93,7 @@ if(isset($added)){
 			foreach($orgLevel AS $lv):
 				$lval .= '<option value="'.$lv->levelID.'" '.(($page=='edit' && $row->orgLevel_fk==$lv->levelID)?'selected="selected"':'').'>'.$lv->levelName.'</option>';
 			endforeach;
-			$this->textM->formfield('select', 'orgLevel_fk', $lval, 'forminput');
+			echo $this->textM->formfield('select', 'orgLevel_fk', $lval, 'forminput');
 		?>
 		</td>
 	</tr>
@@ -164,11 +164,11 @@ if(isset($added)){
 		<td colspan=3 align="right">
 		<?php
 			if($page=='edit'){
-				$this->textM->formfield('hidden', 'submitType', 'editposition');
-				$this->textM->formfield('submit', '', 'Edit Position', 'padding5px');
+				echo $this->textM->formfield('hidden', 'submitType', 'editposition');
+				echo $this->textM->formfield('submit', '', 'Edit Position', 'padding5px');
 			}else{
-				$this->textM->formfield('hidden', 'submitType', 'addposition');
-				$this->textM->formfield('submit', '', 'Add Position', 'padding5px');
+				echo $this->textM->formfield('hidden', 'submitType', 'addposition');
+				echo $this->textM->formfield('submit', '', 'Add Position', 'padding5px');
 			}
 		?>
 		</td>

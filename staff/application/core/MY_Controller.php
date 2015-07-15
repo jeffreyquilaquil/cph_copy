@@ -68,7 +68,7 @@ class MY_Controller extends CI_Controller {
 	}
 
 	function checklogged($username, $pw){
-		return $query = $this->dbmodel->dbQuery('SELECT empID, username, password FROM staffs WHERE active = 1 AND username = "'.$username.'" AND password = "'.md5($pw).'" LIMIT 1');
+		return $query = $this->dbmodel->dbQuery('SELECT empID, username, password, active FROM staffs WHERE username = "'.$username.'" AND password = "'.md5($pw).'" LIMIT 1');
 	}
 }
 

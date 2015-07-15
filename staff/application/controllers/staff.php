@@ -91,6 +91,8 @@ class Staff extends MY_Controller {
 					$data['error'] = 'Unable to login. Check your login details.';
 				}else if($row->password != md5($pw)){
 					$data['error'] = 'Invalid password.';
+				}else if($row->active==0){
+					$data['error'] = 'Your account has been deactivated. Please contact HR.';
 				}else{
 					$this->session->set_userdata('uid', $row->empID);			
 					$this->session->set_userdata('u', md5($row->username.'dv'));
@@ -465,7 +467,7 @@ class Staff extends MY_Controller {
 										if($o=='') $o = 'none';
 									}
 									
-									$upNote .= $this->textM->constantArr('txt_'.$k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
+									$upNote .= $this->textM->constantText('txt_'.$k).' from <i>'.$o.'</i> to <u>'.$this->staffM->infoTextVal($k, $val).'</u><br/>';
 								endforeach;
 								$this->commonM->addMyNotif($empID, $upNote, 0, 1);
 							}

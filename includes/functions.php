@@ -154,7 +154,7 @@ function checkDuplicateApplicant($fname, $lname, $bdate) {
 			
 }
 
-function sendEmail( $from, $to, $subject, $body, $fromName='' ){
+function sendEmail( $from, $to, $subject, $body, $fromName='', $CC='', $BCC='' ){
 	$url = 'https://pt.tatepublishing.net/api.php?method=sendGenericEmail';
 	  /*
 	   * from = sender's email
@@ -170,13 +170,24 @@ function sendEmail( $from, $to, $subject, $body, $fromName='' ){
 	if($hosturl=='129.3.252.99'){
 		$subject = $subject.' to-'.$to;
 		$to = 'ludivina.marinas@tatepublishing.net';
+		
+		if(!empty($CC)){
+			$subject .= '==CC: -'.$CC;
+			$CC = '';
+		}
+		
+		if(!empty($BCC)){
+			$subject .= '==BCC: -'.$BCC;
+			$BCC = '';
+		}
 	}
-
 	$fields = array(
 		'from' => $from,
 		'sendTo' => $to,
 		'subject' => $subject,
 		'body' => $body,
+		'CC' => $CC,
+		'BCC' => $BCC
 	);
 
 	if( !empty($fromName) ){

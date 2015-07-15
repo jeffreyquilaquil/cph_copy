@@ -65,6 +65,8 @@ a:hover{ color:red; }
 .hidden{ display:none; }
 .tanone{ text-decoration:none; }
 .tacenter{ text-align:center; }
+.taleft{ text-align:left; }
+.taright{ text-align:right; }
 .width100{ width:100%; }
 .cpointer{ cursor:pointer; }
 .floatleft{ float:left; }
