@@ -143,6 +143,17 @@ if(isset($_POST) AND !empty($_POST)){
 			
 			copy($srcDIR.$hire['endorsementLetter'], $destDIR.'/'.$hire['endorsementLetter']);
 			copy($srcDIR.$hire['signedGuidelines'], $destDIR.'/'.$hire['signedGuidelines']);
+			
+			//INSERT TO STAFF UPLOADS TABLE
+			$uplArr['empID_fk'] = $lastIDinserted;
+			$uplArr['docName'] = 'Letter of Endorsement from Agency';
+			$uplArr['fileName'] = $hire['endorsementLetter'];
+			$uplArr['dateUploaded'] = date('Y-m-d H:i:s');
+			$db->insertQuery('staffUploads', $uplArr); //inserting endorsementLetter
+			
+			$uplArr['docName'] = 'Signed Company Policy and Guidelines';
+			$uplArr['fileName'] = $hire['signedGuidelines'];
+			$db->insertQuery('staffUploads', $uplArr); //inserting signedGuidelines
 		}
 		
 		$supEmail = $ptDb->selectSingleQuery('staff', 'email' , 'CONCAT(sFirst," ",sLast)="'.$jobReq['supervisor'].'"');
