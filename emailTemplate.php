@@ -297,7 +297,7 @@ if(isset($_POST) && !empty($_POST)){
 		$to = $info['email'];
 		$message = $_POST['message'];
 	}else if($type=='invitationtoapplyopenposition'){
-		$oQuery = $db->selectQueryArray('SELECT title FROM jobReqData LEFT JOIN newPositions ON posID=positionID WHERE status = 0 GROUP BY jobReqID ORDER BY title');
+		$oQuery = $db->selectQueryArray('SELECT title FROM jobReqData LEFT JOIN newPositions ON posID=positionID WHERE status = 0 GROUP BY positionID ORDER BY title');
 		
 		$arrValues['%OPENPOSITIONS%'] = '<ul>';
 		foreach($oQuery AS $o){

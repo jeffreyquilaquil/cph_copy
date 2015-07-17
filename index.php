@@ -57,17 +57,47 @@ if(isset($_POST['submit'])){
 		$error['text_resume'] = "Text Resume is empty.";
 	}
 	
-
-	
-	
 		
 	if(sizeof($error)==0){
 		unset($_POST['submit']);
 		$_POST['ipaddress'] = $_SERVER["REMOTE_ADDR"]."|".$_SERVER['HTTP_X_FORWARDED_FOR'];
 		$_POST['date_created'] = "NOW()";
-	
+			
 		$db->insertQuery("applicants", $_POST);
 		$update[] = "<h2>Thank You!</h2><p>You have successfully sent your Application Form to us. Please check your mobile and email inbox regularly for updates on your application.</p><p>For more info, please visit our website at <a href='https://www.tatepublishing.com'>https://www.tatepublishing.com</a></p>";
+		
+		//check if there is an open job requisition send email if none
+		$jobReq = $db->selectSingleQueryArray('jobReqData', 'reqID, supervisor, requestor' , 'positionID="'.$_POST['position'].'" AND status=0 AND appID=0', 'LEFT JOIN newPositions ON positionID = posID'); 
+	
+		if(empty($jobReq['reqID'])){
+			$posName = $db->selectSingleQuery('newPositions', 'title', 'posID="'.$_POST['position'].'"');
+			$queryOpen = $db->selectQueryArray('SELECT title FROM jobReqData LEFT JOIN newPositions ON posID=positionID WHERE status = 0 GROUP BY positionID ORDER BY title');
+			
+			$openPositions = '<ul>';
+			foreach($queryOpen AS $o){
+				$openPositions .= '<li>'.$o['title'].'</li>';
+			}
+			$openPositions .= '</ul>';
+			
+			$to = $_POST['email'];
+			$subject = 'Thank you for submitting your application to Tate Publishing';
+			$bod = '<p>Hello '.$_POST['fname'].',</p>
+
+					<p>This is to confirm that we have received your application for the position of '.$posName.'.<br/>
+					Please be informed that the said position is currently not open.<br/>
+					Your application will be processed as soon as the position opens.</p>
+
+					In the mean time, you may be interested to apply for the below positions that are currently open in Tate Publishing:<br/>
+					'.$openPositions.'
+					
+					<p>If you are interested to know more about any of the above positions or if you would like to apply for any of the above positions, please reply to this email and we will be glad to process your application. Thank you very much.</p>
+					
+					<p><br/></p>
+					<p>Tate Publishing HR</p>';		
+
+			sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $bod, 'Tate Publishing HR' );			
+		}
+		
 		unset($_POST);
 		unset($_SESSION['uploads']);
 	}
