@@ -203,7 +203,9 @@ if(count($row)==0){
 	<?php	
 		$allAE = explode('--^_^--',$row->coachedAspectExpected);
 		$eRating = explode('|', $row->selfRating);
+		$eRatingNote = explode('+++', $row->selfRatingNotes);
 		$sRating = explode('|', $row->supervisorsRating);
+		$sRatingNote = explode('+++', $row->supervisorsRatingNotes);
 		for($s=0; $s<4; $s++){
 			if(isset($allAE[$s])){
 				$deta = explode('++||++',$allAE[$s]);
@@ -211,8 +213,8 @@ if(count($row)==0){
 				echo '<tr>';
 				echo '<td>'.$deta[0].'</td>';
 				echo '<td>'.$deta[1].'</td>';
-				echo '<td><input type="text" name="empRating[]" value="'.((isset($eRating[$s]))?$eRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->empID_fk && $row->selfRating=='')?'':'disabled="disabled"').'/></td>';
-				echo '<td><input type="text" name="supRating[]" value="'.((isset($sRating[$s]))?$sRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->supervisor && $row->supervisorsRating=='')?'':'disabled="disabled"').'/></td>';
+				echo '<td valign="top"><input type="text" name="empRating[]" value="'.((isset($eRating[$s]))?$eRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->empID_fk && $row->selfRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($eRatingNote[$s]))?'<i class="fs11px">NOTE: '.$eRatingNote[$s].'</i>':'').'</td>';
+				echo '<td valign="top"><input type="text" name="supRating[]" value="'.((isset($sRating[$s]))?$sRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->supervisor && $row->supervisorsRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($sRatingNote[$s]))?'<i class="fs11px">NOTE: '.$sRatingNote[$s].'</i>':'').'</td>';
 				echo '</tr>';
 			}
 		}
