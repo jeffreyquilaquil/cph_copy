@@ -58,7 +58,7 @@ a:hover{ color:red; }
 
 .padding5px{ padding:5px; }
 .errortext{ color:red; }
-.colorgray{ color:#bbb; }
+.colorgray{ color:#888; }
 .btnclass { padding:5px 10px; }
 .weightnormal{ font-weight:normal; }
 .weightbold{ font-weight:bold; }
@@ -73,6 +73,8 @@ a:hover{ color:red; }
 .floatright{ float:right; }
 .fs11px { font-size:11px; }
 .bggray { background-color:#bbb; }
+.leaveMatNote{ border:1px solid #ccc; padding:10px; font-size:11px; }
+.leaveMatNote hr{ border:1px solid #ddd; }
 
 
 #container{
@@ -472,7 +474,13 @@ ul.tabs2 li.current{
 .calendartbl .dayEdit:hover div{ background-color:#ffb2b2; }
 .calendartbl  .daycontent{ min-height:80px; position:relative; text-align:center; padding-top:5px; }
 .calendartbl  .daycontent .daynumoption{ padding-top:10px; }
-.calendartbl  .daysched{ text-align:center; background-color:green; padding:3px; border-radius:3px; color:#fff; font-size:10px; font-weight:bold; }
+.calendartbl  .daysbox{ text-align:center; padding:3px; border-radius:3px; color:#fff; font-size:10px; font-weight:bold; margin-bottom:3px; }
+.calendartbl  .dayholiday{ background-color:red; }
+.calendartbl  .daysuspend{ background-color:#002d4a; }
+.calendartbl  .daysched{ background-color:green; }
+.calendartbl  .daycustomsched{ background-color:#00bb29; }
+.calendartbl  .dayonleave{ background-color:#ff8484; }
+.calendartbl  .daypendingleave{ background-color:#b2ffb2; }
 
 
 .attendancetbl{ width:100%; border:1px solid #000; border-collapse:collapse; }

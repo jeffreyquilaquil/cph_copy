@@ -1,15 +1,113 @@
 <?php
 	$disabled = '';
 	$lc = $row->totalHours/8;
+	$resumework = date('Y/m/d', strtotime('+3 days'));
+	
 ?>
 <h2>Leave Details of <?= $row->name ?></h2>
 <hr/>
 <?php if($this->uri->segment(3)!='' && $this->uri->segment(3)=='updated' ){ 
-	echo '<p class="errortext tacenter weightbold">Leave details has been updated.</p>
-		<hr/>
-		<script>parent.location.reload();</script>'; 
+	echo '<p class="errortext tacenter weightbold">Leave details has been updated.</p>';
+	if($this->uri->segment(4)=='maternityresume')
+		echo '<p><b>Note:</b> Your cancellation request is now routed to HR to validate the Fit to Work Certificate uploaded. HR has 24 hours to validate your fit to work certificate. If determined valid, the request shall be forwarded to your immediate supervisor for approval. Your immediate supervisor has 24 hours to approve the request. If approved less than 24 hours from the intended date of return, the PayrollHero schedule for the said date may no longer be updated and the approved return date shall automatically change to the succeeding working day.</p>';
+	echo '<hr/>';
 }else{ ?>
 <table class="tableInfo">
+<?php if($row->matStatus>=1){ ?>
+		<tr class="trhead">
+			<td colspan=2><center>REQUEST TO SHORTEN MATERNITY LEAVE DETAILS</center></td>
+		</tr>
+		<tr>
+			<td>Request Status</td>
+			<td><b><?= $statusMaternityArr[$row->matStatus] ?></b>
+		<?php
+			if($this->user->empID==$row->empID_fk && ($row->matStatus==3 || $row->matStatus==5)){
+				echo '<button id="btnShortenLeave" class="btnclass">Request to Shorten Maternity Leave</button>';
+			}
+		?>
+			</td>
+		</tr>
+		<tr>
+			<td>Date Requested</td>
+			<td><?= date('F d, Y', strtotime($row->matDateRequested)) ?></td>
+		</tr>
+		<tr>
+			<td>Intended Date to Resume</td>
+			<td><?
+				$dateResumeMinus1 = strtotime(date('Y-m-d', strtotime($row->matDateResume.' -1 day')));
+				$dateToday = strtotime(date('Y-m-d'));
+				
+				$dateResume = date('F d, Y', strtotime($row->matDateResume));
+				
+				if($dateToday>=$dateResumeMinus1){
+					$dateResume = date('F d, Y', strtotime('+2 days'));
+					echo '<strike>'.date('F d, Y', strtotime($row->matDateResume)).'</strike> <span class="errortext">('.$dateResume.')</span>';
+				}else{
+					echo $dateResume;
+				}
+				
+			?></td>
+		</tr>
+		<tr>
+			<td>Fit to Work Certification from OB Gyn</td>
+			<td><a href="<?= $this->config->base_url().'uploads/leaves/'.$row->matFile ?>">View file</a></td>
+		</tr>
+<?php
+	if((($row->matStatus==1 || $row->matStatus==4) && $this->access->accessFullHR===true) || ($row->matStatus==2 && $this->user->empID==$row->approverID) ){
+?>
+	<tr><td colspan=2><br/></td></tr>
+	<tr class="trhead"><td colspan=2><center>APPROVALS</center></td></tr>
+	
+	<form action="" method="POST">
+	<?php if($row->matStatus==4 && $this->access->accessFullHR===true){ ?>
+		<tr>
+			<td><br/></td>
+			<td class="errortext"><input type="checkbox" name="submitType" value="schedUpdated"/> PayrollHero schedule updated</td>
+		</tr>
+	<?php }else{ ?>
+		<tr>
+			<td>
+		<?php
+			if($row->matStatus==1 && $this->access->accessFullHR===true){
+				echo 'Validate Fit To Work Certificate Uploaded';
+				echo '<input type="hidden" name="stype" value="HRApproval"/>';
+			}else if($row->matStatus==2 && $this->user->empID==$row->approverID){
+				echo 'Approve Request to Shorten Maternity Leave?';
+				echo '<input type="hidden" name="stype" value="ISApproval"/>'; 
+			}
+			
+		?></td>
+			<td>
+				<input type="hidden" name="submitType" value="submitShortenLeave"/>
+				<input type="hidden" name="dateResume" value="<?= date('Y-m-d', strtotime($dateResume)) ?>"/>
+				<input type="radio" name="approveCert" value=1 required onClick="requireNote(0)"> Approve 
+				<input type="radio" name="approveCert" value=0 required onClick="requireNote(1)"> Disapprove 
+			</td>
+		</tr>
+		<tr>
+			<td>Note</td>
+			<td><textarea class="forminput" name="approveNote"></textarea></td>
+		</tr>
+	<?php } ?>
+		<tr>
+			<td><br/></td>
+			<td><input type="submit" class="btnclass" value="Submit"/></td>
+		</tr>
+	</form>
+<?php
+}
+	
+	if(!empty($row->matHistory)){ ?>
+		<tr><td colspan=2><br/></td></tr>
+		<tr class="trhead"><td colspan=2><center>REQUEST APPROVAL HISTORY</center></td></tr>
+		<tr><td colspan=2><?= nl2br($row->matHistory) ?></td></tr>
+<?php
+	}
+?>
+		<tr><td colspan=2><br/></td></tr>
+		<tr class="trhead"><td colspan=2><center>LEAVE DETAILS</center></td></tr>
+<?php } ?>
+
 	<tr>
 		<td>Status</td>
 		<td><b><?= $this->textM->getLeaveStatusText($row->status, $row->iscancelled) ?></b>&nbsp;&nbsp;
@@ -32,7 +130,11 @@
 				($row->leaveType==4 && $ccc==true)) &&
 				$row->status!=3
 			){
-				echo '<button id="canceThisRequest">Cancel</button>';
+				echo '<button id="canceThisRequest" class="btnclass">Cancel</button>';
+			}
+			
+			if($row->leaveType==6 && $row->matStatus==0 && (strtotime($row->leaveEnd)>strtotime(date('Y-m-d H:i:s')))){
+				echo '<button id="btnShortenLeave" class="btnclass">Request to Shorten Maternity Leave</button>';
 			}
 
 			if($row->status==3 && $row->approverID==0){
@@ -262,7 +364,7 @@
 				if($row->empStatus=='regular' && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5) || $leaveReset==true))
 					echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved '.(($row->leaveType!=4)?'With Pay':'').'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 				if($row->leaveType!=4 && $row->leaveType!=5)
-					echo '<input type="radio" name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved Without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+					echo '<input type="radio" '.(($row->leaveType==6)?'checked':'').' name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved Without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 				
 				echo '<input type="radio" name="approve" value="3" '.$disabled.' '.(($row->status=='3')?'checked':"").'> Disapproved';
 					
@@ -327,7 +429,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			</select>
 		</td>
 	</tr>
-<?php if($row->leaveType!=4 && $row->leaveType!=5){ ?>
+<?php if($row->leaveType!=4 && $row->leaveType!=5 && $row->leaveType!=6){ ?>
 	<tr class="hidedisapprove">
 		<td>Number of Leave Credits to Deduct<br/>
 		<?php 
@@ -419,7 +521,6 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<tr><td colspan=2>'.$row->addInfo.'</td></tr>';
 	}
 ?>	
-
 <tr class="trhead trcdetails <?= (($row->canceldata=='')?'hidden':'') ?>">
 	<td colspan=2><center id="canceldetails">CANCEL DETAILS</center></td>
 </tr>
@@ -472,9 +573,45 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		</tr>
 		</form>
 	';
-
-echo '</table>';
-} ?>
+	
+	if($row->leaveType==6){
+		$checkdatenum = date('N');
+		if($checkdatenum<=2 || $checkdatenum==7) $resumework = date('Y/m/d', strtotime('+3 days'));
+		else if($checkdatenum==6) $resumework = date('Y/m/d', strtotime('+4 days'));
+		else $resumework = date('Y/m/d', strtotime('+5 days'));		
+?>
+	
+	<tr class="trhead trshortenleave hidden">
+		<td colspan=2><center>SHORTEN MATERNITY LEAVE</center></td>
+	</tr>
+	<form class="trshortenleave hidden" action="" method="POST" enctype="multipart/form-data">
+		<tr class="trshortenleave hidden">
+			<td>Upload Fit to Work Certification From Your OB Gyn<br/>
+				<i class="colorgray">You will not be allowed to resume working without this document</i>
+			</td>
+			<td><input type="file" name="filecert" required/></td>
+		</tr>
+		<tr class="trshortenleave hidden">
+			<td>When do you intend to resume working?<br/>
+				<i class="colorgray">The soonest day you can resume work is on: <?= date('F d, Y', strtotime($resumework)) ?>. Your selected date of return shall be honored only if the immediate supervisor approves of it more than 24 hours from the intended date of return. Otherwise, if approved less than 24 hours from the intended date of return, the PayrollHero schedule for the said date may no longer be updated and the approved return date shall automatically change to the succeeding working day.</i>
+			</td>
+			<td><input type="text" class="datepickM forminput" name="dateResume" value="<?= date('F d, Y', strtotime($resumework)) ?>" required/></td>
+		</tr>
+		<tr class="trshortenleave hidden">
+			<td><br/></td>
+			<td>
+				<input type="hidden" name="submitType" value="maternityresume"/>
+				<input type="submit" value="Submit" class="btnclass"/>
+			</td>
+		</tr>
+	</form>
+<?php
+	}
+?>	
+	
+</table>
+<?php } 
+?>
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 	$(function(){
@@ -492,6 +629,11 @@ echo '</table>';
 			],
 			toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code"
 		});
+		
+		$('.datepickM').datetimepicker({ 
+			format:'F d, Y',
+			minDate:'<?= $resumework ?>'
+		});	
 		
 		$('#fileToUpload').change(function(){
 			$('#formUpload').submit();
@@ -575,6 +717,11 @@ echo '</table>';
 			}else{
 				alert('Remarks is empty.');
 			}
+		});
+		
+		$('#btnShortenLeave').click(function(){
+			$('.trshortenleave').removeClass('hidden');
+			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
 		});
 		
 	});
@@ -686,6 +833,14 @@ echo '</table>';
 			$.post('<?= $this->config->item('career_uri') ?>',{submitType:'removeDoc', fname:f}, function(f){				
 				$(d).parent('div').hide();
 			});
+		}
+	}
+	
+	function requireNote(v){
+		if(v==1){
+			$('textarea[name="approveNote"]').attr('required', 'required');
+		}else{
+			$('textarea[name="approveNote"]').removeAttr('required');
 		}
 	}
 	

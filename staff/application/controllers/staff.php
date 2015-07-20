@@ -1626,6 +1626,7 @@ class Staff extends MY_Controller {
 			}else{
 				$data['leaveTypeArr'] = $this->textM->constantArr('leaveType');
 				$data['leaveStatusArr'] = $this->textM->constantArr('leaveStatus');
+				$data['statusMaternityArr'] = $this->textM->constantArr('statusMaternityLeave');
 				if($segment2 != ''){
 					$data['content'] = 'staffleavesedit';				
 									
@@ -1777,17 +1778,87 @@ class Staff extends MY_Controller {
 						}else if($_POST['submitType']=='hrAdditionalRemarks'){
 							$this->dbmodel->updateConcat('staffLeaves', 'leaveID="'.$segment2.'"', 'hrAddRemarks', $this->user->username.' '.date('Y-m-d h:i a').'>>'.$_POST['remarks'].'||');
 							exit;
+						}else if($_POST['submitType']=='maternityresume'){
+							$updateArr['matStatus'] = 1;
+							$updateArr['matDateRequested'] = date('Y-m-d H:i:s');
+							$updateArr['matDateResume'] = date('Y-m-d', strtotime($_POST['dateResume']));
+							$updateArr['matFile'] = $data['row']->leaveID.'_maternity_'.date('YmdHis').'.'.$this->textM->getFileExtn($_FILES['filecert']['name']);
+							
+							$mNote = '<b>REQUESTED TO SHORTEN MATERNITY LEAVE</b><hr/> Date Requested: '.date('F d, Y').'<br/>File: <a href="'.$this->config->base_url().UPLOADS.'/leaves/'.$updateArr['matFile'].'">Fit to Work Certificate</a>';
+							$updateArr['matHistory'] = $data['row']->matHistory.'<div class="leaveMatNote">'.$mNote.'</div>';
+							
+							move_uploaded_file($_FILES['filecert']['tmp_name'], UPLOADS.'/leaves/'.$updateArr['matFile']);
+							$actby = 'Requested to shorten maternity leave.';
+						}else if($_POST['submitType']=='submitShortenLeave'){								
+							$mNote = '';
+							if($_POST['stype']=='HRApproval') $mNote .= '<b>HR APPROVAL</b><hr/>';
+							else $mNote .= '<b>IMMEDIATE SUPERVISOR APPROVAL</b><hr/>';							
+							$mNote .= '<b>'.strtoupper($this->user->name).'</b> - <i>'.date('Y-m-d H:i:s').'</i><br/>';
+							
+							if($_POST['stype']=='HRApproval'){
+								if($_POST['approveCert']==1){
+									$updateArr['matStatus'] = 2; //HR approved and for supervisor approval
+									$mNote .= '<u>Approved Fit To Work Certificate</u><br/>';
+									$usernote = 'Validated your fit to work certificate. This is waiting for your immediate supervisor\'s approval.';
+									$approvernote = 'Validated fit to work certificate of '.$data['row']->name.'. Please approve shorten leave request.';
+								}else{
+									$updateArr['matStatus'] = 3; //HR disapproved
+									$mNote .= '<u>Disapproved Fit To Work Certificate</u><br/>';
+									$usernote = 'Disapproved your shorten leave request.<br/>Note from HR: '.$_POST['approveNote'];
+									
+									//send email
+									$sBody = 'Hi,<br/><br/>Your shorten maternity leave request has been disapproved by HR for reason:<br/><i>"'.nl2br($_POST['approveNote']).'"</i><br/><br/>Your payrollHero have not been changed. Note that you can request again by providing valid fit to work certificate.<br/><br/><br/>CareerPH';
+									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Shorten Leave Request', $sBody, 'CareerPH Auto-Email');
+								}
+								
+								$actby = 'Validated fit to work certificate uploaded by '.$data['row']->name;
+							}else if($_POST['stype']=='ISApproval'){
+								if($_POST['approveCert']==1){
+									$updateArr['matStatus'] = 4; //IS Approved for HR for final status
+									$mNote .= '<u>Approved request to shorten maternity leave</u><br/>';
+									$hrnote = 'Approved request to shorten maternity leave of '.$data['row']->name.'. Please update payrollHero schedule.';
+									$usernote = 'Approved your shorten leave request.';
+								}else{
+									$updateArr['matStatus'] = 5; //IS disapproved request
+									$mNote .= '<u>Disapproved request to shorten maternity leave</u><br/>';	
+									$usernote = 'Disapproved your shorten leave request.<br/>Note from your immediate supervisor: '.$_POST['approveNote'];									
+									
+									//send email
+									$sBody2 = 'Hi,<br/><br/>Your shorten maternity leave request has been disapproved by your immediate supervisor for reason:<br/><i>"'.nl2br($_POST['approveNote']).'"</i><br/><br/>Your payrollHero have not been changed. Note that you can request again.<br/><br/><br/>CareerPH';
+									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Shorten Leave Request', $sBody2, 'CareerPH Auto-Email');
+								}
+								
+								$actby = 'Updated shorten maternity leave request of '.$data['row']->name.'.';
+							}
+							
+							if($_POST['dateResume']!=$data['row']->matDateResume){
+								$updateArr['matDateResume'] = $_POST['dateResume'];
+								$mNote .= 'Changed intended date to resume from '.$data['row']->matDateResume.' to <b>'.$_POST['dateResume'].'</b><br/>';
+							}
+							
+							if(!empty($_POST['approveNote'])){
+								$mNote .= '<i>NOTE:</i><br/>'.$_POST['approveNote'];
+							}
+							
+							$updateArr['matHistory'] = $data['row']->matHistory.'<div class="leaveMatNote">'.$mNote.'</div>';
+						}else if($_POST['submitType']=='schedUpdated'){
+							$mNote = '<b>PAYROLLHERO UPDATED</b><hr/><b>'.strtoupper($this->user->name).'</b> - <i>'.date('Y-m-d H:i:s').'</i>';
+							$updateArr['matHistory'] = $data['row']->matHistory.'<div class="leaveMatNote">'.$mNote.'</div>';
+							$updateArr['matStatus'] = 6;
+							$actby = 'Updated payrollHero schedule of '.$data['row']->name.'.';
+							
+							//send email to employee
+							//send email
+							$sBody3 = 'Hi,<br/><br/>Your shorten maternity leave request has been approved and your payrollHero schedule has been updated. You can now return to work on <b>'.date('l, F d, Y', strtotime($data['row']->matDateResume)).'</b> the approved returned date.<br/><br/>See you!<br/><br/><br/>CareerPH';
+							$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Shorten Leave Request', $sBody3, 'CareerPH Auto-Email');
 						}					
 						
 						$addnote = ' Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to view leave details.';
-							
-						if(!empty($usernote))
-							$this->commonM->addMyNotif($data['row']->empID_fk, $usernote.$addnote, 0, 1);
-							
-						if(isset($approvernote) && !empty($approvernote)){
-							$this->commonM->addMyNotif($data['row']->approverID, $approvernote.$addnote, 0, 1);
-						}
-						
+												
+						//ADDING NOTES
+						if(!empty($usernote)) $this->commonM->addMyNotif($data['row']->empID_fk, $usernote.$addnote, 0, 1);							
+						if(isset($approvernote) && !empty($approvernote)) $this->commonM->addMyNotif($data['row']->approverID, $approvernote.$addnote, 0, 1);	
+						if(isset($actby) && !empty($actby)) $this->commonM->addMyNotif($this->user->empID, $actby.$addnote, 5, 0);
 						if(isset($hrnote) && !empty($hrnote)){
 							$hrStaffs = $this->staffM->getHRStaffID();
 							$cntCanada = count($hrStaffs);
@@ -1797,17 +1868,17 @@ class Staff extends MY_Controller {
 							}
 						}
 						
-						if(isset($actby) && !empty($actby)){
-							$this->commonM->addMyNotif($this->user->empID, $actby.$addnote, 5, 0);
-						}
-						
 						if(isset($canceldata) && !empty($canceldata)){
 							$this->dbmodel->dbQuery('UPDATE staffLeaves SET canceldata=CONCAT(canceldata,"'.$canceldata.'") WHERE leaveID="'.$data['row']->leaveID.'"');
 						}
 												
 						if(count($updateArr)>0){
 							$this->dbmodel->updateQuery('staffLeaves', array('leaveID'=>$data['row']->leaveID), $updateArr);
-							header('Location:'.$_SERVER['REQUEST_URI'].'updated/');
+							
+							if(isset($_POST['submitType']) && $_POST['submitType']=='maternityresume')							
+								header('Location:'.$_SERVER['REQUEST_URI'].'updated/maternityresume/');
+							else
+								header('Location:'.$_SERVER['REQUEST_URI'].'updated/');
 						}else{
 							header('Location:'.$_SERVER['REQUEST_URI']);
 						}
@@ -1842,9 +1913,9 @@ class Staff extends MY_Controller {
 					}
 					$dateToday = date('Y-m-d');
 					$data['tquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status!=3 AND iscancelled=0 AND ((leaveStart <= "'.$dateToday.'" AND leaveEnd >= "'.$dateToday.'") OR (leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%"))'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
-					$data['imquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status=0 AND iscancelled=0'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
+					$data['imquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR matStatus=2)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['imcancelledquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'iscancelled=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
-					$data['hrquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
+					$data['hrquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4 OR matStatus=1 OR matStatus=4)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					
 					//for all leaves
 					$data['allpending'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR iscancelled>1)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');

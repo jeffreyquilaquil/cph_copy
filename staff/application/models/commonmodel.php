@@ -182,7 +182,7 @@ class Commonmodel extends CI_Model {
 			}
 			
 			if($this->access->accessHR==true){
-				$cnt += $this->dbmodel->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4)');
+				$cnt += $this->dbmodel->getSingleField('staffLeaves', 'COUNT(leaveID) AS cnt', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4 OR matStatus=1 OR matStatus=4)');
 			}
 		}else if($type=='nte'){	
 			//if HR

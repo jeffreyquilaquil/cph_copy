@@ -259,6 +259,11 @@ class Textmodel extends CI_Model {
 		return $status;
 	}
 	
+	function getLeaveMaternityStatusText($status){
+		$statusArr = $this->textM->constantArr('statusMaternityLeave');
+		return $statusArr[$status];
+	}
+	
 	function leaveTableDisplay($rQuery, $type, $datatable=false){
 		$leaveTypeArr = $this->textM->constantArr('leaveType');
 		$yellowArr = array('imquery', 'imcancelledquery', 'allpending');
@@ -293,9 +298,12 @@ class Textmodel extends CI_Model {
 					<td>'.date('d M y h:i a', strtotime($row->leaveEnd)).'</td>
 					<td>'.$row->dept.'</td>
 					<td>'.$row->approverName.'</td>
-					<td>'.$row->hrName.'</td>
-					<td>'.$this->textM->getLeaveStatusText($row->status, $row->iscancelled).'</td>
-					<td><a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$row->leaveID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+					<td>'.$row->hrName.'</td>';
+			
+			if($row->matStatus>0) $disp .= '<td>'.$this->textM->getLeaveMaternityStatusText($row->matStatus).'</td>';
+			else $disp .= '<td>'.$this->textM->getLeaveStatusText($row->status, $row->iscancelled).'</td>';
+			
+			$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$row->leaveID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
 				</tr>
 			';
 		}
@@ -323,12 +331,6 @@ class Textmodel extends CI_Model {
 		return $valentine;
 	}
 	
-	function getTodayBetweenSchedCondition($start, $end){
-		return '( (("'.$start.'" OR "'.$end.'" BETWEEN effectivestart AND effectiveend) AND effectiveend!="0000-00-00")
-				 OR (effectiveend="0000-00-00" AND effectivestart<="'.$start.'")
-				 OR(effectiveend="0000-00-00" AND effectivestart >= "'.$start.'" AND effectivestart <= "'.$end.'")		
-				 )';
-	}
 	
 	function constantText($t){
 		$txt = '';
@@ -596,9 +598,16 @@ class Textmodel extends CI_Model {
 			$arr = array('sunday'=>'sun', 'monday'=>'mon', 'tuesday'=>'tue', 'wednesday'=>'wed', 'thursday'=>'thu', 'friday'=>'fri', 'saturday'=>'sat');
 		}else if($a=='monthArray'){
 			$arr = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
+		}else if($a=='statusMaternityLeave'){
+			$arr = array(0=>'', 1=>'Requested to Shorten Leave', 2=>'HR Approved - Pending Supervisor\'s Approval', 3=>'HR Disapproved', 4=>'SHORTENED', 5=>'Disapproved by Supervisor',6=>'SHORTENED - PayrollHero Updated');
 		}
 		
 		return $arr;
+	}
+	
+	//$filename is $_FILES['uploadfilename']['name']
+	public function getFileExtn($filename){
+		return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 	}
 		
 }
