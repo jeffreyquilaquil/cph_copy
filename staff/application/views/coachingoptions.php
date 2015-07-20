@@ -213,8 +213,8 @@ if(count($row)==0){
 				echo '<tr>';
 				echo '<td>'.$deta[0].'</td>';
 				echo '<td>'.$deta[1].'</td>';
-				echo '<td valign="top"><input type="text" name="empRating[]" value="'.((isset($eRating[$s]))?$eRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->empID_fk && $row->selfRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($eRatingNote[$s]))?'<i class="fs11px">NOTE: '.nl2br($eRatingNote[$s]).'</i>':'').'</td>';
-				echo '<td valign="top"><input type="text" name="supRating[]" value="'.((isset($sRating[$s]))?$sRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->supervisor && $row->supervisorsRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($sRatingNote[$s]))?'<i class="fs11px">NOTE: '.nl2br($sRatingNote[$s]).'</i>':'').'</td>';
+				echo '<td valign="top"><input type="text" name="empRating[]" value="'.((isset($eRating[$s]))?$eRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->empID_fk && $row->selfRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($eRatingNote[$s]) && !empty($eRatingNote[$s]))?'<i class="fs11px">NOTE: '.nl2br($eRatingNote[$s]).'</i>':'').'</td>';
+				echo '<td valign="top"><input type="text" name="supRating[]" value="'.((isset($sRating[$s]))?$sRating[$s]:'').'" class="padding5px tacenter" '.(($this->user->empID==$row->supervisor && $row->supervisorsRating=='')?'':'disabled="disabled"').'/><br/>'.((isset($sRatingNote[$s]) && !empty($sRatingNote[$s])?'<i class="fs11px">NOTE: '.nl2br($sRatingNote[$s]).'</i>':'').'</td>';
 				echo '</tr>';
 			}
 		}
