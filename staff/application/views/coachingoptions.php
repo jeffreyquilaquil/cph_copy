@@ -156,7 +156,8 @@ if(count($row)==0){
 	
 	///// for EVALUATION
 
-	if($type=='evaluate' || $row->status==1){ ?>
+	//if($row->status!=0 && $row->status!=4){ 
+	if(!empty($row->selfRating) || !empty($row->supervisorsRating)){ ?>
 	<table class="tableInfo">
 		<tr><td colspan=4 class="trhead">COACHING DETAILS - Evaluation</td></tr>
 	<?php
