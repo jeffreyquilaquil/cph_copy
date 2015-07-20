@@ -836,6 +836,13 @@ class Staffmodel extends CI_Model {
 				
 				$pdf->setXY(203, 110);
 				$pdf->Write(0, $this->staffM->coachingScore($fscore));
+								
+				if(!empty($row->supervisorsRatingNotes)){
+					$pdf->SetFont('Arial','',8);
+					$pdf->setXY(202, 113);
+					$pdf->MultiCell(58, 4, $row->supervisorsRatingNotes,0,'L',false);	
+				}
+				
 				
 				/* //recommendation
 				$recArr = $this->config->item('coachingrecommendations');
