@@ -247,7 +247,7 @@ if(count($row)==0){
 			echo '</tr>';
 			echo '<tr class="weightbold">';
 			echo '<td colspan=2 align=right>TOTAL WEIGHED SCORE</td>';
-			echo '<td class="tacenter" colspan=2>'.$row->finalRating.'</td>';
+			echo '<td class="tacenter" colspan=2>'.((!empty($row->finalRating))?$row->finalRating:'<i class="errortext">Pending</i>').'</td>';
 			echo '</tr>';
 		}
 		
