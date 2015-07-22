@@ -18,12 +18,12 @@ class Textmodel extends CI_Model {
 	function formfield($type, $name='', $val='', $class='', $placeholder='', $additional=''){
 		$t = '';
 		
-		if($type=='text' || $type=='hidden' || $type=='submit'){
-			$t = '<input type="'.$type.'" name="'.$name.'" class="'.$class.'" value="'.$val.'" placeholder="'.$placeholder.'" '.$additional.'/>';
-		}else if($type=='select'){
+		if($type=='select'){
 			$t = '<select name="'.$name.'" class="'.$class.'" '.$additional.'>'.$val.'</select>';
 		}else if($type=='textarea'){
 			$t = '<textarea name="'.$name.'" class="'.$class.'" '.$additional.' placeholder="'.$placeholder.'">'.$val.'</textarea>';
+		}else{
+			$t = '<input type="'.$type.'" name="'.$name.'" class="'.$class.'" value="'.$val.'" placeholder="'.$placeholder.'" '.$additional.'/>';
 		}		
 		
 		return $t;

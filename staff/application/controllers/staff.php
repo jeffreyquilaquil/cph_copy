@@ -2948,7 +2948,117 @@ class Staff extends MY_Controller {
 			$data['staffs'] = $this->commonM->getAllStaffs();
 		}
 		
-		$this->load->view('includes/templatecolorbox', $data);	
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function probationmanagement(){
+		$data['content'] = 'probationmanagement';
+		
+		if($this->access->accessFullHR==false) $data['access'] = false;
+		else{
+			$data['queryProbationary'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="probationary" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
+			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
+		}
+				
+		$this->load->view('includes/template', $data);
+	}
+	
+	public function probperstatus(){
+		$data['content'] = 'probperstatus';
+		$id = $this->uri->segment(2);
+		if(is_numeric($id) && $this->access->accessFullHR===true){
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
+			$data['queryPerStatus'] = $this->dbmodel->getQueryResults('staffPerRequirements', '*');
+			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', '*', 'empID_fk="'.$id.'"');
+			
+			$data['arrHistory'] = array();
+			foreach($data['queryHistory'] AS $hq){
+				if($hq->perType==0){
+					$data['arrHistory']['remark'][$hq->perID_fk][] = $hq->perValue;
+				}else{
+					$gunting = explode('+++', $hq->perValue);
+					$data['arrHistory']['action'][$hq->perID_fk]['text'] = '';
+					if(isset($gunting[1]) && !empty($gunting[1]))$data['arrHistory']['action'][$hq->perID_fk]['text'] .= $gunting[1].' - ';
+					
+					$data['arrHistory']['action'][$hq->perID_fk]['text'] .= 'Validated by <b>'.$hq->adder.'</b> on '.date('m/d/Y h:i A', strtotime($hq->dateAdded));
+					$data['arrHistory']['action'][$hq->perID_fk]['naVal'] = $hq->naVal;
+				}
+			}
+			
+			if(!empty($_POST)){
+				if($_POST['submitType']=='addRemarks'){
+					$insArr['perType'] = 0; //1 for remarks
+					$insArr['perValue'] = $_POST['remarks'];
+					
+				}else if($_POST['submitType']=='validate'){
+					$insArr['perType'] = 1; //1 for action
+					$insArr['perValue'] = $_POST['perName'].' validated.';
+					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
+					
+					if(!empty($_FILES['fileupload']['name'])){
+						$fextn = $this->textM->getFileExtn($_FILES['fileupload']['name']);
+						$filename = str_replace(' ', '_', $_POST['perName']).'_'.date('YmdHis').'.'.$fextn;
+						
+						move_uploaded_file($_FILES['fileupload']['tmp_name'], UPLOAD_DIR.$data['row']->username.'/'.$filename);							
+						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';	
+
+						//add data to staffUploads table
+						$upArr['empID_fk'] = $id;
+						$upArr['uploadedBy'] = $this->user->empID;
+						$upArr['docName'] = $_POST['perName'].' File';
+						$upArr['fileName'] = $filename;
+						$upArr['dateUploaded'] = date('Y-m-d H:i:s');
+						$this->dbmodel->insertQuery('staffUploads', $upArr);	
+						
+						//add notification
+						$this->commonM->addMyNotif($this->user->empID, 'You validated and uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$upArr['docName'].'</a> of '.$data['row']->name, 5);					
+					}else{
+						$this->commonM->addMyNotif($this->user->empID, 'You validated '.$_POST['perName'].' of '.$data['row']->name, 5);
+					}					
+					
+					$insArr['perValue'] .= '+++'.$_POST['remarks'];
+					
+					//update staffs perStatus
+					$perce = 100/count($data['queryPerStatus']);
+					$jacson = 1;
+					if(isset($data['arrHistory']['action'])) 
+						$jacson += count($data['arrHistory']['action']);
+					$perce = $perce * $jacson;
+					$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('perStatus'=>$perce));
+				}
+				
+				if(isset($insArr)){
+					$insArr['empID_fk'] = $id;
+					$insArr['perID_fk'] = $_POST['perID'];
+					$insArr['perValue'] = addslashes($insArr['perValue']);
+					$insArr['adder'] = $this->user->username;
+					$insArr['dateAdded'] = date('Y-m-d H:i:s');
+					
+					$this->dbmodel->insertQuery('staffPerEmpStatus', $insArr);					
+					
+					header('Location: '.$_SERVER['REQUEST_URI']);
+					exit;
+				}
+			}			
+		}else{
+			$data['access'] = false;
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function probaddrequirement(){
+		$data['content'] = 'probaddrequirement';
+		
+		if(!empty($_POST)){			
+			$_POST['addEmpID'] = $this->user->empID;
+			$this->dbmodel->insertQuery('staffPerRequirements', $_POST);
+			
+			$data['added'] = $_POST['perName'];
+			unset($_POST);
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	

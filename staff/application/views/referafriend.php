@@ -50,9 +50,9 @@
 <div id="2ndform" class="tacenter hidden">
 	The system will now send an email to your friend <b id="fname"></b> inviting him/her to apply for any of the open positions in Tate Publishing.<br/>Your friend will also be notified that you referred him/her to apply.
 	<h3>Do you want to continue?</h3>
-	<input type="submit" class="btnclass btnsub" value="Yes. Please proceed." style="background-color:green;"/><br/>
-	<input onClick="pleaseBack();" type="button" value="Wait, let me go back." class="btnclass btnsub" style="background-color:red;"/><br/>
-	<input onClick="parent.$.fn.colorbox.close();" type="button" value="Cancel." class="btnclass btnsub" style="background-color:red;"/>
+	<input type="submit" class="btnclass btnsub btngreen" value="Yes. Please proceed." style="background-color:green;"/><br/>
+	<input onClick="pleaseBack();" type="button" value="Wait, let me go back." class="btnclass btnsub btnred"/><br/>
+	<input onClick="parent.$.fn.colorbox.close();" type="button" value="Cancel." class="btnclass btnsub btnred"/>
 
 </form>
 

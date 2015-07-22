@@ -60,6 +60,8 @@ a:hover{ color:red; }
 .errortext{ color:red; }
 .colorgray{ color:#888; }
 .btnclass { padding:5px 10px; }
+.btngreen { background-color:green; font-weight:bold; color:#fff; }
+.btnred { background-color:red; font-weight:bold; color:#fff; }
 .weightnormal{ font-weight:normal; }
 .weightbold{ font-weight:bold; }
 .hidden{ display:none; }
