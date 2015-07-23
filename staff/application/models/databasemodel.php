@@ -104,6 +104,10 @@ class Databasemodel extends CI_Model {
 		$this->db->update($table, $data);
 	}
 	
+	function updateQueryText($table, $set, $where){
+		$this->dbQuery('UPDATE '.$table.' SET '.$set.' WHERE '.$where.'');
+	}
+	
 	function updateConcat($table, $where=1, $field, $fieldvalue){
 		$this->dbQuery('UPDATE '.$table.' SET '.$field.'=CONCAT('.$field.',"'.addslashes($fieldvalue).'") WHERE '.$where.'');
 	}	

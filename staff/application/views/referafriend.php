@@ -14,7 +14,7 @@
 <form action="" method="POST" id="myForm" onSubmit="return validate();">
 <div id="1stform">
 	<h3>Do you have friends you want to refer to apply to Tate?</h3>
-	Please enter their details below:
+	Please enter your friend's details below:
 	<table class="tableInfo">
 		<tr>
 			<td width="30%">Last Name</td>

@@ -57,11 +57,14 @@ if(isset($_POST['submit'])){
 		$error['text_resume'] = "Text Resume is empty.";
 	}
 	
-		
 	if(sizeof($error)==0){
 		unset($_POST['submit']);
 		$_POST['ipaddress'] = $_SERVER["REMOTE_ADDR"]."|".$_SERVER['HTTP_X_FORWARDED_FOR'];
 		$_POST['date_created'] = "NOW()";
+		
+		if(isset($_GET['id']) && $_POST['source']=='Referred by a Tate Employee'){
+			$_POST['referrerID'] = $_GET['id'];
+		}
 			
 		$db->insertQuery("applicants", $_POST);
 		$update[] = "<h2>Thank You!</h2><p>You have successfully sent your Application Form to us. Please check your mobile and email inbox regularly for updates on your application.</p><p>For more info, please visit our website at <a href='https://www.tatepublishing.com'>https://www.tatepublishing.com</a></p>";
@@ -175,7 +178,7 @@ require 'includes/header.php';
 							</div>
 						</div>
                     						
-						<div class="form-group has-warning">
+						<div class="form-group has-warning" <? if(isset($_GET['refername'])){ echo 'style="display:none;"'; } ?>>
 							<label for="select" class="col-lg-2 control-label">Where did you hear about Tate Publishing?</label>
 							<div class="col-lg-10">
 								<select class="form-control " onchange='onchangeSource(this.value);' id="source" name="source">
@@ -186,19 +189,23 @@ require 'includes/header.php';
 									<option <?php if($_POST["source"] == "Orient Express" ) echo "selected";?> value="Orient Express">Orient Express</option>
 									<option <?php if($_POST["source"] == "Online Portals" ) echo "selected";?> value="Online Portals">Online Portals</option>
 									<option <?php if($_POST["source"] == "Other" ) echo "selected";?> value="Other">Other</option>
-									<option <?php if($_POST["source"] == "Referred by a Tate Employee" ) echo "selected";?> value="Referred by a Tate Employee">Referred by a Tate Employee</option>									
+									<option <?php if($_POST["source"] == "Referred by a Tate Employee" || isset($_GET['refername'])) echo "selected";?> value="Referred by a Tate Employee">Referred by a Tate Employee</option>									
 									<option <?php if($_POST["source"] == "Walk In" ) echo "selected";?> value="Walk In">Walk In</option>
 									<option <?php if($_POST["source"] == "Cebu Recruitment Agency" ) echo "selected";?> value="Cebu Recruitment Agency">Cebu Recruitment Agency</option>
 								</select>
 							</div>
 						</div>
-					
+				
 						<?php 
 							// echo $_POST['source_field'];
-							if(!empty($_POST['source_field']))
+							if(!empty($_POST['source_field']) && !isset($_GET['refername']))
 								$style = 'style="display:block;"';
 							else
 								$style = 'style="display:none;"';
+							
+							if(empty($_POST['source_field']) && isset($_GET['refername']))
+								$_POST['source_field'] = $_GET['refername'];
+							
 							$form->text("source_field",$_POST['source_field'],'class="form-control" '.$style.' id="source_field"',"","");
 						?>
                     	<?php $form->textarea("link",$_POST['link'],'class="form-control" rows="2"',"Portfolio Link(s)");?>
@@ -231,7 +238,8 @@ require 'includes/header.php';
       </div>
       <script>
 	
-		function onchangeSource(value) {		
+		function onchangeSource(value) {
+			$('#source_field').val('');
 			if(value == "Referred by a Tate Employee"){								
 				document.getElementById("source_field").style.display= "block";
 				document.getElementById("source_field").placeholder= "Enter name of Tate Employee here";			

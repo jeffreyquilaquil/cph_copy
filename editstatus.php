@@ -43,6 +43,44 @@
 				addStatusNote($_POST['appID'], $_POST['type'], $_POST['testStatus'], $_POST['positionID'], $_POST['reason']);
 			}
 			
+			//check if hr passed and update MRB status and employees referral
+			if($_POST['type']=='hr' && $_POST['testStatus']=='passed'){
+				$refID = $db->selectSingleQuery('applicants', 'referrerID' , 'id="'.$_POST['appID'].'"');
+				if($refID!=0){
+					//insert into staffReferralBonus table
+					$insArr['empID_fk'] = $refID;
+					$insArr['appID_fk'] = $_POST['appID'];
+					$insArr['bonus'] = 100;
+					$insArr['dateAdded'] = date('Y-m-d H:i:s');
+					$db->insertQuery('staffReferralBonus', $insArr);
+					
+					$bonusInfo = $db->selectQueryArray('SELECT bonusID FROM staffReferralBonus WHERE empID_fk="'.$refID.'" AND status=0');
+					
+					if(count($bonusInfo)==5){
+						$name = $db->selectSingleQuery('staffs', 'CONCAT(lname,", ",fname) AS name' , 'empID="'.$refID.'"');
+						$from = 'careers.cebu@tatepublishing.net';
+						$to = 'accounting.cebu@tatepublishing.net,hr.cebu@tatepublishing.net';
+						$ebody = '<p>Dear Accounting Team:</p>
+							<p>Please be informed that employee '.$name.' has successfully referred five new applicants to apply in CPH.
+							HR has validated that the applicants referred are valid and may be hired in any of the open positions in Tate.
+							As a reward, he will be entitled to PHP 500.00 Referral Bonus.</p>
+							<p>Please reply to this email to confirm when this bonus can be released.
+							You will receive a reminder on this on (2 business days later), until the date is confirmed in CPH.</p>
+							<p><br/></p>
+							<p>Thank you very much!</p>';
+							
+						sendEmail( $from, $to, 'Mini Referral Bonus', $ebody, 'Career Index Auto Email' );
+						
+						$valID = '';
+						foreach($bonusInfo AS $v){
+							$valID .= $v['bonusID'].',';
+						}
+						
+						$mrbID = $db->insertQuery('staffMRB', array('empID_fk'=>$refID, 'releasedAmount'=>'500', 'bonusIDs'=>rtrim($valID,',')));//insert to MRB table
+					}
+				}			
+			}
+			
 			if($_POST['testStatus']=='failed'){
 				$freeze = array('iq', 'typing', 'written', 'hr', 'final');
 				if(in_array($_POST['type'], $freeze))
@@ -65,7 +103,7 @@
 		exit;		
 	}
 	
-	if(isset($_POST) && !empty($_POST)){
+	if(isset($_POST) && !empty($_POST)){		
 		if($_POST['formSubmit']=='reprofile'){
 			$db->updateQuery('applicants', array('position' => $_POST['newPos'], 'isNew' => 1), 'id='.$id);
 			

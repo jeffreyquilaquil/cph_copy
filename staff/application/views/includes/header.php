@@ -84,7 +84,7 @@
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Manage CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE '.(($pendingCOENum>0)?'<b>['.$pendingCOENum.']</b>':'').'</a></li>';						
 					}
-					if($this->access->accessFinance==false){
+					if($this->user->level>0){
 						echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Manage Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
@@ -97,6 +97,7 @@
 					
 					if($this->access->accessFullHR){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management</a></li>';
+						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 					}
 						
 										

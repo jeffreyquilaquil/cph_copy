@@ -2373,7 +2373,6 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/templatenone', $data);	
 	}
 	
-		
 	public function supportingdocs(){
 		$data['content'] = 'supportingdocs';
 		
@@ -2888,13 +2887,14 @@ class Staff extends MY_Controller {
 	
 	public function referafriend(){
 		$data['content'] = 'referafriend';
-		
+			
 		if(!empty($_POST)){
 			$insArr['empID_fk'] = $this->user->empID;
 			$insArr['lastName'] = $_POST['lastName'];
 			$insArr['firstName'] = $_POST['firstName'];
 			$insArr['emails'] = implode(',',$_POST['email']);
 			$insArr['contacts'] = implode(',',$_POST['number']);
+			$insArr['dateReferred'] = date('Y-m-d H:i:s');
 			$insArr['timestamp'] = date('Y-m-d H:i:s');
 			$this->dbmodel->insertQuery('staffReferFriend', $insArr);
 			
@@ -2902,9 +2902,18 @@ class Staff extends MY_Controller {
 			$ebody = '<p>Hello '.$insArr['firstName'].' '.$insArr['lastName'].',</p>
 					<p>A good day to you!</p>
 					<p>Your friend '.$this->user->name.' currently works at Tate Publishing and Enterprises (Philippines) and is inviting you to apply for any the positions that are currently open in the company:</p>';
+				
+				$oQuery = $this->dbmodel->dbQuery('SELECT title FROM jobReqData LEFT JOIN newPositions ON posID=positionID WHERE status = 0 GROUP BY positionID ORDER BY title');
+			$openPos = '<ul>';
+			foreach($oQuery->result() AS $op){
+				$openPos .= '<li>'.$op->title.'</li>';
+			}
 			
-			$ebody .= '<p>To apply, please submit this form:<br/><a href="'.$this->config->item('career_url').'">Careerph.tatepublishing.net</a></p>';
-			$ebody .= '<p><b style="color:red;">IMPORTANT :</b><br/>
+			$openPos .= '</ul>';
+			$ebody .= $openPos;
+			
+			$ebody .= '<p>To apply, please submit this form on this link: <a href="'.$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID.'">'.$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID.'</a></p>';
+			$ebody .= '<p><br/><b style="color:red;">IMPORTANT :</b><br/>
 						Don\'t forget to select "Referred by a Tate Employee" in the filed <i style="color:#a52a2a;">"Where did you hear about Tate Publishing?"</i> and write '.$this->user->name.' in the field that follows.</p>';
 			$ebody .= '<p>We look forward to processing your application soon!</p>
 						<p>Thank you very much!</p>';			
@@ -3061,6 +3070,88 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
+	function referralmanagement(){
+		$data['content'] = 'referralmanagement';
+		
+		if($this->access->accessFullHR==false) $data['access'] = false;
+		else{
+			$data['queryReferrals'] = $this->dbmodel->getQueryResults('staffReferFriend', 'staffReferFriend.*, (SELECT CONCAT(lname,", ",fname) AS name FROM staffs WHERE empID=empID_fk) AS referrer', 'refStatus=1');
+			
+			$data['queryTop'] = $this->dbmodel->getSQLQueryResults('SELECT empID, CONCAT(fname," ",lname) AS name, (SELECT SUM(bonus) FROM staffReferralBonus WHERE empID_fk = empID AND mrbID_fk=0) AS bonus, (SELECT COUNT(id) FROM applicants WHERE referrerID=empID) AS cnt FROM staffs WHERE active=1 HAVING cnt>=1');
+			
+			$data['queryMRB'] = $this->dbmodel->getQueryResults('staffMRB', 'staffMRB.*, fname, lname', '1', 'LEFT JOIN staffs ON empID=empID_fk');
+		
+		}
+		
+		$this->load->view('includes/template', $data);
+	}
+	
+	function validatereferrrals(){		
+		$data['content'] = 'validatereferrrals';
+		
+		$id = $this->uri->segment(2);
+		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		else{
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
+			$data['queryReferrals'] = $this->dbmodel->getQueryResults('applicants', 'id, fname, lname, email, mnumber, title, status, process, processStat, processText, processType, (SELECT mrbID_fk FROM staffReferralBonus WHERE appID_fk=id) AS mrbID', 
+			'referrerID="'.$id.'" AND processStat=1', 
+			'LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process');
+			
+			$data['queryInvalid'] = $this->dbmodel->getQueryResults('applicants', 'id, fname, lname, email, mnumber, title, status, process, processStat, processText, processType', 
+			'referrerID="'.$id.'" AND processStat=0', 
+			'LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process');
+		}
+		
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	function referralrelease(){
+		$data['content'] = 'referralrelease';
+		$id = $this->uri->segment(2);
+		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		else{
+			if(!empty($_POST)){				
+				$queryBonus = $this->dbmodel->getQueryResults('staffReferralBonus', 'bonusID, bonus', 'mrbID_fk=0 AND empID_fk="'.$id.'"');
+				$bonus = 0;
+				$bonusID = array();
+				foreach($queryBonus AS $q){
+					$bonusID[] = $q->bonusID;
+					$bonus += $q->bonus;
+				}
+				
+				$insArr['empID_fk'] = $id;
+				$insArr['releasedAmount'] = $bonus;
+				$insArr['dateReleased'] = date('Y-m-d', strtotime($_POST['dateReleased']));
+				$insArr['bonusIDs'] = implode(',', $bonusID);
+				$insArr['releasedNote'] = $_POST['releasedNote'];
+				
+				
+				$mrbID = $this->dbmodel->insertQuery('staffMRB', $insArr); //insert
+				$this->dbmodel->updateQueryText('staffReferralBonus', 'mrbID_fk="'.$mrbID.'"', 'bonusID	IN ('.$insArr['bonusIDs'].')'); //update referral table
+				$data['posted'] = true;
+			}
+			
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
+		}
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	function referrralreleasedetails(){
+		$data['content'] = 'referrralreleasedetails';
+		$id = $this->uri->segment(2);
+		
+		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		else{
+			$data['mrb'] = $this->dbmodel->getSingleInfo('staffMRB','staffMRB.*, (SELECT CONCAT(fname," ",lname) AS name FROM staffs WHERE empID=empID_fk) AS name', 'mrbID="'.$id.'"');
+						 
+			if(!empty($data['mrb']->bonusIDs)){
+				$data['applicants'] = $this->dbmodel->getQueryResults('applicants', 'id, CONCAT(fname," ",lname) AS name', 'bonusID IN ('.$data['mrb']->bonusIDs.')', 'LEFT JOIN staffReferralBonus ON appID_fk = id');				
+			}
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
 	
 }
 
