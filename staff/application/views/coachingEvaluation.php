@@ -103,7 +103,7 @@
 			echo '<p>You may save your ratings and generate the tentative form for discussion with employee. The status will change the Feedback Session in Progress. In the event that there are changes after the discussion with the employee, you may go back and review change ratings, however, the first version of the form will be permanently saved.</p>';
 			echo '<button style="padding:5px 150px;" onClick="submitRating(\''.$pageType.'\', 2);">Save my Ratings and Generate Tentative Form (pdf)</button>';
 			echo '<p>If you have already discussed the ratings with the employee, and no change will be required, you may lock in your ratings and generate the final evaluation form.</p>';
-			echo '<button style="padding:5px 150px; btngreen" onClick="submitRating(\''.$pageType.'\', 3);">That\'s it! Print the Coaching Evaluation Form</button>';
+			echo '<button style="padding:5px 150px;" class="btngreen" onClick="submitRating(\''.$pageType.'\', 3);">That\'s it! Print the Coaching Evaluation Form</button>';
 		echo '</div>';
 					
 		echo '<input type="hidden" id="rating" value=""/>';
