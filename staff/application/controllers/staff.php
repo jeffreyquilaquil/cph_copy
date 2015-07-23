@@ -2912,7 +2912,7 @@ class Staff extends MY_Controller {
 			$openPos .= '</ul>';
 			$ebody .= $openPos;
 			
-			$ebody .= '<p>To apply, please submit this form on this link: <a href="'.$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID.'">'.$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID.'</a></p>';
+			$ebody .= '<p>To apply, please submit this form on this link: <a href="'.$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID.'">'.str_replace(' ','%20',$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID).'</a></p>';
 			$ebody .= '<p><br/><b style="color:red;">IMPORTANT :</b><br/>
 						Don\'t forget to select "Referred by a Tate Employee" in the filed <i style="color:#a52a2a;">"Where did you hear about Tate Publishing?"</i> and write '.$this->user->name.' in the field that follows.</p>';
 			$ebody .= '<p>We look forward to processing your application soon!</p>

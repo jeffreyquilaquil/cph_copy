@@ -14,7 +14,7 @@
 <form action="" method="POST" id="myForm" onSubmit="return validate();">
 <div id="1stform">
 	<h3>Do you have friends you want to refer to apply to Tate?</h3><hr/>
-	Give this referral link: <a href="<?= $this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID ?>"><?= $this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID ?></a><br/>
+	Give this referral link: <a target="_blank" href="<?= $this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID ?>"><?= str_replace(' ','%20',$this->config->item('career_url').'?refername='.$this->user->name.'&id='.$this->user->empID) ?></a><br/>
 	<b>OR</b><br/>
 	Enter your friend details below to send an invitation:<br/><br/>
 	<table class="tableInfo">
