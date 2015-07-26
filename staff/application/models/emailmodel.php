@@ -183,7 +183,7 @@ class Emailmodel extends CI_Model {
 	//send email if access and end date entered on or before
 	public function emailUrgentTerminateAllAccess($info){
 		$de = 'kent.ybanez@tatepublishing.net';
-		$sur = 'it.security@tatepublishing.net,helpdesk,cebu@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net,helpdesk.cebu@tatepublishing.net';
 		$cc = 'marianne.velasco@tatepublishing.net,diana.bartulin@tatepublishing.net,curtis.winkle@tatepublishing.net';
 		$sujet = 'URGENT: Terminate All Access For '.$info->name.' Immediately';
 				
