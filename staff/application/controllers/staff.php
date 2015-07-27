@@ -1531,7 +1531,7 @@ class Staff extends MY_Controller {
 				}
 									
 				//process if no errors
-				if(empty($data['errortxt'])){
+				if(empty($data['errortxt']) && count($dupQuery)==0){
 					$insArr['empID_fk'] = $this->user->empID;
 					$insArr['date_requested'] = date('Y-m-d H:i:s');
 					$insArr['reason'] = addslashes($_POST['reason']);
@@ -3090,7 +3090,7 @@ class Staff extends MY_Controller {
 		$data['content'] = 'validatereferrrals';
 		
 		$id = $this->uri->segment(2);
-		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		if(!is_numeric($id) || $this->access->accessFullHR==false) $data['access'] = false;
 		else{
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
 			$data['queryReferrals'] = $this->dbmodel->getQueryResults('applicants', 'id, fname, lname, email, mnumber, title, status, process, processStat, processText, processType, (SELECT mrbID_fk FROM staffReferralBonus WHERE appID_fk=id) AS mrbID', 
@@ -3109,7 +3109,7 @@ class Staff extends MY_Controller {
 	function referralrelease(){
 		$data['content'] = 'referralrelease';
 		$id = $this->uri->segment(2);
-		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		if(!is_numeric($id) || $this->access->accessFullHR==false) $data['access'] = false;
 		else{
 			if(!empty($_POST)){				
 				$queryBonus = $this->dbmodel->getQueryResults('staffReferralBonus', 'bonusID, bonus', 'mrbID_fk=0 AND empID_fk="'.$id.'"');
@@ -3141,7 +3141,7 @@ class Staff extends MY_Controller {
 		$data['content'] = 'referrralreleasedetails';
 		$id = $this->uri->segment(2);
 		
-		if(!is_numeric($id) && $this->access->accessFullHR==false)$data['access'] = false;
+		if(!is_numeric($id) || $this->access->accessFullHR==false) $data['access'] = false;
 		else{
 			$data['mrb'] = $this->dbmodel->getSingleInfo('staffMRB','staffMRB.*, (SELECT CONCAT(fname," ",lname) AS name FROM staffs WHERE empID=empID_fk) AS name', 'mrbID="'.$id.'"');
 						 
@@ -3151,6 +3151,31 @@ class Staff extends MY_Controller {
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	function employeeEvaluation(){
+		$data['content'] = 'employeeEvaluation';
+		$id = $this->uri->segment(2);
+		$data['type'] = $this->uri->segment(3);
+		
+		
+		if($this->access->accessFullHR==false || !is_numeric($id)){
+			$data['access'] = false;
+		}else{
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, empStatus, CONCAT(fname," ",lname) AS name, perStatus, title, dept, supervisor, startDate', 'empID="'.$id.'"', 'LEFT JOIN newPositions ON posID=position');
+			if(isset($data['row']->supervisor) && $data['row']->supervisor!=0){
+				$data['firstsup'] = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$data['row']->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
+				
+				if(isset($data['firstsup']->supervisor) && $data['firstsup']->supervisor!=0){
+					$data['secondsup'] = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$data['firstsup']->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
+				}
+				
+			}
+			
+			$data['supervisorData'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'active=1 AND is_supervisor=1','fname');
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);	
 	}
 	
 }

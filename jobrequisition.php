@@ -35,15 +35,17 @@ if(isset($_POST) && !empty($_POST)){
 	} 
 	unset($_POST['startShift']);
 	unset($_POST['endShift']);
-	
 		
-	$iID = $db->insertQuery('jobReqData', $_POST);	
-	$db->updateQuery('jobReqData', array('jobReqID' => $iID), 'reqID = "'. $iID .'"');
-	
-	if( $_POST['num'] > 1 ){
-		$_POST['jobReqID'] = $iID;
-		for($i=1; $i< $_POST['num']; $i++ )
-			$db->insertQuery('jobReqData', $_POST);  
+	if(!isset($is_inserted)){
+		$is_inserted = true;
+		$iID = $db->insertQuery('jobReqData', $_POST);	
+		$db->updateQuery('jobReqData', array('jobReqID' => $iID), 'reqID = "'. $iID .'"');
+		
+		if( $_POST['num'] > 1 ){
+			$_POST['jobReqID'] = $iID;
+			for($i=1; $i< $_POST['num']; $i++ )
+				$db->insertQuery('jobReqData', $_POST);  
+		}
 	}
 	
 	//send autoemail to HR
@@ -62,6 +64,7 @@ if(isset($_POST) && !empty($_POST)){
 	
 	sendEmail($from, $to, $subject, $body, 'CareerPH');
 	$added = true;
+	unset($_POST);
 }
 
 
