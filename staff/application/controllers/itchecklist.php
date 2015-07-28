@@ -12,23 +12,29 @@ class Itchecklist extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function deactivateuser(){
+	public function deactivateuser( $db = "PT" ){
 		$data['content'] = 'v_itchecklist/v_itdeactivateuser';
-		
 		if($this->user!=false){
 			if($this->user->dept!='IT'){
 				$data['access'] = false;
 			}else{
-				if(!empty($_POST)){
-					if($_POST['submitType']=='activeStatus'){
-						$info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name', 'empID="'.$_POST['empID'].'"');
-						if($_POST['status']==0){
-							$this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$info->username.'"');
-							$this->dbmodel->dbQuery('UPDATE staffs SET active="0" WHERE empID = "'.$_POST['empID'].'"');
+                if(!empty($_POST)){
+					if( isset($_POST['submitType']) AND $_POST['submitType'] =='activeStatus'){
+                        if( isset($_POST['which_table']) AND $_POST['which_table'] == 'CPH' ){
+                            $info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name', 'empID="'.$_POST['empID'].'"');
+                            $db_string = 'CPH database';
+                        } else {
+                            $info = $this->dbmodel->getPTQueryResults('staff', 'uid AS empID, username, CONCAT(sFirst, " ", sLast) AS name', 'uid = '. $_POST['empID'], '', 'sFirst');
+                            $info = $info[0];
+                            $db_string = 'PT database';
+                        }
+                        if($_POST['status']==0){
+                            $pt_active = 'N';
+                            $cph_active = '0';
 							$this->commonM->addMyNotif($this->user->empID, 'You deactivated the status of '.$info->username.'.', 5);
 							
 							$body = '<p>Hi Guyz,</p>
-									<p>'.$this->user->fname.' deactivated the account of "'.$info->name.'" in CareerPH Deactivate user page. Please perform checklist below:<p>
+									<p>'.$this->user->fname.' deactivated the account of "'.$info->name.'" in "'.$db_string.'" via CareerPH Account Deactivation page. Please perform checklist below:<p>
 									<ul>
 										<li>Lock email</li>
 										<li>Change samba password</li>										
@@ -42,34 +48,42 @@ class Itchecklist extends MY_Controller {
 									<p><br/></p>
 									<p>Thanks!</p>
 									<p>CAREERPH</p>
-								';
-							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
+                                    ';
+                            $subject_email = 'USER DEACTIVATED';
 							
 							echo 'Status in careerph and PT has been change to "INACTIVE"';
 						}else{
-							$this->dbmodel->ptdbQuery('UPDATE staff SET active="Y" WHERE username = "'.$info->username.'"');
-							$this->dbmodel->dbQuery('UPDATE staffs SET active="1" WHERE empID = "'.$_POST['empID'].'"');
+                            $pt_active = 'Y';
+                            $cph_active = '1';
 							$this->commonM->addMyNotif($this->user->empID, 'You activated the status of '.$info->username.'.', 5);
 							
 							$body = '<p>Hi Guyz,</p>
-									<p>'.$this->user->fname.' activated the account of "'.$info->name.'" in CareerPH Deactivate user page.<p>
+									<p>'.$this->user->fname.' activated the account of "'.$info->name.'" in "'.$db_string.'" via CareerPH Account Deactivation page.<p>
 									<p><br/></p>
 									<p>Thanks!</p>
 									<p>CAREERPH</p>
 								';
-							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net', 'USER DEACTIVATED', $body, 'CareerPH Auto-Email' );
-							
+					        $subject_email = 'USER ACTIVATED';	
 							echo 'Status in careerph and PT has been change to "ACTIVE"';
-						}
-						
+                        }
+                        if( isset($_POST['which_table']) AND $_POST['which_table'] == 'CPH' ){
+							$this->dbmodel->dbQuery('UPDATE staffs SET active="'.$cph_active.'" WHERE empID = "'.$_POST['empID'].'"');
+                        } else {
+                            $this->dbmodel->ptdbQuery('UPDATE staff SET active="'.$pt_active.'" WHERE username = "'.$info->username.'"');
+                        }
+
+							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net,hr-list.cebu@tatepublishing.net', $subject_email, $body, 'CareerPH Auto-Email' );
 						exit;
 					}
-				}
-			
-				$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, active', '1', 'lname');
+                }
+                    if( $db == "CPH" ){
+        				    $data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, active', '1', 'lname');
+                    } else {
+        				$data['query'] = $this->dbmodel->getPTQueryResults('staff', 'uid AS empID, username, CONCAT(sFirst," ",sLast) AS name, IF(active = "Y", "1", "0") AS active', '1', 'sFirst');
+                    }
 			}
 		}
-		
+	    $data['selected'] = $db;	
 		$this->load->view('includes/template', $data);
 	}
 
