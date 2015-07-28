@@ -97,8 +97,8 @@ class Emailmodel extends CI_Model {
 		}
 		
 		//send urgent terminate all access for employee email if separation or access date entered before today
-		if( ($info->accessEndDate!='0000-00-00' && strtotime($info->accessEndDate)<=strtotime($dateToday)) ||
-			($info->accessEndDate=='0000-00-00' && $info->endDate!='0000-00-00' && strtotime($info->endDate)<=strtotime($dateToday))
+		if( ($info->accessEndDate!='0000-00-00' && strtotime($info->accessEndDate)<strtotime($dateToday)) ||
+			($info->accessEndDate=='0000-00-00' && $info->endDate!='0000-00-00' && strtotime($info->endDate)<strtotime($dateToday))
 		){
 			$this->emailM->emailUrgentTerminateAllAccess($info);
 		}	
@@ -120,6 +120,7 @@ class Emailmodel extends CI_Model {
 		
 		$corps .= '<br/><br/>';
 		$corps .= '<p>Please verify that all access has been terminated for the above employee and that all email and phone forwarding is functioning properly.</p>';
+		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');		
 	}
@@ -151,7 +152,8 @@ class Emailmodel extends CI_Model {
 		$corps .= '<li>Access to servers is revoked</li>';
 		$corps .= '<li>Access to workstation is revoked</li>';
 		$corps .= '</ul>';
-		$corps .= '<p>Please contact the employee\'s immediate supervisor or the department head to ensure that emails and phone calls are forwarded/redirected to the appropriate individual.</p>';
+		$corps .= '<p><br/>Please contact the employee\'s immediate supervisor or the department head to ensure that emails and phone calls are forwarded/redirected to the appropriate individual.</p>';		
+		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
 		
@@ -175,7 +177,8 @@ class Emailmodel extends CI_Model {
 		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
 				
 		$corps .= '<p style="color:red;"><b>Access End Date:</b> '.(($info->accessEndDate=='0000-00-00')?date('F d, Y', strtotime($info->endDate)):date('F d, Y', strtotime($info->accessEndDate))).'</p>';
-		$corps .= '<p>IT Staff, please prepare to terminate this employee\'s access to all company systems on the access end date above.</p>';
+		$corps .= '<p><br/>IT Staff, please prepare to terminate this employee\'s access to all company systems on the access end date above.</p>';
+		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
 	}
@@ -199,13 +202,15 @@ class Emailmodel extends CI_Model {
 		$corps .= '<span style="color:red;"><b>Access End Date:</b> '.date('F d, Y', strtotime($acdate)).'</span><br/>';
 		if($info->terminationType!=0) $corps .= '<b>Termination Reason:</b> '.$termArr[$info->terminationType];
 		if($acdate==$dateToday){
-			$corps .= '<p>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to end today, '.date('F d, Y', strtotime($acdate)).'.</p>';
+			$corps .= '<p><br/><br/>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to end today, '.date('F d, Y', strtotime($acdate)).'.</p>';
 		}else{
 			$datediff = strtotime($dateToday) - strtotime($acdate);
 			$ago = floor($datediff/(60*60*24));
 			
-			$corps .= '<p>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to on '.date('F d, Y', strtotime($acdate)).', which was '.$ago.' days ago.</p>';
+			$corps .= '<p><br/><br/>Please terminate all access for the above named employee immediately. This employee\'s access has been scheduled to on '.date('F d, Y', strtotime($acdate)).', which was '.$ago.' days ago.</p>';
 		}
+		
+		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH', $cc);		
 	}
 
