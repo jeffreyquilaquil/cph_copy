@@ -78,6 +78,7 @@
 					$pendingCOENum = $this->commonM->countResults('pendingCOE');
 					$staffLeavesNum = $this->commonM->countResults('staffLeaves');
 					$nteNum = $this->commonM->countResults('nte');
+					$eval90th = $this->commonM->countResults('eval90th');
 					
 					if($this->access->accessFullHR==true){												
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Info Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
@@ -95,7 +96,7 @@
 					}
 					
 					if($this->access->accessFullHR){
-						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management</a></li>';
+						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 					}
 						

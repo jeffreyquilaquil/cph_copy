@@ -37,7 +37,7 @@
 		<select name="referrerID" class="form-control" required id="selectName">
 			<option value=""></option>
 		<?php
-			$queryStaffs = $db->selectQueryArray('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE active=1');
+			$queryStaffs = $db->selectQueryArray('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE active=1 ORDER BY fname');
 			foreach($queryStaffs AS $q){
 				echo '<option value="'.$q['empID'].'" '.(($name==$q['name'])?'selected':'').'>'.$q['name'].'</option>';
 			}

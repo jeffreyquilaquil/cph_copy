@@ -245,7 +245,7 @@ if($segment2=='offset'){
 			format:'F d, Y H:00',
 			minDate:koiStart(new Date()),
 			maxDate:koiEnd(new Date())
-		});	
+		});
 		
 		$('#leaveStart').blur(function(){
 			if($(this).val()!=''){

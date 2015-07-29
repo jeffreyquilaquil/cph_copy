@@ -6,8 +6,17 @@
 		echo 'No staff record found.';
 	}else{
 		if($current=='myinfo') echo '<h2 style="float:left;">My Info</h2>';
-		else echo '<h2 style="float:left;">'.$row->fname.' '.$row->lname.'\'s Info '.(($row->active==0)?'<span class="errortext"><b>[Not Active]</b></span>':'').'</h2>';
+		else{
+			echo '<div style="float:left;"><h2>'.$row->fname.' '.$row->lname.'\'s Info ';
+				if($row->active==0) echo '<span class="errortext"><b>[Not Active]</b></span>';
+			echo '</h2></div>';
+			
+			if(($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username)) && $row->empStatus=='probationary') echo '<div style="float:left; padding:5px; text-align:center;" class="errortext"><a href="'.$this->config->base_url().'evaluationsupervisor/'.$row->empID.'/" class="iframe"><u style="color:red; font-size:165%;">Probationary</u></a><br/><i>Click to change</i></div>';
+			
+		}
 		echo '<br/>';
+		//echo '<h2 style="float:left;">'..(($row->active==0)?'<span class="errortext"><b>[Not Active]</b></span>':'').'</h2>';
+		
 		
 		function trDisplay2($label, $text, $field, $editable, $vals='', $placeholder=''){
 			if($editable){				
@@ -201,7 +210,7 @@
 				echo $this->staffM->displayInfo('jdetails', 'coachedOf', $cul, false);
 			}
 			
-			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
+			//echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			if($row->agencyID_fk!=0){
 				$agencyName = $this->dbmodel->getSingleField('agencies', 'agencyName', 'agencyID="'.$row->agencyID_fk.'"');
 				echo $this->staffM->displayInfo('jdetails', 'agencyID_fk', $agencyName, false);

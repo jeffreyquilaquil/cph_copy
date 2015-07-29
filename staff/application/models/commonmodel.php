@@ -197,6 +197,8 @@ class Commonmodel extends CI_Model {
 				
 				$cnt = $this->dbmodel->getSingleField('staffNTE', 'COUNT(nteID) AS cnt', 'empID_fk IN ('.rtrim($ids,',').') AND ((status=1 AND nteprinted="") OR (status=0 AND carprinted="") OR (status=1 AND nteprinted!="" AND nteuploaded="") OR (status=0 AND carprinted!="" AND caruploaded=""))');
 			}			
+		}else if($type=='eval90th'){			
+			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
 		}
 		
 		return $cnt;
@@ -215,11 +217,12 @@ class Commonmodel extends CI_Model {
 		endforeach;
 		return $a;		
 	}
-		
+	
+	//$username = username or empID
 	function checkStaffUnderMe($username){
 		$valid = true;
 		if(md5($username.'dv') != $this->session->userdata('u')){
-			$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND username="'.$username.'"');
+			$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
 			$row = $query->row();
 			if(!isset($row->username)) $valid = false;
 		}	

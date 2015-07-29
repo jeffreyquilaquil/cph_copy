@@ -617,8 +617,6 @@ class Staffmodel extends CI_Model {
 		return $was;		
 	}
 	
-	
-	
 	function createCoachingPDF($row, $type){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -934,6 +932,204 @@ class Staffmodel extends CI_Model {
 		}
 		return $stat;	
 	}	
+	
+	public function evaluationpdf($eval, $row){
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'performance_review_form.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','B',9);
+		$pdf->SetTextColor(0, 0, 0);		
+		
+		$pdf->setXY(32, 47.5);
+		$pdf->Write(0, $row->name); //Employee Name	
+		$pdf->setXY(27, 51);
+		$pdf->Write(0, $row->title); //Position title	
+		$pdf->setXY(25, 54.5);
+		$pdf->Write(0, $row->dept); //department	
+		$pdf->setXY(23, 58);
+		$pdf->Write(0, $eval->reviewer); //reviewer
+		
+		if(isset($row->firstsup->name)){
+			$pdf->setXY(125, 47.5);
+			$pdf->Write(0, $row->firstsup->name); //is name
+			$pdf->setXY(145, 51);
+			$pdf->Write(0, $row->firstsup->title); //is title
+		}
+		if(isset($row->secondsup->name)){
+			$pdf->setXY(125, 54.5);
+			$pdf->Write(0, $row->secondsup->name); //2nd is name
+			$pdf->setXY(144, 58);
+			$pdf->Write(0, $row->secondsup->title); //2nd is title
+		}
+		
+		$pdf->setXY(245, 47.5);
+		$pdf->Write(0, date('F Y', strtotime($eval->reviewFrom)).' - '.date('F Y', strtotime($eval->reviewTo))); //review period
+		$pdf->setXY(223, 51);
+		$pdf->Write(0, date('F d, Y', strtotime($eval->reviewDate))); //review date
+		
+		//dedication to excellence
+		$dedication = explode('+++', $eval->dedicationToExcellence);
+		$dEmp = explode(',',$dedication[0]);
+		$dSup = explode(',',$dedication[1]);		
+		$pdf->setXY(265, 85); $pdf->Write(0, $dEmp[0]);
+		$pdf->setXY(280, 85); $pdf->Write(0, $dSup[0]);
+		$pdf->setXY(265, 90); $pdf->Write(0, $dEmp[1]);
+		$pdf->setXY(280, 90); $pdf->Write(0, $dSup[1]);
+		$pdf->setXY(265, 95); $pdf->Write(0, $dEmp[2]);
+		$pdf->setXY(280, 95); $pdf->Write(0, $dSup[2]);
+		$pdf->setXY(265, 100); $pdf->Write(0, $dEmp[3]);
+		$pdf->setXY(280, 100); $pdf->Write(0, $dSup[3]);
+		$pdf->setXY(265, 105); $pdf->Write(0, $dEmp[4]);
+		$pdf->setXY(280, 105); $pdf->Write(0, $dSup[4]);
+		
+		//proactiveness
+		$proactiveness = explode('+++', $eval->proactiveness);
+		$pEmp = explode(',',$proactiveness[0]);
+		$pSup = explode(',',$proactiveness[1]);		
+		$pdf->setXY(265, 116); $pdf->Write(0, $pEmp[0]);
+		$pdf->setXY(280, 116); $pdf->Write(0, $pSup[0]);
+		$pdf->setXY(265, 122); $pdf->Write(0, $pEmp[1]);
+		$pdf->setXY(280, 122); $pdf->Write(0, $pSup[1]);
+		
+		//teamwork
+		$teamwork = explode('+++', $eval->teamwork);
+		$tEmp = explode(',',$teamwork[0]);
+		$tSup = explode(',',$teamwork[1]);		
+		$pdf->setXY(265, 134); $pdf->Write(0, $tEmp[0]);
+		$pdf->setXY(280, 134); $pdf->Write(0, $tSup[0]);
+		$pdf->setXY(265, 138); $pdf->Write(0, $tEmp[1]);
+		$pdf->setXY(280, 138); $pdf->Write(0, $tSup[1]);
+		$pdf->setXY(265, 143); $pdf->Write(0, $tEmp[2]);
+		$pdf->setXY(280, 143); $pdf->Write(0, $tSup[2]);
+		
+		//communication
+		$communication = explode('+++', $eval->communication);
+		$cEmp = explode(',',$communication[0]);
+		$cSup = explode(',',$communication[1]);		
+		$pdf->setXY(265, 154); $pdf->Write(0, $cEmp[0]);
+		$pdf->setXY(280, 154); $pdf->Write(0, $cSup[0]);
+		$pdf->setXY(265, 161); $pdf->Write(0, $cEmp[1]);
+		$pdf->setXY(280, 161); $pdf->Write(0, $cSup[1]);
+		$pdf->setXY(265, 166); $pdf->Write(0, $cEmp[2]);
+		$pdf->setXY(280, 166); $pdf->Write(0, $cSup[2]);
+		
+		//reliability
+		$reliability = explode('+++', $eval->reliability);
+		$rEmp = explode(',',$reliability[0]);
+		$rSup = explode(',',$reliability[1]);		
+		$pdf->setXY(265, 177); $pdf->Write(0, $rEmp[0]);
+		$pdf->setXY(280, 177); $pdf->Write(0, $rSup[0]);
+		$pdf->setXY(265, 183); $pdf->Write(0, $rEmp[1]);
+		$pdf->setXY(280, 183); $pdf->Write(0, $rSup[1]);
+		$pdf->setXY(265, 189); $pdf->Write(0, $rEmp[2]);
+		$pdf->setXY(280, 189); $pdf->Write(0, $rSup[2]);
+		
+		//page2
+		$pdf->AddPage();
+		$tplIdx2 = $pdf->importPage(2);
+		$pdf->useTemplate($tplIdx2, null, null, 0, 0, true);
+		$pdf->setXY(265, 31.8); $pdf->Write(0, $rEmp[3]);
+		$pdf->setXY(280, 31.8); $pdf->Write(0, $rSup[3]);
+		
+		//professionalism
+		$professionalism = explode('+++', $eval->professionalism);
+		$ppEmp = explode(',',$professionalism[0]);
+		$ppSup = explode(',',$professionalism[1]);		
+		$pdf->setXY(265, 43); $pdf->Write(0, $ppEmp[0]);
+		$pdf->setXY(280, 43); $pdf->Write(0, $ppSup[0]);
+		$pdf->setXY(265, 48); $pdf->Write(0, $ppEmp[1]);
+		$pdf->setXY(280, 48); $pdf->Write(0, $ppSup[1]);
+		$pdf->setXY(265, 54); $pdf->Write(0, $ppEmp[2]);
+		$pdf->setXY(280, 54); $pdf->Write(0, $ppSup[2]);
+		
+		//flexibility
+		$flexibility = explode('+++', $eval->flexibility);
+		$fEmp = explode(',',$flexibility[0]);
+		$fSup = explode(',',$flexibility[1]);		
+		$pdf->setXY(265, 66); $pdf->Write(0, $fEmp[0]);
+		$pdf->setXY(280, 66); $pdf->Write(0, $fSup[0]);
+		$pdf->setXY(265, 72); $pdf->Write(0, $fEmp[1]);
+		$pdf->setXY(280, 72); $pdf->Write(0, $fSup[1]);
+		$pdf->setXY(265, 78); $pdf->Write(0, $fEmp[2]);
+		$pdf->setXY(280, 78); $pdf->Write(0, $fSup[2]);
+		$pdf->setXY(265, 83.5); $pdf->Write(0, $fEmp[3]);
+		$pdf->setXY(280, 83.5); $pdf->Write(0, $fSup[3]);
+		$pdf->setXY(265, 89); $pdf->Write(0, $fEmp[4]);
+		$pdf->setXY(280, 89); $pdf->Write(0, $fSup[4]);
+		
+		//evalrating
+		$erating = explode('+++', $eval->evalRating);	
+		$pdf->setXY(263, 94.5); $pdf->Write(0, $erating[0]);
+		$pdf->setXY(278, 94.5); $pdf->Write(0, $erating[1]); //averages
+		
+		$pdf->setXY(263, 99.5); $pdf->Write(0, $this->textM->convertNumFormat($erating[0]*0.20));
+		$pdf->setXY(278, 99.5); $pdf->Write(0, $this->textM->convertNumFormat($erating[1]*0.80)); //weighted score
+		
+		$pdf->setXY(273, 104.5); $pdf->Write(0, $eval->finalRating); //total
+		
+		$pdf->SetFont('Arial','',9);
+		
+		//achievements
+		$achievements = explode('+++', $eval->achievements);
+		$pdf->setXY(5, 123); $pdf->MultiCell(137, 3, $achievements[0],0,'L',false);	
+		$pdf->setXY(150, 123); $pdf->MultiCell(143, 3, $achievements[1],0,'L',false);
+
+		//strengths
+		$strengths = explode('+++', $eval->strengths);
+		$pdf->setXY(5, 165); $pdf->MultiCell(137, 3, $strengths[0],0,'L',false);	
+		$pdf->setXY(150, 165); $pdf->MultiCell(143, 3, $strengths[1],0,'L',false);	
+		
+		//page3	
+		$pdf->AddPage();
+		$tplIdx = $pdf->importPage(3);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
+				
+		//areasOfImprovement
+		$areasOfImprovement = explode('+++', $eval->areasOfImprovement);
+		$pdf->setXY(5, 41); $pdf->MultiCell(137, 3, $areasOfImprovement[0],0,'L',false);	
+		$pdf->setXY(150, 41); $pdf->MultiCell(143, 3, $areasOfImprovement[1],0,'L',false);
+		
+		//goals
+		$goals = explode('+++', $eval->goals);
+		$pdf->setXY(5, 77); $pdf->MultiCell(137, 3, $goals[0],0,'L',false);	
+		$pdf->setXY(150, 77); $pdf->MultiCell(143, 3, $goals[1],0,'L',false);
+		
+		$pdf->SetFont('Arial','B',9);
+		$pdf->setXY(72, 121.5); $pdf->Write(0, $eval->finalRating); //total weighed score
+		$pdf->setXY(48, 126.8); $pdf->Write(0, $this->textM->getScoreMatrix($eval->finalRating)); //final rating
+		$pdf->setXY(35, 132); $pdf->Write(0, $eval->recommendation); //recommendation
+		
+		if($eval->effectiveDate!='0000-00-00'){
+			$pdf->setXY(55, 137.5); $pdf->Write(0, date('F d, Y', strtotime($eval->effectiveDate))); //recommendation effective date
+		}
+		if($eval->nextReviewDate!='0000-00-00'){
+			$pdf->setXY(143, 121.5); $pdf->Write(0, date('F d, Y', strtotime($eval->nextReviewDate))); //recommendation effective date
+		}
+		
+		$pdf->SetFont('Arial','',9);
+		
+		//other reviewer remarks
+		if(!empty($eval->recommendationRemarks)){
+			$pdf->setXY(112, 130); $pdf->MultiCell(100, 4, $eval->recommendationRemarks,1,'L',false);
+		}
+		
+		
+		//acknowledgements
+		$pdf->SetFont('Arial','B',10);
+		$pdf->setXY(16, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->firstsup->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //reviewer IS
+		$pdf->setXY(108, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->secondsup->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //2nd level IS
+		$pdf->setXY(200, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //employee 
+		
+		
+		
+		$pdf->Output('performance_'.$eval->evalID.'.pdf', 'I');
+	}
 	
 }
 

@@ -113,6 +113,27 @@ class Textmodel extends CI_Model {
 		return $tText;
 	}
 	
+	function convertTimeToYMD($diff){
+		$tText = '';		
+		
+		$years = floor($diff / (365*60*60*24));
+		$months = floor(($diff-$years * 365*60*60*24) / ((30*60*60*24)));
+		$days = floor(($diff - $years * 365*60*60*24 - $months * 30*60*60*24) / (60*60*24));
+		
+		
+		if($years>0 && $years==1) $tText .= $years.' year ';
+		else if($years>0 && $years>1) $tText .= $years.' years ';
+
+		if($months==1) $tText .= $months.' month ';
+		else if($months>1) $tText .= $months.' months ';
+		
+		if($days==1) $tText .= $days.' day ';
+		else if($days>1) $tText .= $days.' days ';
+		
+
+		return $tText;
+	}
+	
 	function ordinal($num){
 		if ( ($num / 10) % 10 != 1 )
 		{
@@ -600,6 +621,28 @@ class Textmodel extends CI_Model {
 			$arr = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
 		}else if($a=='statusMaternityLeave'){
 			$arr = array(0=>'', 1=>'Requested to Shorten Leave', 2=>'HR Approved - Pending Supervisor\'s Approval', 3=>'HR Disapproved', 4=>'SHORTENED', 5=>'Disapproved by Supervisor',6=>'SHORTENED - PayrollHero Updated');
+		}else if($a=='recommendations'){
+			$arr = array(
+						1 => 'Eligible for regularization',
+						2 => 'Eligible for continued employment',
+						3 => 'End of probationary period',
+						4 => 'Eligible for promotion',
+						5 => 'Eligible for salary adjustment',
+						6 => 'Extension of probationary period',
+						7 => 'Recommended for Performance Management',
+						8 => 'Recommended for Coaching',
+						9 => 'Others (please specify)'
+					);
+		}else if($a=='evaluationTextHeaders'){
+			$arr = array(
+					'dedicationToExcellence' => 'Dedication to Excellence',
+					'proactiveness' => 'Proactiveness',
+					'teamwork' => 'Teamwork (Demonstrates ability to work with others)',
+					'communication' => 'Communication',
+					'reliability' => 'Reliability',
+					'professionalism' => 'Professionalism',
+					'flexibility' => 'Flexibility to Change and Continuous Improvement'
+				);
 		}
 		
 		return $arr;
@@ -608,6 +651,112 @@ class Textmodel extends CI_Model {
 	//$filename is $_FILES['uploadfilename']['name']
 	public function getFileExtn($filename){
 		return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+	}
+	
+	public function getEvaluationText($type){
+		$arr = array();
+		
+		if($type=='dedicationToExcellence'){
+			$arr = array(
+					'This employee displays a positive, "can-do" attitude and he/she doesn\'t stop at "NO."',
+					'This employee is resourceful and is able to find means to work around challenges if only to get the work done on time.',
+					'This employee is creative – he/she develops multiple options to "get the job done."',
+					'This employee demonstrates good industry and technical knowledge in the field or work that he is in and is able to apply this knowledge effectively in his work.',
+					'This employee is performance-conscious and makes sure he/she doesn’t do the same mistake twice.'
+				);
+		}else if($type=='proactiveness'){
+			$arr = array(
+					'This employee promptly communicates to immediate supervisor whenever he/she sees that there is an issue in a project or in a process.',
+					'This employee points out and raises to immediate supervisor or appropriate authority matters that he/she thinks affects his/her productivity and that of his/her team mates, and offers solutions or possible courses of action (rather than just merely pointing it out)'
+				);
+		}else if($type=='teamwork'){
+			$arr = array(
+					'This employee pitches in as an active team member;',
+					'This employee respects the opinions of others.',
+					'This employee develops trust and credibility with team members; settles problems without alienating team members.'
+				);
+		}else if($type=='communication'){
+			$arr = array(
+					'This employee communicates professionally in written and verbal communications. Communicates in a way that is sensitive to the recipient and is not offensive (sensitivity is seen in choice of words and tone of voice.)',
+					'This employee has ability to communicate effectively, clearly, concisely, appropriately with peers, management, subordinates and customers.',
+					'This employee balances talking and listening.'
+				);
+		}else if($type=='reliability'){
+			$arr = array(
+					'This employee demonstrates ability to identify, formulate, and solve problems independently.',
+					'This employee shows genuine concern to his/her productivity and that of the team in general by finding solutions to issues that come up and does not wait on somebody else to fix the problem.',
+					'This employee shows effort to understand the process thoroughly by asking questions and by doing so he/she is able to work without a need for close supervision.',
+					'(Timeliness) This employee prioritizes tasks to meet schedules and deadlines. Completes assignments on time.'
+				);
+		}else if($type=='professionalism'){
+			$arr = array(
+					'This employee demonstrates an understanding of professional and ethical responsibilities. (e.g., complies with all company policies)',
+					'This employee thinks rationally and is able to make effective and reasonable decisions despite of any difficult personal circumstances.',
+					'This employee maintains a good attendance record. Can be relied on to come to work regularly. Manages the use of time off credits well. Comes to work on time and returns to work from breaks as scheduled.'
+				);
+		}else if($type=='flexibility'){
+			$arr = array(
+					'This employee accepts change and the need for lifelong learning: Views change as an opportunity to improve performance and productivity;',
+					'This employee asks questions whenever there are changes in processes in the department and company wide, and seeks full understanding of the rationale behind these changes.',
+					'This employee addresses his/her concerns about the changes via correct channels (through immediate supervisor or through HR).',
+					'This employee is able to cope up and eventually work as effectively after a change in processes or work circumstances.',
+					'This employee does not react negatively and defensively to any change that is introduced and never displays rebellious behavior.',
+				);
+		}
+		
+		return $arr;
+	}
+	
+	//if empType==0 that's self evaluation else Supervisor
+	public function evaluationTable($empType=0, $arrType=1, $row=''){
+		$text = '';
+		$arrConstant = $this->textM->constantArr('evaluationTextHeaders');
+		
+		if($arrType==1) $dream = array('dedicationToExcellence', 'proactiveness', 'teamwork');
+		else if($arrType==2) $dream = array('communication', 'reliability', 'professionalism');
+		else $dream = array('flexibility');
+		
+		$text .= '<table class="tableInfo">';
+		foreach($dream AS $a){			
+			$text .= '<tr class="trhead">';
+				$text .= '<td width="70%">'.$arrConstant[$a].'</td>';
+				if($empType==1) 
+					$text .= '<td align="center">Employee\'s Rating</td>';				
+				$text .= '<td align="center">Your Rating</td>';
+			$text .= '</tr>';
+			
+			$sige = 0;
+			$team = $this->textM->getEvaluationText($a);
+			if($empType==1) $haha = $row->$a;
+			foreach($team AS $t){
+				$text .= '<tr>';
+					$text .= '<td>'.$t.'</td>';
+					if($empType==1){
+						$text .= '<td>'.$this->textM->formfield('text', '', ((isset($haha[$sige]))?$haha[$sige]:''), 'forminput tacenter', '', 'disabled="disabled"').'</td>';
+					}
+					$text .= '<td>'.$this->textM->formfield('number', $a.'[]', '', 'forminput tacenter', '', 'min="1" max="10" required').'</td>';
+				$text .= '</tr>';
+				$sige++;
+			}
+		}
+		
+		$text .= '</table>';
+		
+		return $text;
+	}
+	
+	public function getScoreMatrix($score){
+		$sc = '';
+		if($score>=8)
+			$sc = 'Excellent (Exceeds expectations)';
+		else if($score>=5 && $score<8)
+			$sc = 'Good (Meets expectations).';
+		else if($score>=3 && $score<5)
+			$sc = 'Fair (Improvement needed).';
+		else
+			$sc = 'Poor (Unsatisfactory)';
+			
+		return $sc;
 	}
 		
 }

@@ -2965,8 +2965,36 @@ class Staff extends MY_Controller {
 		
 		if($this->access->accessFullHR==false) $data['access'] = false;
 		else{
+			if(!empty($_POST)){
+				if($_POST['submitType']=='printedEval'){
+					$this->dbmodel->updateQuery('staffEvaluation', array('evalID'=>$_POST['id']), array('hrStatus'=>2));
+					$this->dbmodel->updateConcat('staffEvaluation', 'evalID="'.$_POST['id'].'"', 'hrStatusData', $this->user->username.' - Printed form - '.date('Y-m-d H:i:s').'|');
+					
+					$eval = $this->dbmodel->getSingleInfo('staffEvaluation', '(SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, (SELECT email FROM staffs WHERE empID=reviewerEmpID) AS reviewerEmail', 'evalID="'.$_POST['id'].'"');
+					//send email to reviewer				
+					$emBody = '<p>Hi,</p>
+							<p>Please be informed that the evaluation form of '.$eval->name.' has been printed. Please collect the document from HR have it signed by '.$eval->name.' and return signed document to HR for filing.</p>
+							<p>&nbsp;</p>
+							<p>Yours truly,<br/>
+							<b>The Human Resources Department</b></p>';												
+					$this->emailM->sendEmail('hr.cebu@tatepublishing.net', $eval->reviewerEmail, 'Evaluation form has been printed', $emBody, 'The Human Resources Department');
+				}else if($_POST['submitType']=='uploadEval'){
+					if(!empty($_FILES['evalDoc']['name'])){
+						$fextn = $this->textM->getFileExtn($_FILES['evalDoc']['name']);
+						$filename = 'evaluationForm_'.$_POST['evalID'].'_'.$_POST['empID'].'.'.$fextn;
+						
+						move_uploaded_file($_FILES['evalDoc']['tmp_name'], UPLOADS.'evaluations/'.$filename);
+						
+						$this->dbmodel->updateQuery('staffEvaluation', array('evalID'=>$_POST['evalID']), array('hrStatus'=>0));
+						$this->dbmodel->updateConcat('staffEvaluation', 'evalID="'.$_POST['evalID'].'"', 'hrStatusData', $this->user->username.' - Uploaded form - '.date('Y-m-d H:i:s').'|');
+					}
+				}
+			}
+			
 			$data['queryProbationary'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="probationary" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
+			
+			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', 'status=1 AND hrStatus>0');
 		}
 				
 		$this->load->view('includes/template', $data);
@@ -3153,29 +3181,126 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	function employeeEvaluation(){
-		$data['content'] = 'employeeEvaluation';
+	
+	function evaluationself(){
+		$data['content'] = 'evaluationself';
+		
+		if($this->user!=false){
+			if(!empty($_POST)){
+				if($_POST['submitType']=='submitSelfEval'){
+					unset($_POST['submitType']);
+					
+					$insArr = $_POST;
+					$arrPerf = array('dedicationToExcellence', 'proactiveness', 'teamwork', 'communication', 'reliability', 'professionalism','flexibility');
+					
+					foreach($insArr AS $k=>$i){
+						if(in_array($k, $arrPerf)){
+							$insArr[$k] = implode(',', $i);
+						}
+					}
+					
+					$insArr['empID_fk'] = $this->user->empID;
+					$insArr['reviewFrom'] = date('Y-m-d', strtotime($insArr['reviewFrom']));
+					$insArr['reviewTo'] = date('Y-m-d', strtotime($insArr['reviewTo']));
+					$insArr['dateSelfEvaluated'] = date('Y-m-d H:i:s');
+					
+					$this->dbmodel->insertQuery('staffEvaluation', $insArr);					
+					
+					$this->commonM->addMyNotif($this->user->empID, 'You submitted your self-evaluation.', 5);
+					$data['inserted'] = true;
+				}				
+			}
+			
+			$data['queryEvaluations'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, status, evalRating, finalRating, dateSelfEvaluated, reviewerEmpID, reviewFrom, reviewTo, (SELECT CONCAT(fname," ",lname) FROM staffs WHERE empID=reviewerEmpID AND reviewerEmpID!=0) AS reviewer', 'empID_fk="'.$this->user->empID.'" AND status<2', '', 'evalID DESC');
+			
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
+	
+	function evaluationsupervisor(){
+		$data['content'] = 'evaluationsupervisor';
 		$id = $this->uri->segment(2);
-		$data['type'] = $this->uri->segment(3);
 		
-		
-		if($this->access->accessFullHR==false || !is_numeric($id)){
+		if(!is_numeric($id) || ($this->access->accessFullHR==false && $this->commonM->checkStaffUnderMe($id)==false) ){
 			$data['access'] = false;
 		}else{
+			$data['evalData'] = $this->dbmodel->getSingleInfo('staffEvaluation', '*', 'reviewType="90th" AND empID_fk="'.$id.'"');
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, empStatus, CONCAT(fname," ",lname) AS name, perStatus, title, dept, supervisor, startDate', 'empID="'.$id.'"', 'LEFT JOIN newPositions ON posID=position');
 			if(isset($data['row']->supervisor) && $data['row']->supervisor!=0){
 				$data['firstsup'] = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$data['row']->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
 				
 				if(isset($data['firstsup']->supervisor) && $data['firstsup']->supervisor!=0){
 					$data['secondsup'] = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$data['firstsup']->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
-				}
-				
+				}				
 			}
 			
-			$data['supervisorData'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'active=1 AND is_supervisor=1','fname');
+			if(!empty($_POST)){
+				unset($_POST['submitType']);
+				$upArr = $_POST;			
+				
+				$arrPerf = array('dedicationToExcellence', 'proactiveness', 'teamwork', 'communication', 'reliability', 'professionalism','flexibility');
+					
+				foreach($upArr AS $k=>$ir){
+					if(in_array($k, $arrPerf)){
+						$imparr  = implode(",", $ir);
+						$upArr[$k] = $data['evalData']->$k.'+++'.$imparr;
+					}
+				}
+				 
+				$arrOther = array('achievements', 'strengths', 'areasOfImprovement', 'goals', 'evalRating');
+				foreach($arrOther AS $a){
+					$upArr[$a] = $data['evalData']->$a.'+++'.$upArr[$a];
+				}
+				
+				$upArr['status'] = 1;
+				$upArr['reviewDate'] = date('Y-m-d', strtotime($upArr['reviewDate']));
+				$upArr['dateSupEvaluated'] = date('Y-m-d H:i:s');
+				
+				if(!empty($upArr['nextReviewDate'])) $upArr['nextReviewDate'] = date('Y-m-d', strtotime($upArr['nextReviewDate']));				
+				if(!empty($upArr['effectiveDate'])) $upArr['effectiveDate'] = date('Y-m-d', strtotime($upArr['effectiveDate']));
+								
+				if(!empty($upArr['effectiveSeparationDate'])) 
+					$upArr['effectiveDate'] = date('Y-m-d', strtotime($upArr['effectiveSeparationDate']));
+												
+				unset($upArr['effectiveSeparationDate']);
+				$this->dbmodel->updateQuery('staffEvaluation', array('evalID'=>$data['evalData']->evalID), $upArr);
+				
+				$this->commonM->addMyNotif($this->user->empID, 'You submitted evalution of '.$data['row']->name.'.', 5);
+				$data['submitted'] = true;
+			}
+						
+			$data['querySupervisor'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'active=1 AND is_supervisor=1','fname');					
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);	
+	}
+	
+	public function evaluationpdf(){
+		$id = $this->uri->segment(2);
+		
+		if(!is_numeric($id)){
+			echo 'Invalid';
+			exit;
+		}else{
+			$evalData = $this->dbmodel->getSingleInfo('staffEvaluation', 'staffEvaluation.*, (SELECT CONCAT(fname," ",lname) AS name FROM staffs WHERE empID=reviewerEmpID) AS reviewer', ' evalID="'.$id.'"');
+			
+			if($evalData->status==0){
+				echo 'Invalid.';
+				exit;
+			}
+			
+			$row = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, empStatus, CONCAT(fname," ",lname) AS name, perStatus, title, dept, supervisor, startDate', 'empID="'.$evalData->empID_fk.'"', 'LEFT JOIN newPositions ON posID=position');
+			if(isset($row->supervisor) && $row->supervisor!=0){
+				$row->firstsup = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$row->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
+				
+				if(isset($row->firstsup->supervisor) && $row->firstsup->supervisor!=0){
+					$row->secondsup = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(lname,", ",fname) AS name, title, supervisor', 'empID="'.$row->firstsup->supervisor.'"', 'LEFT JOIN newPositions ON posID=position');
+				}		
+			}
+			
+			$this->staffM->evaluationpdf($evalData, $row);
+		}
 	}
 	
 }

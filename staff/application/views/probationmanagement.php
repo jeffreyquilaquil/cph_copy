@@ -2,6 +2,7 @@
 <ul class="tabs">
 	<li class="tab-link current" data-tab="tab-1">Probationary Employees</li>
 	<li class="tab-link" data-tab="tab-2">Pre-Employment Requirements (Regular Employees)</li>
+	<li class="tab-link" data-tab="tab-3">Pending for HR (<?= count($queryEval) ?>)</li>
 </ul>
 <br/>
 
@@ -67,3 +68,64 @@
 	?>
 	</table>
 </div>
+
+<div id="tab-3" class="tab-content">
+	<table class="tableInfo datatable">
+		<thead>
+			<tr class="trhead">
+				<td>Evaluation ID</td>
+				<td>Name of Employee</td>
+				<td>Reviewer</td>
+				<td>Final Rating</td>
+				<td>PDF File</td>
+				<td><br/></td>
+			</tr>
+		</thead>
+	<?php
+		foreach($queryEval AS $qe){
+			echo '<tr>';
+				echo '<td>'.$qe->evalID.'</td>';
+				echo '<td>'.$qe->name.'</td>';
+				echo '<td>'.$qe->reviewerName.'</td>';
+				echo '<td>'.$this->textM->getScoreMatrix($qe->finalRating).'</td>';
+				echo '<td><a href="'.$this->config->base_url().'evaluationpdf/'.$qe->evalID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
+				echo '<td>';
+					if($qe->hrStatus==1) echo '<a href="javascript:void(0);" onClick="printed('.$qe->evalID.')">Click if done printing.</a>';
+					else if($qe->hrStatus==2){
+						echo '<form id="uploadEvalForm" action="" method="POST" enctype="multipart/form-data">';
+						echo '<input type="hidden" name="empID" value="'.$qe->empID_fk.'"/>';
+						echo '<input type="hidden" name="evalID" value="'.$qe->evalID.'"/>';
+						echo '<input type="hidden" name="submitType" value="uploadEval"/>';
+						echo '<input type="file" name="evalDoc" id="evalDoc" class="hidden"/>';						
+						echo '</form>';
+						echo '<button id="btnEvalUpload">Upload Signed File</button>';
+					} 
+				echo '</td>';
+			echo '</tr>';
+		}
+	?>
+	</table>
+</div>
+
+<script type="text/javascript">
+	$(function(){
+		$('#btnEvalUpload').click(function(){
+			$('#evalDoc').trigger('click');
+		});
+		
+		$('#evalDoc').change(function(){
+			displaypleasewait();
+			$('#uploadEvalForm').submit();
+		});
+	});
+	
+	function printed(id){
+		if(confirm('Are you sure you printed the evaluation form?')){
+			displaypleasewait();
+			$.post('<?= $this->config->item('career_uri') ?>', {submitType:'printedEval', id:id},
+			function(){
+				location.reload();
+			});
+		}
+	}
+</script>
