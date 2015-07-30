@@ -165,11 +165,11 @@ if(isset($added)){
 		<?php
 			if($page=='edit'){
 				echo $this->textM->formfield('hidden', 'submitType', 'editposition');
-				echo $this->textM->formfield('submit', '', 'Edit Position', 'padding5px');
 			}else{
 				echo $this->textM->formfield('hidden', 'submitType', 'addposition');
-				echo $this->textM->formfield('submit', '', 'Add Position', 'padding5px');
 			}
+			
+			echo $this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
 		?>
 		</td>
 	</tr>

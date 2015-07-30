@@ -1,7 +1,7 @@
 <?php 
 if($page=='details'){
 ?>
-<a class="iframe" href="<?= $this->config->base_url().'addnewposition/'.$row->posID.'/' ?>"><button style="float:right;" class="padding5px">Edit Position</button></a>
+<a class="iframe" href="<?= $this->config->base_url().'addnewposition/'.$row->posID.'/' ?>"><button style="float:right;" class="btnclass">Edit Position</button></a>
 <h2>Position Details</h2>
 <hr/>
 <table class="tableInfo">
@@ -80,7 +80,7 @@ if($page=='details'){
 <?php }else{ ?>
 <h2>List of All Positions</h2><hr/>
 
-<div style="position:absolute; right:45px;">
+<div style="position:absolute; right:45px; z-index:99;">
 	<a class="iframe" href="<?= $this->config->base_url().'addnewposition/' ?>">
 		<button class="btnclass">Add New Position</button>
 	</a>
@@ -111,7 +111,7 @@ if($page=='details'){
 				<td><b>'.$p->title.'</b></td>
 				<td>'.$p->levelName.'</td>
 				<td>'.(($p->active==1)?'Active':'Inactive').'</td>
-				<td><a href="'.$this->config->base_url().'allpositions/'.$p->posID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon2.png"></a></td>
+				<td><a href="'.$this->config->base_url().'allpositions/'.$p->posID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/btn-view-details.png"></a></td>
 			</tr>';
 	endforeach;
 ?>
