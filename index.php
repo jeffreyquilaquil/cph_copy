@@ -106,15 +106,35 @@ if(isset($_POST['submit'])){
 	}
 }
 
+$oQuery = $db->selectQueryArray('SELECT posID, title, `desc` FROM jobReqData LEFT JOIN newPositions ON posID=positionID WHERE status = 0 GROUP BY positionID ORDER BY title');
+
 require 'includes/header.php';
 ?>
     <!-- Main jumbotron for a primary marketing message or call to action -->
-      <div class="container">
+    <div class="container">
         <div class="well">
         	<?php echo get_error();?>
         	<?php if(sizeof($update) == 0):?>
+			<div style="float:right; width:19%; padding:10px; line-height:1;">
+				<div style="font-size:18px; color:#800000; font-weight:bold; text-align:center; padding-bottom:10px;">Open Positions</div>
+			<?php
+				foreach($oQuery AS $o){
+					echo '<div id="oDiv_'.$o['posID'].'" style="background-color:#fff; color:#800000;">
+							<div style="border:1px solid #000; padding:5px; font-weight:bold; cursor:pointer;" onClick="showOpos('.$o['posID'].')">
+								'.$o['title'].'
+							</div>
+							<div class="oposDivDesc" style="font-size:11px; padding:10px;">
+								'.((empty($o['desc']))?'No description':nl2br($o['desc'])).'
+							</div>
+						</div>';
+				}
+			?>
+				<br/>
+				<i style="font-size:11px; color:#888; padding:5px; text-align:center;">You may still apply for other positions that are not currently open, and once the positions open, we will gladly process your application!</i>
+			</div>		
+			
         	<!-- Form -->
-              <?php $form->formStart("","POST",'class="bs-example form-horizontal"');?>
+              <?php $form->formStart("","POST",'class="bs-example form-horizontal" style="width:80%"');?>
                 <fieldset>
                   <legend>Application Form    <br/><font size="2px;" ><b><i>***Check your mobile and email inbox regularly for updates on your application. </i></b></font></legend>
                     	<?php $form->text("lname",$_POST['lname'],'class="form-control"',"Last Name","",TRUE);?>
@@ -263,6 +283,10 @@ require 'includes/header.php';
       	$('#submit_decoy').click(function(){
 			$('#submit_button').trigger('click');
         });
+		
+		function showOpos(id){
+			$('#oDiv_'+id+' .oposDivDesc').toggle();
+		}
       </script>
 	  <!-- Date time picker -->
 		<link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css"/ >
