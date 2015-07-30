@@ -3105,7 +3105,7 @@ class Staff extends MY_Controller {
 		else{
 			$data['queryReferrals'] = $this->dbmodel->getQueryResults('staffReferFriend', 'staffReferFriend.*, (SELECT CONCAT(lname,", ",fname) AS name FROM staffs WHERE empID=empID_fk) AS referrer', 'refStatus=1');
 			
-			$data['queryTop'] = $this->dbmodel->getSQLQueryResults('SELECT empID, CONCAT(fname," ",lname) AS name, (SELECT SUM(bonus) FROM staffReferralBonus WHERE empID_fk = empID AND mrbID_fk=0) AS bonus, (SELECT COUNT(id) FROM applicants WHERE referrerID=empID) AS cnt FROM staffs WHERE active=1 HAVING cnt>=1');
+			$data['queryTop'] = $this->dbmodel->getSQLQueryResults('SELECT empID, CONCAT(fname," ",lname) AS name, (SELECT SUM(bonus) FROM staffReferralBonus WHERE empID_fk = empID AND mrbID_fk=0) AS bonus, (SELECT COUNT(id) FROM applicants WHERE referrerID=empID) AS cnt FROM staffs WHERE active=1 HAVING cnt>=5');
 			
 			$data['queryMRB'] = $this->dbmodel->getQueryResults('staffMRB', 'staffMRB.*, fname, lname', '1', 'LEFT JOIN staffs ON empID=empID_fk');
 		
