@@ -69,7 +69,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 	</fieldset>
 	
 	<div style="display:none;">
-		<div id="prodpreview">
+		<div id="prodpreview" style="padding:0 20px;">
 			<br/>
 			Select an email to send:<br/><br/>
 			<center>
@@ -270,7 +270,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 </div>
 <script type="text/javascript">
 $(document).ready(function() {
-	$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
+	$(".iframe").colorbox({iframe:true, width:"990px", height:"640px"});
 	$(".iframeSmall").colorbox({inline:true, width:"450px", height:"300px"});
 	
 	var oTable;

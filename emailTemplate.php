@@ -17,6 +17,7 @@ if(!empty($id)){
 	$arrValues['%POSITION%'] = $position;
 }
 
+
 $subject = '';
 $to = '';
 $message;
@@ -24,7 +25,7 @@ $message;
 if(isset($_POST) && !empty($_POST)){
 	if($_POST['submitType']=='send'){
 		if(empty($_POST['subject']) || empty($_POST['email']) || empty($_POST['message'])){
-			echo '<p style="color:red;">Unable to send message. Please check all empty fields.</p>';
+			echo '<p style="color:red;">Unable to send message. Please check all empty fields and invalid inputs.</p>';
 		}else{
 			$toId = array();
 			
@@ -42,21 +43,45 @@ if(isset($_POST) && !empty($_POST)){
 				}
 				
 				$noApp = '';
-				$_POST['email'] = '';				
+				$emails = '';
+				$toArr = array();
 				$exCount = count($explodeR);
 				
 				for($c=0; $c<$exCount; $c++){
 					if(!array_key_exists($explodeR[$c], $qArr))
 						$noApp .= $explodeR[$c].', ';
-					else if(!empty($qArr[$explodeR[$c]]['email'])){
-						$_POST['email'] .= $qArr[$explodeR[$c]]['email'].', ';
-						$toId[] = $explodeR[$c];
-					}
+					else{
+						if(isValidEmail(trim($qArr[$explodeR[$c]]['email']))===false){
+							$noApp .= $qArr[$explodeR[$c]]['email'].', ';
+						}else{
+							$emails .=  $qArr[$explodeR[$c]]['email'].',';
+							$toArr[] = array('id'=>$explodeR[$c], 'email'=>$qArr[$explodeR[$c]]['email']);
+						}
+					}						
 				}
-								
+				
+				foreach($toArr AS $t){
+					$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">'.$_POST['message'].'</div>';
+					sendEmail( 'careers.cebu@tatepublishing.net', $t['email'], $_POST['subject'], $body, 'Career Index Auto Email' );		
+					$messageNote = '<b>Sent '.$_POST['subject'].' Auto-email</b><br/><div class="message">
+									From: careers.cebu@tatepublishing.net<br/>
+									To: '.$t['email'].'<br/>
+									Subject: '.$_POST['subject'].'<br/>
+									'.$_POST['message'].'
+								</div>';
+					
+					addStatusNote($t['id'], 'email', '', '', $messageNote);
+				}
+				
 				if(!empty($noApp)){
-					echo '<p style="color:red;">Email NOT sent to '.rtrim(trim($noApp), ',').'.  No email address or invalid input.</p>';
+					echo '<p style="color:red;">Email NOT sent to '.rtrim(trim($noApp), ',').'.<br/>
+					No email address or invalid email.</p>';
 				}
+				
+				$sendto = rtrim(trim($emails),',');
+				if(!empty($sendto))
+					echo 'Thank you!<br/>The email has been sent to '.$sendto.' individually.';				
+				
 			}else if($type=='finalInterview'){
 				//send email to interviewer and job requestor
 				$to = array();		
@@ -74,26 +99,38 @@ if(isset($_POST) && !empty($_POST)){
 				
 				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email' );
 				echo '<p>Interviewer and requester are also informed.</p>';
-			}
-			
-			if(!empty($_POST['email'])){
-				$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">'.$_POST['message'].'</div>';
-				sendEmail( 'careers.cebu@tatepublishing.net', $_POST['email'], $_POST['subject'], $body, 'Career Index Auto Email' );		
-				$messageNote = '<b>Sent '.$_POST['subject'].' Auto-email</b><br/><div class="message">
-								From: careers.cebu@tatepublishing.net<br/>
-								To: '.rtrim(trim($_POST['email']), ',').'<br/>
-								Subject: '.$_POST['subject'].'<br/>
-								'.$_POST['message'].'
-							</div>';
-			
-				foreach($toId AS $t){
-					addStatusNote($t, 'email', '', '', $messageNote);
+			}else if(!empty($_POST['email'])){				
+				$email = array();
+				$noSent = '';
+				$emailArr = explode(',', $_POST['email']);
+				foreach($emailArr AS $e){
+					if(isValidEmail(trim($e))===false){
+						$noSent .= trim($e).',';												
+					}else{
+						$email[] = trim($e);
+					}
 				}
 				
-				echo 'Thank you! The email has been sent to '.rtrim(trim($_POST['email']),',');
+				if(isset($_POST['individually'])){
+					foreach($email AS $ee)
+						sendEmail( 'careers.cebu@tatepublishing.net', $ee, $_POST['subject'], $_POST['message'], 'Career Index Auto Email' );
+				}else if(!empty($email)){
+					sendEmail( 'careers.cebu@tatepublishing.net', implode(',', $email), $_POST['subject'], $_POST['message'], 'Career Index Auto Email' );
+				}
+
+				if(!empty($noSent)){
+					echo '<p style="color:red;">Email NOT sent to '.rtrim(trim($noSent), ',').'.<br/>
+					Invalid email.</p>';
+				}
+
+				if(!empty($email)){
+					echo 'Thank you!<br/>The email has been sent to '.implode(',', $email);
+					if(isset($_POST['individually'])) echo ' individually.';
+				}				
 			}else{
 				echo '<p style="color:red;">Email not sent. Empty recipient.</p>';
 			}
+			
 			exit;
 		}			
 	}else if($_POST['submitType']=='generate'){
@@ -381,13 +418,15 @@ if(isset($_POST) && !empty($_POST)){
 	
 
 <form action="" method="POST">
-	<div id="emailContentDiv" <?= ((isset($hideContent) && $hideContent==true)?'style="display:none;"':'') ?>>
-		<b>Subject:</b> <input type="text" name="subject" value="<?= $subject ?>" style="width:100%;padding:5px;"/><br/>
+	<div id="emailContentDiv" style="padding:10px; <?= ((isset($hideContent) && $hideContent==true)?'display:none;':'') ?>">
+		<b>Subject:</b> <input type="text" name="subject" value="<?= ((isset($_POST['subject']))?$_POST['subject']:$subject) ?>" style="width:100%;padding:5px;" required/><br/><br/>
 		
 		<b>To:</b> <span style="font-size:10px;font-style:italic; color:#777;"><?= (($type!='invitationtoapplyopenposition')?'(Separate email addresses with comma)':'') ?></span>
-		<input type="text" name="email" value="<?= $to ?>" style="width:100%;padding:5px;" <?= (($type=='invitationtoapplyopenposition')?'placeholder="Application IDs, separated by commas"':'') ?>/><br/>
-		
-		<b>Message:</b><textarea name="message" style="height:250px;"><?= $message ?></textarea><br/>
+		<input type="text" name="email" value="<?= ((isset($_POST['email']))?$_POST['email']:$to) ?>" style="width:100%;padding:5px;" <?= (($type=='invitationtoapplyopenposition')?'placeholder="Application IDs, separated by commas"':'') ?> required/>
+		<input type="checkbox" name="individually"/> <i>Send individually</i>
+		<br/><br/>
+				
+		<b>Message:</b><textarea name="message" style="height:250px;"><?= ((isset($_POST['message']))?$_POST['message']:$message) ?></textarea><br/>
 	</div>
 <?php 
 	if(isset($template['toEdit']) && $template['toEdit']==1){

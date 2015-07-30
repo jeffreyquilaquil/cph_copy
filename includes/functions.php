@@ -123,11 +123,18 @@ function is_good_email($email, $id=NULL){
 	$email = trim($email);
 	if(empty($email)){
 		return "Email empty.";
-	}
-	else if(filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE){
+	}else if(filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE){
 		return "Invalid Email.";
 	}
 	return TRUE;
+}
+
+function isValidEmail($email){
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function get_ajax_loader($element, $image='img/loading.gif'){
@@ -181,6 +188,8 @@ function sendEmail( $from, $to, $subject, $body, $fromName='', $CC='', $BCC='' )
 			$BCC = '';
 		}
 	}
+	
+	$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">'.$body.'</div>';
 	$fields = array(
 		'from' => $from,
 		'sendTo' => $to,
