@@ -2614,7 +2614,7 @@ class Staff extends MY_Controller {
 				if($_POST['submitType']=='generateC'){	
 					unset($_POST['submitType']);
 					$coached = $_POST;
-					
+										
 					$insArr['generatedBy'] = $this->user->empID;
 					$insArr['dateGenerated'] = date('Y-m-d H:i:s');
 					

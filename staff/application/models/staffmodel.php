@@ -805,16 +805,18 @@ class Staffmodel extends CI_Model {
 			
 			$erate = 0;
 			$srate = 0;
+			$rnum = 0;
 			foreach($eRating AS $e):
 				$erate += $e;
+				$rnum++;
 			endforeach;	
 			
 			foreach($sRating AS $s):
 				$srate += $s;
 			endforeach;
 			
-			$eRateAve = $erate/count($allAE);
-			$sRateAve = $srate/count($allAE);
+			$eRateAve = $erate/$rnum;
+			$sRateAve = $srate/$rnum;
 			
 			if($row->selfRating!='' && $row->supervisorsRating!=''){
 				//averages

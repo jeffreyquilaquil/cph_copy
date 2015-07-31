@@ -202,12 +202,18 @@
 	
 	function nextIM(){
 		spanval = $('#numaspect').attr('value');
-		aspectExpected = $('#aspect').val()+'++||++'+$('#expected').val();	
-		cform['aspectExpected'+spanval] = aspectExpected.replace(/(\r\n|\n|\r)/gm," ");
-				
-		//proceed to form 3
-		$('#form2').addClass('hidden');
-		$('#form3').removeClass('hidden');
+		if($('#aspect').val()!='' && $('#expected').val()!=''){
+			aspectExpected = $('#aspect').val()+'++||++'+$('#expected').val();	
+			cform['aspectExpected'+spanval] = aspectExpected.replace(/(\r\n|\n|\r)/gm," ");
+		}	
+		
+		if(spanval==1 && ($('#aspect').val()=='' || $('#expected').val()=='')){
+			alert('All fields are required.');
+		}else{
+			//proceed to form 3
+			$('#form2').addClass('hidden');
+			$('#form3').removeClass('hidden');
+		}
 	}
 	
 	function changeEnd(){
