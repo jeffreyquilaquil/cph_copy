@@ -62,15 +62,7 @@ $(function () {
 		displaypleasewait();
 		$('#PTpform').submit();				
 	});
-	
-	$('#addfile').click(function(){
-		$('#pfilei').trigger('click');
-	});
-	$('#pfilei').change(function(){
-		displaypleasewait();
-		$('#pfformi').submit();				
-	});
-	
+		
 	$('#rupdateTO').click(function(){
 		$('.toTRclass').removeClass('hidden');
 	});
@@ -169,7 +161,7 @@ $(function () {
 				skype:$('#skype').val(),
 				google:$('#google').val()
 			},function(){
-				location.reload();
+				window.location.reload();
 			});
 		}
 	});
@@ -211,7 +203,7 @@ $(function () {
 				levelID_fk:$('#levelID_fk').val(),
 				terminationType:$('#terminationType').val()
 			},function(){
-				location.reload();
+				window.location.reload();
 			});
 		}
 	});
@@ -227,7 +219,7 @@ $(function () {
 			hmoNumber:$('#hmoNumber').val(),
 			taxstatus:$('#taxstatus').val()
 		},function(){
-			location.reload();
+			window.location.reload();
 		});
 	});
 	
@@ -240,7 +232,7 @@ $(function () {
 				submitType:'uLeaveC',
 				note:$('#noteHR').val()
 			}, function(){
-				location.reload();
+				window.location.reload();
 			});
 		}
 	});
@@ -266,7 +258,7 @@ function delFile(id, fname){
 			fileName:fname
 		},function(){
 			alert('File has been deleted.');
-			location.reload();
+			location.href=CAREERURI;
 		});
 	}
 }
@@ -281,7 +273,7 @@ function cancelRequest(id, f, fname){
 			fname:fname
 		},function(){
 			alert('Request has been cancelled.');
-			location.reload();
+			window.location.reload();
 		});
 	}
 }	
@@ -335,4 +327,13 @@ function toggleDisplay(id, jun){
 		if(id=="jobtbl" || id=="compensationtbl")
 			$('#'+id+' a.edit').toggleClass("hidden");
 	});
+}
+
+function addFile(type){
+	$('#'+type+'tbl .pfilei').trigger('click');
+}
+
+function formSubmitfile(tbl){
+	displaypleasewait();
+	$('#'+tbl+'tbl form.pfformi').submit();	
 }

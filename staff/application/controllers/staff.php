@@ -491,11 +491,11 @@ class Staff extends MY_Controller {
 							}
 							if($moreThan100==1)
 								$err = 'Filename is too long. Please upload filename less than 100 characters.';
-						} 						
+						} 		
 						
 						if($err!=''){
 							echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
-						}else{
+						}else{		
 							$fnotes = '';
 							for($ff=0; $ff<$cntUp; $ff++){
 								$filename = $upFile['name'][$ff];
@@ -517,29 +517,36 @@ class Staff extends MY_Controller {
 									chmod($dir.'/', 0777);
 								}
 								
-								move_uploaded_file($upFile['tmp_name'][$ff], $dir.'/'.$filename);
-								$pIns['empID_fk'] = $data['row']->empID;
-								$pIns['uploadedBy'] = $this->user->empID;
-								$pIns['fileName'] = $filename;
-								$pIns['dateUploaded'] = date('Y-m-d H:i:s');
-								$this->dbmodel->insertQuery('staffUploads', $pIns);
-								
-								//for notification
-								$ciframe = '';								
-								$ext = strtolower(pathinfo($upFile['name'][$ff], PATHINFO_EXTENSION));
-								if(in_array($ext, array('jpg', 'png', 'gif', 'pdf')))
-									$ciframe = 'class="iframe"';
-																
-								$fnotes .= '<li><a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a></li>';								
+								if(move_uploaded_file($upFile['tmp_name'][$ff], $dir.'/'.$filename)){
+									$pIns['empID_fk'] = $data['row']->empID;
+									$pIns['uploadedBy'] = $this->user->empID;
+									$pIns['fileName'] = $filename;
+									$pIns['dateUploaded'] = date('Y-m-d H:i:s');
+									if(isset($_POST['typeVal'])) $pIns['fileType'] = $_POST['typeVal'];
+									$this->dbmodel->insertQuery('staffUploads', $pIns);
+									
+									//for notification
+									$ciframe = '';								
+									$ext = strtolower(pathinfo($upFile['name'][$ff], PATHINFO_EXTENSION));
+									if(in_array($ext, array('jpg', 'png', 'gif', 'pdf')))
+										$ciframe = 'class="iframe"';
+																	
+									$fnotes .= '<li><a href="'.$this->config->base_url().$dir.'/'.$filename.'" '.$ciframe.'>'.$filename.'</a></li>';
+								}else{
+									echo '<script>alert("Unable to upload file. Please upload less than 2MB."); location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
+									exit;
+								}																
 							}
 							
-							//add notifications							
-							if($data['row']->empID==$this->user->empID){
-								$this->commonM->addMyNotif($this->user->empID, 'Uploaded file/s: <ul>'.$fnotes.'</ul>');
-							}else{
-								$ttxt = $this->user->name.' <ul>'.$fnotes.'</ul>';
-								$this->commonM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
-							}							
+							//add notifications	
+							if(!empty($fnotes)){
+								if($data['row']->empID==$this->user->empID){
+									$this->commonM->addMyNotif($this->user->empID, 'Uploaded file/s: <ul>'.$fnotes.'</ul>');
+								}else{
+									$ttxt = $this->user->name.' <ul>'.$fnotes.'</ul>';
+									$this->commonM->addMyNotif($data['row']->empID, $ttxt, 0, 1);
+								}
+							}														
 						}
 					}else if($_POST['submitType']=='delFile'){
 						$this->dbmodel->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('isDeleted' => 1, 'deletedBy'=>$this->user->empID, 'dateDeleted'=>date('Y-m-d H:i:s')));
@@ -603,8 +610,10 @@ class Staff extends MY_Controller {
 				$data['disciplinary'] = $this->dbmodel->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
 				$data['perfTrackRecords'] = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating, dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated, HRoptionStatus, fname AS name', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');
 								
-				$data['pfUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0','', 'dateUploaded DESC');
-				$data['nteUploadedFiles'] = $this->dbmodel->getQueryResults('staffNTE', 'nteuploaded, caruploaded', 'empID_fk="'.$data['row']->empID.'"');
+				$data['pfUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0 AND (fileType!="disciplinary" OR fileType!="performance")','', 'dateUploaded DESC');
+				$data['disciplinaryUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0 AND fileType="disciplinary"','', 'dateUploaded DESC');
+				$data['performanceUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0 AND fileType="performance"','', 'dateUploaded DESC');
+				$data['nteUploadedFiles'] = $this->dbmodel->getQueryResults('staffNTE', 'nteuploaded, caruploaded', 'empID_fk="'.$data['row']->empID.'"');								
 				$data['coachingUploadedFiles'] = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, HRstatusData, HRoptionStatus', 'empID_fk="'.$data['row']->empID.'" AND HRoptionStatus>=2');
 				$data['coachedNames'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) as name', 'coach="'.$data['row']->empID.'" AND active=1');
 								

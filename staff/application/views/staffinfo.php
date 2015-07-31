@@ -275,9 +275,9 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 		<tr class="trlabel">
 			<td>
 				Personal Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('personalfiletbl', this)" class="droptext">Show</a>]
-					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" id="addfile">+ Add File</a><? } ?>
-				<form id="pfformi" action="" method="POST" enctype="multipart/form-data">
-					<input type="file" name="pfilei[]" id="pfilei" multiple="multiple" class="hidden"/>
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('personalfile')" id="addfile">+ Add File</a><? } ?>
+				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('personalfile')"/>
 					<input type="hidden" name="submitType" value="uploadPF"/>
 				</form>
 			</td>
@@ -286,6 +286,92 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 	<?php
 	$upArr = array();
 	foreach($pfUploaded AS $pf){
+		$xxArr = array();
+		$xxArr['upID'] = $pf->upID;
+		$xxArr['type'] = 'pf';
+		$xxArr['docName'] = $pf->docName;
+		$xxArr['fileName'] = $pf->fileName;
+		$xxArr['dateUploaded'] = $pf->dateUploaded;
+		$upArr[] = $xxArr;
+	}	
+	
+	foreach($upArr as $key => $upr) {
+		$volume[$key]  = $upr['dateUploaded'];
+	}
+	
+	if(!empty($upArr) && !empty($volume)){
+		array_multisort($volume, SORT_DESC, $upArr);
+	}
+		
+	echo '<table class="tableInfo hidden" id="personalfiletblData">';
+		if(count($upArr)==0){
+			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
+		}else{
+			$upArrCnt = count($upArr);
+			echo '<tr class="trhead">
+					<td>Date Uploaded</td>								
+					<td>Document Name</td>
+					<td width="220px"><br/></td>
+				</tr>';
+			for($uu=0; $uu<$upArrCnt; $uu++){
+				echo '<tr>';
+					echo '<td>'.date('d M Y', strtotime($upArr[$uu]['dateUploaded'])).'</td>';
+					echo '<td>
+							<span class="upClass_'.$upArr[$uu]['upID'].'">'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'</span>
+							<input id="uploadDoc_'.$upArr[$uu]['upID'].'" type="text" value="'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'" class="forminput hidden uploadDoc'.$upArr[$uu]['upID'].'"/>
+						</td>';
+					echo '<td align="right">';
+					
+							
+					
+					if($this->access->accessFullHR==true && $upArr[$uu]['type']=='pf'){
+						echo '<button onClick="editUploadDoc('.$upArr[$uu]['upID'].', 0)" class="upClass_'.$upArr[$uu]['upID'].'">Update</button>
+						<img id="uploadDocimg'.$upArr[$uu]['upID'].'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+						<button class="uploadDoc'.$upArr[$uu]['upID'].' hidden" onClick="editUploadDoc('.$upArr[$uu]['upID'].', 1)">Update</button>';
+						echo '<button onClick="delFile('.$upArr[$uu]['upID'].', \''.$upArr[$uu]['fileName'].'\')">Delete</button>';		
+					}
+					
+					
+					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
+						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+					else if($upArr[$uu]['type']=='coaching')
+						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+					else
+						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+					
+					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
+					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
+						echo '<a class="iframe" href="'.$fileUrl.'"><button>View</button></a>';
+					}else{
+						echo '<a href="'.$fileUrl.'"><button>Download</button></a>';
+					}					
+					
+					echo '</td>';
+				echo '</tr>';
+			}
+		}
+	echo '<table>';
+}
+
+if($current=='myinfo' || $this->access->accessFullHR==true){
+?>	
+<!----------------------- DISCIPLINARY MEASURES ----------------------->	
+	<table class="tableInfo" id="disciplinarytbl">
+		<tr class="trlabel">
+			<td>
+				Disciplinary Measures &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disciplinarytbl', this)" class="droptext">Show</a>]
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('disciplinary')">+ Add File</a><? } ?>
+				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('disciplinary')"/>
+					<input type="hidden" name="typeVal" value="disciplinary"/>
+					<input type="hidden" name="submitType" value="uploadPF"/>
+				</form>
+			</td>
+		</tr>		
+	</table>
+	<?php
+	$upArr = array();
+	foreach($disciplinaryUploaded AS $pf){
 		$xxArr = array();
 		$xxArr['upID'] = $pf->upID;
 		$xxArr['type'] = 'pf';
@@ -319,6 +405,94 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 				$upArr[] = $xxArr;
 			}
 		}
+	}	
+		
+	$volume = array();	
+	foreach($upArr as $key => $upr) {
+		$volume[$key]  = $upr['dateUploaded'];
+	}
+	
+	if(!empty($upArr) && !empty($volume)){
+		array_multisort($volume, SORT_DESC, $upArr);
+	}
+		
+	echo '<table class="tableInfo hidden" id="disciplinarytblData">';
+		if(count($upArr)==0){
+			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
+		}else{
+			$upArrCnt = count($upArr);
+			echo '<tr class="trhead">
+					<td>Date Uploaded</td>								
+					<td>Document Name</td>
+					<td width="220px"><br/></td>
+				</tr>';
+			for($uu=0; $uu<$upArrCnt; $uu++){
+				echo '<tr>';
+					echo '<td>'.date('d M Y', strtotime($upArr[$uu]['dateUploaded'])).'</td>';
+					echo '<td>
+							<span class="upClass_'.$upArr[$uu]['upID'].'">'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'</span>
+							<input id="uploadDoc_'.$upArr[$uu]['upID'].'" type="text" value="'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'" class="forminput hidden uploadDoc'.$upArr[$uu]['upID'].'"/>
+						</td>';
+					echo '<td align="right">';
+					
+							
+					
+					if($this->access->accessFullHR==true && $upArr[$uu]['type']=='pf'){
+						echo '<button onClick="editUploadDoc('.$upArr[$uu]['upID'].', 0)" class="upClass_'.$upArr[$uu]['upID'].'">Update</button>
+						<img id="uploadDocimg'.$upArr[$uu]['upID'].'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+						<button class="uploadDoc'.$upArr[$uu]['upID'].' hidden" onClick="editUploadDoc('.$upArr[$uu]['upID'].', 1)">Update</button>';
+						echo '<button onClick="delFile('.$upArr[$uu]['upID'].', \''.$upArr[$uu]['fileName'].'\')">Delete</button>';		
+					}
+					
+					
+					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
+						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+					else if($upArr[$uu]['type']=='coaching')
+						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+					else
+						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+					
+					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
+					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
+						echo '<a class="iframe" href="'.$fileUrl.'"><button>View</button></a>';
+					}else{
+						echo '<a href="'.$fileUrl.'"><button>Download</button></a>';
+					}					
+					
+					echo '</td>';
+				echo '</tr>';
+			}
+		}
+	echo '<table>';
+}
+
+
+if($current=='myinfo' || $this->access->accessFullHR==true){
+?>	
+<!----------------------- PERFORMANCE RELATED DOCUMENTS ----------------------->	
+	<table class="tableInfo" id="performancetbl">
+		<tr class="trlabel">
+			<td>
+				Performance-Related Documents &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('performancetbl', this)" class="droptext">Show</a>]
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('performance')">+ Add File</a><? } ?>
+				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('performance')"/>
+					<input type="hidden" name="typeVal" value="performance"/>
+					<input type="hidden" name="submitType" value="uploadPF"/>
+				</form>
+			</td>
+		</tr>		
+	</table>
+	<?php
+	$upArr = array();
+	foreach($performanceUploaded AS $pf){
+		$xxArr = array();
+		$xxArr['upID'] = $pf->upID;
+		$xxArr['type'] = 'pf';
+		$xxArr['docName'] = $pf->docName;
+		$xxArr['fileName'] = $pf->fileName;
+		$xxArr['dateUploaded'] = $pf->dateUploaded;
+		$upArr[] = $xxArr;
 	}
 	
 	foreach($coachingUploadedFiles AS $cUp){
@@ -359,10 +533,9 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 				$xxArr['dateUploaded'] = $exData[4][2];
 			$upArr[] = $xxArr;
 		}
-	}
-	
-	
-	
+	}	
+		
+	$volume = array();	
 	foreach($upArr as $key => $upr) {
 		$volume[$key]  = $upr['dateUploaded'];
 	}
@@ -371,7 +544,7 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 		array_multisort($volume, SORT_DESC, $upArr);
 	}
 		
-	echo '<table class="tableInfo hidden" id="personalfiletblData">';
+	echo '<table class="tableInfo hidden" id="performancetblData">';
 		if(count($upArr)==0){
 			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
 		}else{
