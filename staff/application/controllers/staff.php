@@ -1646,7 +1646,7 @@ class Staff extends MY_Controller {
 					if($this->user->access=='' && $this->user->level==0 && $this->user->empID != $data['row']->empID_fk)
 						$data['access'] = false;
 				
-					if(!empty($_POST)){
+					if(!empty($_POST)){						
 						$updateArr = array();
 						$actby = '';
 						if($_POST['submitType']=='svisor'){
@@ -1761,7 +1761,7 @@ class Staff extends MY_Controller {
 								$canceldata = '^_^Disapproved cancel request: '.$this->user->username.'|'.date('Y-m-d H:i:s').'<br/><i>Note: '.$_POST['disnote'].'</i>';
 								$actby = 'Disapproved '.$data['row']->name.'\'s cancel leave request. ';
 							}
-						}else if($_POST['submitType']=='cancelHRapprove'){	
+						}else if($_POST['submitType']=='cancelHRapprove'){							
 							$updateArr['iscancelled'] = 1;	
 							$canceldata = '^_^Cancel request approved by HR: '.$this->user->username.'|'.date('Y-m-d H:i:s');
 							
@@ -1771,6 +1771,17 @@ class Staff extends MY_Controller {
 								$usernote .= 'Approved your cancel request. Your leave credits is back to '.$_POST['leaveCredits'].'.';
 							}
 							$actby = 'Approved '.$data['row']->name.'\'s cancel leave request. ';
+							
+							//send email to accounting if cancel leave without pay
+							if($data['row']->status==2){
+								$cancelMsg = '<p>Hi Accounting,</p>
+											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' for the below dates has been cancelled.</p>
+											<p>Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
+											End of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).'<br/>
+											Total Number of Hours: '.$data['row']->totalHours.'</p>
+											<p>Thank you.</p><br/>CareerPH';
+								$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Cancelled Leave Without Pay', $cancelMsg, 'CareerPH Auto-Email');
+							}							
 						}else if($_POST['submitType']=='resubmit'){
 							$updateArr['status'] = 0;	
 							$actby = 'Resubmit your leave request. ';

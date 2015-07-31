@@ -553,10 +553,14 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Cancel Approval</h3></td></tr>';
 		echo '<tr><td>Current leave credits</td><td>'.$row->leaveCredits.'</td></tr>';
 		echo '<tr><td>Leave credits deducted</td><td>'.$row->leaveCreditsUsed.'</td></tr>';
-		echo '<form action="" method="POST" onSubmit="return validateHRcancel();">';	
-		echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="leaveCredits" value="'.($row->leaveCredits + $row->leaveCreditsUsed).'" class="forminput"/></td></tr>';							
-		echo '<tr><td>Update</td><td><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox"/>PayrollHero schedule updated</td></tr>';
-		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelHRapprove"/> <input type="submit" value="Submit"/></td></tr>';
+		echo '<form action="" method="POST" onSubmit="return validateHRcancel('.$row->status.');">';	
+		echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="leaveCredits" value="'.($row->leaveCredits + $row->leaveCreditsUsed).'" class="forminput"/></td></tr>';
+
+		if($row->status!=2){
+			echo '<tr><td>Update</td><td><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox"/>PayrollHero schedule updated</td></tr>';
+		}
+		
+		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelHRapprove"/> <input class="btnclass btngreen" type="submit" value="Submit"/></td></tr>';
 		echo '</form>';
 	}
 	
@@ -817,8 +821,8 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		});
 	}
 	
-	function validateHRcancel(){
-		if($('#leaveCredits').val()=='' || $('#HR_payrollhero_updated:checked').length==0){
+	function validateHRcancel(status){
+		if($('#leaveCredits').val()=='' || (status!=2 && $('#HR_payrollhero_updated:checked').length==0)){
 			alert('Please check approvals.');
 			return false;
 		}else{
