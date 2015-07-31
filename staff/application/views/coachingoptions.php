@@ -90,7 +90,7 @@ if(count($row)==0){
 			echo '</tr>';
 		}
 	?>
-	<?php if($row->status==1){ ?>	
+	<?php if($row->status==1 || $row->status==3){ ?>	
 		<tr>
 			<td>Evaluation Form</td>
 			<td><?= '<a href="'.$this->config->base_url().'coachingform/evaluation/'.$row->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>' ?></td>
