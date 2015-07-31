@@ -228,7 +228,11 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 			} ?>
 	</div>
 	<div id="tab-4" class="tab-content">
-	<table class="applicants" class="hover stripe row-border">
+		<div style="position:absolute; left:550px; z-index:99;">
+			Search attachment file names: <input type="text" id="searchName"/> <input type="button" value="Search" id="searchFile"/>
+		</div>
+
+	<table id="tableAll" class="applicants" class="hover stripe row-border">
 		<thead>
 			<tr>
 				<th>ID</th>
@@ -281,6 +285,30 @@ $(document).ready(function() {
 			"sSearch": "Search all columns:"
 		},
 		"bSortCellsTop": true
+	});
+	
+	$('#searchFile').click(function(){
+		if($('#searchName').val()==''){
+			alert('Search text is empty.');
+		}else{
+			$('<img id="srcID" src="https://careerph.tatepublishing.net/img/ajax-loader.gif">').insertAfter(this);
+			var dbTable = $('#tableAll').dataTable();
+			$.ajax({
+				type: 'GET',
+				url: 'file_search.php',
+				data: {text: $('#searchName').val()},
+				success: function(e){
+					dbTable.fnClearTable();		
+					arr = $.makeArray( $(e) );
+					
+					$.each(arr, function( index, value ) {
+						dbTable.fnAddData([value.cells[0].innerHTML, value.cells[1].innerHTML, value.cells[2].innerHTML, value.cells[3].innerHTML, value.cells[4].innerHTML, value.cells[5].innerHTML, value.cells[6].innerHTML, value.cells[7].innerHTML]);
+					});
+					
+					$('#srcID').remove();
+				}
+			});
+		}
 	});
 	
 	$('ul.tabs li').click(function(){

@@ -30,7 +30,7 @@ $querySearch = $db->selectQuery("applicants",
 					"applicants.id, CONCAT(fname, ' ', lname) AS name, email, mnumber, applicants.date_created, isNew, process, processType, processText, processStat, IF(isNew = 0, (SELECT title FROM positions WHERE position=positions.id LIMIT 1), (SELECT title FROM newPositions WHERE position=posID LIMIT 1)) as title", 
 					"id IN (".rtrim($appID,",").") ORDER BY date_created DESC", 
 					"LEFT JOIN recruitmentProcess ON processID=process");
-					
+			
 	foreach($querySearch AS $info){
 		$nw = '';
 		if($info['isNew']==0) $nw = ' [<b>old</b>]';
@@ -51,4 +51,7 @@ $querySearch = $db->selectQuery("applicants",
 			
 		echo	'</tr>';			
 	}
-
+	
+	
+	
+	
