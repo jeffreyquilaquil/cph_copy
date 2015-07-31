@@ -2,7 +2,7 @@
 	$cntEvals = count($queryEvaluations);
 ?>
 
-<button class="btnclass floatright <?= (($cntEvals==0)?'hidden':'') ?>" id="btnEvaluate">Evaluate</button>
+<button class="btnclass floatright <?= (($cntEvals==0)?'hidden':'hidden') ?>" id="btnEvaluate">Evaluate</button>
 <h3>Self-Evaluation</h3><hr/>
 
 <?php

@@ -280,5 +280,31 @@ class MyCrons extends MY_Controller {
 	public function deleteAccessLogsMoreThan2Weeks(){
 		$this->dbmodel->dbQuery('DELETE FROM staffLogAccess WHERE timestamp < "'.date('Y-m-d', strtotime('-2 weeks')).'"');
 	}
+	
+	public function email90thdayemployment(){
+		$start90days = date('Y-m-d', strtotime('-90 days'));
+		
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, fname, lname, email, startDate, evalID, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor AND supervisor!=0) AS imEmail', 'active=1 AND startDate<="'.$start90days.'" AND empStatus="probationary" AND evalID IS NULL', 'LEFT JOIN staffEvaluation ON empID_fk=empID');
+				
+		foreach($query AS $q){
+			$eBody = '<p>Hello '.trim($q->fname.' '.$q->lname).'!</p><p>';
+				if($q->startDate==$start90days)
+					$eBody .= 'Today is your 90th day in Tate Publishing and you ';
+				else
+					$eBody .= 'You ';
+				
+				$eBody .= 'are up for probationary performance evaluation! To begin this process please submit your self-evaluation in Careerph:<br/>
+				<a href="'.$this->config->base_url().'evaluationself/">careerph.tatepublishing.net</a></p>
+
+				<p>You will continue to receive this reminder until you submit your self evaluation.<br/>
+				Remember that you can be regularized as early as now but your immediate supervisor cannot take action unless you send your self-evaluations.</p>
+				<p>Thank you very much for all your hardwork! Good luck on your 90th day review!</p>
+				<p><br/></p>
+				<p><b>Tate Publishing HR</b></p>';
+				
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'CareerPH - Submit your Self-Evaluation', $eBody, 'CAREERPH', $q->imEmail);
+		}
+		echo count($query);
+	}
 		
 }
