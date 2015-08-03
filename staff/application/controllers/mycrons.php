@@ -194,25 +194,32 @@ class MyCrons extends MY_Controller {
 		$dtoday = date('Y-m-d');
 		$query = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2) AND active=1', 'LEFT JOIN staffs ON empID=empID_fk');
 		
+		$toMeEmailContent = '';
 		
 		if(count($query)>0){
 			foreach($query AS $q):
 				//if evaluation is today send message to HR
 				if($q->coachedEval==$dtoday){
 					$hrEmail = 'Hello HR,<br/><br/>Please be informed that the evaluation of '.$q->name.' is due. Please use this ticket to monitor that the fully signed evaluation form is signed and on file. Click <a href="'.$this->config->base_url().'coachingform/hroptions/'.$q->coachID.'/">here</a> to view coaching details.<br/><br/>Thank you.';
-					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Coaching Evaluation Due', $hrEmail, 'CAREERPH');
+					//$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Coaching Evaluation Due', $hrEmail, 'CAREERPH');
+					
+					$toMeEmailContent .= 'hr.cebu@tatepublishing.net --- Coaching Evaluation Due<br/>';
 				}
 			
 				if($q->selfRating==''){
 					$mineEmail = 'Hello '.$q->name.',<br/><br/>Your self evaluation due already. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to provide.  You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
-					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH');
+					//$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH', $q->supEmail);
+					
+					$toMeEmailContent .= $q->email.' --- Self-evaluation due for '.$q->name.'<br/>';
 				}
 				
 				if($q->selfRating!='' && $q->supervisor!=0){
 					$supervisorEmail = 'Hello,<br/><br/>The performance evaluation of '.$q->name.' is due already on '.date('F d, Y', strtotime($q->coachedEval)).'. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to '.(($q->status==2)?'finalize':'conduct').' evaluation. You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
-					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH');
+					//$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH', $q->email);
+					
+					$toMeEmailContent .= $q->supEmail.' --- Coach evaluation due for '.$q->name.'<br/>';
 				}
 			endforeach;	
 		}
@@ -224,7 +231,14 @@ class MyCrons extends MY_Controller {
 		foreach($printQ AS $p){
 			$sBody = 'Hello '.$p->fname.',<br/><br/>The '.(($p->status==1)?'coaching':'evaluation').' form for '.$p->ename.' is printed. Please claim the form from HR. You will receive this reminder daily until the said signed '.(($p->status==1)?'coaching':'evaluation').' form is returned to HR.<br/><br/><br/>Thanks!';
 			
-			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $p->email, 'Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename.'', $sBody, 'CAREERPH');
+			//$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $p->email, 'Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename, $sBody, 'CAREERPH');
+			
+			$toMeEmailContent .= $p->email.' --- Please  return to HR the signed '.(($p->status==1)?'coaching':'evaluation').' form for employee '.$p->ename.'<br/>';
+		}
+		
+		
+		if(!empty($toMeEmailContent)){
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS - coachingEvaluation'.date('Y-m-d'), $toMeEmailContent, 'CAREERPH');
 		}
 		
 		echo 'Number of pending signed documents: '.count($printQ).'<br/>';
