@@ -61,7 +61,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
 			
-			if($row->empStatus=='probationary')
+			if(isset($row->empStatus) && $row->empStatus=='probationary')
 				echo '<li><a href="'.$this->config->base_url().'evaluationself/" class="iframe">Submit Self-Evaluation</a></li>';
 			
 			echo '<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>';

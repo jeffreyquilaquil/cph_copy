@@ -23,6 +23,9 @@
 					'pcfTest' => 'PCF Test',		
 					'editingTest' => 'Editing Test',			
 					'sampleAudio' => 'Sample Audio Recording',		
-					'illustrations' => 'Illustrations Test'			
+					'illustrations' => 'Illustrations Test A',			
+					'illustrationsB' => 'Illustrations Test B',			
+					'webdesigntest' => 'Web Design Test',		
+					'acquisitionassistantemailtest' => 'Acquisitions Assistant Email Test'				
 				);
 ?>

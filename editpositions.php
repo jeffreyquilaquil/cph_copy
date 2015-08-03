@@ -203,6 +203,7 @@ if(isset($_GET['desc']) && $_GET['desc']=='yes'){
 						echo '<input type="checkbox" value="pressRelease" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'pressRelease')!== false)?'checked':'').'> '.$processLabels['pressRelease'].'<br/>';
 						echo '<input type="checkbox" value="design" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'design')!== false)?'checked':'').'> '.$processLabels['design'].'<br/>';
 						echo '<input type="checkbox" value="editing" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'editing')!== false)?'checked':'').'> '.$processLabels['editing'].'<br/>';
+						echo '<input type="checkbox" value="editingTest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'editingTest')!== false)?'checked':'').'> '.$processLabels['editingTest'].'<br/>';
 						echo '<input type="checkbox" value="it" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'it')!== false)?'checked':'').'> '.$processLabels['it'].'<br/>';
 						echo '<input type="checkbox" value="sales" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'sales')!== false)?'checked':'').'> '.$processLabels['sales'].'<br/>';
 					?>
@@ -210,10 +211,12 @@ if(isset($_GET['desc']) && $_GET['desc']=='yes'){
 					<td valign="top">
 					<?php
 						echo '<input type="checkbox" value="acqEmail" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'acqEmail')!== false)?'checked':'').'> '.$processLabels['acqEmail'].'<br/>';
-						echo '<input type="checkbox" value="pcfTest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'pcfTest')!== false)?'checked':'').'> '.$processLabels['pcfTest'].'<br/>';
-						echo '<input type="checkbox" value="editingTest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'editingTest')!== false)?'checked':'').'> '.$processLabels['editingTest'].'<br/>';
+						echo '<input type="checkbox" value="acquisitionassistantemailtest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'acquisitionassistantemailtest')!== false)?'checked':'').'> '.$processLabels['acquisitionassistantemailtest'].'<br/>';
+						echo '<input type="checkbox" value="pcfTest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'pcfTest')!== false)?'checked':'').'> '.$processLabels['pcfTest'].'<br/>';						
 						echo '<input type="checkbox" value="sampleAudio" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'sampleAudio')!== false)?'checked':'').'> '.$processLabels['sampleAudio'].'<br/>';
 						echo '<input type="checkbox" value="illustrations" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'illustrations')!== false)?'checked':'').'> '.$processLabels['illustrations'].'<br/>';
+						echo '<input type="checkbox" value="illustrationsB" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'illustrationsB')!== false)?'checked':'').'> '.$processLabels['illustrationsB'].'<br/>';
+						echo '<input type="checkbox" value="webdesigntest" name="requiredTest[]" '.((strpos($pos['requiredTest'], 'webdesigntest')!== false)?'checked':'').'> '.$processLabels['webdesigntest'].'<br/>';
 					?>
 					</td>
 				</tr>
