@@ -2464,7 +2464,7 @@ class Staff extends MY_Controller {
 								<p>Thanks!</p>
 								<p>CareerPH</p>
 							';
-						$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $to, 'Code has been generated for you.', $ebody, 'CareerPH');
+						$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $to, 'Code has been generated for you.', $ebody, 'CareerPH', $this->user->email);
 						//add notification
 						$this->commonM->addMyNotif($insArr['forWhom'], 'Generated code for you. See details below:<br/>Code: <b>'.$res.'</b><br/>Purpose: '.addslashes($_POST['why']), 0, 1);
 					}
