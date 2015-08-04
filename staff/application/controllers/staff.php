@@ -2834,7 +2834,7 @@ class Staff extends MY_Controller {
 				exit;
 			}
 			
-			if($this->user->empID!=$data['row']->empID_fk && $this->user->empID!=$data['row']->coachedBy && $this->access->accessFullHR==false){
+			if($this->user->empID!=$data['row']->empID_fk && $this->user->empID!=$data['row']->coachedBy && $this->access->accessFullHR==false && $this->commonM->checkStaffUnderMe($data['row']->empID_fk)===false){
 				$data['access'] = false;
 			}
 			

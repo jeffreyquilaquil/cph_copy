@@ -192,7 +192,7 @@ class MyCrons extends MY_Controller {
 	
 	public function coachingEvaluation(){
 		$dtoday = date('Y-m-d');
-		$query = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2) AND active=1', 'LEFT JOIN staffs ON empID=empID_fk');
+		$query = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, empID_fk, coachedEval, status, supervisor, selfRating, supervisorsRating, CONCAT(fname," ",lname) AS name, email, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT fname FROM staffs s WHERE s.empID=staffs.supervisor) AS supName', 'coachedEval<="'.$dtoday.'" AND (status=0 OR status=2) AND active=1', 'LEFT JOIN staffs ON empID=empID_fk');
 		
 		$toMeEmailContent = '';
 		
@@ -216,7 +216,7 @@ class MyCrons extends MY_Controller {
 				}
 				
 				if($q->selfRating!='' && $q->supervisor!=0){
-					$supervisorEmail = 'Hello,<br/><br/>The performance evaluation of '.$q->name.' is due already on '.date('F d, Y', strtotime($q->coachedEval)).'. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to '.(($q->status==2)?'finalize':'conduct').' evaluation. You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
+					$supervisorEmail = 'Hello '.$q->supName.',<br/><br/>The performance evaluation of '.$q->name.' is due already on '.date('F d, Y', strtotime($q->coachedEval)).'. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to '.(($q->status==2)?'finalize':'conduct').' evaluation. You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
 					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->supEmail, 'Coach evaluation due for '.$q->name, $supervisorEmail, 'CAREERPH', $q->email, 'hrcebu.notify@tatepublishing.net');
 					
