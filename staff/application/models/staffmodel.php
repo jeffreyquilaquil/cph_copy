@@ -1126,7 +1126,7 @@ class Staffmodel extends CI_Model {
 		$pdf->SetFont('Arial','B',10);
 		$pdf->setXY(16, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->firstsup->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //reviewer IS
 		$pdf->setXY(108, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->secondsup->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //2nd level IS
-		$pdf->setXY(200, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->name).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //employee 
+		$pdf->setXY(200, 182.5); $pdf->MultiCell(78, 3, strtoupper($row->lname.', '.$row->fname).' / '.date('F d, Y', strtotime($eval->reviewDate)),0,'C',false); //employee 
 		
 		
 		
