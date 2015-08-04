@@ -2811,11 +2811,11 @@ class Staff extends MY_Controller {
 						$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
 				}
 		
-				$data['forprinting'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName', 'active=1 AND (status=0 AND (HRoptionStatus=0 || HRoptionStatus=1)) OR (status=1 AND HRoptionStatus>=2 AND HRoptionStatus<4) OR (status=3 AND HRoptionStatus<4)', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['inprogress'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName', 'active=1 AND status=0 AND coachedEval>"'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['pending'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName', 'active=1 AND (status=0 OR status=2) AND coachedEval<="'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['done'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName', 'active=1 AND (status=1 OR status=3)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['cancelled'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName', 'active=1 AND status=4'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['forprinting'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName, supervisor', 'active=1 AND (status=0 AND (HRoptionStatus=0 || HRoptionStatus=1)) OR (status=1 AND HRoptionStatus>=2 AND HRoptionStatus<4) OR (status=3 AND HRoptionStatus<4)', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['inprogress'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName, supervisor', 'active=1 AND status=0 AND coachedEval>"'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['pending'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName, supervisor', 'active=1 AND (status=0 OR status=2) AND coachedEval<="'.date('Y-m-d').'"'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['done'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName, supervisor', 'active=1 AND (status=1 OR status=3)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['cancelled'] = $this->dbmodel->getQueryResults('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS coachedByName, supervisor', 'active=1 AND status=4'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		
@@ -2827,7 +2827,7 @@ class Staff extends MY_Controller {
 		$id = $this->uri->segment(2);
 		
 		if($this->user!=false && !empty($id)){
-			$data['row'] = $this->dbmodel->getSingleInfo('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, email', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffCoaching', 'staffCoaching.*, CONCAT(fname," ",lname) AS name, email, supervisor', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 			
 			if($data['row']->status==1){
 				header('Location:'.$this->config->base_url().'coachingform/acknowledgment/'.$id.'/');

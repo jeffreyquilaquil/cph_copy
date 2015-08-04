@@ -26,7 +26,7 @@
 		echo '<p class="errortext">Self rating already submitted.</p>';
 	}else if($this->user->empID==$row->coachedBy && $row->supervisorsRating=='' && $row->HRoptionStatus<2){
 		echo '<p class="errortext">Signed coaching form is not yet uploaded by HR.  Click <a href="'.$this->config->base_url().'sendEmail/followupcoaching/'.$row->coachID.'/">here</a> to send email to HR..</p>';
-	}else if(($row->selfRating=='' && $row->empID_fk==$this->user->empID) || ($row->coachedBy==$this->user->empID && ($row->supervisorsRating=='' || $row->status==2))){ 		
+	}else if(($row->selfRating=='' && $row->empID_fk==$this->user->empID) || (($row->coachedBy==$this->user->empID || $row->supervisor==$this->user->empID) && ($row->supervisorsRating=='' || $row->status==2))){ 		
 		$aspect = explode('--^_^--', $row->coachedAspectExpected);
 		$support = explode('--^_^--', $row->coachedSupport);
 		$selfRating = explode('|', $row->selfRating);

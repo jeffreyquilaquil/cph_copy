@@ -894,12 +894,12 @@ class Staffmodel extends CI_Model {
 	}
 	
 	/*** $row is an array of of
-		-coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating, name
+		-coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating, name, supervisor
 	***/
 	public function coachingStatus($id, $row=''){		
 		$stat = '';			
 		if(!isset($row->coachedBy) || !isset($row->empID_fk) || !isset($row->coachedDate) || !isset($row->coachedEval) || !isset($row->selfRating) || !isset($row->supervisorsRating) || !isset($row->status) || !isset($row->finalRating) || !isset($row->name) ){
-			$row = $this->dbmodel->getSingleInfo('staffCoaching', 'coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating, fname AS name', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+			$row = $this->dbmodel->getSingleInfo('staffCoaching', 'coachedBy, empID_fk, coachedDate, coachedEval, selfRating, supervisorsRating, status, finalRating, fname AS name, supervisor', 'coachID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 	
 		if($row->status==0){
@@ -913,8 +913,10 @@ class Staffmodel extends CI_Model {
 					else $stat .= ' Notification Sent to employee for Self-Rating.';
 				}else if($row->selfRating!='' && $row->supervisorsRating==''){
 					$stat = 'Evaluation Due.';
-					if($this->user->empID==$row->empID_fk || $this->user->empID!=$row->coachedBy) $stat .= ' Self-Rating submitted. Pending coach evaluation.';
-					else $stat .= ' Self-Rating submitted. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$id.'/" class="iframe">here</a> to evaluate.'; 
+					if($this->user->empID==$row->empID_fk || ($this->user->empID!=$row->coachedBy && $this->user->empID!=$row->supervisor)) 
+						$stat .= ' Self-Rating submitted. Pending coach evaluation.';
+					else 
+						$stat .= ' Self-Rating submitted. Click <a href="'.$this->config->base_url().'coachingEvaluation/'.$id.'/" class="iframe">here</a> to evaluate.'; 
 				}
 			}
 		}else if($row->status==1){
