@@ -10,7 +10,14 @@ foreach($row AS $r):
 	<div class="notifdiv" id="n<?= $r->notifID ?>" style="background-color:#ddd">
 	<?php
 		if($r->nName!='') echo '<b>'.$r->nName.'</b> ';
-		else echo '<b>CareerPH</b> ';
+		else if($r->sID==0 && !empty($r->userSID)){
+			$ssName = explode('|', $r->userSID);
+			if(isset($ssName[1]))
+				echo '<b>'.$ssName[1].'</b> ';
+			else
+				echo '<b>CareerPH</b> ';
+		}else
+			echo '<b>CareerPH</b> ';
 		
 		$note = $r->ntexts;
 		/* $note = str_replace($this->user->name, 'you', $note);
