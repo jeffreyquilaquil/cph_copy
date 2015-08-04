@@ -531,7 +531,7 @@
 				}else if($info['process']==2 || $info['process']==3){ //TECHNICAL TESTING OR HR INTERVIEWING STATUS
 					$tests = 'iq,typing,written';
 					if(!empty($info['requiredTest'])) $tests .= ','.$info['requiredTest'];
-					
+										
 					echo '<table width="50%" cellspacing=10 cellpadding=10>';
 					
 					if($info['process']==2){ 
@@ -552,16 +552,16 @@
 					}
 					
 					echo '</table>';
-										
+							
 					$sQ = ltrim(str_replace('iq,typing,written','',$tests),','); 
 					$tQuery = $db->selectQueryArray('SELECT type, testStatus FROM processStatusData WHERE appID='.$id.' AND ( (positionID='.$info['position'].' AND type IN ("'.str_replace(',','","',$sQ).'")) OR type IN ("iq","typing","written") )');
-										
-					$tests = str_replace(',','',$tests);
+							
+					$tests = $tests.',';
 					foreach($tQuery AS $t){
 						if($t['testStatus'] == 'passed'){ 
-							$tests = str_replace($t['type'],'',$tests);
+							$tests = str_replace($t['type'].',','',$tests);
 						}
-					}  
+					}
 					
 					$isTestEmpty = $tests;
 					echo '<input type="hidden" id="processTests" value="'.$tests.'"/>';
@@ -1092,7 +1092,7 @@
 			valid = false;
 		}else if(process==2 || process==3){
 			var tests = $('#processTests').val();
-			
+			alert(tests);
 			if( tests != '' ){
 				valid = false;
 				alert('Unable to advance to the next status.  Please check test results.');
