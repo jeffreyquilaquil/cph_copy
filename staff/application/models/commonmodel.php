@@ -13,14 +13,15 @@ class Commonmodel extends CI_Model {
 	function addMyNotif($empID, $ntexts, $ntype=0, $isNotif=0, $sID=''){
 		$insArr['empID_fk'] = $empID;
 		
-		if($sID!='')$insArr['sID'] = $sID;
+		if($sID!='' || $sID==0) $insArr['sID'] = $sID;
 		else $insArr['sID'] = $this->user->empID;
+		
 		
 		$insArr['ntexts'] = addslashes($ntexts);
 		$insArr['dateissued'] = date('Y-m-d H:i:s');
 		$insArr['ntype'] = $ntype;
 		$insArr['isNotif'] = $isNotif;
-		if($insArr['sID']==0){
+		if($insArr['sID']==0 && $this->user!=false){
 			$insArr['userSID'] = $this->user->username.'|'.$this->user->name;
 		}
 		
