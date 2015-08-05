@@ -240,6 +240,18 @@ function addStatusNote($appID, $type, $testStatus, $positionID, $reason){
 	$db->insertQuery('processStatusData', $insArr);
 }
 
+function addEmailStatusNote($id, $subject, $to, $message, $from='careers.cebu@tatepublishing.net', $cc=''){
+	$messageNote = '<b>Sent '.$subject.' Auto-email</b><br/><div class="message">
+							From: '.$from.'<br/>
+							To: '.$to.'<br/>';
+					if(!empty($cc)) $messageNote .= 'Cc: '.$cc.'<br/>';
+	$messageNote .= 		'Subject: '.$subject.'<br/>
+							'.$message.'
+						</div>';
+					
+	addStatusNote($id, 'email', '', '', $messageNote);
+}
+
 function encryptText($text){
 	$theencryptor = 'hiCebuITteamIamDivi';
 	if(!empty($text)){

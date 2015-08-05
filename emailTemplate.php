@@ -21,9 +21,14 @@ if(!empty($id)){
 $subject = '';
 $to = '';
 $message;
+$cc = '';
+if(isset($userData['email'])) 
+	$cc = $userData['email'];
 
-if(isset($_POST) && !empty($_POST)){
-	if($_POST['submitType']=='send'){
+if(isset($_POST) && !empty($_POST)){	
+	if($_POST['submitType']=='send'){		
+		if(!empty($_POST['ccEmail'])) $cc = $_POST['ccEmail'].','.$cc;
+		
 		if(empty($_POST['subject']) || empty($_POST['email']) || empty($_POST['message'])){
 			echo '<p style="color:red;">Unable to send message. Please check all empty fields and invalid inputs.</p>';
 		}else{
@@ -62,15 +67,8 @@ if(isset($_POST) && !empty($_POST)){
 				
 				foreach($toArr AS $t){
 					$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">'.$_POST['message'].'</div>';
-					sendEmail( 'careers.cebu@tatepublishing.net', $t['email'], $_POST['subject'], $body, 'Career Index Auto Email' );		
-					$messageNote = '<b>Sent '.$_POST['subject'].' Auto-email</b><br/><div class="message">
-									From: careers.cebu@tatepublishing.net<br/>
-									To: '.$t['email'].'<br/>
-									Subject: '.$_POST['subject'].'<br/>
-									'.$_POST['message'].'
-								</div>';
-					
-					addStatusNote($t['id'], 'email', '', '', $messageNote);
+					sendEmail( 'careers.cebu@tatepublishing.net', $t['email'], $_POST['subject'], $body, 'Career Index Auto Email' , $cc);					
+					addEmailStatusNote($t['id'], $_POST['subject'], $t['email'], $_POST['message'], '', $cc);
 				}
 				
 				if(!empty($noApp)){
@@ -82,7 +80,7 @@ if(isset($_POST) && !empty($_POST)){
 				if(!empty($sendto))
 					echo 'Thank you!<br/>The email has been sent to '.$sendto.' individually.';				
 				
-			}else if($type=='finalInterview'){
+			}else if($type=='finalInterview'){				
 				//send email to interviewer and job requestor
 				$to = array();		
 				$schedDetails = explode('|', $info['interviewSched']);		
@@ -93,11 +91,12 @@ if(isset($_POST) && !empty($_POST)){
 				if(isset($rData['email']) && !in_array($rData['email'], $to)) $to[] = $rData['email'];
 				
 				
-				$to = implode(',', $to).',hr-list@tatepublishing.net';
+				$to = implode(',', $to);
 				$subject = 'NOTE! Final Interview Invitation send to Applicant '.$info['fullname'].' for position '.strtoupper($position).' Final Interviewer, please be prepared.';
 				$eBody = 'Hello,<br/><br/>Please be informed that a Final Interview invitation has been sent to '.$info['fullname'].' for the position of '.strtoupper($position).'. Final Interviewer is <b>'.$schedDetails[0].'</b>. Final Interview schedule is on <b>'.date('F d, Y h:i A', strtotime($schedDetails[2])).' '.$schedDetails[3].'</b>. Please reply to this email if you have concerns about this matter.<br/><br/>Thanks!';	
 				
-				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email' );
+				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email', $cc.',hr-list@tatepublishing.net' );
+				if(!empty($id)) addEmailStatusNote($id, $subject, $to, $eBody, '', $cc);
 				echo '<p>Interviewer and requester are also informed.</p>';
 			}else if(!empty($_POST['email'])){				
 				$email = array();
@@ -112,10 +111,30 @@ if(isset($_POST) && !empty($_POST)){
 				}
 				
 				if(isset($_POST['individually'])){
-					foreach($email AS $ee)
-						sendEmail( 'careers.cebu@tatepublishing.net', $ee, $_POST['subject'], $_POST['message'], 'Career Index Auto Email' );
+					foreach($email AS $ee){
+						sendEmail( 'careers.cebu@tatepublishing.net', $ee, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc );
+						$aID = $db->selectSingleQuery('applicants', 'id' , 'TRIM(email)="'.$ee.'"');
+						if(!empty($aID)) addEmailStatusNote($aID, $_POST['subject'], $ee, $_POST['message'], '', $cc);
+					}
+					
+					exit;
 				}else if(!empty($email)){
-					sendEmail( 'careers.cebu@tatepublishing.net', implode(',', $email), $_POST['subject'], $_POST['message'], 'Career Index Auto Email' );
+					$emails = implode(',', $email);
+					sendEmail( 'careers.cebu@tatepublishing.net', $emails, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc );
+					
+					//adding notes on applicants					
+					$condition = '';
+					$emailsEx = explode(',', $emails);
+					foreach($emailsEx AS $h){
+						$condition .= 'TRIM(email) = "'.$h.'" OR ';
+					}
+					$queryApplicant = $db->selectQuery('applicants', 'id', rtrim($condition,'OR '));
+					foreach($queryApplicant AS $qa){
+						if($id!=$qa['id'])
+							addEmailStatusNote($qa['id'], $_POST['subject'], $emails, $_POST['message'], '', $cc);
+					}
+					
+					addEmailStatusNote($id, $_POST['subject'], $emails, $_POST['message'], '', $cc);
 				}
 
 				if(!empty($noSent)){
@@ -162,7 +181,7 @@ if(isset($_POST) && !empty($_POST)){
 	</script>
 </head>
 <body>
-<?php if($type=='finalInterview'){ 
+<?php if($type=='finalInterview' && isset($_GET['id'])){ 
 	$interviewer = '';
 	if($info['isNew']==1)
 		$interviewer = $db->selectSingleQuery('jobReqData', 'supervisor' , 'positionID='.$info['position'].' AND status=0');
@@ -347,9 +366,13 @@ if(isset($_POST) && !empty($_POST)){
 	}else if($type=='finalInterviewerSched'){
 		$to = array();		
 		$schedDetails = explode('|', $info['interviewSched']);		
+		
 		if(isset($schedDetails[1])) $to[] = $schedDetails[1];
 		//get requestor
-		$requestor = $db->selectSingleQuery('jobReqData', 'requestor' , 'positionID='.$info['position'].' AND status=0');		
+		$requestor = $db->selectSingleQueryArray('jobReqData', 'email, CONCAT(fname," ",lname) AS name' , 'positionID='.$info['position'].' AND status=0', 'LEFT JOIN staffs ON username=requestor');	
+		if(isset($requestor['email'])) 
+			$ccEmail = $requestor['email'];
+		
 		$rData = $ptDb->selectSingleQueryArray('staff', 'CONCAT(sFirst, " ", sLast) AS name, email', 'username="'.$requestor.'"');
 		if(isset($rData['email']) && !in_array($rData['email'], $to)) $to[] = $rData['email'];
 		
@@ -370,10 +393,16 @@ if(isset($_POST) && !empty($_POST)){
 		
 		echo '<table cellpadding=5>';
 		echo '<tr><td colspan=2><b>Alert!</b><br/>The assigned final interviewer for this applicant is<br>';
-			if(isset($schedDetails[0])) echo '<b>'.$schedDetails[0].'</b>';
-			if(isset($rData['name'])) echo ' cc <b>'.$rData['name'].'</b>';
+		
+			if(!empty($schedDetails[0])) echo '<b>'.$schedDetails[0].'</b>';
+			else{
+				echo '<b>NO ASSIGNED INTEVIEWER YET. PLEASE <a href="emailTemplate.php?id='.$id.'&type=finalInterview">CLICK HERE</a> TO ASSIGN INTERVIEWER.</b>';
+				exit;
+			} 
+			if(isset($requestor['name'])) echo ' cc <b>'.$requestor['name'].'</b>';
+			
 		echo '</td></tr>';
-		echo '<tr><td colspan=2><i>The below email will be sent to the abovementioned person to confirm scheduled interview:</i></td></tr>';
+		echo '<tr><td colspan=2><i>The below email will be sent to the above mentioned person to confirm scheduled interview:</i></td></tr>';
 		echo '</table>';		
 	}else if($type=='finalInterview'){
 		$to = $info['email'];
@@ -423,8 +452,13 @@ if(isset($_POST) && !empty($_POST)){
 		
 		<b>To:</b> <span style="font-size:10px;font-style:italic; color:#777;"><?= (($type!='invitationtoapplyopenposition')?'(Separate email addresses with comma)':'') ?></span>
 		<input type="text" name="email" value="<?= ((isset($_POST['email']))?$_POST['email']:$to) ?>" style="width:100%;padding:5px;" <?= (($type=='invitationtoapplyopenposition')?'placeholder="Application IDs, separated by commas"':'') ?> required/>
-		<input type="checkbox" name="individually"/> <i>Send individually</i>
+		<input type="checkbox" name="individually" <?= ((isset($_GET['type']) && $_GET['type']=='invitationtoapplyopenposition')?'checked':'') ?>/> <i>Send individually</i>
 		<br/><br/>
+	<?php
+		if(isset($ccEmail)){
+			echo '<b>Cc:</b> <input type="text" name="ccEmail" value="'.$ccEmail.'" style="width:100%;padding:5px;"/><br/><br/>';
+		}
+	?>	
 				
 		<b>Message:</b><textarea name="message" style="height:250px;"><?= ((isset($_POST['message']))?$_POST['message']:$message) ?></textarea><br/>
 	</div>

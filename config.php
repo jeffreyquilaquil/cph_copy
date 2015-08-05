@@ -65,6 +65,10 @@ if(is_array($result)){
 	}
 }
 
+if(isset($_SESSION['u'])){
+	$userData = $db->selectSingleQueryArray('staffs', 'empID, username, fname, lname, email, position', 'username="'.$_SESSION['u'].'"');	
+}
+
 $authorized = $_SESSION['authorized'];
 $current_page = strstr(basename($_SERVER['REQUEST_URI'], '?' . $_SERVER['QUERY_STRING']),".",true);
 
