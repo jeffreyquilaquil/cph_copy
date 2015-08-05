@@ -22,12 +22,10 @@ $subject = '';
 $to = '';
 $message;
 $cc = '';
-if(isset($userData['email'])) 
-	$cc = $userData['email'];
 
 if(isset($_POST) && !empty($_POST)){	
 	if($_POST['submitType']=='send'){		
-		if(!empty($_POST['ccEmail'])) $cc = $_POST['ccEmail'].','.$cc;
+		if(!empty($_POST['ccEmail'])) $cc = $_POST['ccEmail'];
 		
 		if(empty($_POST['subject']) || empty($_POST['email']) || empty($_POST['message'])){
 			echo '<p style="color:red;">Unable to send message. Please check all empty fields and invalid inputs.</p>';
@@ -67,8 +65,8 @@ if(isset($_POST) && !empty($_POST)){
 				
 				foreach($toArr AS $t){
 					$body = '<div style="font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif; font-size:15px;">'.$_POST['message'].'</div>';
-					sendEmail( 'careers.cebu@tatepublishing.net', $t['email'], $_POST['subject'], $body, 'Career Index Auto Email' , $cc);					
-					addEmailStatusNote($t['id'], $_POST['subject'], $t['email'], $_POST['message'], '', $cc);
+					sendEmail( 'careers.cebu@tatepublishing.net', $t['email'], $_POST['subject'], $body, 'Career Index Auto Email' , $cc, 'careers.cebu@tatepublishing.net');					
+					addEmailStatusNote($t['id'], $_POST['subject'], $t['email'], $_POST['message'], '', $cc, 'careers.cebu@tatepublishing.net');
 				}
 				
 				if(!empty($noApp)){
@@ -95,7 +93,7 @@ if(isset($_POST) && !empty($_POST)){
 				$subject = 'NOTE! Final Interview Invitation send to Applicant '.$info['fullname'].' for position '.strtoupper($position).' Final Interviewer, please be prepared.';
 				$eBody = 'Hello,<br/><br/>Please be informed that a Final Interview invitation has been sent to '.$info['fullname'].' for the position of '.strtoupper($position).'. Final Interviewer is <b>'.$schedDetails[0].'</b>. Final Interview schedule is on <b>'.date('F d, Y h:i A', strtotime($schedDetails[2])).' '.$schedDetails[3].'</b>. Please reply to this email if you have concerns about this matter.<br/><br/>Thanks!';	
 				
-				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email', $cc.',hr-list@tatepublishing.net' );
+				sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $eBody, 'Career Index Auto Email', $cc.',hr-list@tatepublishing.net', 'careers.cebu@tatepublishing.net' );
 				if(!empty($id)) addEmailStatusNote($id, $subject, $to, $eBody, '', $cc);
 				echo '<p>Interviewer and requester are also informed.</p>';
 			}else if(!empty($_POST['email'])){				
@@ -112,7 +110,7 @@ if(isset($_POST) && !empty($_POST)){
 				
 				if(isset($_POST['individually'])){
 					foreach($email AS $ee){
-						sendEmail( 'careers.cebu@tatepublishing.net', $ee, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc );
+						sendEmail( 'careers.cebu@tatepublishing.net', $ee, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc, 'careers.cebu@tatepublishing.net' );
 						$aID = $db->selectSingleQuery('applicants', 'id' , 'TRIM(email)="'.$ee.'"');
 						if(!empty($aID)) addEmailStatusNote($aID, $_POST['subject'], $ee, $_POST['message'], '', $cc);
 					}
@@ -120,7 +118,7 @@ if(isset($_POST) && !empty($_POST)){
 					exit;
 				}else if(!empty($email)){
 					$emails = implode(',', $email);
-					sendEmail( 'careers.cebu@tatepublishing.net', $emails, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc );
+					sendEmail( 'careers.cebu@tatepublishing.net', $emails, $_POST['subject'], $_POST['message'], 'Career Index Auto Email', $cc, 'careers.cebu@tatepublishing.net' );
 					
 					//adding notes on applicants					
 					$condition = '';
