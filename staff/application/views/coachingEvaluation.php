@@ -135,9 +135,13 @@
 		if(id=="feedback"){
 			submitRating('coach', 4);
 		}else{
-			$('.aspectdiv').addClass('hidden');		
-			$('#eweighteddiv').addClass('hidden');
-			$('#aspect'+id).removeClass('hidden');
+			if($('#aspect'+(id-1)+' select[name="rate"]').val()==''){
+				alert('Please input your rating.');
+			}else{
+				$('.aspectdiv').addClass('hidden');		
+				$('#eweighteddiv').addClass('hidden');
+				$('#aspect'+id).removeClass('hidden');
+			}			
 		}
 	}
 	
