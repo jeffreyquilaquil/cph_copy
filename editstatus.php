@@ -310,7 +310,7 @@
 			(( $testQ['positionID'] == $info['position'] || $type=='iq' || $type=='typing' || $type=='written') ||
 			($type=='jobOffer' && $testQ['positionID'] == $offID ))
 		){
-			$txt .=	'<input type="text" disabled class="form-control" id="'.$type.'" value="'.ucfirst($testQ['testStatus']).'"/>';
+			$txt .=	'<input type="text" disabled class="form-control" id="'.$type.'" value="'.ucfirst($testQ['testStatus']).'"/><div>NOTE: '.nl2br($testQ['reason']).'</div>';
 		}else{
 			if(empty($options)){
 				$txt .=	'<select class="form-control" onChange="showDiv(\''.$type.'\')" id="'.$type.'">
