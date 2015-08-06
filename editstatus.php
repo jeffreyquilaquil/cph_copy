@@ -1092,7 +1092,7 @@
 			valid = false;
 		}else if(process==2 || process==3){
 			var tests = $('#processTests').val();
-			alert(tests);
+		
 			if( tests != '' ){
 				valid = false;
 				alert('Unable to advance to the next status.  Please check test results.');
