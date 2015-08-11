@@ -44,7 +44,7 @@
 		?>
 		</select>
 	<?php if($_GET['process']>=3){ ?>
-			<br/>Tick checkbox if adding referral bonus to <?= $name ?>:  <input type="checkbox" name="addreferral"/>
+			<br/>Tick checkbox if adding referral bonus to <?= $name ?>:  <input type="checkbox" name="addreferral" checked/>
 	<?php } ?>
 		<br/><br/>
 		<input type="hidden" name="source_field" id="source_field"/>
