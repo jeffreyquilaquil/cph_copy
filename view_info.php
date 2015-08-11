@@ -240,7 +240,7 @@ if(count($info)==0){
 		<tr>
 			<td>Where did you hear about us</td>
 			<td><? echo $info['source']; if(!empty($info['source_field'])){ echo ' : '.$info['source_field'];} ?>
-				<?php if($info['source']=='Referred by a Tate Employee' && $info['referrerID']==0){
+				<?php if(($info['source']=='Referred by a Tate Employee' || strpos($info['source'], 'I have a friend working in Tate')!==false) && $info['referrerID']==0){
 					echo '<a href="referrallink.php?id='.$info['id'].'&name='.$info['source_field'].'&process='.$info['process'].'" class="iframe" style="color:red; font-weight:bold;">(Link to employee\'s account)</a>';
 				} ?>
 			</td>
