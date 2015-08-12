@@ -92,13 +92,13 @@
 				echo '<td>';
 					if($qe->hrStatus==1) echo '<a href="javascript:void(0);" onClick="printed('.$qe->evalID.')">Click if done printing.</a>';
 					else if($qe->hrStatus==2){
-						echo '<form id="uploadEvalForm" action="" method="POST" enctype="multipart/form-data">';
+						echo '<form id="uploadEvalForm_'.$qe->evalID.'" action="" method="POST" enctype="multipart/form-data">';
 						echo '<input type="hidden" name="empID" value="'.$qe->empID_fk.'"/>';
 						echo '<input type="hidden" name="evalID" value="'.$qe->evalID.'"/>';
 						echo '<input type="hidden" name="submitType" value="uploadEval"/>';
-						echo '<input type="file" name="evalDoc" id="evalDoc" class="hidden"/>';						
+						echo '<input type="file" name="evalDoc" id="evalDoc_'.$qe->evalID.'" onChange="fileChange('.$qe->evalID.')" class="hidden"/>';						
 						echo '</form>';
-						echo '<button id="btnEvalUpload">Upload Signed File</button>';
+						echo '<button onClick="btnUpload('.$qe->evalID.')">Upload Signed File</button>';
 					} 
 				echo '</td>';
 			echo '</tr>';
@@ -107,17 +107,15 @@
 	</table>
 </div>
 
-<script type="text/javascript">
-	$(function(){
-		$('#btnEvalUpload').click(function(){
-			$('#evalDoc').trigger('click');
-		});
-		
-		$('#evalDoc').change(function(){
-			displaypleasewait();
-			$('#uploadEvalForm').submit();
-		});
-	});
+<script type="text/javascript">	
+	function btnUpload(id){
+		$('#evalDoc_'+id).trigger('click');
+	}
+	
+	function fileChange(id){
+		displaypleasewait();
+		$('#uploadEvalForm_'+id).submit();
+	}
 	
 	function printed(id){
 		if(confirm('Are you sure you printed the evaluation form?')){
