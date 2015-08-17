@@ -350,7 +350,7 @@ class MyCrons extends MY_Controller {
 			$reqArr[$r->perID] = '<b>'.$r->perName.'</b> ('.$r->perDesc.')';
 		}
 		
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, email, perStatus', 'perStatus<100 AND active=1 AND empID=165');
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, email, perStatus', 'perStatus<100 AND active=1');
 		
 		foreach($query AS $q){
 			$reqArr2 = $reqArr;
