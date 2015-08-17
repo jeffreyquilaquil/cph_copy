@@ -93,7 +93,7 @@ class Textmodel extends CI_Model {
 		return number_format((int)str_replace(',','',$n),2);
 	}
 	
-	function convertTimeToMinHours($tdiff){
+	function convertTimeToMinHours($tdiff, $numOnly=false){
 		$tText = '';
 		$hours = floor($tdiff/3600);
 		$remainder = $tdiff - ($hours * 3600);
@@ -109,8 +109,9 @@ class Textmodel extends CI_Model {
 		
 		if($seconds==1) $tText .= $seconds.' second ';
 		else if($seconds>1) $tText .= $seconds.' seconds ';
-
-		return $tText;
+		
+		if($numOnly===true) return sprintf("%02d", $hours).':'.sprintf("%02d", $minutes).':'.sprintf("%02d", $seconds);
+		else return $tText;
 	}
 	
 	function convertTimeToYMD($diff){
@@ -169,23 +170,6 @@ class Textmodel extends CI_Model {
 					</tr>
 				</thead>
 			';
-			/* $disp = '<table class="tableInfo datatable tblcis_'.$status.'">
-				<thead>
-					<tr class="trhead" align="center">
-						<td>Employee\'s Name</td>
-						<td>Date Filed</td>
-						<td>Effective Date</td>
-						<td>Type</td>
-						<td>'.(($status==3)?'Previous':'Current').' Info</td>
-						<td>New Info</td>
-						<td>Immediate Supervisor</td>
-						<td>Prepared By</td>
-						<td><br/></td>
-						<td><br/></td>
-					</tr>
-				</thead>
-			';	
-		 */
 		if(count($info)>0){
 			foreach($info AS $a):
 				$c = json_decode($a->changes);
@@ -335,15 +319,15 @@ class Textmodel extends CI_Model {
 	}
 	
 	//assign $time to empty if you dont want to call customTimeArrayByCat function. Please call customTimeArrayByCat first if this is loop
-	function customTimeSelect($val=''){
+	function customTimeSelect($val='', $fvalue=''){
 		$time = $this->commonM->customTimeArrayByCat();
-		$valentine = '<option value=""></option>';
+		$valentine = '<option value="">'.$fvalue.'</option>';
 		foreach($time AS $t=>$t2):
 			$valentine .= '<optgroup label="'.$t2['name'].'">';						
 			foreach($t2 AS $k=>$t):
 				if($k!='name'){
 					$ex = explode('|', $t);
-					$valentine .= '<option value="'.$k.'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
+					$valentine .= '<option value="'.$ex[0].'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
 				}
 			endforeach;
 			$valentine .= '</optgroup>';
@@ -612,6 +596,15 @@ class Textmodel extends CI_Model {
 				'D' => 'Break Out',
 				'E' => 'Break In',
 				'Z' => 'Time Out',
+			);
+		}else if($a=='timeLogTypeText'){
+			$arr = array(
+				'timeIn' => 'Time In',
+				'lunchOut' => 'Lunch Out',
+				'lunchIn' => 'Lunch In',
+				'breakOut' => 'Break Out',
+				'breakIn' => 'Break In',
+				'timeOut' => 'Time Out',
 			);
 		}else if($a=='weekdayArray'){
 			$arr = array('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday');

@@ -90,7 +90,7 @@ class Databasemodel extends CI_Model {
 				if($v=='NOW()')
 					$vals .= $v.',';
 				else
-					$vals .= '"'.mysql_real_escape_string($v).'",';
+					$vals .= '"'.$v.'",';
 			}
 			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
 			
