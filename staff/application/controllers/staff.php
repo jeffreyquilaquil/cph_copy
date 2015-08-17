@@ -1547,7 +1547,7 @@ class Staff extends MY_Controller {
 					$insArr['date_requested'] = date('Y-m-d H:i:s');
 					$insArr['reason'] = addslashes($_POST['reason']);
 					$insArr['totalHours'] = $_POST['totalHours'];
-					$insArr['notesforHR'] = $_POST['notesforHR'];
+					$insArr['notesforHR'] = mysql_real_escape_string($_POST['notesforHR']);
 					$insArr['leaveStart'] = date('Y-m-d H:i', strtotime($_POST['leaveStart']));
 					$insArr['leaveEnd'] = date('Y-m-d H:i', strtotime($_POST['leaveEnd']));
 					if($_POST['leaveType']==4){
@@ -2269,7 +2269,7 @@ class Staff extends MY_Controller {
 				$data['row'] = $this->user;
 				$data['prevRequests'] = $this->dbmodel->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
-					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>$_POST['notesforHR'], 'daterequested'=>date('Y-m-d H:i:s')));
+					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>mysql_real_escape_string($_POST['notesforHR']), 'daterequested'=>date('Y-m-d H:i:s')));
 					$this->commonM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
