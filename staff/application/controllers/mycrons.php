@@ -341,5 +341,53 @@ class MyCrons extends MY_Controller {
 			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS '.date('Y-m-d').' - email90thdayemployment', $toMeEmailContent, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net');
 		}
 	}
+	
+	public function emailPreEmploymentRequirements(){
+		$toMeEmailContent = '';
+		$reqArr = array();
+		$queryRequirements = $this->dbmodel->getQueryResults('staffPerRequirements', 'perID, perName, perDesc');
+		foreach($queryRequirements AS $r){
+			$reqArr[$r->perID] = '<b>'.$r->perName.'</b> ('.$r->perDesc.')';
+		}
+		
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) AS name, email, perStatus', 'perStatus<100 AND active=1 AND empID=165');
+		
+		foreach($query AS $q){
+			$reqArr2 = $reqArr;
+			$eBody = '<p>Hello '.$q->name.',</p>
+				<p>We are strengthening the integrity of our employee records. In this process, it is found that your preemployment requirements is only '.$q->perStatus.'% complete.</p>
+				<p>Below are the documents still missing:</p> <ol>';
+				
+				if($q->perStatus!=0){
+					$queryReq = $this->dbmodel->getQueryResults('staffPerEmpStatus', 'perID_fk', 'empID_fk="'.$q->empID.'" AND perType=1');
+					foreach($queryReq AS $rr) 
+						unset($reqArr2[$rr->perID_fk]);
+				}				
+					
+				foreach($reqArr2 AS $r){
+					$eBody .= '<li>'.$r.'</li>';
+				}
+				
+			$eBody .= '</ol><p>If you have already submitted the above documents to HR, please reply to this email to confirm so, otherwise, please provide the documents to HR asap. You will regularly receive this reminder until your preemployment requirements is 100% complete.</p>
+				<p>&nbsp;</p>
+				<p>Thank you very much for understanding.</p>
+				<p>Tate Publishing HR</p>';
+			
+			$this->emailM->sendEmail( 'hr.cebu@tatepublishing.net', $q->email, 'CareerPH - Pre-Employment Requirements', $eBody, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net');
+			
+			$notif = 'From: hr.cebu@tatepublishing.net<br/>					
+					To: '.$q->email.'<br/>
+					Subject: CareerPH - Pre-Employment Requirements<br/>
+					Message: <br/>'.$eBody.'<br/></br><i>---- Message sent from CareerPH ----</i>';
+			
+			$this->commonM->addMyNotif($q->empID, $notif, 0, 1, 0);				
+			$toMeEmailContent .= $q->email.' --- CareerPH - Pre-Employment Requirements<br/>';			
+		}
+		
+		if(!empty($toMeEmailContent)){
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS '.date('Y-m-d').' - emailPreEmploymentRequirements', $toMeEmailContent, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net');
+		}
+		
+	}
 		
 }
