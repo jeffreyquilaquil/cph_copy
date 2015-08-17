@@ -53,11 +53,13 @@ class Staff extends MY_Controller {
 	}
 	
 	public function hello(){
-		if(isset($_POST['username']) && $_POST['username'] !=''){
+		if($this->uri->segment(2)=='empID' && isset($_POST['empID'])){			
+			$sarap = $this->dbmodel->getSingleInfo('staffs', 'empID, username', 'empID="'.$_POST['empID'].'"');
+		}else if(isset($_POST['username']) && $_POST['username'] !=''){
 			$sarap = $this->dbmodel->getSingleInfo('staffs', 'empID, username', 'username="'.$_POST['username'].'"');
 		}else{
 			$sarap = $this->dbmodel->getSingleInfo('staffs', 'empID, username', 'username="'.$this->uri->segment(2).'"');
-		}
+		}		
 	
 		if(isset($sarap->empID)){
 			$this->session->set_userdata('uid',$sarap->empID);
@@ -1413,7 +1415,7 @@ class Staff extends MY_Controller {
 				}
 				
 				//check for duplicate insert leave data
-				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.$_POST['reason'].'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND notesforHR="'.$_POST['notesforHR'].'" AND status=0');
+				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.$_POST['reason'].'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND status=0');
 				if(count($dupQuery)>0){
 					echo 'There is a duplicate entry of this leave. Click <a href="'.$this->config->base_url().'staffleaves/'.$dupQuery->leaveID.'/">here</a> to view duplicate leave entry or check "Time Off Details" on My HR Info page if filed leave exists or inform IT if no duplicate entry and you can\'t file leave.';
 					exit;
@@ -3014,7 +3016,8 @@ class Staff extends MY_Controller {
 			$data['queryProbationary'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="probationary" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			
-			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', 'status=1 AND hrStatus>0');
+			//$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', 'status=1 AND hrStatus>0');
+			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', '1');
 		}
 				
 		$this->load->view('includes/template', $data);

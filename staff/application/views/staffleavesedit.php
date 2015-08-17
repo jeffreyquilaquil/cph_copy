@@ -190,7 +190,7 @@
 ?>
 	<tr>
 		<td>Reason</td>
-		<td><?= (($row->leaveType==5)?$this->textM->ordinal($row->reason).' child':$row->reason) ?></td>
+		<td><?= stripslashes((($row->leaveType==5)?$this->textM->ordinal($row->reason).' child':$row->reason)) ?></td>
 	</tr>
 	<tr>
 		<td>Date Requested</td>
