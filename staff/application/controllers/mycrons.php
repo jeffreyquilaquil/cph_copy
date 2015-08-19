@@ -206,7 +206,8 @@ class MyCrons extends MY_Controller {
 					$toMeEmailContent .= 'hr.cebu@tatepublishing.net --- Coaching Evaluation Due<br/>';
 				}
 			
-				if($q->selfRating==''){
+				//stop notification of JVilla
+				if($q->selfRating=='' && $q->empID_fk!=250){
 					$mineEmail = 'Hello '.$q->name.',<br/><br/>Your self evaluation due already. Please <a href="'.$this->config->base_url().'coachingEvaluation/'.$q->coachID.'/" class="iframe"><b>click here</b></a> to provide.  You will receive this reminder daily unless the said evaluation is provided.<br/><br/>Thank you.';
 					
 					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $q->email, 'Self-evaluation due for '.$q->name, $mineEmail, 'CAREERPH', $q->supEmail, 'hrcebu.notify@tatepublishing.net');
