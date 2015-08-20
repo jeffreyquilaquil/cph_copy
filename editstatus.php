@@ -304,13 +304,15 @@
 		
 		$txt = '
 		<tr '.$styl.'>
-			<td width="40%">'.$processLabels[$type].'</td>
+			<td width="40%" valign="top"><b>'.strtoupper($processLabels[$type]).'</b></td>
 			<td>';
 		if(isset($testQ['testStatus']) && 
 			(( $testQ['positionID'] == $info['position'] || $type=='iq' || $type=='typing' || $type=='written') ||
 			($type=='jobOffer' && $testQ['positionID'] == $offID ))
 		){
-			$txt .=	'<input type="text" disabled class="form-control" id="'.$type.'" value="'.ucfirst($testQ['testStatus']).'"/><div>NOTE: '.nl2br($testQ['reason']).'</div>';
+			$txt .=	'<input type="text" disabled class="form-control" id="'.$type.'" value="'.ucfirst($testQ['testStatus']).'"/>
+				<a href="javascript:void(0);" onClick="hidenote(this, \''.$type.'\')">Show Note</a>
+				<div id="note'.$type.'" class="hidden">NOTE: '.nl2br($testQ['reason']).'</div>';
 		}else{
 			if(empty($options)){
 				$txt .=	'<select class="form-control" onChange="showDiv(\''.$type.'\')" id="'.$type.'">
@@ -1314,6 +1316,11 @@
 		$('#cancelMessage').val('');
 		$('#cancelReason').val('');
 		
+	}
+	
+	function hidenote(t, note){
+		$(t).hide();
+		$('#note'+note).removeClass('hidden');
 	}
 </script>
 
