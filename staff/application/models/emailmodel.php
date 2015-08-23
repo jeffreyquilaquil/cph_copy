@@ -211,7 +211,11 @@ class Emailmodel extends CI_Model {
 		}
 		
 		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
-		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH', $cc);		
+		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH', $cc);	
+
+		//deactivate staff and PT accesses
+		$this->dbmodel->updateQuery('staffs', array('empID'=>$info->empID), array('active'=>'0'));
+		if($this->config->item('devmode')==false) $this->dbmodel->ptdbQuery('UPDATE staff SET active="N" WHERE username = "'.$info->username.'"');		
 	}
 
 	public function emailForgotPassword($email, $fname, $username){
