@@ -1632,7 +1632,7 @@ class Staff extends MY_Controller {
 		$data['content'] = 'staffleaves';
 			
 		if($this->user!=false){
-			if(($this->user->access=='' || $this->user->level==0) && $segment2==''){
+			if($this->user->access=='' && $this->user->level==0 && $segment2==''){
 				$data['access'] = false;
 			}else{
 				$data['leaveTypeArr'] = $this->textM->constantArr('leaveType');
