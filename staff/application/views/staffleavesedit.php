@@ -137,7 +137,8 @@
 			}
 			
 			//Refile button if leaveStatus is approved without pay and leave credits not 0
-			if($row->iscancelled==0 && $row->isrefiled==0 && $row->status==2 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
+			//emergency and sick leaves. Vacation leaves cannot be refiled. 
+			if($row->iscancelled==0 ($row->leaveType==2 || $row->leaveType==3) && $row->status==2 && $row->isrefiled==0 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
 				echo ' <button id="refilebtn" class="btnclass btnorange">Refile</button>';
 			}
 
@@ -632,6 +633,8 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			echo '<tr>';
 				echo '<td>Upload Supporting Documents</td>';
 				echo '<td>';
+					echo $this->textM->formfield('file', 'refileDocs[]', '', '', '', 'required').'<br/>';
+					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
 					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
 					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
 					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
