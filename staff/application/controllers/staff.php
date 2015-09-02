@@ -1632,7 +1632,7 @@ class Staff extends MY_Controller {
 		$data['content'] = 'staffleaves';
 			
 		if($this->user!=false){
-			if($this->user->access=='' && $this->user->level==0 && $segment2==''){
+			if(($this->user->access=='' || $this->user->level==0) && $segment2==''){
 				$data['access'] = false;
 			}else{
 				$data['leaveTypeArr'] = $this->textM->constantArr('leaveType');
@@ -1643,7 +1643,8 @@ class Staff extends MY_Controller {
 									
 					$data['row'] = $this->dbmodel->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, startDate, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 					
-					$data['leaveHistory'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5 AND (leaveStart LIKE "'.date('Y-m-').'%" OR leaveEnd LIKE "'.date('Y-m-').'%")');
+					$data['leaveHistory'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5 AND (leaveStart LIKE "'.date('Y-m-').'%" OR leaveEnd LIKE "'.date('Y-m-').'%")');
+					$data['dir_leave'] = UPLOADS.'leaves/';		
 										
 					if($this->user->access=='' && $this->user->level==0 && $this->user->empID != $data['row']->empID_fk)
 						$data['access'] = false;
@@ -1746,7 +1747,7 @@ class Staff extends MY_Controller {
 							if($_POST['capprover']==1){
 								$usernote = $this->user->name.' <b>approved</b> your cancel request';	
 								if($data['row']->hrapprover	!= 0){
-									$usernote .= ' and forwarded to HR for changing the schedule and leave credits';
+									$usernote .= ' and forwarded to HR for changing the schedule and leave credits.';
 									$updateArr['iscancelled'] = 3;	
 									$canceldata = '^_^Pending Cancelled for HR: '.$this->user->username.'|'.date('Y-m-d H:i:s');	
 								}else{
@@ -1790,7 +1791,7 @@ class Staff extends MY_Controller {
 						}else if($_POST['submitType']=='uploadSD'){	
 							$katski = array_reverse(explode('.', $_FILES['supDocs']['name']));
 							$fname = $data['row']->leaveID.'_'.$this->user->empID.'_'.date('YmdHis').'.'.$katski[0]; 
-							move_uploaded_file($_FILES['supDocs']['tmp_name'], UPLOADS.'/leaves/'.$fname);	
+							move_uploaded_file($_FILES['supDocs']['tmp_name'], $data['dir_leave'].$fname);	
 							
 							$this->dbmodel->dbQuery('UPDATE staffLeaves SET supDocs=CONCAT(supDocs,"'.$fname.'|'.'") WHERE leaveID="'.$data['row']->leaveID.'"');
 						}else if($_POST['submitType']=='removeDoc'){							
@@ -1806,10 +1807,10 @@ class Staff extends MY_Controller {
 							$updateArr['matDateResume'] = date('Y-m-d', strtotime($_POST['dateResume']));
 							$updateArr['matFile'] = $data['row']->leaveID.'_maternity_'.date('YmdHis').'.'.$this->textM->getFileExtn($_FILES['filecert']['name']);
 							
-							$mNote = '<b>REQUESTED TO SHORTEN MATERNITY LEAVE</b><hr/> Date Requested: '.date('F d, Y').'<br/>File: <a href="'.$this->config->base_url().UPLOADS.'/leaves/'.$updateArr['matFile'].'">Fit to Work Certificate</a>';
+							$mNote = '<b>REQUESTED TO SHORTEN MATERNITY LEAVE</b><hr/> Date Requested: '.date('F d, Y').'<br/>File: <a href="'.$this->config->base_url().$data['dir_leave'].$updateArr['matFile'].'">Fit to Work Certificate</a>';
 							$updateArr['matHistory'] = $data['row']->matHistory.'<div class="leaveMatNote">'.$mNote.'</div>';
 							
-							move_uploaded_file($_FILES['filecert']['tmp_name'], UPLOADS.'/leaves/'.$updateArr['matFile']);
+							move_uploaded_file($_FILES['filecert']['tmp_name'], $data['dir_leave'].$updateArr['matFile']);
 							$actby = 'Requested to shorten maternity leave.';
 						}else if($_POST['submitType']=='submitShortenLeave'){								
 							$mNote = '';
@@ -1873,7 +1874,76 @@ class Staff extends MY_Controller {
 							//send email
 							$sBody3 = 'Hi,<br/><br/>Your shorten maternity leave request has been approved and your payrollHero schedule has been updated. You can now return to work on <b>'.date('l, F d, Y', strtotime($data['row']->matDateResume)).'</b> the approved returned date.<br/><br/>See you!<br/><br/><br/>CareerPH';
 							$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $data['row']->email, 'Update on Shorten Leave Request', $sBody3, 'CareerPH Auto-Email');
-						}					
+						}else if($_POST['submitType']=='refileleave'){
+							$updateArr['isrefiled'] = 2;
+							$updateArr['refileReason'] = $_POST['refileReason'];
+							$updateArr['dateRefiled'] = date('Y-m-d H:i:s');
+							$updateArr['refileDocs'] = '';
+													
+							for($c=0; $c<3; $c++){
+								if(!empty($_FILES['refileDocs']['name'][$c])){									
+									$n = array_reverse(explode('.', $_FILES['refileDocs']['name'][$c]));
+									$fname = $data['row']->leaveID.'_refile_'.$c.'_'.date('YmdHis').'.'.$n[0];
+									
+									move_uploaded_file($_FILES['refileDocs']['tmp_name'][$c], $data['dir_leave'].$fname);	
+									$updateArr['refileDocs'] .= $fname.'|';
+								}
+							}
+							
+							$approvernote = $this->user->name.' <b>refiled</b> the leave requested. Please approve this request.';							
+							$actby = '<b>Refiled</b> leave request. ';
+							$refiledata = 'Pending Refiled Approval for IS<br/>By: '.$this->user->username.'|'.date('Y-m-d H:i:s');
+						}else if($_POST['submitType']=='refileapproval'){
+							if($_POST['submitWho']=='supervisor'){
+								if($_POST['ISapproval']==1){
+									$updateArr['isrefiled'] = 3;
+									$refiledata = 'Pending Refiling Approval for HR';
+									$usernote = $this->user->name.' <b>approved</b> your refiling request and forwarded to HR for changing the schedule and leave credits';
+									$actby = 'Approved '.$data['row']->name.'\'s refiling leave request. ';
+								}else{
+									$updateArr['isrefiled'] = 0;
+									$refiledata = 'Refiling Disapproved ';
+									$usernote = $this->user->name.' <b>disapproved</b> your refiling request. Reason: '.$_POST['refileIMnote'];
+									
+									$actby = 'Disapproved '.$data['row']->name.'\'s refiling leave request. ';
+								}
+								
+								if(!empty($_POST['refileIMnote'])) $refiledata .= '<br/><i>Note:</i> '.$_POST['refileIMnote'];
+								$refiledata .= '<br/>By: '.$this->user->username.' '.date('Y-m-d H:i:s');
+							}else{
+								if($_POST['changeStatus']==1){
+									$updateArr['isrefiled'] = 1;
+									$updateArr['status'] = 1;
+									$updateArr['leaveCreditsUsed'] = $_POST['leaveCreditsUsed'];
+									$refiledata = 'HR Approved Refiling Request';
+									$refiledata .= '<br/>Changed status from without pay to <b>WITH PAY</b>';
+									$refiledata .= '<br/>Leave credit deducted '.$_POST['leaveCreditsUsed'].' from '.$data['row']->leaveCredits.' and now '.$_POST['leaveCredits'];
+									if(!empty($_POST['noterefile'])) $refiledata .= '<br/><i>Note:</i> '.$_POST['noterefile'].'<br/>';
+									$refiledata .= '<br/>By: '.$this->user->username.' '.date('Y-m-d H:i:s');
+									
+									$actby = 'Approved '.$data['row']->name.'\'s refiling leave request. ';
+									$this->dbmodel->updateQuery('staffs', array('empID'=>$data['row']->empID_fk), array('leaveCredits'=>$_POST['leaveCredits']));
+									$usernote = $this->user->name.' approved your refiling request. This leave is "With Pay" and your leave credits is now '.$_POST['leaveCredits'].'.';
+									
+									//send email to accounting
+									$refiledMsg = '<p>Hi Accounting,</p>
+											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' for the below dates has been refiled and now WITH PAY.</p>
+											<p>Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
+											End of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).'<br/>
+											Total Number of Hours: '.$data['row']->totalHours.'</p>
+											<p>Thank you.</p><br/>CareerPH';
+									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Refiled Leave Without Pay to With Pay', $refiledMsg, 'CareerPH Auto-Email');
+								}else{
+									$updateArr['isrefiled'] = 0;
+									$refiledata = 'HR Disapproved Refiling Request';
+									$refiledata .= '<br/><i>Note:</i> '.$_POST['noterefile'];
+									$refiledata .= '<br/>By: '.$this->user->username.' '.date('Y-m-d H:i:s');
+									
+									$actby = 'Disapproved '.$data['row']->name.'\'s refiling leave request. ';
+									$usernote = $this->user->name.' disapproved your refiling request. Reason: '.$_POST['noterefile'];
+								}
+							}
+						}				
 						
 						$addnote = ' Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to view leave details.';
 												
@@ -1892,6 +1962,14 @@ class Staff extends MY_Controller {
 						
 						if(isset($canceldata) && !empty($canceldata)){
 							$this->dbmodel->dbQuery('UPDATE staffLeaves SET canceldata=CONCAT(canceldata,"'.$canceldata.'") WHERE leaveID="'.$data['row']->leaveID.'"');
+						}
+						
+						if(isset($refiledata)){
+							if(!empty($data['row']->refiledata)) $rdata = json_decode($data['row']->refiledata);
+							else $rdata = array();
+							
+							array_push($rdata, $refiledata);
+							$updateArr['refiledata'] = json_encode($rdata);
 						}
 												
 						if(count($updateArr)>0){
@@ -1937,10 +2015,11 @@ class Staff extends MY_Controller {
 					$data['tquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status!=3 AND iscancelled=0 AND ((leaveStart <= "'.$dateToday.'" AND leaveEnd >= "'.$dateToday.'") OR (leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%"))'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['imquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR matStatus=2)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['imcancelledquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'iscancelled=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
-					$data['hrquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4 OR matStatus=1 OR matStatus=4)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
+					$data['imrefiledquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'isrefiled=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
+					$data['hrquery'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '(status=1 OR status=2) AND ((iscancelled=0 AND hrapprover=0) OR iscancelled=3 OR iscancelled=4 OR matStatus=1 OR matStatus=4 OR isrefiled=3)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					
 					//for all leaves
-					$data['allpending'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR iscancelled>1)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
+					$data['allpending'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', '((status=0 AND iscancelled=0) OR iscancelled>1 OR isrefiled>1)'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['allapproved'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status=1 AND iscancelled=0'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['allapprovedNopay'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status=2 AND iscancelled=0'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
 					$data['alldisapproved'] = $this->dbmodel->getQueryResults('staffLeaves', 'staffLeaves.*, username, CONCAT(fname," ",lname) AS name, dept, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor) AS supName, (CASE WHEN approverID != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = approverID ) ELSE  "---" END) AS approverName, (CASE WHEN hrapprover != 0 THEN (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID = hrapprover ) ELSE  "---" END) AS hrName', 'status=3 AND iscancelled=0'.$condition, 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position', 'date_requested DESC');
@@ -3324,6 +3403,131 @@ class Staff extends MY_Controller {
 			
 			$this->staffM->evaluationpdf($evalData, $row);
 		}
+	}
+	
+	public function reportviolation(){
+		$data['content'] = 'reportviolation';
+		
+		if($this->user==false){
+			$data['access'] = false;
+		}else if(!empty($_POST)){
+			$docs = '';
+			$dir = 'uploads/violationreported/';
+						
+			$_POST['dateSubmitted'] = date('Y-m-d H:i:s');
+			$_POST['empID_fk'] = $this->user->empID;
+			$_POST['when'] = date('Y-m-d', strtotime($_POST['when']));
+			$_POST['what'] = mysql_real_escape_string($_POST['what']);
+			$_POST['whatISaction'] = mysql_real_escape_string($_POST['whatISaction']);
+			$_POST['proof'] = mysql_real_escape_string($_POST['proof']);
+			$_POST['otherdetails'] = mysql_real_escape_string($_POST['otherdetails']);
+			$_POST['whatViolation'] = implode(',', $_POST['whatViolation']);
+			$_POST['whyExcludeIS'] = mysql_real_escape_string($_POST['whyExcludeIS']);
+			unset($_POST['donotccIS']);
+			
+			if(isset($_POST['submitanonymous'])){
+				$_POST['anonymous'] = 1;
+				unset($_POST['submitanonymous']);
+			}else unset($_POST['alias']);
+			
+			
+			$dfiles = $_FILES['docs'];
+			for($m=0; $m<5; $m++){
+				if(!empty($dfiles['name'][$m])){
+					$fname = 'doc_0'.$m.'_'.date('ymdHis').'.'.$this->textM->getFileExtn($dfiles['name'][$m]);
+					$docs .= $fname.'|';
+					
+					move_uploaded_file($dfiles['tmp_name'][$m], $dir.$fname);	
+				}
+			}
+			$_POST['docs'] = $docs;
+			
+			$data['reportID'] = $this->dbmodel->insertQuery('staffReportViolation', $_POST);
+			
+			//record notifications on supervisor and employee
+			$this->commonM->addMyNotif($this->user->empID, 'Submitted an incident report. Please check <a href="'.$this->config->base_url().'incidentreportaction/details/'.$data['reportID'].'/" class="iframe">here</a> for details.', 5);
+			if(empty($_POST['whyExcludeIS']) && $this->user->supervisor!=0){
+				$this->commonM->addMyNotif($this->user->supervisor, 'Submitted an incident report. Please check <a href="'.$this->config->base_url().'incidentreportaction/details/'.$data['reportID'].'/" class="iframe">here</a> for details.', 0, 1);
+			}
+			$data['submitted'] = true;			
+		}
+		
+		$data['offensesData'] = $this->dbmodel->getQueryResults('staffOffenses', 'offenseID, offense');
+		
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
+	
+	public function incidentreports(){
+		$data['content'] = 'incidentreports';
+		
+		if($this->user!=false){		
+			if($this->access->accessFullHR==false){
+				$data['access'] = false;
+			}else{	
+				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk');
+			}
+		}
+		
+		$this->load->view('includes/template', $data);	
+	}
+	
+	public function incidentreportaction(){
+		$data['content'] = 'incidentreportaction';
+		if($this->user==false){
+			$data['access'] = false;
+		}else{
+			$id = $this->uri->segment(3);
+			$data['type'] = $this->uri->segment(2);
+			$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
+			
+			if(!empty($_POST)){
+				if($_POST['submitType']=='changeStatus'){
+					$insArr['status'] = $_POST['status'];
+					$insArr['statusNote'] = mysql_real_escape_string($_POST['statusNote']);
+					$insArr['staffReportViolation_fk'] = $id;
+					$insArr['updatedBy'] = $this->user->username;
+					$insArr['dateUpdated'] = date('Y-m-d H:i:s');
+					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
+					
+					if(is_numeric($insArr['status'])){
+						$this->dbmodel->updateQueryText('staffReportViolation', 'status="'.$insArr['status'].'"', 'reportID="'.$id.'"');
+					}
+					$data['actionsaved'] = true;
+				}else if($_POST['submitType']=='editwhere'){
+					$this->dbmodel->updateQueryText('staffReportViolation', '`where`="'.$_POST['where'].'"', 'reportID="'.$id.'"');
+					
+					$insArr['status'] = 'Edited';
+					$insArr['statusNote'] = 'Where did the incident take place FROM '.$_POST['prevwhere'].' TO '.$_POST['where'];
+					$insArr['staffReportViolation_fk'] = $id;
+					$insArr['updatedBy'] = $this->user->username;
+					$insArr['dateUpdated'] = date('Y-m-d H:i:s');
+					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
+				}
+			}
+			
+			$data['dir'] = 'uploads/violationreported/';
+			$data['details'] = $this->dbmodel->getSingleInfo('staffReportViolation', 'staffReportViolation.*, CONCAT(fname," ",lname) AS name', 'reportID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+			if(isset($data['details']->whatViolation)){
+				$data['offensesData'] = $this->dbmodel->getQueryResults('staffOffenses', '*', 'offenseID IN ('.$data['details']->whatViolation.')');
+			}			
+			$data['statusHistory'] = $this->dbmodel->getQueryResults('staffReportViolationHistory', '*', 'staffReportViolation_fk="'.$id.'"');
+			
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
+	
+	public function incidentreportform(){
+		if($this->user==false){
+			$data['access'] = false;
+		}else{
+			$id = $this->uri->segment(2);
+			$details = $this->dbmodel->getSingleInfo('staffReportViolation', 'staffReportViolation.*, idNum, supervisor, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS supervisorName', 'reportID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+			
+			$this->staffM->pdfincidentreport($details);
+		}
+		
 	}
 	
 }

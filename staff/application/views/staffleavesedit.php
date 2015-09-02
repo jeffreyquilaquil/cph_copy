@@ -2,7 +2,6 @@
 	$disabled = '';
 	$lc = $row->totalHours/8;
 	$resumework = date('Y/m/d', strtotime('+3 days'));
-	
 ?>
 <h2>Leave Details of <?= $row->name ?></h2>
 <hr/>
@@ -110,7 +109,7 @@
 
 	<tr>
 		<td>Status</td>
-		<td><b><?= $this->textM->getLeaveStatusText($row->status, $row->iscancelled) ?></b>&nbsp;&nbsp;
+		<td><b><?= $this->textM->getLeaveStatusText($row->status, $row->iscancelled, $row->isrefiled) ?></b>&nbsp;&nbsp;
 	<?php		
 		if($this->user->empID == $row->empID_fk){
 			if($row->leaveType==4){
@@ -135,6 +134,11 @@
 			
 			if($row->leaveType==6 && $row->matStatus==0 && (strtotime($row->leaveEnd)>strtotime(date('Y-m-d H:i:s')))){
 				echo '<button id="btnShortenLeave" class="btnclass">Request to Shorten Maternity Leave</button>';
+			}
+			
+			//Refile button if leaveStatus is approved without pay and leave credits not 0
+			if($row->iscancelled==0 && $row->isrefiled==0 && $row->status==2 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
+				echo ' <button id="refilebtn" class="btnclass btnorange">Refile</button>';
 			}
 
 			if($row->status==3 && $row->approverID==0){
@@ -274,7 +278,7 @@
 							<td>'.$rr->leaveStart.'</td>
 							<td>'.$rr->leaveEnd.'</td>
 							<td align="center">'.$rr->totalHours.'</td>
-							<td>'.$this->textM->getLeaveStatusText($rr->status, $rr->iscancelled).'</td>
+							<td>'.$this->textM->getLeaveStatusText($rr->status, $rr->iscancelled, $rr->isrefiled).'</td>
 						</tr>';
 				}				
 			echo '</table>
@@ -526,7 +530,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 </tr>
 <?php
 	if($row->iscancelled!=0 && $row->iscancelled!=4 && $row->datecancelled!= '0000-00-00 00:00:00'){
-		echo '<tr><td>Date cancelled</td><td>'.date('F d, Y H:i', strtotime($row->datecancelled)).'</td></tr>';
+		echo '<tr><td>Date cancelled</td><td>'.date('F d, Y H:i a', strtotime($row->datecancelled)).'</td></tr>';
 	}
 	if($row->canceldata!=''){
 		echo '<tr><td>Reason</td><td>'.nl2br($row->cancelReasons).'</td></tr>';	
@@ -545,7 +549,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<form action="" method="POST" onSubmit="return validatecapprover();">';
 		echo '<tr><td><br/></td><td><input type="radio" name="capprover" value="1"> Approve &nbsp;&nbsp;&nbsp;<input type="radio" name="capprover" value="0"> Disapprove</td></tr>';
 		echo '<tr id="disapprovecanceltr" class="hidden"><td>Note:</td><td><input type="text" class="forminput" id="disnote" name="disnote"/></td></tr>';
-		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelApprover"/> <input type="submit" value="Submit"/></td></tr>';
+		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelApprover"/> <input type="submit" class="btnclass btngreen" value="Submit"/></td></tr>';
 		echo '</form>';
 	}
 	
@@ -573,7 +577,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			<td>Why do you want to cancel this leave request?</td><td><textarea class="forminput" id="cancelReasons" name="cancelReasons"></textarea></td>
 		</tr>
 		<tr class="trcdetails hidden">
-			<td><br/></td><td><input type="hidden" name="submitType" value="cancel"/><input type="submit" value="Submit"/></td>
+			<td><br/></td><td><input type="hidden" name="submitType" value="cancel"/><input type="submit" class="btnclass btngreen" value="Submit"/></td>
 		</tr>
 		</form>
 	';
@@ -610,6 +614,125 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		</tr>
 	</form>
 <?php
+	}
+	
+	/////REFILE DETAILS
+	echo '<tr class="trhead tblrefile '.(($row->isrefiled==0 && empty($row->refiledata))?'hidden':'').'">';
+		echo '<td colspan=2><center>REFILE DETAILS</center></td>';
+	echo '</tr>';
+
+	if($row->isrefiled==0){
+	echo '<tr><td colspan=2>';
+		echo '<table class="tableInfo tblrefile hidden">';
+		echo '<form action="" method="POST" enctype="multipart/form-data" onSubmit="displaypleasewait();">';
+			echo '<tr>';
+				echo '<td width="30%">Why do you want to refile this leave?</td>';
+				echo '<td>'.$this->textM->formfield('textarea', 'refileReason', '', 'forminput', '', 'required').'</td>';
+			echo '</tr>';
+			echo '<tr>';
+				echo '<td>Upload Supporting Documents</td>';
+				echo '<td>';
+					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
+					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
+					echo $this->textM->formfield('file', 'refileDocs[]').'<br/>';
+				echo '</td>';
+			echo '</tr>';
+			echo '<tr>';
+				echo '<td><br/></td>';
+				echo '<td>';
+					echo '<i class="fs11px colorgray">Upon clicking submit, your leave request shall go through the usual approval process (immediate supervisor first, then HR). When approved, accounting shall receive a notification that refiled leave is fully approved.</i><br/>';
+					echo $this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
+					echo ' '.$this->textM->formfield('button', '', 'Cancel', 'btnclass', '', 'id="refilecancel"');
+					echo $this->textM->formfield('hidden', 'submitType', 'refileleave');
+				echo '</td>';
+			echo '</tr>';
+		echo '</form>';
+		echo '</table>';
+	echo '</td></tr>';
+	}
+
+	//LEAVE REFILED HISTORY
+	if(!empty($row->refiledata)){
+		echo '<tr>';
+			echo '<td>Date Refiled</td>';
+			echo '<td>'.date('F d, Y h:i a', strtotime($row->dateRefiled)).'</td>';
+		echo '</tr>';
+		echo '<tr>';
+			echo '<td>Reason</td>';
+			echo '<td>'.nl2br($row->refileReason).'</td>';
+		echo '</tr>';
+		if(!empty($row->refileDocs)){
+			echo '<tr>';
+				echo '<td>Supporting Docs</td>';
+				echo '<td>';
+					$rdoc = explode('|', $row->refileDocs);
+					foreach($rdoc AS $r){
+						if(!empty($r) && file_exists($dir_leave.$r))
+							echo '<a href="'.$this->config->base_url().$dir_leave.$r.'" target="_blank">'.$r.'</a><br/>';
+					}
+				echo '</td>';
+			echo '</tr>';
+		}
+		echo '<tr>';
+			echo '<td>Refiling History</td>';
+			echo '<td>';
+				$hist = json_decode($row->refiledata);
+				$htext = '';
+				foreach($hist AS $h=>$k) 
+					$htext .= $k.'<hr/>';
+					
+				echo rtrim($htext, '<hr/>');
+			echo '</td>';
+		echo '</tr>';
+		
+		if($row->isrefiled==2 && ($this->user->empID == $row->approverID || $this->user->empID == $row->supervisor)){
+			echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
+				echo '<tr bgcolor="#eee"><td colspan=2><h3>Immediate Supervisor Refiling Approval</h3></td></tr>';
+				echo '<tr>';
+					echo '<td>Approval</td>';
+					echo '<td>'.$this->textM->formfield('radio', 'ISapproval', '1', '', '', 'required').' Approve &nbsp;&nbsp;&nbsp;'.$this->textM->formfield('radio', 'ISapproval', '0', '', '', 'required').' Disapprove</td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td><br/></td>';
+					echo '<td>'.$this->textM->formfield('text', 'refileIMnote', '', 'forminput', 'Note', '').'</td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td><br/></td>';
+					echo '<td>';
+						echo $this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
+						echo $this->textM->formfield('hidden', 'submitWho', 'supervisor');
+						echo $this->textM->formfield('hidden', 'submitType', 'refileapproval');
+					echo '</td>';
+				echo '</tr>';
+			echo '</form>';
+		}
+		
+		if($row->isrefiled==3 && $this->access->accessFullHR==true){
+			echo '<tr bgcolor="#eee"><td colspan=2><h3>Human Resources Refiling Approval</h3></td></tr>';
+			
+			echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
+			echo '<tr>';
+				echo '<td>Change Status</td>';
+				echo '<td>';
+					echo $this->textM->formfield('radio', 'changeStatus', '1', '', '', 'required checked').' Approved With Pay&nbsp;&nbsp;&nbsp;';
+					echo $this->textM->formfield('radio', 'changeStatus', '0', '', '', 'required').' Disapprove';					
+				echo '</td>';
+			echo '</tr>';
+			
+			echo '<tr><td>Current leave credits</td><td>'.$row->leaveCredits.'</td></tr>';
+			echo '<tr><td>Leave credits deducted</td><td>'.$this->textM->formfield('input', 'leaveCreditsUsed', $lc, 'forminput', '', 'id="refileUsed" required').'</td></tr>';			
+			echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="refileleaveCredits" required value="'.($row->leaveCredits - $lc).'" class="forminput"/></td></tr>';
+			echo '<tr><td>Note</td><td>'.$this->textM->formfield('textarea', 'noterefile', '', 'forminput').'</td></tr>';
+			
+						
+			
+			echo '<tr><td><br/></td><td>';
+				echo $this->textM->formfield('hidden', 'submitWho', 'HR');
+				echo $this->textM->formfield('hidden', 'submitType', 'refileapproval');
+				echo $this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
+			echo '</td></tr>';
+			echo '</form>';
+		}
 	}
 ?>	
 	
@@ -650,6 +773,18 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 				$('#leaveCreditsUsed').val(0);				
 			}	
 				
+		});
+		
+		$('input[name="changeStatus"]').change(function(){
+			if($(this).val()==0){
+				$('#refileUsed').val(0);
+				$('#refileleaveCredits').val('<?= $row->leaveCredits ?>');
+				$('textarea[name="noterefile"]').attr('required', 'required');
+			}else{
+				$('#refileUsed').val('<?= $lc ?>');
+				$('#refileleaveCredits').val('<?= $row->leaveCredits - $lc ?>');
+				$('textarea[name="noterefile"]').removeAttr('required');
+			}
 		});
 
 		$('#status').change(function(){			
@@ -696,12 +831,28 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
 		});
 		
+		$('#refilebtn').click(function(){
+			$('.tblrefile').removeClass('hidden');
+			$(this).addClass('hidden');
+			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
+		});
+		
+		$('#refilecancel').click(function(){
+			$('.tblrefile').addClass('hidden');
+			$('#refilebtn').removeClass('hidden');
+		});
+		
 		$('#addfile').click(function(){
 			$('#supDocs').trigger('click');
 		});
 		$('#supDocs').change(function(){
 			displaypleasewait();
 			$('#pfformi').submit();				
+		});
+		
+		$('input[name="ISapproval"]').click(function(){
+			if($(this).val()==0) $('input[name="refileIMnote"]').attr('required', 'required');
+			else $('input[name="refileIMnote"]').removeAttr('required');
 		});
 		
 		$('#addEmailBox').click(function(){
@@ -727,7 +878,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			$('.trshortenleave').removeClass('hidden');
 			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
 		});
-		
+				
 	});
 	
 	function validateIS(){

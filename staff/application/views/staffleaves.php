@@ -6,7 +6,7 @@
 	$current = 'tab-1';
 	if($this->user->level>0 || $this->access->accessFullHR==true){
 		echo '<li class="tab-link '.(($this->user->access!='hr')?'current':'').'" data-tab="tab-1">On-Leave Today ('.count($tquery).')</li>';
-		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) ).')</li>';
+		echo '<li class="tab-link" data-tab="tab-2">Pending Immediate Supervisor\'s Approval ('.( count($imquery) + count($imcancelledquery) + count($imrefiledquery) ).')</li>';
 	}
 	if($this->access->accessFullHR==true){
 		if($this->user->access=='hr')
@@ -40,6 +40,11 @@
 	if(count($imcancelledquery)>0){
 		echo '<h3>Pending Cancelled Leaves for Approval</h3><hr/>';
 		echo $this->textM->leaveTableDisplay($imcancelledquery, 'imcancelledquery');
+		echo '<br/><br/>';
+	}
+	if(count($imrefiledquery)>0){
+		echo '<h3>Pending Refiled Leaves for Approval</h3><hr/>';
+		echo $this->textM->leaveTableDisplay($imrefiledquery, 'imrefiledquery');
 		echo '<br/><br/>';
 	}
 	

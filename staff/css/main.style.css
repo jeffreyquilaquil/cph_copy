@@ -57,12 +57,19 @@ a{ color:#660808; }
 a:hover{ color:red; }
 
 .padding5px{ padding:5px; }
+.paddingleft5px{ padding-left:5px; }
+.paddingtop5px{ padding-top:5px; }
+.paddingtop10px{ padding-top:10px; }
 .errortext{ color:red; }
 .colorgray{ color:#888; }
-.btnclass { padding:5px 10px; }
-.btngreen { background-color:green; font-weight:bold; color:#fff; }
+.btnclass { padding:5px 10px; border-radius:5px; }
+.btnclass:hover { background-color:#ddd; }
+.btngreen { background-color:green; font-weight:bold; color:#fff; border-radius:5px; }
 .btngreen:hover{ background-color:#00aa00; }
-.btnred { background-color:red; font-weight:bold; color:#fff; }
+.btnorange{ background-color:orange; font-weight:bold; color:#fff; border-radius:5px; }
+.btnorange:hover{ background-color:#ec9900; }
+.btnred { background-color:red; font-weight:bold; color:#fff; border-radius:5px; }
+.btnred:hover{ background-color:#ff4242; }
 .weightnormal{ font-weight:normal; }
 .weightbold{ font-weight:bold; }
 .hidden{ display:none; }
@@ -71,6 +78,7 @@ a:hover{ color:red; }
 .taleft{ text-align:left; }
 .taright{ text-align:right; }
 .width100{ width:100%; }
+.width50{ width:50%; }
 .cpointer{ cursor:pointer; }
 .floatleft{ float:left; }
 .floatright{ float:right; }
@@ -79,6 +87,10 @@ a:hover{ color:red; }
 .leaveMatNote{ border:1px solid #ccc; padding:10px; font-size:11px; }
 .leaveMatNote hr{ border:1px solid #ddd; }
 .displayinlineblock{ display:inline-block; }
+.border-bottom-black td{ border-bottom:1px solid #ccc; }
+.loghistory{ padding:5px; border:1px solid #ccc; }
+.updaterequest{ background-color: #ffb2b2; }
+.positionrelative{ position:relative; }
 
 
 #container{
@@ -273,7 +285,7 @@ ul#leftMenu li a{
 }
 
 .wrapper-box{
-	width: 180px;
+	width: 182px;
 	margin-left: 20px;
 	border: 2px solid #fff;
 	background-color: #800000;
@@ -317,7 +329,7 @@ ul#leftMenu li a{
 }
 
 #contentfull{
-	width:96%;
+	width:96.5%;
 	background-color:#fff;
 	color:#000;
 	padding:10px;
@@ -365,6 +377,7 @@ footer{
 .trlabel a.droptext{ color:#fff; font-weight:normal; font-size:11px; text-decoration:none; }
 .trlabel a.droptext:hover{ color:red; }
 .forminput{ width:95%; padding:5px; }
+.inputerror{ border:1px solid red; }
 .forminput50{ width:48%; padding:5px; }
 .tableInfo textarea{ width:98%; padding:5px; }
 
@@ -473,18 +486,29 @@ ul.tabs2 li.current{
 .calendartbl .trhead{ background-color:#800000; font-weight:bold; color:#fff; }
 .calendartbl td{ border:1px solid #000; vertical-align:top; }
 .calendartbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:#bbb; }
-.calendartbl .istoday{ background-color:#ffb2b2; }
+.calendartbl .daynum:hover{ background-color:#ffb2b2; }
+.calendartbl .istoday{ background-color:#800000; color:#fff; }
+.calendartbl .divtoday{ background-color:#ffb2b2; }
 .calendartbl .dayEdit{ text-decoration:none; }
 .calendartbl .dayEdit:hover div{ background-color:#ffb2b2; }
 .calendartbl  .daycontent{ min-height:80px; position:relative; text-align:center; padding-top:5px; }
 .calendartbl  .daycontent .daynumoption{ padding-top:10px; }
-.calendartbl  .daysbox{ text-align:center; padding:3px; border-radius:3px; color:#fff; font-size:10px; font-weight:bold; margin-bottom:3px; }
+.calendartbl  .daynum .daycontentmenu{ background-color:#fff; width:100%; position:absolute; text-align:left; margin-top:5px; margin-left:-5px; z-index:999; }
+.calendartbl  .daynum .daycontentmenu .daylink{ padding:5px 10px; border:1px solid #800000; display:none; color:#800000; cursor:pointer; }
+.calendartbl  .daynum .daycontentmenu .daylink:hover{ background-color:#800000; color:#fff; }
+.calendartbl  .daynum .daycontentmenu a{ text-decoration:none; }
+.calendartbl  .daynum:hover .daycontentmenu .daylink{ display:block; }
+.calendartbl  .daysbox{ text-align:center; padding:3px 4px; border-radius:3px; color:#fff; font-size:10px; margin-bottom:3px; }
+.calendartbl  .dayEditable{ cursor:pointer; font-weight:bold;}
+.calendartbl  .dayEditable:hover{ background-color:#009700; }
 .calendartbl  .dayholiday{ background-color:red; }
 .calendartbl  .daysuspend{ background-color:#002d4a; }
 .calendartbl  .daysched{ background-color:green; }
 .calendartbl  .daycustomsched{ background-color:#00bb29; }
 .calendartbl  .dayonleave{ background-color:#ff8484; }
 .calendartbl  .daypendingleave{ background-color:#b2ffb2; }
+
+#divtimelog .daycontent{ text-align:left; padding:5px; }
 
 
 .attendancetbl{ width:100%; border:1px solid #000; border-collapse:collapse; }

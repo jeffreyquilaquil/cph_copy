@@ -641,10 +641,10 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>';
 					
 					if($t->iscancelled==4){
-						echo '<a href="'.$this->config->base_url().'sendemail/addinfoleavesubmitted/'.$t->leaveID.'/'.'" class="iframe">'.$this->textM->getLeaveStatusText($t->status, $t->iscancelled).'<br/>Click here to confirm submission of required information</a>';
+						echo '<a href="'.$this->config->base_url().'sendemail/addinfoleavesubmitted/'.$t->leaveID.'/'.'" class="iframe">'.$this->textM->getLeaveStatusText($t->status, $t->iscancelled, $t->isrefiled).'<br/>Click here to confirm submission of required information</a>';
 					}else{
 						if($t->matStatus>0) echo $this->textM->getLeaveMaternityStatusText($t->matStatus);
-						else echo $this->textM->getLeaveStatusText($t->status, $t->iscancelled);
+						else echo $this->textM->getLeaveStatusText($t->status, $t->iscancelled, $t->isrefiled);
 					}
 				echo '</td>
 					<td><a class="iframe" href="'.$this->config->base_url().'leavepdf/'.$t->leaveID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>

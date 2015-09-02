@@ -1135,6 +1135,90 @@ class Staffmodel extends CI_Model {
 		$pdf->Output('performance_'.$eval->evalID.'.pdf', 'I');
 	}
 	
+	function pdfincidentreport($row){
+		$dir = 'uploads/violationreported/';
+		$statusArr = $this->textM->constantArr('incidentRepStatus');
+			
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'Incident_Report_Form.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','B',9);
+		$pdf->SetTextColor(0, 0, 0);
+		
+		$pdf->setXY(113, 39.5); $pdf->Write(0, date('F d, Y h:i a', strtotime($row->dateSubmitted)));
+		
+		$pdf->SetFont('Arial','B',11);
+		$pdf->setXY(116, 51); $pdf->Write(0, ((!empty($row->alias))?$row->alias:$row->name));
+		$pdf->setXY(116, 68); $pdf->Write(0, $row->where);
+		$pdf->setXY(106, 98); $pdf->Write(0, date('F d, Y', strtotime($row->when)));
+		$pdf->setXY(106, 107); $pdf->Write(0, $row->where);
+		
+		$pdf->SetFont('Arial','',8);
+		$pdf->setXY(25, 120); $pdf->MultiCell(160, 4, $row->what,0,'L',false);
+		
+		
+		$offenses = $this->dbmodel->getQueryResults('staffOffenses', '*', 'offenseID IN ('.$row->whatViolation.')');
+		$offtxt = '';
+		foreach($offenses AS $o){
+			$offtxt .= '-  '.$o->offense."\n";
+		}
+		$pdf->setXY(25, 160); $pdf->MultiCell(160, 4, $offtxt,0,'L',false);
+		
+		$pdf->SetFont('Arial','B',11);
+		$pdf->setXY(145, 189); $pdf->Write(0, (($row->reported==1)?'YES':'NO'));
+		
+		$pdf->SetFont('Arial','',8);
+		$pdf->setXY(25, 202); $pdf->MultiCell(160, 4, $row->whatISaction,0,'L',false);	
+
+		$pdf->SetFont('Arial','B',11);
+		$pdf->setXY(145, 231); $pdf->Write(0, ((!empty($row->proof))?'YES':'NO'));
+		$pdf->setXY(145, 239.5); $pdf->Write(0, ((!empty($row->witnesses))?'YES':'NO'));
+		
+		$pdf->SetFont('Arial','',9);
+		$pdf->setXY(30, 255); $pdf->Write(0, $row->witnesses);
+		
+		
+		//page2	
+		$pdf->AddPage();
+		$tplIdx = $pdf->importPage(2);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
+		
+		$pdf->SetFont('Arial','',9);
+		
+		$docs = explode('|', $row->docs);
+		$dtext = '';
+		foreach($docs AS $d){
+			if(!empty($d)){
+				$dtext .= $this->config->base_url().$dir.$d.', ';
+			}
+		}
+		$pdf->SetFont('Arial','',8);
+		$pdf->setXY(25, 40); $pdf->MultiCell(160, 4,$row->otherdetails,0,'L',false);
+		$pdf->setXY(25, 78); $pdf->MultiCell(160, 4,rtrim($dtext, ', '),0,'L',false);	
+		
+		$pdf->SetFont('Arial','B',11);
+		$pdf->setXY(155, 110); $pdf->Write(0, ((!empty($row->alias))?'YES':'NO'));
+		$pdf->setXY(155, 118.5); $pdf->Write(0, ((!empty($row->whyExcludeIS))?'YES':'NO'));
+		$pdf->SetFont('Arial','',8);
+		$pdf->setXY(25, 131); $pdf->MultiCell(160, 4,$row->whyExcludeIS,0,'L',false);	
+		
+		//SIGNATURES
+		$pdf->SetFont('Arial','B',10);
+		$pdf->setXY(25, 196); $pdf->Write(0, '(Complainant) '.strtoupper(((!empty($row->alias))?$row->alias:$row->name)).' (ID#: '.$row->idNum.'), '.date('F d, Y', strtotime($row->dateSubmitted)));
+		
+		$pdf->setXY(25, 220.5); $pdf->Write(0, 'MARIANNE CELESTE VELASCO, '.date('F d, Y', strtotime($row->dateSubmitted)));
+		$pdf->setXY(25, 254); $pdf->Write(0, strtoupper($row->supervisorName).', '.date('F d, Y', strtotime($row->dateSubmitted)));
+			
+								
+		$pdf->Output('incident_report_form'.$row->reportID.'.pdf', 'I');
+	}
+	
 }
 
 ?>

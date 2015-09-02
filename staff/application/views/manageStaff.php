@@ -36,7 +36,11 @@
 		<td><input type="checkbox" name="flds[]" value="active" <?= ((in_array('active',$fvalue)) ? 'checked':'') ?>/> Active</td>
 		<td><input type="checkbox" name="flds[]" value="accessEndDate" <?= ((in_array('accessEndDate',$fvalue)) ? 'checked':'') ?>/> Access End Date</td>
 		<td><input type="checkbox" name="flds[]" value="terminationType" <?= ((in_array('terminationType',$fvalue)) ? 'checked':'') ?>/> Termination Reason</td>
-		<td><input type="checkbox" name="flds[]" value="sal" <?= ((in_array('sal',$fvalue)) ? 'checked':'') ?>/> Salary</td>
+	<?php
+		if($this->access->accessFullHR==true) echo '<td><input type="checkbox" name="flds[]" value="sal" '.((in_array('sal',$fvalue)) ? 'checked':'').'/> Salary</td>';
+		else echo '<td><br/></td>';
+	?>
+		
 		<td><br/></td>
 	</tr>
 </table>

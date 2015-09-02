@@ -135,6 +135,23 @@ class Textmodel extends CI_Model {
 		return $tText;
 	}
 	
+	function convertTimeToStr($time){
+		$basetime = (strtotime($time) - strtotime('TODAY'));
+		return $this->convertTimeToMinHours($basetime);
+	}
+	
+	function convertTimeToMinStr($time){
+		$str = '';
+		$ex = explode(':', $time);
+		$ex = array_reverse($ex);
+		if(isset($ex[2]) && $ex[2]!='00') $str .= ltrim($ex[2],'0').' hr ';
+		if(isset($ex[1]) && $ex[1]!='00') $str .= ltrim($ex[1],'0').' min ';
+		if(isset($ex[0]) && $ex[0]!='00') $str .= ltrim($ex[0],'0').' sec ';		
+		
+		if(empty($str)) $str = '0';
+		return $str;		
+	}
+	
 	function ordinal($num){
 		if ( ($num / 10) % 10 != 1 )
 		{
@@ -246,22 +263,31 @@ class Textmodel extends CI_Model {
 		return $disp;
 	}
 	
-	function getLeaveStatusText($status, $iscancelled){
+	function getLeaveStatusText($status, $iscancelled, $isrefiled){
 		$leaveStatusArr = $this->textM->constantArr('leaveStatus');
-		$status = ucfirst($leaveStatusArr[$status]); 
+		$statusText = ucfirst($leaveStatusArr[$status]); 
 		
 		if($iscancelled==1 && $status==0)
-			$status = 'CANCELLED';
+			$statusText = 'CANCELLED';
 		else if($iscancelled==1)
-			$status .= ' - <i>CANCELLED</i>';
-		else if($iscancelled==2)
-			$status .= ' - <i>Pending Cancel Approval</i>'; 
+			$statusText .= ' - <i>CANCELLED</i>';
+		else if($iscancelled==2 )
+			$statusText .= ' - <i>Pending Cancel Approval</i>'; 
 		else if($iscancelled==3)
-			$status .= ' - <i>Pending HR Cancel Approval</i>'; 
+			$statusText .= ' - <i>Pending HR Cancel Approval</i>'; 
 		else if($iscancelled==4)
-			$status = 'Additional Information Required'; 
+			$statusText = 'Additional Information Required';
 		
-		return $status;
+		if($isrefiled==1 && $status==0)
+			$statusText = 'REFILED';
+		else if($isrefiled==1)
+			$statusText .= ' - <i>REFILED</i>';
+		else if($isrefiled==2 )
+			$statusText .= ' - <i>Pending Refiling Approval</i>'; 
+		else if($isrefiled==3 || $isrefiled==3)
+			$statusText .= ' - <i>Pending HR Refiling Approval</i>';
+		
+		return $statusText;
 	}
 	
 	function getLeaveMaternityStatusText($status){
@@ -306,7 +332,7 @@ class Textmodel extends CI_Model {
 					<td>'.$row->hrName.'</td>';
 			
 			if($row->matStatus>0) $disp .= '<td>'.$this->textM->getLeaveMaternityStatusText($row->matStatus).'</td>';
-			else $disp .= '<td>'.$this->textM->getLeaveStatusText($row->status, $row->iscancelled).'</td>';
+			else $disp .= '<td>'.$this->textM->getLeaveStatusText($row->status, $row->iscancelled, $row->isrefiled).'</td>';
 			
 			$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'staffleaves/'.$row->leaveID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
 				</tr>
@@ -327,7 +353,7 @@ class Textmodel extends CI_Model {
 			foreach($t2 AS $k=>$t):
 				if($k!='name'){
 					$ex = explode('|', $t);
-					$valentine .= '<option value="'.$ex[0].'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
+					$valentine .= '<option data-time="'.$ex[2].'" value="'.$ex[0].'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
 				}
 			endforeach;
 			$valentine .= '</optgroup>';
@@ -392,7 +418,11 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_hmoNumber') $txt = 'HMO Policy Number';
 		else if($t=='txt_terminationType') $txt = 'Termination Reason';
 		else if($t=='txt_taxstatus') $txt = 'Tax Status';			
-		else if($t=='txt_agencyID_fk') $txt = 'Agency';			
+		else if($t=='txt_agencyID_fk') $txt = 'Agency';
+		else if($t=='timeOut') $txt = 'Time Out';			
+		else if($t=='timeIn') $txt = 'Time In';			
+		else if($t=='breakIn') $txt = 'Break In';			
+		else if($t=='breakOut') $txt = 'Break Out';			
 		
 		return $txt;
 	}
@@ -636,6 +666,19 @@ class Textmodel extends CI_Model {
 					'professionalism' => 'Professionalism',
 					'flexibility' => 'Flexibility to Change and Continuous Improvement'
 				);
+		}else if($a=='incidentRepStatus'){
+			$arr = array(
+					0 => 'Cancelled',
+					1 => 'New',
+					2 => 'Printed',
+					3 => 'Signed incident report uploaded',
+					4 => 'NTE printed',
+					5 => 'Signed NTE uploaded',
+					6 => 'Explanation Received',
+					7 => 'Signed explanation uploaded',
+					8 => 'CAR and NOD printed',
+					9 => 'Signed CAR and NOD uploaded'
+				);
 		}
 		
 		return $arr;
@@ -750,6 +793,13 @@ class Textmodel extends CI_Model {
 			$sc = 'Poor (Unsatisfactory)';
 			
 		return $sc;
+	}
+	
+	public function getAlias(){
+		$arr = array('Harry Potter', 'Tyrion Lannister', 'Cersei Lannister', 'Daenerys Targaryen', 'Jon Snow', 'Sansa Stark', 'Arya Stark', 'Robb Stark', 'Draco Malfoy', 'Hermione Granger', 'Ronald Weasley', 'Lord Voldemort', 'Albus Dumbledore', 'Severus Snape', 'Ginny Weasley', 'Luna Lovegood', 'Rubeus Hagrid', 'Remus Lupin', 'Neville Longbottom', 'Sirius Black', 'Bran Stark', 'Khal Drogo', 'Petyr Baelish', 'Joffrey Baratheon', 'Sandor Clegane', 'Lord Varys');
+		
+		$k = array_rand($arr);
+		return $arr[$k];
 	}
 		
 }
