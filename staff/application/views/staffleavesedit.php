@@ -138,7 +138,7 @@
 			
 			//Refile button if leaveStatus is approved without pay and leave credits not 0
 			//emergency and sick leaves. Vacation leaves cannot be refiled. 
-			if($row->iscancelled==0 ($row->leaveType==2 || $row->leaveType==3) && $row->status==2 && $row->isrefiled==0 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
+			if($row->iscancelled==0 && ($row->leaveType==2 || $row->leaveType==3) && $row->status==2 && $row->isrefiled==0 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
 				echo ' <button id="refilebtn" class="btnclass btnorange">Refile</button>';
 			}
 
