@@ -271,7 +271,7 @@ if(count($row)==0){
 
 	} //end of type evaluate
 	
-	//if($type=='hroptions'){ 
+	if($this->access->accessFullHR==true){ 
 		$opt = array();
 		if($row->HRstatusData!=''){
 			$options = explode('-^_^-', $row->HRstatusData);
@@ -327,7 +327,7 @@ if(count($row)==0){
 		<?php } ?>
 		</table>
 <?php	
-	//}
+	}
 
 
 } //end of no coaching record ?>
