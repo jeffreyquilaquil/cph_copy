@@ -79,6 +79,10 @@
 		echo $this->textM->formfield('file', 'fileupload', '', 'hidden', '', 'id="file'.$q2->perID.'" onChange="fileChange('.$q2->perID.')"');
 		echo $this->textM->formfield('button', '', 'Upload '.$q2->perName, 'btnclass', '', 'id="btnupload'.$q2->perID.'" onClick="browseFile('.$q2->perID.')"');
 		echo '<span id="filetext'.$q2->perID.'"></span>';
+		if($q2->enableNA==1){
+			echo '<br/><br/><input type="checkbox" onClick="showMyDiv('.$q2->perID.', this)"/> N/A';
+		}
+		echo '<br/><br/><input type="checkbox" name="submitted"/> Click here if employee already submitted the file.';
 		echo '<br/><br/>';
 		echo 'Add remarks below (optional)';
 		echo '<br/>';
@@ -147,21 +151,21 @@
 	
 	function showMyDiv(id, t){
 		$('#mainPerDiv').addClass('hidden');
+		$('#div_'+id).addClass('hidden');
 		$('#div2_'+id).removeClass('hidden');
 		$(t).prop('checked', false); 
 	}
 	
+	//return false if enable NA is 0 and no file uploaded and checkbox submitted is unticked
 	function validateForm(id, type){
-		if($('#file'+id).val()=='' && type==0){			
-			if(type==0){
-				alert('Please upload file.');
+		if(type==0 && $('input[name="submitted"]').is(":checked")==false && $('#file'+id).val()==''){
+			alert('Please upload file.');
+			return false;
+		}else if($('#file'+id).val()=='' && $('input[name="submitted"]').is(":checked")==false){
+			if(confirm('Are you sure you want to submit without uploading file?'))
+				return true;
+			else
 				return false;
-			}else{
-				if(confirm('Are you sure you want to submit without uploading file?'))
-					return true;
-				else
-					return false;
-			}			
 		}else{
 			return true;
 		}

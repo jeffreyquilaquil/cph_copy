@@ -35,6 +35,57 @@
 
 <? //right-wrapper ?>
 <div id="right-wrapper">
+<?php if($this->user->perStatus<100){ ?>
+	<div style="padding:10px;" class="tacenter">
+		Your PER is<br/>
+		<b style="font-size:24px;"><?= $this->user->perStatus ?>%</b><br/>
+		complete
+		<hr/>
+		Submit the following documents asap (<i>click to upload</i>).
+		<hr/>
+		<ol class="perOL">
+		<?php
+			$uploaded = array();
+			foreach($perUploaded AS $p) array_push($uploaded, $p->perID_fk);
+			
+			$forVerify = array();
+			foreach($perForVerify AS $v) array_push($forVerify, $v->perID_fk);
+			
+			foreach($requirements AS $req){
+				if(!in_array($req->perID, $uploaded)){
+					echo '<li>';
+						echo '<a href="javascript:void(0);" onClick="uploadPER('.$req->perID.', \''.$req->perName.'\')">'.$req->perName.' '.((!empty($req->perDescShort))?'<span class="weightnormal">('.$req->perDescShort.')</span>':'').'</a>';
+						if(in_array($req->perID, $forVerify)) echo '<i class="colorgray"> File submitted. Pending for verification.</i>';
+					echo '</li>';
+				}
+			}
+		?>
+		</ol>
+		<hr/>
+		<form id="formPER" class="hidden" action="" method="POST" enctype="multipart/form-data">
+		<?php
+			echo $this->textM->formfield('file', 'pfile', '', '', '', 'id="fuploadPER"');
+			echo $this->textM->formfield('hidden', 'perTypeID');
+			echo $this->textM->formfield('hidden', 'pTypeName');
+			echo $this->textM->formfield('hidden', 'submitType', 'uploadPER');
+		?>
+		</form>
+	</div>
+	<script type="text/javascript">
+		$(function(){
+			$('#fuploadPER').change(function(){
+				$('#formPER').submit();
+				displaypleasewait();
+			});
+		});
+		
+		function uploadPER(id, name){
+			$('input[name="perTypeID"]').val(id);
+			$('input[name="pTypeName"]').val(name);
+			$('#fuploadPER').trigger('click');
+		}
+	</script>
+<?php } ?>
 	<!--
 	<div class="wrapper-box">
 		<input type="text" class="padding5px" id="searchindex"/><br/>

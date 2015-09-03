@@ -37,6 +37,43 @@ class Staff extends MY_Controller {
 				}else{
 					echo '<script>alert("Invalid file type. Please upload .jpg file only");</script>';
 				}
+			}else if($_POST['submitType']=='uploadPER'){							
+				$dir = UPLOAD_DIR.$this->user->username;
+				if (!file_exists($dir)) {
+					# $data['dir'] doesn't have value 
+					mkdir($dir, 0755, true);
+					chmod($dir.'/', 0777);
+				}
+				
+				$stark = array_reverse(explode('.', $_FILES['pfile']['name']));	
+				$filename = str_replace(' ','',$_POST['pTypeName']).'_'.date('YmdHis').'.'.$stark[0];
+				if(move_uploaded_file($_FILES['pfile']['tmp_name'], $dir.'/'.$filename)){					
+					//insert to staffUploads	
+					$up['empID_fk'] = $this->user->empID;
+					$up['uploadedBy'] = $this->user->empID;
+					$up['docName'] = $_POST['pTypeName'];
+					$up['fileName'] = $filename;
+					$up['dateUploaded'] = date('Y-m-d H:i:s');					
+					$this->dbmodel->insertQuery('staffUploads', $up);
+					
+					//insert to staffPerEmpStatus
+					$emp['perID_fk'] = $_POST['perTypeID'];
+					$emp['empID_fk'] = $this->user->empID;
+					$emp['perType'] = 0;
+					$emp['perValue'] = addslashes($this->user->fname.' uploaded '.$_POST['pTypeName'].' file. Click <a href="'.$this->config->base_url().$dir.'/'.$filename.'">here</a> to view the file.');
+					$emp['forVerification'] = 1;
+					$emp['adder'] = $this->user->username;
+					$emp['dateAdded'] = date('Y-m-d H:i:s');
+					$this->dbmodel->insertQuery('staffPerEmpStatus', $emp);
+					
+					//for notification
+					$this->commonM->addMyNotif($this->user->empID, 'Uploaded '.$_POST['pTypeName'].' file. Click <a href="'.$this->config->base_url().$dir.'/'.$filename.'">here</a> to view the file.', 5);
+					echo '<script>alert("File has been uploaded. This is still waiting for HR verification."); location.href="'.$_SERVER['REQUEST_URI'].'"; </script>';
+					exit;
+				}else{
+					echo '<script>alert("Unable to upload file. Please upload less than 2MB."); location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
+					exit;
+				}
 			}
 		}
 		
@@ -47,6 +84,13 @@ class Staff extends MY_Controller {
 			$anQuery = $this->dbmodel->getSingleInfo('staffAnnouncements', 'announcement', 1, '', 'timestamp DESC');
 			if(isset($anQuery->announcement))
 				$data['announcement'] = stripslashes($anQuery->announcement);
+		
+			//PER EMP STATUS
+			if($this->user->perStatus<100){
+				$data['requirements'] = $this->dbmodel->getQueryResults('staffPerRequirements', 'perID, perName, perDescShort');
+				$data['perUploaded'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', 'perID_fk', 'empID_fk="'.$this->user->empID.'" AND perType=1');
+				$data['perForVerify'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', 'perID_fk', 'empID_fk="'.$this->user->empID.'" AND perType=0 AND forVerification=1');
+			}
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -537,7 +581,7 @@ class Staff extends MY_Controller {
 								}else{
 									echo '<script>alert("Unable to upload file. Please upload less than 2MB."); location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
 									exit;
-								}																
+								}															
 							}
 							
 							//add notifications	
@@ -1880,7 +1924,7 @@ class Staff extends MY_Controller {
 							$updateArr['dateRefiled'] = date('Y-m-d H:i:s');
 							$updateArr['refileDocs'] = '';
 													
-							for($c=0; $c<3; $c++){
+							for($c=0; $c<5; $c++){
 								if(!empty($_FILES['refileDocs']['name'][$c])){									
 									$n = array_reverse(explode('.', $_FILES['refileDocs']['name'][$c]));
 									$fname = $data['row']->leaveID.'_refile_'.$c.'_'.date('YmdHis').'.'.$n[0];
@@ -3095,7 +3139,6 @@ class Staff extends MY_Controller {
 			$data['queryProbationary'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="probationary" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			
-			//$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', 'status=1 AND hrStatus>0');
 			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', '1');
 		}
 				
