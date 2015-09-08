@@ -82,7 +82,10 @@
 		if($q2->enableNA==1){
 			echo '<br/><br/><input type="checkbox" onClick="showMyDiv('.$q2->perID.', this)"/> N/A';
 		}
-		echo '<br/><br/><input type="checkbox" name="submitted"/> Click here if employee already submitted the file.';
+		
+		echo '<br/><br/>Input link below if employee already submitted the file.<br/>'.$this->textM->formfield('text', 'filelink', '', 'forminput', 'http://', 'id="fileLink_'.$q2->perID.'"');
+		
+		
 		echo '<br/><br/>';
 		echo 'Add remarks below (optional)';
 		echo '<br/>';
@@ -158,16 +161,21 @@
 	
 	//return false if enable NA is 0 and no file uploaded and checkbox submitted is unticked
 	function validateForm(id, type){
-		if(type==0 && $('input[name="submitted"]').is(":checked")==false && $('#file'+id).val()==''){
-			alert('Please upload file.');
-			return false;
-		}else if($('#file'+id).val()=='' && $('input[name="submitted"]').is(":checked")==false){
+		valid = true;
+		
+		if(type==0 && $('#fileLink_'+id).val()=='' && $('#file'+id).val()==''){
+			alert('Please upload file or input file link.');
+			valid = false;
+		}else if($('#file'+id).val()=='' && $('#fileLink_'+id).val()==''){
 			if(confirm('Are you sure you want to submit without uploading file?'))
-				return true;
+				valid = true;
 			else
-				return false;
-		}else{
-			return true;
+				valid = false;
 		}
+		
+		if(valid==true){
+			displaypleasewait();
+		}
+		return valid;
 	}
 </script>

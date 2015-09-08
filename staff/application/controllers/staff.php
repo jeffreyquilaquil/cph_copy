@@ -3161,6 +3161,7 @@ class Staff extends MY_Controller {
 					$gunting = explode('+++', $hq->perValue);
 					$data['arrHistory']['action'][$hq->perID_fk]['text'] = '';
 					if(isset($gunting[1]) && !empty($gunting[1]))$data['arrHistory']['action'][$hq->perID_fk]['text'] .= $gunting[1].' - ';
+					if(isset($gunting[2]) && !empty($gunting[2]))$data['arrHistory']['action'][$hq->perID_fk]['text'] .= $gunting[2].' - ';
 					
 					$data['arrHistory']['action'][$hq->perID_fk]['text'] .= 'Validated by <b>'.$hq->adder.'</b> on '.date('m/d/Y h:i A', strtotime($hq->dateAdded));
 					$data['arrHistory']['action'][$hq->perID_fk]['naVal'] = $hq->naVal;
@@ -3172,11 +3173,11 @@ class Staff extends MY_Controller {
 					$insArr['perType'] = 0; //1 for remarks
 					$insArr['perValue'] = $_POST['remarks'];
 					
-				}else if($_POST['submitType']=='validate'){
+				}else if($_POST['submitType']=='validate'){					
 					$insArr['perType'] = 1; //1 for action
 					$insArr['perValue'] = $_POST['perName'].' validated.';
 					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
-					
+										
 					if(!empty($_FILES['fileupload']['name'])){
 						$fextn = $this->textM->getFileExtn($_FILES['fileupload']['name']);
 						$filename = str_replace(' ', '_', $_POST['perName']).'_'.date('YmdHis').'.'.$fextn;
@@ -3190,15 +3191,16 @@ class Staff extends MY_Controller {
 						$upArr['docName'] = $_POST['perName'].' File';
 						$upArr['fileName'] = $filename;
 						$upArr['dateUploaded'] = date('Y-m-d H:i:s');
-						$this->dbmodel->insertQuery('staffUploads', $upArr);	
+						$this->dbmodel->insertQuery('staffUploads', $upArr);
 						
 						//add notification
 						$this->commonM->addMyNotif($this->user->empID, 'You validated and uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$upArr['docName'].'</a> of '.$data['row']->name, 5);					
-					}else{
+					}else{						
 						$this->commonM->addMyNotif($this->user->empID, 'You validated '.$_POST['perName'].' of '.$data['row']->name, 5);
 					}					
 					
 					$insArr['perValue'] .= '+++'.$_POST['remarks'];
+					if(!empty($_POST['filelink'])) $insArr['perValue'] .= '+++File link is '.$_POST['filelink'];
 					
 					//update staffs perStatus
 					$perce = 100/count($data['queryPerStatus']);
@@ -3225,7 +3227,7 @@ class Staff extends MY_Controller {
 		}else{
 			$data['access'] = false;
 		}
-		
+				
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
