@@ -73,7 +73,7 @@ require "includes/header.php";
 			$stats[$v['processID']] = $v['processType'];	
 		}
 	}
-	$otherPos = $db->selectQuery('applicants', 'DISTINCT processText', 'processText!="" AND processStat!=1 AND processText!="Hired"');
+	$otherPos = $db->selectQuery('applicants', 'DISTINCT processText', 'processText!="" AND processStat!=1 AND processText!="Hired" ORDER BY processText');
 	if(is_array($otherPos)){
 		foreach($otherPos AS $o){
 			$stats[$o['processText']] = $o['processText'];	
