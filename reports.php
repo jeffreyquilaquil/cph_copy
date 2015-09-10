@@ -20,8 +20,10 @@ $filter .= !empty($month)?" AND a.date_created LIKE '%-$month%' ":"";
 $filter .= !empty($position)?" AND a.position = $position ":"";
 
 if($status!='All'){
-	if(is_numeric($status)) $filter .= ' AND a.process = '.$status.' AND processStat!=0';
-	else if(!empty($status)) $filter .= ' AND processText="'.$status.'"';
+	if(is_numeric($status)){
+		if($status<6) $filter .= ' AND a.process = '.$status.' AND processStat!=0';
+		else $filter .= ' AND a.process = '.$status;
+	}else if(!empty($status)) $filter .= ' AND processText="'.$status.'"';
 }
 
 $result = $db->selectQuery("applicants a LEFT JOIN positions p ON p.id = a.position LEFT JOIN recruitmentProcess a_s ON a_s.processID=a.process","a.id, CONCAT(fname,' ',mname,' ',lname,' ',suffix) AS name,bdate,address,mnumber,email,p.title AS position,source,expected_salary,last_employer,employment_period,a.date_created, processStat, processText, a_s.processType AS status","1 $filter");
