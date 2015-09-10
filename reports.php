@@ -18,8 +18,14 @@ $status = $_GET['status']=="All"?"":$_GET['status'];
 $filter .= !empty($year)?" AND a.date_created LIKE '$year%' ":"";
 $filter .= !empty($month)?" AND a.date_created LIKE '%-$month%' ":"";
 $filter .= !empty($position)?" AND a.position = $position ":"";
-$filter .= !empty($status)?" AND a.status = $status ":"";
-$result = $db->selectQuery("applicants a LEFT JOIN positions p ON p.id = a.position LEFT JOIN applicant_status a_s ON a_s.id=a.status","a.id, CONCAT(fname,' ',mname,' ',lname,' ',suffix) AS name,bdate,address,mnumber,email,p.title AS position,source,expected_salary,last_employer,employment_period,a.date_created,a_s.status","1 $filter");
+
+if($status!='All'){
+	if(is_numeric($status)) $filter .= ' AND a.process = '.$status.' AND processStat!=0';
+	else if(!empty($status)) $filter .= ' AND processText="'.$status.'"';
+}
+
+$result = $db->selectQuery("applicants a LEFT JOIN positions p ON p.id = a.position LEFT JOIN recruitmentProcess a_s ON a_s.processID=a.process","a.id, CONCAT(fname,' ',mname,' ',lname,' ',suffix) AS name,bdate,address,mnumber,email,p.title AS position,source,expected_salary,last_employer,employment_period,a.date_created, processStat, processText, a_s.processType AS status","1 $filter");
+
 require "includes/header.php";
 ?>
 <?php 
@@ -58,13 +64,20 @@ require "includes/header.php";
             	$positions[$v['id']] = $v['title'];	
             }
        	}
-    $pos = $db->selectQuery("applicant_status", "id,status", "1 ORDER BY status ASC");
-    	$stats = array('All' => "All");
-        if(is_array($pos)){
-        	foreach($pos AS $v){
-            	$stats[$v['id']] = $v['status'];	
-            }
-       	}
+    $pos = $db->selectQuery("recruitmentProcess", "processID, processType");
+	$stats = array('All' => "All");
+	if(is_array($pos)){
+		foreach($pos AS $v){
+			$stats[$v['processID']] = $v['processType'];	
+		}
+	}
+	$otherPos = $db->selectQuery('applicants', 'DISTINCT processText', 'processText!="" AND processStat!=1 AND processText!="Hired"');
+	if(is_array($otherPos)){
+		foreach($otherPos AS $o){
+			$stats[$o['processText']] = $o['processText'];	
+		}
+	}
+		
 	$form->select("position",$position,$positions,'class="form-control" style="width: 200px;"',"Select Position");
 	$form->select("status",$status,$stats,'class="form-control" style="width: 200px;"',"Select Status");
 	
@@ -125,7 +138,7 @@ $(document).ready( function () {
 		<td><?php echo $v['mnumber']?></td>
 		<td><?php echo $v['email']?></td>
 		<td><?php echo $v['position']?></td>
-		<td><?php echo $v['status']?></td>
+		<td><?php echo (($v['processStat']!=1 && !empty($v['processText']))?$v['processText']:$v['status']); ?></td>
 		<td><?php echo $v['date_created']?></td>
 		<td><?php echo $v['source']?></td>
 		<td><?php echo $v['expected_salary']?></td>

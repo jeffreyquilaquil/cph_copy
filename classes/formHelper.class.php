@@ -184,7 +184,7 @@ EOF;
 		$required = $required? "has-warning" : "";
 		$option = $optionB = "";
 		$placeholder = empty($placeholder)? $label : $placeholder;
-		if(!is_array($default))
+		if(!is_array($default) && !empty($default))
 			$default = explode(",", $default);
 		if(is_array($value)){
 			foreach($value AS $k => $v){
