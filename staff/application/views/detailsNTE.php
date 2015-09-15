@@ -490,7 +490,8 @@
 				
 		$('#lightsanc').change(function(){
 			sval = $(this).val();
-						
+			$('#sanction').val(sval);
+				
 			if(sval.contains("suspension")){
 				$('#selectD').removeClass('hidden');	
 				for(i=1; i<=10; i++){
@@ -506,7 +507,7 @@
 				}
 			}else{
 				$('#selectD').addClass('hidden');		
-			}
+			}			
 		});
 		
 	});

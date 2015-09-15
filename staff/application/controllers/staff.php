@@ -1314,7 +1314,7 @@ class Staff extends MY_Controller {
 						$this->commonM->addMyNotif($carID, $this->user->name.' cancelled the NTE you issued to '.$data['row']->name.'. Click <a href="'.$this->config->base_url().'ntepdf/'.$data['row']->nteID.'/" class="iframe">here</a> to view info.', 0, 1);
 					}
 					exit;
-				}else if($_POST['submitType']=='issuecar'){					
+				}else if($_POST['submitType']=='issuecar'){				
 					if($_POST['satisfactory']==1){
 						$upArr['status'] = '3';						
 					}else{
