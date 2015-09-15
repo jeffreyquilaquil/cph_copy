@@ -992,7 +992,8 @@ class Staff extends MY_Controller {
 									
 				$thru = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) AS name', 'empID="'.$row->carissuer.'"');
 				
-				if($row->offenselevel>3) $sanction = 'Termination';
+				if(!empty($row->sanction)) $sanction = $row->sanction;
+				else if($row->offenselevel>3) $sanction = 'Termination';
 				else $sanction = $sanctionArr[$row->offenselevel];
 
 				$nlevel = $row->offenselevel + 1;
@@ -1088,7 +1089,7 @@ class Staff extends MY_Controller {
 					$pdf->setXY(20, 157);
 					$pdf->MultiCell(175, 4, 'NOTE: '.$row->planImp ,0,'L',false);
 				}else{
-					$consequences = 'Any subsequent case of '.$nntype.' within the next six months will be '.$this->textM->ordinal($row->offenselevel).' case of excessive '.$nntype.' and merits '.strtoupper($nextsanction);
+					$consequences = 'Any subsequent case of '.$nntype.' within the next six months will be '.$this->textM->ordinal($nlevel).' case of excessive '.$nntype.' and merits '.strtoupper($nextsanction);
 					$pdf->setXY(20, 157);
 					$pdf->MultiCell(175, 4, $consequences ,0,'L',false);
 				}
