@@ -770,14 +770,16 @@ class Staff extends MY_Controller {
 				$data['access'] = false;
 			}
 			
-			if(isset($_POST['submitType']) && $_POST['submitType']=='issueNTE'){
+			if(isset($_POST['submitType']) && $_POST['submitType']=='issueNTE'){				
 				$offensedates = '';
-				if($_POST['type']=='AWOL'){					
+				if($_POST['type']=='AWOL'){	
+					$ins['offenselevel'] = $_POST['offenselevelawol'];
 					foreach($_POST['offensedates'] AS $d):
 						if(!empty($d))
 							$offensedates .= date('Y-m-d',strtotime($d)).'|';
 					endforeach;		
 				}else if($_POST['type']=='tardiness'){
+					$ins['offenselevel'] = $_POST['offenseleveltardy'];
 					for($i=0; $i<6; $i++){
 						if($_POST['tdates'][$i]!=''){
 							$offensedates .= date('Y-m-d H:i', strtotime($_POST['tdates'][$i].' '.$_POST['ttime'][$i])).'|';
@@ -788,11 +790,10 @@ class Staff extends MY_Controller {
 				$ins['offensedates'] = rtrim($offensedates,'|');
 				$ins['type'] = $_POST['type'];
 				$ins['empID_fk'] = $_POST['empID_fk'];
-				$ins['offenselevel'] = $_POST['offenselevel'];
+				
 				$ins['dateissued'] = date('Y-m-d H:i:s');
 				$ins['issuer'] = $this->user->empID;				
-				
-				
+								
 				$insid = $this->dbmodel->insertQuery('staffNTE', $ins);
 				$data['ntegenerated']=true;
 				$data['insid'] = $insid;
@@ -808,7 +809,7 @@ class Staff extends MY_Controller {
 					<p>This is an automatic notification sent to inform you a Notice to Explain is generated for you by '.$this->user->name.'. See details below:
 						<ul>
 							<li>Date of Issuance: '.date('F d, Y').'</li>
-							<li>Offense Number: '.$_POST['offenselevel'].'</li>
+							<li>Offense Number: '.$ins['offenselevel'].'</li>
 							<li>'.ucfirst($_POST['type']).' Dates:
 								<ul>';
 						$inQ = explode('|', $ins['offensedates']);
@@ -823,11 +824,11 @@ class Staff extends MY_Controller {
 						</ul>
 					</p>	
 					<p><i>Click <a href="'.$this->config->base_url().'ntepdf/'.$insid.'/"><b>here</b></a> to view the file.</i></p>';
-				if($_POST['offenselevel']<3){
+				if($ins['offenselevel']<3){
 					if($_POST['type']=='tardiness') $data['sanctionArr'] = $this->textM->constantArr('sanctiontardiness');
 					else $data['sanctionArr'] = $this->textM->constantArr('sanctionawol');				
 					
-					$body .= '<p>Note that the Code of Conduct prescribes a sanction of '.$data['sanctionArr'][$_POST['offenselevel']].' to a '.$this->textM->ordinal($_POST['offenselevel']).' offense of '.$_POST['type'].'.</p>					
+					$body .= '<p>Note that the Code of Conduct prescribes a sanction of '.$data['sanctionArr'][$ins['offenselevel']].' to a '.$this->textM->ordinal($ins['offenselevel']).' offense of '.$_POST['type'].'.</p>					
 						<p>You are hereby requested to send an explanation. Click <a href="'.$this->config->base_url().'detailsNTE/'.$insid.'/"><b>here</b></a> to submit your explanation. Please explain why this happened and why no sanction should be imposed upon you. You are given until '.$dateplus5.' (5 days) to write your explanation. Failure to do so will be considered an admission of fault and your waiver of your right to be heard.</p>
 						<p style="color:red;">This shall be the first and only reminder for you to provide your explanation to the said NTE.</p>
 						<p>A <b>Corrective Action Report</b> and <b>Notice of Disciplinary Action</b> will naturally follow the Notice of Decision whether or not an explanation is received from you. The management may give a lighter sanction depending on the validity of the explanation that you provided, or in consideration of the frequency in which the offense is repeated and of your overall conduct and performance at work.</p>';

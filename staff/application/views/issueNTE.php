@@ -95,7 +95,7 @@ if(!file_exists($signature)){
 			<td>Is this what offense?</td>
 			<td>
 				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->textM->ordinal($awolnum) ?>"/>
-				<input id="offlevel" type="hidden" name="offenselevel" value="<?= $awolnum ?>"/>
+				<input id="offlevel" type="hidden" name="offenselevelawol" value="<?= $awolnum ?>"/>
 			</td>
 		</tr>
 		<tr class="trawol">
@@ -123,7 +123,7 @@ if(!file_exists($signature)){
 			<td>Is this what offense?</td>
 			<td>
 				<input id="offlevelord" type="text" class="forminput" disabled="disabled" value="<?= $this->textM->ordinal($tardynum) ?>"/>
-				<input id="offlevel" type="hidden" name="offenselevel" class="forminput" value="<?= $tardynum ?>"/>
+				<input id="offlevel" type="hidden" name="offenseleveltardy" class="forminput" value="<?= $tardynum ?>"/>
 			</td>
 		</tr>
 		<tr class="trtardiness hidden">
@@ -148,7 +148,7 @@ if(!file_exists($signature)){
 			<td colspan=2>
 				<input type="hidden" name="empID_fk" value="<?= $row->empID ?>"/>
 				<input type="hidden" name="submitType" value="issueNTE"/>
-				<input type="submit" value="Submit" class="btnclass"/>
+				<input type="submit" value="Submit" class="btnclass btngreen"/>
 				<input type="button" value="Cancel" onClick="parent.$.colorbox.close(); return false;" class="btnclass"/>
 			</td>
 		</tr>
