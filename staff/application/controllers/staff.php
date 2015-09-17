@@ -11,12 +11,6 @@ class Staff extends MY_Controller {
 		
 	public function index(){
 		$data['content'] = 'index';	
-
-		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager" WHERE u="vagum"');
-		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager (TMG)" WHERE u="jcatubay"');
-		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager (MOC)" WHERE u="degos"');
-		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Project Manager (MOC)" WHERE u="cdaan"');
-		exit;
 				
 		if(!empty($_POST)){
 			if($_POST['submitType']=='announcement'){
