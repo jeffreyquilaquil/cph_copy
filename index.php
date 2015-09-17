@@ -199,19 +199,22 @@ require 'includes/header.php';
 						</div>
                     						
 						<div class="form-group has-warning" <? if(isset($_GET['refername'])){ echo 'style="display:none;"'; } ?>>
-							<label for="select" class="col-lg-2 control-label">Where did you hear about Tate Publishing?</label>
+							<label for="select" class="col-lg-2 control-label">How did you learn about job opportunities in Tate Publishing?</label>
 							<div class="col-lg-10">
 								<select class="form-control " onchange='onchangeSource(this.value);' id="source" name="source">
 									<option></option>
 									<option <?php if($_POST["source"] == "Career First Institute" ) echo "selected";?> value="Career First Institute" >Career First Institute</option>
-									<option <?php if($_POST["source"] == "Friends" ) echo "selected";?> value="Friends">Friends</option>									
-									<option <?php if($_POST["source"] == "Job Fair" ) echo "selected";?> value="Job Fair">Job Fair</option>
-									<option <?php if($_POST["source"] == "Orient Express" ) echo "selected";?> value="Orient Express">Orient Express</option>
-									<option <?php if($_POST["source"] == "Online Portals" ) echo "selected";?> value="Online Portals">Online Portals</option>
-									<option <?php if($_POST["source"] == "Other" ) echo "selected";?> value="Other">Other</option>
-									<option <?php if($_POST["source"] == "Referred by a Tate Employee" || isset($_GET['refername'])) echo "selected";?> value="Referred by a Tate Employee">Referred by a Tate Employee</option>									
-									<option <?php if($_POST["source"] == "Walk In" ) echo "selected";?> value="Walk In">Walk In</option>
 									<option <?php if($_POST["source"] == "Cebu Recruitment Agency" ) echo "selected";?> value="Cebu Recruitment Agency">Cebu Recruitment Agency</option>
+									<option <?php if($_POST["source"] == "Friends" ) echo "selected";?> value="Friends">Friends</option>									
+									<option <?php if($_POST["source"] == "Facebook Page of Tate Publishing" ) echo "selected";?> value="Facebook Page of Tate Publishing">Facebook Page of Tate Publishing</option>
+									<option <?php if($_POST["source"] == "Job Fair" ) echo "selected";?> value="Job Fair">Job Fair</option>
+									<option <?php if($_POST["source"] == "Jobstreet" ) echo "selected";?> value="Job Fair">Jobstreet</option>
+									<option <?php if($_POST["source"] == "Mynimo" ) echo "selected";?> value="Mynimo">Mynimo</option>
+									<!--<option <?php //if($_POST["source"] == "Online Portals" ) echo "selected";?> value="Online Portals">Online Portals</option>-->
+									<option <?php if($_POST["source"] == "Orient Express" ) echo "selected";?> value="Orient Express">Orient Express</option>
+									<option <?php if($_POST["source"] == "Referred by a Tate Employee" || isset($_GET['refername'])) echo "selected";?> value="Referred by a Tate Employee">Referred by a Tate Employee</option>									
+									<option <?php if($_POST["source"] == "Walk In" ) echo "selected";?> value="Walk In">Walk In</option>	
+									<option <?php if($_POST["source"] == "Other" ) echo "selected";?> value="Other">Other</option>
 								</select>
 							</div>
 						</div>
