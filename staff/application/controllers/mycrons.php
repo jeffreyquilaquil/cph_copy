@@ -164,8 +164,13 @@ class MyCrons extends MY_Controller {
 			$changes = json_decode($q->dbchanges);
 			if(isset($changes->title)) 
 				unset($changes->title);
-			if(isset($changes->position))
+			if(isset($changes->position)){
 				$changes->levelID_fk = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
+				
+				$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$changes->position.'"');
+				$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$q->username.'"');
+			}
+				
 			if(isset($changes->sal))
 				$changes->sal = $this->textM->encryptText($changes->sal);
 			

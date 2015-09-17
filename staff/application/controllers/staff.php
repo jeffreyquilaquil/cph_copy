@@ -5,13 +5,18 @@ class Staff extends MY_Controller {
 	public function __construct(){
 		parent::__construct();
 		
-		$this->load->model('Staffmodel', 'staffM');	
-			
+		$this->load->model('Staffmodel', 'staffM');		
 	}
 
 		
 	public function index(){
-		$data['content'] = 'index';		
+		$data['content'] = 'index';	
+
+		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager" WHERE u="vagum"');
+		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager (TMG)" WHERE u="jcatubay"');
+		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Senior Project Manager (MOC)" WHERE u="degos"');
+		$this->dbmodel->ptdbQuery('UPDATE eData SET title="Project Manager (MOC)" WHERE u="cdaan"');
+		exit;
 				
 		if(!empty($_POST)){
 			if($_POST['submitType']=='announcement'){
@@ -447,7 +452,7 @@ class Staff extends MY_Controller {
 								
 								unset($_POST['empID']);
 								unset($_POST['submitType']);
-								
+																
 								if(isset($_POST['endDate']) && $_POST['endDate']=='Not yet set') $_POST['endDate'] = '0000-00-00';
 								if(isset($_POST['title'])){ $_POST['position'] = $_POST['title']; unset($_POST['title']); }
 												
@@ -462,9 +467,15 @@ class Staff extends MY_Controller {
 									if(isset($_POST[$en])) 
 										$_POST[$en] = $this->textM->encryptText($_POST[$en]);
 								}
-								
+																
 								//UPDATE STAFFS TABLE
 								$this->dbmodel->updateQuery('staffs', array('empID'=>$empID), $_POST);
+								
+								//UPDATE PTDB TABLE
+								if(isset($what2update['title'])){
+									$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$what2update['title'].'"');
+									$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$data['row']->username.'"');
+								}
 										
 								//send email notification if access or end date is set
 								if(isset($what2update['endDate']) || isset($what2update['accessEndDate'])){
@@ -689,8 +700,12 @@ class Staff extends MY_Controller {
 						//update position and org level
 						$orgLevel = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$_POST['fieldV'].'"');
 						$this->dbmodel->updateQuery('staffs', array('empID'=>$_POST['empID']), array('position' => $_POST['fieldV'], 'levelID_fk'=>$orgLevel));
-					}else
-						$this->dbmodel->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
+						
+						//UPDATE PTDB TABLE
+						$username = $this->dbmodel->getSingleField('staffs', 'username', 'empID="'.$_POST['empID'].'"');
+						$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$_POST['fieldV'].'"');
+						$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$username.'"');						
+					}else $this->dbmodel->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
 					
 					$addNote = '['.date('Y-m-d H:i').'] '.$this->user->username.': <i>request approved and changed</i><br/>';
 					$this->dbmodel->updateConcat('staffUpdated', 'updateID="'.$_POST['updateID'].'"', 'notes', $addNote);
@@ -1141,7 +1156,7 @@ class Staff extends MY_Controller {
 				}
 				
 				if($row->status!=3)
-					$notice .= "\n\nThe gravity of misconduct committed by you is such that it warrants ".$sanction;
+					$notice .= "\n\nThe gravity of misconduct committed by you is such that it warrants ".$sanctionArr[$row->offenselevel];
 				
 				if(strpos($row->sanction,'Suspension') !== false){
 					$sdatesQ = explode('|', $row->suspensiondates);
@@ -2254,11 +2269,16 @@ class Staff extends MY_Controller {
 						$chtext = '';
 						
 						$changes = json_decode($data['row']->dbchanges);
+						
+						
 
 						if(isset($changes->title)) unset($changes->title);
 											
 						if(isset($changes->position)){
-							$changes->levelID_fk = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');			
+							$changes->levelID_fk = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');	
+							
+							$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$changes->position.'"');
+							$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$data['row']->username.'"');
 						}
 						
 						if(isset($changes->sal))

@@ -86,7 +86,7 @@ a:hover{ color:red; }
 .bggray { background-color:#bbb; }
 .leaveMatNote{ border:1px solid #ccc; padding:10px; font-size:11px; }
 .leaveMatNote hr{ border:1px solid #ddd; }
-.displayinlineblock{ display:inline-block; }
+.displayinlineblock{ display:inline-block; width:100%; }
 .border-bottom-black td{ border-bottom:1px solid #ccc; }
 .loghistory{ padding:5px; border:1px solid #ccc; }
 .updaterequest{ background-color: #ffb2b2; }
@@ -381,6 +381,7 @@ footer{
 .trlabel a.droptext{ color:#fff; font-weight:normal; font-size:11px; text-decoration:none; }
 .trlabel a.droptext:hover{ color:red; }
 .forminput{ width:95%; padding:5px; }
+.editable{ width:95%; padding:5px; border:1px solid #ccc; background-color:#fff; min-height:100px; }
 .inputerror{ border:1px solid red; }
 .forminput50{ width:48%; padding:5px; }
 .tableInfo textarea{ width:98%; padding:5px; }
@@ -509,7 +510,7 @@ ul.tabs2 li.current{
 .calendartbl  .daysuspend{ background-color:#002d4a; }
 .calendartbl  .daysched{ background-color:green; }
 .calendartbl  .daycustomsched{ background-color:#00bb29; }
-.calendartbl  .dayonleave{ background-color:#ff8484; }
+.calendartbl  .dayonleave{ background-color:#b90000; }
 .calendartbl  .daypendingleave{ background-color:#b2ffb2; }
 
 #divtimelog .daycontent{ text-align:left; padding:5px; }
