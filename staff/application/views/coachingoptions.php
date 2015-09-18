@@ -69,7 +69,7 @@ if(count($row)==0){
 			<td>Coaching Form</td>
 			<td><?= '<a href="'.$this->config->base_url().'coachingform/expectation/'.$row->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>' ?></td>
 		</tr>
-		<?php if($row->status==0 && $row->HRoptionStatus<2 && ($this->user->empID==$row->generatedBy || $this->access->accessFullHR==true)){ ?>
+		<?php if($row->status==0 && ($this->user->empID==$row->generatedBy || $this->access->accessFullHR==true)){ ?>
 			<tr id="coachCancelBtn">
 				<td><br/></td>
 				<td><input type="button" value="Cancel this Coaching" class="btnclass" onClick="$('#coachCancelBtn').addClass('hidden'); $('#coachCancelWhy').removeClass('hidden'); "/></td>
