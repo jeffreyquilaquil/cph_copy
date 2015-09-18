@@ -64,7 +64,7 @@ if(count($row)==0){
 			echo '<td>Cancel Reason</td>';
 			echo '<td>'.$row->canceldata.'</td>';
 			echo '</tr>';
-		}else if($row->HRoptionStatus<2){ ?>
+		}else if($row->HRoptionStatus<=2){ ?>
 		<tr>
 			<td>Coaching Form</td>
 			<td><?= '<a href="'.$this->config->base_url().'coachingform/expectation/'.$row->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>' ?></td>
