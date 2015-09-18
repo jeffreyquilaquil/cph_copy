@@ -72,7 +72,7 @@ if(count($row)==0){
 		<?php if($row->status==0 && ($this->user->empID==$row->generatedBy || $this->access->accessFullHR==true)){ ?>
 			<tr id="coachCancelBtn">
 				<td><br/></td>
-				<td><input type="button" value="Cancel this Coaching" class="btnclass" onClick="$('#coachCancelBtn').addClass('hidden'); $('#coachCancelWhy').removeClass('hidden'); "/></td>
+				<td><input type="button" value="Cancel this Coaching" class="btnclass btnorange" onClick="$('#coachCancelBtn').addClass('hidden'); $('#coachCancelWhy').removeClass('hidden'); "/></td>
 			</tr>
 			<tr id="coachCancelWhy" class="hidden">
 				<td>Why do you want to cancel this coaching?</td>
