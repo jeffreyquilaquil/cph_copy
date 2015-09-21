@@ -11,7 +11,7 @@ class Staff extends MY_Controller {
 		
 	public function index(){
 		$data['content'] = 'index';	
-				
+						
 		if(!empty($_POST)){
 			if($_POST['submitType']=='announcement'){
 				$this->dbmodel->insertQuery('staffAnnouncements', array('announcement'=>addslashes($_POST['aVal']), 'createdBy'=>$this->user->empID));
@@ -461,14 +461,14 @@ class Staff extends MY_Controller {
 									if(isset($_POST[$en])) 
 										$_POST[$en] = $this->textM->encryptText($_POST[$en]);
 								}
-																
+						
 								//UPDATE STAFFS TABLE
 								$this->dbmodel->updateQuery('staffs', array('empID'=>$empID), $_POST);
 								
 								//UPDATE PTDB TABLE
 								if(isset($what2update['title'])){
-									$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$what2update['title'].'"');
-									$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$data['row']->username.'"');
+									$nposdata = $this->dbmodel->getSingleInfo('newPositions', 'title, dt', 'posID="'.$what2update['title'].'"');
+									$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$nposdata->title.'", dt="'.$nposdata->dt.'" WHERE u="'.$data['row']->username.'"');
 								}
 										
 								//send email notification if access or end date is set
@@ -697,8 +697,9 @@ class Staff extends MY_Controller {
 						
 						//UPDATE PTDB TABLE
 						$username = $this->dbmodel->getSingleField('staffs', 'username', 'empID="'.$_POST['empID'].'"');
-						$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$_POST['fieldV'].'"');
-						$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$username.'"');						
+						$nposdata = $this->dbmodel->getSingleInfo('newPositions', 'title, dt', 'posID="'.$_POST['fieldV'].'"');
+						$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$nposdata->title.'", dt="'.$nposdata->dt.'" WHERE u="'.$username.'"');
+						
 					}else $this->dbmodel->updateQuery('staffs', array('empID'=>$_POST['empID']), array($_POST['fieldN'] => $_POST['fieldV']));
 					
 					$addNote = '['.date('Y-m-d H:i').'] '.$this->user->username.': <i>request approved and changed</i><br/>';
@@ -1139,14 +1140,18 @@ class Staff extends MY_Controller {
 						
 				$dateplus5 = date('l Y-m-d', strtotime('+5 day', strtotime($row->dateissued)));
 				$nextMonday = date('l F d, Y', strtotime('next monday', strtotime($dateplus5)));
+				$notice = '';
 				
-				$notice = "On ".date('l F d, Y', strtotime($row->dateissued)).", you were given an NTE for ".strtoupper($row->type).". You were given 5 (five) days to respond and you were invited for an administrative hearing on ".$nextMonday.". ";
+				if($sanction == 'Termination'){
+					$notice .= "On ".date('l F d, Y', strtotime($row->dateissued)).", you were given an NTE for ".strtoupper($row->type).". You were given 5 (five) days to respond and you were invited for an administrative hearing on ".$nextMonday.". ";
+				}				
+				
 				if(!empty($row->response) && $row->satisfactory==1){
 					$notice .= "The response you provided on ".date('l F d, Y', strtotime($row->responsedate))." was found to be considerable and satisfactory.";
 				}else if(!empty($row->response) && $row->satisfactory==0){
-					$notice .= "However, the response you provided on ".date('l F d, Y', strtotime($row->responsedate))." was found to be unsatisfactory.";
+					$notice .= "The response you provided on ".date('l F d, Y', strtotime($row->responsedate))." was found to be unsatisfactory.";
 				}else{
-					$notice .= "However, as of ".date('l F d, Y', strtotime($row->cardate)).", no response is received from you.";
+					$notice .= "As of ".date('l F d, Y', strtotime($row->cardate)).", no response is received from you.";
 				}
 				
 				if($row->status!=3)
@@ -1173,10 +1178,12 @@ class Staff extends MY_Controller {
 					if (strpos($row->sanction,'Suspension') !== false) {
 						$notice .= " and the sanction that has been decided is ".$dsanc.". The suspension date is on: ".rtrim($sdate, ', ').". Please be aware that you do not have a work schedule on this date and you are not expected and are prohibited to be in the office during a suspension date.";
 					}else if($row->sanction == 'Termination'){
-						$notice .= " and we regret to inform you that your continued unauthorized absence despite repeated reminder and reprimand has amounted to a gross, habitual, and deliberate neglect of duty and of the company’s code of conduct.\n\nYou were invited for an administrative hearing on ".$nextMonday." and below is what transpired during the administrative hearing:\n\n".$row->reasonsanction."\n\nFor this reason the company has decided to TERMINATE your services effective on ".date('l F d, Y', strtotime($row->suspensiondates)).". Your last day of employment is on ".date('l F d, Y', strtotime('-1 day',strtotime($row->suspensiondates))).".";
+						$notice .= " and we regret to inform you that your continued unauthorized absence despite repeated reminder and reprimand has amounted to a gross, habitual, and deliberate neglect of duty and of the company’s code of conduct.\n\nYou were invited for an administrative hearing on ".$nextMonday." and below is what transpired during the administrative hearing:\n\n\"".$row->reasonsanction."\"\n\nFor this reason the company has decided to TERMINATE your services effective on ".date('l F d, Y', strtotime($row->suspensiondates)).". Your last day of employment is on ".date('l F d, Y', strtotime('-1 day',strtotime($row->suspensiondates))).".";
 					}
 				}else{
-					$notice .= " however the management has decided to take on a more lenient view on this matter and instead give you a sanction of ".$dsanc." after consideration of the below reason:\n\n".$row->reasonsanction;
+					$notice .= " however the management has decided to take on a more lenient view on this matter and instead give you a sanction of ".$dsanc." after consideration of the below reason:\n\n";
+					$notice .= '"'.$row->reasonsanction.'"';
+					
 					if (strpos($row->sanction,'Suspension') !== false){
 						if($row->sanction == '1 Day Suspension' ){
 							$notice .= "\n\nThe suspension date is on: ".date('F d, Y', strtotime($row->suspensiondates)).". Please be aware that you do not have a work schedule on this date and you are not expected and are prohibited to be in the office during a suspension date.";
@@ -2271,8 +2278,8 @@ class Staff extends MY_Controller {
 						if(isset($changes->position)){
 							$changes->levelID_fk = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');	
 							
-							$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$changes->position.'"');
-							$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$data['row']->username.'"');
+							$nposdata = $this->dbmodel->getSingleInfo('newPositions', 'title, dt', 'posID="'.$changes->position.'"');
+							$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$nposdata->title.'", dt="'.$nposdata->dt.'" WHERE u="'.$data['row']->username.'"');
 						}
 						
 						if(isset($changes->sal))
@@ -2686,8 +2693,8 @@ class Staff extends MY_Controller {
 			$data['page'] = 'edit';
 			$data['row'] = $this->dbmodel->getSingleInfo('newPositions', '*', 'posID="'.$pID.'"');
 			$data['depts'] = $this->dbmodel->getSQLQueryArrayResults('SELECT DISTINCT dept FROM newPositions WHERE org="'.$data['row']->org.'"');
-			$data['grps'] = $this->dbmodel->getSQLQueryArrayResults('SELECT DISTINCT grp FROM newPositions WHERE dept="'.$data['row']->org.'"');
-			$data['subgrps'] = $this->dbmodel->getSQLQueryArrayResults('SELECT DISTINCT subgrp FROM newPositions WHERE grp="'.$data['row']->org.'"');
+			$data['grps'] = $this->dbmodel->getSQLQueryArrayResults('SELECT DISTINCT grp FROM newPositions WHERE dept="'.$data['row']->dept.'"');
+			$data['subgrps'] = $this->dbmodel->getSQLQueryArrayResults('SELECT DISTINCT subgrp FROM newPositions WHERE grp="'.$data['row']->grp.'"');
 		}
 		
 		if(!empty($_POST)){			
@@ -2740,12 +2747,27 @@ class Staff extends MY_Controller {
 		$data['requiredTestArr'] = $this->textM->constantArr('requiredTest');		
 		$data['requiredSkillsArr'] = $this->dbmodel->getQueryResults('applicantSkills', '*');
 		
+		//PT OLD DEPARTMENTS
+		$queryDept = $this->dbmodel->ptdbQuery('SELECT * FROM eDept');
+		$query = $queryDept->result();
+		$data['PTDeptArr'] = array();
+		foreach($query AS $q){
+			$data['PTDeptArr'][$q->eDeptKey] = $q->eDeptName;
+		}
+				
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function allpositions(){
 		$data['content'] = 'allpositions';
 		$id = $this->uri->segment(2);
+		
+		$queryDept = $this->dbmodel->ptdbQuery('SELECT * FROM eDept');
+		$query = $queryDept->result();
+		$data['PTDeptArr'] = array();
+		foreach($query AS $q){
+			$data['PTDeptArr'][$q->eDeptKey] = $q->eDeptName;
+		}
 		
 		if($id!=''){
 			$data['page'] = 'details';
@@ -2760,7 +2782,7 @@ class Staff extends MY_Controller {
 			$this->load->view('includes/templatecolorbox', $data);
 		}else{
 			$data['page'] = 'all';
-			$data['positions'] = $this->dbmodel->getQueryResults('newPositions', 'posID, title, `desc`, active, orgLevel_fk, levelName, org, dept, grp, subgrp', '1', 'LEFT JOIN orgLevel ON orgLevel_fk=levelID', 'org, dept, grp, subgrp, title');
+			$data['positions'] = $this->dbmodel->getQueryResults('newPositions', 'posID, title, `desc`, active, orgLevel_fk, levelName, org, dept, dt, grp, subgrp', '1', 'LEFT JOIN orgLevel ON orgLevel_fk=levelID', 'org, dept, grp, subgrp, title');
 			$this->load->view('includes/template', $data);
 		}
 	}

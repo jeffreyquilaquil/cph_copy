@@ -19,7 +19,7 @@ if(isset($added)){
 	<tr>
 		<td width="20%">Name of the position</td>
 		<td class="tload" width="25px"></td>
-		<td><?php echo $this->textM->formfield('text', 'title', ((isset($row->title))?$row->title:''), 'forminput') ?></td>
+		<td><?php echo $this->textM->formfield('text', 'title', ((isset($row->title))?$row->title:''), 'forminput', '', 'required') ?></td>
 	</tr>
 	<tr class="trorg">
 		<td class="tlabel">Organization</td>
@@ -35,6 +35,18 @@ if(isset($added)){
 			echo '</select>';
 		?>	
 		</td>
+	</tr>
+	<tr class="trdept <?= (($page=='add')?'hidden':'') ?>">
+		<td class="tlabel">PT Department</td>
+		<td class="tload"></td>
+		<td><?php
+			$dt = ((isset($row->dt))?$row->dt:'');
+			$selectDT = '<option value=""></option>';
+			foreach($PTDeptArr AS $k=>$v){
+				$selectDT .= '<option value="'.$k.'" '.(($dt==$k)?'selected="selected"':'').'>'.$v.'</option>';
+			} 
+			echo $this->textM->formfield('select', 'dt', $selectDT, 'forminput', '', 'required');
+		?></td>
 	</tr>
 	<tr class="trdept <?= (($page=='add')?'hidden':'') ?>">
 		<td class="tlabel">Department</td>

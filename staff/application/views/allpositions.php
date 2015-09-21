@@ -18,6 +18,10 @@ if($page=='details'){
 		<td><?= $row->dept ?></td>
 	</tr>
 	<tr>
+		<td>PT Department</td>
+		<td><?= ((isset($PTDeptArr[$row->dt]))?$PTDeptArr[$row->dt]:'') ?></td>
+	</tr>
+	<tr>
 		<td>Group</td>
 		<td><?= $row->grp ?></td>
 	</tr>
@@ -92,6 +96,7 @@ if($page=='details'){
 			<td>ID</td>
 			<td>Organization</td>
 			<td>Department</td>
+			<td>PT Department</td>
 			<td>Group</td>
 			<td>Sub Group</td>
 			<td>Title</td>
@@ -106,6 +111,7 @@ if($page=='details'){
 				<td style="position:relative;">'.$p->posID.'</td>
 				<td>'.$p->org.'</td>
 				<td>'.$p->dept.'</td>
+				<td>'.((isset($PTDeptArr[$p->dt]))?$PTDeptArr[$p->dt]:'').'</td>				
 				<td>'.$p->grp.'</td>
 				<td>'.$p->subgrp.'</td>
 				<td><b>'.$p->title.'</b></td>

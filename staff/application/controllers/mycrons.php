@@ -167,8 +167,8 @@ class MyCrons extends MY_Controller {
 			if(isset($changes->position)){
 				$changes->levelID_fk = $this->dbmodel->getSingleField('newPositions', 'orgLevel_fk', 'posID="'.$changes->position.'"');
 				
-				$newTitle = $this->dbmodel->getSingleField('newPositions', 'title', 'posID="'.$changes->position.'"');
-				$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$newTitle.'" WHERE u="'.$q->username.'"');
+				$nposdata = $this->dbmodel->getSingleInfo('newPositions', 'title, dt', 'posID="'.$changes->position.'"');
+				$this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$nposdata->title.'", dt="'.$nposdata->dt.'" WHERE u="'.$q->username.'"');
 			}
 				
 			if(isset($changes->sal))

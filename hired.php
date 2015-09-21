@@ -9,7 +9,7 @@ if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 
 if(isset($_POST) AND !empty($_POST)){
 	date_default_timezone_set("Asia/Manila");
-	$hire = $db->selectSingleQueryArray('applicants', 'id, fname, lname, mname, suffix, bdate, address, mnumber, email, gender, isNew, position, title, org, dept, grp, subgrp, startDate, salaryOffer, agencyID, endorsementLetter, signedGuidelines, endDate' , 'id='.$_GET['id'], 'LEFT JOIN newPositions ON position=posID');
+	$hire = $db->selectSingleQueryArray('applicants', 'id, fname, lname, mname, suffix, bdate, address, mnumber, email, gender, isNew, position, title, org, dept, dt, grp, subgrp, startDate, salaryOffer, agencyID, endorsementLetter, signedGuidelines, endDate' , 'id='.$_GET['id'], 'LEFT JOIN newPositions ON position=posID');
 	$startD = $db->selectSingleQuery('generatedJO', 'startDate' , 'appID='.$_GET['id'].' ORDER BY timestamp DESC');
 
 	$postSuccess = 'yes';
@@ -83,6 +83,7 @@ if(isset($_POST) AND !empty($_POST)){
 						'shift' => $_POST['shift'],
 						'comp_email' => $_POST['email'],
 						'title' => $hire['title'],
+						'dt' => $hire['dt'],
 						'SSS' => $_POST['sss'],
 						'TIN' => $_POST['tin'],
 						'Philhealth' => $_POST['philhealth'],

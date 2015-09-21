@@ -160,6 +160,20 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 											<td><input type="text" name="title" id="title" class="form-control"/></td>
 										</tr>
 										<tr>
+											<td>PT Department:</td>
+											<td>
+												<select class="form-control" name="dt" id="dt">
+													<?php
+														$eDept = $ptDb->selectQueryArray('SELECT * FROM eDept');
+														echo '<option value=""></option>';
+														foreach($eDept AS $ed){
+															echo '<option value="'.$ed['eDeptKey'].'">'.$ed['eDeptName'].'</option>';
+														}
+													?>
+												</select>
+											</td>
+										</tr>
+										<tr>
 											<td>Organization:</td>
 											<td>
 												<select class="form-control" name="org" id="org" onChange="getOrgVal('org', 'dept')">
@@ -171,7 +185,7 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 													?>
 												</select>
 											</td>
-										</tr>
+										</tr>										
 										<tr id="tr_dept" class="formNew hide">
 											<td>Department:</td>
 											<td>
@@ -475,6 +489,8 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 		valText = '';
 		if($('#title').val()=='')
 			valText += '-  New position\n';
+		if($('#dt').val()=='')
+			valText += '-  PT Department\n';
 		if($('#desc').val()=='')
 			valText += '-  Job Description\n';
 		if($('#org').val()=='')
@@ -489,12 +505,12 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 		if(valText!=''){
 			alert('Please input missing fields\n'+valText);
 		}else{			
-			$.post("jobrequisition.php?create=new",
-			{
+			$.post("jobrequisition.php?create=new",{
 				title:$('#title').val(),
 				desc:$('#desc').val(),
 				org:$('#org').val(),
 				dept:$('#dept').val(),
+				dt:$('#dt').val(),
 				grp:$('#grp').val(),
 				subgrp:$('#subgrp').val(),
 				user:'<?= $username ?>'
@@ -507,7 +523,7 @@ if(empty($username) || !in_array($username, $_SESSION['authorized'])){
 					$('#formHeadText').html(data2);
 				});				
 			}
-		); 
+			); 
 			
 		}
 	}
