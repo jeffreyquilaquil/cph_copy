@@ -9,7 +9,7 @@
 		echo '</ul>';
 	}
 	echo '<br/><b>Please input and select employee name from dropdown to add '.$coach->fname.' as his/her coach.</b><br/>';
-	$this->textM->formfield('text', '', '', 'forminput', 'Type employee name then select', 'id="filter"');	
+	echo $this->textM->formfield('text', '', '', 'forminput', 'Type employee name then select', 'id="filter"');	
 ?>
 
 <table class="tableInfo hidden" id="emps">
@@ -26,8 +26,8 @@
 ?>
 <form action="" method="POST" onSubmit="return validateForm();">
 <?php
-	$this->textM->formfield('textarea', 'ids', '', 'hidden');	
-	$this->textM->formfield('submit', 'submitType', 'Submit', 'btnclass');	
+	echo $this->textM->formfield('textarea', 'ids', '', 'hidden');	
+	echo $this->textM->formfield('submit', 'submitType', 'Submit', 'btnclass btngreen');	
 ?>
 </form>
 

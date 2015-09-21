@@ -288,6 +288,16 @@ class Commonmodel extends CI_Model {
 		return $arr;
 	}
 	
+	public function getSchedHourArray(){
+		$arr = array();
+		$arr[0] = '';
+		$query = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeID, timeHours');
+		foreach($query AS $q){
+			$arr[$q->timeID] = $q->timeHours;
+		}
+		return $arr;
+	}
+	
 	function customTimeArrayByCat(){
 		$timeArr = array();
 		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1);
@@ -295,7 +305,7 @@ class Commonmodel extends CI_Model {
 			if($t->category==0)
 				$timeArr[$t->timeID]['name'] = $t->timeName;
 			else
-				$timeArr[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
+				$timeArr[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName.'|'.$t->timeHours.'|'.$t->timeID;
 		endforeach;
 		return $timeArr;
 	}

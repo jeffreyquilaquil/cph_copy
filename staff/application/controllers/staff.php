@@ -2534,9 +2534,20 @@ class Staff extends MY_Controller {
 	
 	public function testpage(){
 		$data['content'] = 'test';	
+		if(!empty($_POST)){
+			$quer = $this->dbmodel->ptdbQuery('UPDATE eData SET title="'.$_POST['title'].'" WHERE eKey="'.$_POST['eKey'].'"');
+		}
 		
-		/* $data['query1'] = $this->dbmodel->getQueryResults('staffs', 'empID, sss, sal, hdmf, philhealth, tin, hdmf');
-		$data['query2'] = $this->dbmodel->getQueryResults('staffs', 'empID, bankAccnt, hmoNumber'); */
+		if($this->uri->segment(2)=='show'){
+			$username = '';
+			$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, title', '1', 'LEFT JOIN newPositions ON position=posID');
+			foreach($data['query'] AS $q){
+				$username .= '"'.$q->username.'",';
+			}
+			$quer = $this->dbmodel->ptdbQuery('SELECT eKey, u, title FROM eData WHERE u IN ('.rtrim($username,',').')');
+			$data['query1'] = $quer->result();
+		}
+		
 		
 		$this->load->view('includes/templatenone', $data);	
 	}
