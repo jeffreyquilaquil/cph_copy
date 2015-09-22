@@ -202,8 +202,8 @@ $(function () {
 				active:$('#active').val(),
 				levelID_fk:$('#levelID_fk').val(),
 				terminationType:$('#terminationType').val()
-			},function(){
-				window.location.reload();
+			},function(d){ alert(d);
+				//window.location.reload();
 			});
 		}
 	});

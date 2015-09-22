@@ -175,7 +175,17 @@ if(count($info)==0){
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=finalInterview">Click here to send Final Interview Invitation</a></li>
 		<li><a class="iframe" href="emailTemplate.php?id=<?= $id ?>&type=testingInvitation">Click here to send Testing Invitation</a></li>
 	</ul>
-	<?php } ?>
+	<b>Custom Email Templates</b> <a href="emailTemplate.php?type=addtemplate" class="iframe" style="font-size:12px; color:red;">+ Add Custom Email Template</a>
+	<?php 
+		$customTemplates = $db->selectQueryArray('SELECT templateID, templateName FROM emailTemplates WHERE templateType="customtemplate"');
+		if(count($customTemplates)>0){
+			echo '<ul>';
+			foreach($customTemplates AS $c){
+				echo '<li><a href="emailTemplate.php?id='.$id.'&type=customtemplate" class="iframe">'.$c['templateName'].'</a> [<a href="emailTemplate.php?type=edittemplate&tempID='.$c['templateID'].'" class="iframe" style="color:red; font-size:12px;">Edit</a>]</li>';
+			}
+			echo '</ul>';
+		}
+	} ?>
 	
 <?php
 	if(count($duplicateQuery)>0){
