@@ -487,6 +487,9 @@ if(isset($_POST) && !empty($_POST)){
 				echo '</table>';
 			echo '</div>';		
 		}
+		
+		if(empty($to) && isset($info['email']))
+			$to = $info['email'];
 	?>
 		
 

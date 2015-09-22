@@ -28,6 +28,9 @@ if(isset($_POST) && !empty($_POST)){
 		if(!empty($_POST['rem'])){
 			addStatusNote($id, 'remarks', '', $info['position'], $_POST['rem']);
 		}
+	}else if(isset($_POST['submitType']) && $_POST['submitType']=='deletetemplate'){
+		$db->updateQuery('emailTemplates', array('status'=>0), 'templateID='.$_POST['id']);
+		exit;
 	}
 }
 
@@ -177,11 +180,15 @@ if(count($info)==0){
 	</ul>
 	<b>Custom Email Templates</b> <a href="emailTemplate.php?type=addtemplate" class="iframe" style="font-size:12px; color:red;">+ Add Custom Email Template</a>
 	<?php 
-		$customTemplates = $db->selectQueryArray('SELECT templateID, templateName FROM emailTemplates WHERE templateType="customtemplate"');
+		$customTemplates = $db->selectQueryArray('SELECT templateID, templateName FROM emailTemplates WHERE templateType="customtemplate" AND status=1');
 		if(count($customTemplates)>0){
 			echo '<ul>';
 			foreach($customTemplates AS $c){
-				echo '<li><a href="emailTemplate.php?id='.$id.'&type=customtemplate" class="iframe">'.$c['templateName'].'</a> [<a href="emailTemplate.php?type=edittemplate&tempID='.$c['templateID'].'" class="iframe" style="color:red; font-size:12px;">Edit</a>]</li>';
+				echo '<li>';
+					echo '<a href="emailTemplate.php?id='.$id.'&type=customtemplate" class="iframe">'.$c['templateName'].'</a>';
+					echo '&nbsp;[<a href="emailTemplate.php?type=edittemplate&tempID='.$c['templateID'].'" class="iframe" style="color:red; font-size:12px;">Edit</a>]';
+					echo '&nbsp;[<a href="javascript:void(0);" onClick="deleteCustomEmail('.$c['templateID'].')" style="color:red; font-size:12px;">Delete</a>]';
+				echo '</li>';
 			}
 			echo '</ul>';
 		}
@@ -330,6 +337,16 @@ if(count($info)==0){
 	function showMessage(id){
 		$('#a'+id).hide();
 		$('#'+id).removeClass('hide');
+	}
+	
+	function deleteCustomEmail(id){
+		if(confirm('Are you sure you want to delete this template?')){
+			$.post(window.location, {submitType:'deletetemplate', id:id},
+			function(){
+				alert('Template Deleted');
+				location.reload();
+			});
+		}
 	}
 </script>
 
