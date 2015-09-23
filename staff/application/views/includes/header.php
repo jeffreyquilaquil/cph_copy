@@ -34,7 +34,6 @@
 			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 			
 		<?php
-		if($this->config->item('devmode')===true){
 			echo '<li '.(($content=='myattendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>';
 			
 			echo '<ul class="dropdown">';
@@ -60,7 +59,6 @@
 			
 			echo '</li>';
 			echo '</ul>';
-		}
 		?>			
 			
 		<?php
