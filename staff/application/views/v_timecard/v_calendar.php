@@ -1,112 +1,65 @@
-<?php 
-	$this->load->view('includes/header_timecard'); 
-	
-	$dataArr['content'] = array();
-	$today = strtotime($today);
-	$year = date('Y', $today);
-	$month = date('m', $today);
-	$days_in_month = cal_days_in_month(0, $month, $year);	
-	
-	//loop for number of days
-	for($daynum=1; $daynum<=$days_in_month; $daynum++){
-		$daytext = '';	
-		if($daynum<10) $daynum0 = '0'.$daynum;
-		else $daynum0 = $daynum;
-		
-		$currentday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$daynum0));	//current dayholiday
-		$dayoftheweek = date('N', strtotime($currentday));	//day of the week 1 (for Monday) through 7 (for Sunday)
-			
-		//for holidays
-		if(isset($calHoliday[$daynum0])) 
-			$daytext .= '<div class="dayholiday">'.$calHoliday[$daynum0]['holidayType'].': '.$calHoliday[$daynum0]['holidayName'].'</div>';
-		
-		//if not holiday OR if holiday but work OR holiday but staff holiday is US or PHL
-		if(!isset($calHoliday[$daynum0]) || 
-			(isset($calHoliday[$daynum0]) && 
-				($calHoliday[$daynum0]['holidayWork']==1 ) ||
-				($calHoliday[$daynum0]['holidayWork']==0 &&
-					(($this->user->staffHolidaySched==0 && $calHoliday[$daynum0]['holidayTypeNum']==3) ||
-						($this->user->staffHolidaySched==1 && ($calHoliday[$daynum0]['holidayTypeNum']==1 || $calHoliday[$daynum0]['holidayTypeNum']==2))
-					)
-				)
-			)
-		){
-			//custom schedules
-			$customschedtext = '';	
-			$customschedtoday = '';				
-			foreach($calScheds AS $cal){
-				$xx = strtolower(date('l', strtotime($year.'-'.$month.'-'.$daynum0)));
-				
-				if($cal->schedType!=0){ //first week
-					if($cal->schedType==1) $fval = 'first';
-					else if($cal->schedType==2) $fval = 'second';
-					else if($cal->schedType==3) $fval = 'third';
-					else if($cal->schedType==4) $fval = 'fourth';
-					else $fval = 'last';
-				
-					if($cal->$xx !=0 && $currentday==date('Y-m-d', strtotime($fval.' '.$xx.' of '.$year.'-'.$month)))
-						$customschedtext .= $custTime[$cal->$xx];						
-				}else{			
-					if($currentday >= $cal->effectivestart && ($currentday <= $cal->effectiveend || $cal->effectiveend=='0000-00-00')){
-						if($cal->$xx!=0)
-							$customschedtext .= $custTime[$cal->$xx];
-					}
-				}
-			}
-			 
-			//custom time schedules
-			//if will check if current date is in between eff start and eff date and exclude saturday and sunday if start and end if not equal else include saturday and sunday
-			foreach($calSchedTime AS $ctym){
-				if($currentday>=$ctym->effectivestart && $currentday<=$ctym->effectiveend && 
-					(($ctym->effectivestart!=$ctym->effectiveend && $dayoftheweek<6) || $ctym->effectivestart==$ctym->effectiveend)
-				)
-					$customschedtoday = $ctym->timeValue;
-			}
-			
-			//custom sched for today
-			if(!empty($customschedtoday)) 
-				$daytext .= '<div class="daysched" style="background-color:#2123e0;">'.$customschedtoday.'</div>';
-			else if(!empty($customschedtext))
-				$daytext .= '<div class="daysched" style="background-color:green;">'.$customschedtext.'</div>';
-					
-		}
-		
-		//this is for Staff leaves
-		foreach($calLeaves AS $leaves){
-			$leavetxt = '';
-			$start = date('Y-m-d', strtotime($leaves->leaveStart));
-			$end = date('Y-m-d', strtotime($leaves->leaveEnd));
-			
-			if($currentday>=$start && $currentday<=$end && $dayoftheweek<6){
-				$leavetxt = '<div class="daysched" style="background-color:#6ed86e;">';
-				if($leaves->iscancelled!=0 || $leaves->status==0 || $leaves->status==4){					
-					$leavetxt = $daytext.$leavetxt;
-					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">Leave Pending Approval</a>';
-				}else{
-					$leavetxt .= '<a href="'.$this->config->base_url().'staffleaves/'.$leaves->leaveID.'/" class="iframe">';
-					if($leaves->status==1) $leavetxt .= ' Paid Day Off';
-					else $leavetxt .= ' Unpaid Day Off';
-					$leavetxt .= '<br/><strike>'.date('h:i a', strtotime($leaves->leaveStart)).' - '.date('h:i a', strtotime($leaves->leaveEnd)).'</strike></a>';
-				}				
-				$leavetxt .= '</div>';
-				$daytext = $leavetxt;
-			}					
-		}
-		
-		//birthdays
-		/* $bdtoday = '';
-		foreach($birthdayQuery AS $bday){			
-			if($daynum0==$bday->bdateNum)
-				$bdtoday .= $bday->name.', ';
-		}
-		if(!empty($bdtoday)) 
-			$daytext .= '<div class="daysched" style="background-color:#dc6900; text-align:left;">Birthday: '.rtrim($bdtoday,', ').'</div>'; */
-		
-		
-		if(!empty($daytext)) $dataArr['content'][$daynum] = $daytext;
-		
+<div style="margin-top:10px;">
+<?php
+	if($this->access->accessFullHR==true){
+		echo '<button class="btnclass btngreen iframe" href="'.$this->config->base_url().'schedules/setschedule/'.$visitID.'/">+ Add Schedule</button><hr/>';
 	}
+		
+			
+	$this->load->view('includes/templatecalendar');	
 	
+	if(count($schedData)>0){
+		echo '<br/><h3>Schedule History</h3>';
+	?>
+		<table class="tableInfo">
+			<thead>
+				<tr class="trhead">
+					<td width="30%">Effective Date</td>
+					<td>Summary</td>
+					<td><?= (($this->access->accessFullHR===true)?'Actions':'<br/>') ?></td>
+				</tr>
+			</thead>
+		<?php
+			$wShort = $this->textM->constantArr('weekShortArray');			
+			foreach($schedData AS $sd){
+				if($sd->effectiveend=='0000-00-00') echo '<tr bgcolor="#ffb2b2">';
+				else echo '<tr>';
+				
+					echo '<td>'.$sd->effectivestart.' '.(($sd->effectiveend!='0000-00-00')?'until '.$sd->effectiveend:'in perpetuity').'</td>';
+					echo '<td>';
+						$arr = array();
+						foreach($wShort AS $k=>$v){							
+							if($sd->$k!=0){
+								$vv = $timeArr[$sd->$k];
+								$arr[$vv] = ((isset($arr[$vv]))?$arr[$vv].',':'').ucfirst($v);
+							}								
+						}
+						foreach($arr AS $a=>$v){
+							echo '<b>'.$a.'</b> - <i>'.$v.'</i><br/>';
+						}
+					echo '</td>';
+					
+					if($this->access->accessFullHR && $sd->effectiveend=='0000-00-00') 
+						echo '<td><button class="iframe" href="'.$this->config->base_url().'schedules/editschedule/'.$sd->schedID.'/">Edit</button></td>';
+					else echo '<td><br/></td>';
+					
+				echo '</tr>';
+			}
+		?>
+		</table>	
+	<?php } ?>
+</div>
 
-	$this->load->view('tc_calendartemplate', $dataArr);
-?>
+<script type="text/javascript">
+	function checkRemove(d, sched, iscustom){
+		txt = '';
+		if(iscustom==1) txt = 'Are you sure you want to remove this custom schedule?\nRemoving this schedule will inherit current recurring schedule if set.';
+		else txt = 'Are you sure you want to remove this schedule?';
+		
+		if(txt != ''){
+			if(confirm(txt)){
+				sumpay = '?id=<?= $visitID ?>&date='+d+'&sched='+sched+'&custom='+iscustom;
+				$.colorbox({iframe:true, href:'<?= $this->config->base_url().'schedules/removeSchedule/' ?>'+sumpay, width:"990px", height:"600px" });
+			}
+		}
+	}
+</script>

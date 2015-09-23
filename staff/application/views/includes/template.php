@@ -6,16 +6,16 @@
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
 	<link rel="shortcut icon" href="http://careerph.tatepublishing.net/img/favicon.ico" type="image/x-icon">
+<?php
+	//CSS
+	echo '<link href="'.$this->config->base_url().'css/jquery.dataTables.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/colorbox.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/main.style.css" rel="stylesheet" type="text/css" />';
 	
-	<link href="<?= $this->config->base_url() ?>css/main.style.css" rel="stylesheet" type="text/css" />
-	<link href="<?= $this->config->base_url() ?>css/jquery.dataTables.css" rel="stylesheet" type="text/css" />
-	<link href="<?= $this->config->base_url() ?>css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />
-	<link href="<?= $this->config->base_url() ?>css/colorbox.css" rel="stylesheet" type="text/css" />
-	
-	<script src="<?= $this->config->base_url() ?>js/jquery.js" type="text/javascript"></script>
-	<script src="<?= $this->config->base_url() ?>js/jquery.dataTables.js" type="text/javascript"></script>
-	<script src="<?= $this->config->base_url() ?>js/jquery.datetimepicker.js" type="text/javascript"></script>
-	<script src="<?= $this->config->base_url() ?>js/jquery.colorbox.js" type="text/javascript"></script>
+	//SCRIPTS
+	echo '<script src="'.$this->config->base_url().'js/jquery.js" type="text/javascript"></script>';	
+?>	
 	<script type="text/javascript">
 		BASEURL = '<?= $this->config->base_url() ?>';
 		CAREERURI = '<?= $this->config->item('career_uri') ?>';
@@ -49,13 +49,17 @@
 				if($content=='index'){
 					$this->load->view('includes/leftcontent');
 					$this->load->view($content);
-				}else if( isset($column) && $column=='withLeft' ){	
+				}else if( isset($column) && $column=='withLeft' ){					
 					$this->load->view('includes/leftcontent');
 					echo '<div id="content2right">';
+							if(isset($timecardpage)) $this->load->view('includes/header_timecard');
+							
 							$this->load->view($content);
 					echo '</div>';					
 				}else{
 					echo '<div id="contentfull">';
+						if(isset($timecardpage)) $this->load->view('includes/header_timecard');
+						
 						$this->load->view($content);
 					echo '</div>';
 				}
@@ -76,19 +80,26 @@
 	
 	if($_SERVER['HTTP_HOST']=='129.3.252.99')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
+
+
+//LOAD ADDITIONAL SCRIPTS
+echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.js" type="text/javascript"></script>';
+echo '<script src="'.$this->config->base_url().'js/jquery.datetimepicker.js" type="text/javascript"></script>';
+echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="text/javascript"></script>';
 ?>
 <script type="text/javascript">
 	$(function(){
-		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px" });
+		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
+		$(".iframesmall").colorbox({iframe:true, width:"40%", height:"60%"});
 		$('.datatable').dataTable();		
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
 		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });
-		
-		/* $('.datepick').change(function(){ alert('fdfdf');
-			//$(this).datetimepicker('hide');
-		}); */
+				
+		$('.datepick').change(function(){
+			$(this).datetimepicker('hide'); 
+		});
 		
 		$('#insearch').click(function(){
 			window.open('http://employee.tatepublishing.net/?s='+$('#searchindex').val(),'_blank');

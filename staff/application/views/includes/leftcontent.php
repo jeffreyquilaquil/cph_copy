@@ -72,7 +72,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/" '.(($content=='staffinfo')?'class="current"':'').'>'.trim($row->fname).'\'s Info</a></li>';
 			
 			if($this->config->base_url()!='https://careerph.tatepublishing.net/staff/'){
-				echo '<li><a href="'.$this->config->base_url().'timecard/'.$row->empID.'/attendance/" '.(($this->uri->segment(1)=='timecard')?'class="current"':'').'>Timecard and Payroll</a></li>';
+				echo '<li><a href="'.$this->config->base_url().'timecard/'.$row->empID.'/calendar/" '.(($this->uri->segment(1)=='timecard')?'class="current"':'').'>Timecard and Payroll</a></li>';
 			}
 			echo '<li><a href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/" class="iframe">Issue NTE</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';			
@@ -90,6 +90,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		if($this->access->accessFull==true)
 			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
 	
+		echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';	
 		echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
 	echo '</ul>';	
 	echo '</center>';

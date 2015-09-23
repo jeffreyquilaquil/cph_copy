@@ -48,8 +48,8 @@
 			$day_count++;
 		}
 					
-		while ( $daynum <= $days_in_month ){ 
-			echo '<td colspan=2 class="'.(($daynum==date('d', $today))?'dtoday':'').'">
+		while ( $daynum <= $days_in_month ){
+			echo '<td colspan=2 class="'.(($daynum==date('d', $today))?'dtoday':'').'" bgcolor="#ddd">
 					<div class="daycontent" style="position:relative;">';
 			
 			if($tpage=='calendar' && $this->access->accessFull==true){

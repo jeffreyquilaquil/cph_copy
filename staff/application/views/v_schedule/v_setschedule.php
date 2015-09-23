@@ -94,7 +94,7 @@
 		
 		<tr>
 			<td colspan=2>
-				<input type="submit" value="+ Set Schedule" class="btnclass"/>
+				<input type="submit" value="+ Set Schedule" class="btnclass btngreen"/>
 				<i id="schedNote" class="errortext"><?= (($numCurrentSched>0)?'<b>Note:</b> Adding new recurring schedule will automatically set end date of the current schedule.':'') ?></i>
 			</td>
 		</tr>

@@ -511,6 +511,7 @@ ul.tabs2 li.current{
 .calendartbl  .daysched{ background-color:green; }
 .calendartbl  .daycustomsched{ background-color:#00bb29; }
 .calendartbl  .dayonleave{ background-color:#b90000; }
+.calendartbl  .dayoffset{ background-color:#0058ff; }
 .calendartbl  .daypendingleave{ background-color:#b2ffb2; }
 
 #divtimelog .daycontent{ text-align:left; padding:5px; }

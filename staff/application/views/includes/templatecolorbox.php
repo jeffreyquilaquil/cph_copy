@@ -39,6 +39,11 @@
 	$( function () {
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
+		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });
+		
+		$('.datepick').change(function(){
+			$(this).datetimepicker('hide'); 
+		});
 	});
 	
 	function displaypleasewait(){

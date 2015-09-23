@@ -33,6 +33,7 @@ class Schedules extends MY_Controller {
 					$tbl = 'tcCustomSchedTime';
 					$insArr['timeName'] = $_POST['name'];
 					$insArr['timeValue'] = $_POST['start'].' - '.$_POST['end'];
+					$insArr['timeHours'] = $_POST['timeHours'];
 					$insArr['category'] = $_POST['cat'];
 					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
 					
@@ -65,6 +66,7 @@ class Schedules extends MY_Controller {
 					$tbl = 'tcCustomSchedTime';
 					$where = array('timeID'=>$_POST['id']);
 					$upArr['timeName'] = $_POST['timeName'];
+					$upArr['timeHours'] = $_POST['timeHours'];
 					$addUp = 'addInfo';
 					
 					if(!empty($_POST['start']) && !empty($_POST['end'])){
@@ -93,12 +95,12 @@ class Schedules extends MY_Controller {
 				}else if($_POST['submitType']=='deleteCustomSched'){
 					$tbl = 'tcCustomSched';
 					$where = array('custSchedID'=>$_POST['id']);
-					$upArr['status'] = 0;
+					$upArr['status'] = 2;
 					
 					$addUp = 'updateData';					
 					$note = 'You deleted custom schedule '.$_POST['id'].'.';
 				}else if($_POST['submitType']=='getHolidayData'){
-					$beau = $this->dbmodel->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate', 'holidayID="'.$_POST['id'].'"');
+					$beau = $this->dbmodel->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate, holidayPremium', 'holidayID="'.$_POST['id'].'"');
 					foreach($beau AS $k){
 						echo $k.'|';
 					}
@@ -123,8 +125,8 @@ class Schedules extends MY_Controller {
 			$data['settingsQuery'] = $this->dbmodel->getQueryResults('staffSettings', '*');
 			$data['timecategory'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'category=0 AND status=1');		
 			$data['alltime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'status=1');
-			$data['allCustomSched'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status=1');
-			$data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			$data['allCustomSched'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status!=2');
+			$data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, holidayPremium, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
 			$data['schedTypeArr'] = $this->textM->constantArr('schedType');
 			$data['allDayTypes'] = $this->textM->constantArr('holidayTypes');	
 			$data['weekdayArray'] = $this->textM->constantArr('weekdayArray');	
@@ -181,10 +183,10 @@ class Schedules extends MY_Controller {
 				$insArr['assignby'] = $this->user->empID;
 				$insArr['assigndate'] = date('Y-m-d H:i:s');
 				
-				$this->dbmodel->insertQuery('tcstaffSchedules', $insArr);
+				$this->dbmodel->insertQuery('tcStaffSchedules', $insArr);
 				
 				if(isset($_POST['schedID'])){					
-					$this->dbmodel->updateQuery('tcstaffSchedules', array('schedID'=>$_POST['schedID']), array('effectiveend'=>date('Y-m-d', strtotime($_POST['startDate'].' -1 day'))));
+					$this->dbmodel->updateQuery('tcStaffSchedules', array('schedID'=>$_POST['schedID']), array('effectiveend'=>date('Y-m-d', strtotime($_POST['startDate'].' -1 day'))));
 				}
 				
 				echo '<script>
@@ -198,7 +200,7 @@ class Schedules extends MY_Controller {
 			$data['stime'] = $this->commonM->getSchedTimeArray();
 			$data['timeArr'] = $this->commonM->customTimeArrayByCat();
 			$data['schedTemplates'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status=1 OR (status=0 AND forEmp LIKE "%++'.$data['row']->empID.'++%")');
-			$data['currentSched'] = $this->dbmodel->getSingleInfo('tcstaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'empID_fk="'.$data['row']->empID.'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk');		
+			$data['currentSched'] = $this->dbmodel->getSingleInfo('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'empID_fk="'.$data['row']->empID.'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk');		
 		}else{
 			$data['access'] = false;
 		}
@@ -212,7 +214,7 @@ class Schedules extends MY_Controller {
 				
 		if($this->user!=false && $this->access->accessFullHR==true){	
 			if(!empty($_POST)){			
-				$this->dbmodel->updateQuery('tcstaffSchedules', array('schedID'=>$_POST['schedID']), array('effectiveend'=>date('Y-m-d', strtotime($_POST['enddate']))));
+				$this->dbmodel->updateQuery('tcStaffSchedules', array('schedID'=>$_POST['schedID']), array('effectiveend'=>date('Y-m-d', strtotime($_POST['enddate']))));
 				echo '<script>
 					alert("Schedule has been updated");
 					parent.$.fn.colorbox.close();
@@ -220,7 +222,7 @@ class Schedules extends MY_Controller {
 				</script>';
 				exit;
 			}		
-			$data['row'] = $this->dbmodel->getSingleInfo('tcstaffSchedules', 'schedID, empID_fk, CONCAT(fname," ",lname) AS name, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'schedID="'.$this->uri->segment(3).'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk LEFT JOIN staffs ON empID_fk=empID');	
+			$data['row'] = $this->dbmodel->getSingleInfo('tcStaffSchedules', 'schedID, empID_fk, CONCAT(fname," ",lname) AS name, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'schedID="'.$this->uri->segment(3).'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk LEFT JOIN staffs ON empID_fk=empID');	
 			$data['schedTimes'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1);
 			$data['timeArr'] = $this->commonM->getSchedTimeArray();
 		}else{
@@ -235,46 +237,176 @@ class Schedules extends MY_Controller {
 		$data['empID'] = $this->uri->segment(3);
 		$data['today'] = $this->uri->segment(4);
 		
-		if(!empty($_POST)){
-			$dates = $_POST['dates'];
-			$arr['timeID_fk'] = $_POST['timeID_fk'];			
-			$arr['assignBy'] = $this->user->empID;
-			
-			$ddtext = '';			
-			foreach($dates AS $d){
-				$ddtext .= '"'.date('Y-m-d', strtotime($d)).'",';
-			}
-			
-			//query to check if date already exist
-			$dateArr = array();
-			$query2 = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateID, dateToday, timeID_fk, assignBy, assignDate, updateData', 'empID_fk="'.$_POST['empID_fk'].'" AND dateToday IN ('.rtrim($ddtext,',').')');
-			
-			if(!empty($query2)){
-				foreach($query2 AS $q){
-					$dateArr[$q->dateToday] = true;
-					$arr['updateData'] = $q->updateData.'Updated from: timeID:'.$q->timeID_fk.', assignedBy: '.$q->assignBy.', assignedDate: '.$q->assignDate.'|';
-					$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$q->dateID), $arr);
-					unset($arr['updateData']);
+		if($this->access->accessFullHR==false){
+			$data['access'] = false;
+		}else{
+			if(!empty($_POST)){				
+				$dateArr = array();
+				$dates = $_POST['dates'];			
+				$arr['assignBy'] = $this->user->empID;
+				$arr['status'] = 1;
+								
+				$arr['timeText'] = $_POST['timeText'];
+				$arr['timeHours'] = $_POST['timeHours'];
+						
+				$ddtext = '';			
+				foreach($dates AS $d){
+					$ddtext .= '"'.date('Y-m-d', strtotime($d)).'",';
 				}
+				
+				//query to check if date already exist				
+				$query2 = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateID, dateToday, timeText, assignBy, assignDate, updateData', 'empID_fk="'.$_POST['empID_fk'].'" AND dateToday IN ('.rtrim($ddtext,',').')');
+				
+								
+				if(!empty($query2)){
+					foreach($query2 AS $q){
+						$dateArr[] = $q->dateToday;
+						$arr['updateData'] = $q->updateData.'Updated from: timeText:'.$q->timeText.', assignedBy: '.$q->assignBy.', assignedDate: '.$q->assignDate.'|';
+						$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$q->dateID), $arr);
+						unset($arr['updateData']);
+					}
+				}
+				
+				$arr['empID_fk'] = $_POST['empID_fk'];
+				foreach($dates AS $d2){
+					$arr['dateToday'] = date('Y-m-d', strtotime($d2));
+					
+					if(!in_array($arr['dateToday'], $dateArr)){
+						$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
+					}	
+				}
+
+				echo '<script>
+						alert("Schedule has been updated");
+						parent.$.fn.colorbox.close();
+						parent.window.location.reload();
+					</script>';
+				exit;
 			}
 			
-			$arr['empID_fk'] = $_POST['empID_fk'];
-			foreach($dates AS $d2){
-				$arr['dateToday'] = date('Y-m-d', strtotime($d2));
-				
-				if(!in_array($arr['dateToday'], $dateArr))					
-					$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
-			}
-
-			echo '<script>
-					alert("Schedule has been updated");
-					parent.$.fn.colorbox.close();
-					parent.window.location.reload();
-				</script>';
-			exit;
+			$data['schedToday'] = $this->timeM->getSchedToday($data['empID'], $data['today']);
 		}
 		
-		$data['schedToday'] = $this->timeM->getSchedToday($data['today'], $data['empID']);		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function customizebystaffs(){
+		$data['content'] = 'v_schedule/v_customizebystaffs';
+		
+		if($this->access->accessFullHR==false){
+			$data['access'] = false;
+		}else{
+			if(!empty($_POST)){
+				if($_POST['submitType']=='displaySched'){
+					$arr = explode('==||==', $_POST['arr']);
+					
+					$arr2 = array();
+					foreach($arr AS $a){
+						if(!empty($a)){
+							$a2 = explode('|', $a);
+							$a3 = array('id'=>$a2[1],'name'=>$a2[2]);
+							if(!empty($a2[3])) $a3['sched'] = $a2[3];
+							$arr2[$a2[0]][] = $a3; 
+						}						
+					}
+					ksort($arr2);
+					
+					$ids = '';
+					$sansa = '<ul>';
+					foreach($arr2 AS $i=>$ar2){
+						$sansa .= '<li style="padding-bottom:10px;"><b>'.date('F d, Y', strtotime($i)).'</b><ul>';
+						foreach($ar2 AS $r2){
+							$sansa .= '<li>'.$r2['name'].((isset($r2['sched']))?' - <i>'.$r2['sched'].'</i>':'').'</li>';
+						}
+						$sansa .= '</ul></li>';
+					}
+					$sansa .= '</ul>';
+										
+					echo serialize($arr2).'--^_^--'.$sansa;
+					exit;
+				}else if($_POST['submitType']=='setSched'){
+					$arya = unserialize (trim($_POST['schedArr'])); 
+					$adate = date('Y-m-d H:i:s');
+					
+					//loop check if dateExist update if exist else insert
+					foreach($arya AS $k=>$a){
+						foreach($a AS $a2){	
+							$schedInfo = $this->dbmodel->getSingleInfo('tcStaffScheduleByDates', 'dateID, timeText, assignBy, assignDate, updateData', 'empID_fk="'.$a2['id'].'" AND dateToday="'.$k.'" AND status=1');
+							
+							$timeVE = explode('|', $_POST['timeV']);
+							$newarr['assignBy'] = $this->user->empID;
+							$newarr['timeText'] = $timeVE[0];
+							if(isset($timeVE[2])) $newarr['timeHours'] = $timeVE[2];
+							$newarr['assignDate'] = $adate;	
+							
+							if(!empty($schedInfo)){															
+								$newarr['updateData'] = $schedInfo->updateData.'Updated from: timeID:'.$schedInfo->timeText.', assignedBy: '.$schedInfo->assignBy.', assignedDate: '.$schedInfo->assignDate.'|';								
+								$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$schedInfo->dateID), $newarr);
+							}else{
+								$newarr['dateToday'] = $k;
+								$newarr['empID_fk'] = $a2['id'];
+								$this->dbmodel->insertQuery('tcStaffScheduleByDates', $newarr);
+							}
+						}
+					}
+					
+					echo '<script>alert("Schedules has been set."); parent.$.fn.colorbox.close(); parent.location.reload(); </script>';
+					exit;
+				}
+			}
+
+			$data['timeArr'] = $this->commonM->customTimeArrayByCat();
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	/*****
+		Get dateID from tcStaffScheduleByDates check if it exist.
+		Change status to 0 if exist
+		Insert if not exist and set status to 0
+	*****/
+	public function removeSchedule(){
+		$data['content'] = 'v_schedule/v_removeschedule';
+		
+		if($this->access->accessFullHR==false){
+			$data['access'] = false;
+		}else if($this->user!=false){
+			if(!empty($_GET)){
+				$data['schedData'] = $_GET;
+			
+				if(!empty($_POST)){
+					if($_POST['submitType']=='removeSched'){
+						$dInfo = $this->dbmodel->getSingleInfo('tcStaffScheduleByDates', '*', 'dateToday="'.$data['schedData']['date'].'" AND empID_fk="'.$data['schedData']['id'].'"');
+						
+						if(count($dInfo)>0){
+							$updata = $dInfo->updateData.'Updated from: timeText:'.$dInfo->timeText.', assignedBy: '.$dInfo->assignBy.', assignedDate: '.$dInfo->assignDate.' TO: inactiveStatus DUE to '.$_POST['reason'].' BY:'.$this->user->username.'|';
+							
+							if($dInfo->status==1) $upArr['status'] = 2;
+							else $upArr['status'] = 0;
+							$upArr['updateData'] = $updata;
+							$upArr['assignDate'] = date('Y-m-d H:i:s');
+							
+							$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$dInfo->dateID), $upArr);							
+						}else{
+							$insArr['dateToday'] = $data['schedData']['date'];
+							$insArr['empID_fk'] = $data['schedData']['id'];
+							$insArr['assignBy'] = $this->user->empID;
+							$insArr['assignDate'] = date('Y-m-d H:i:s');
+							$insArr['status'] = 0;
+							$insArr['updateData'] = 'Set INACTIVE from:'.$data['schedData']['sched'].' REASON:'.$_POST['reason'].' BY:'.$this->user->username.' |';
+							$this->dbmodel->insertQuery('tcStaffScheduleByDates', $insArr);
+						}
+						echo '<script>
+							alert("Schedule has been removed");
+							parent.$.fn.colorbox.close();
+							parent.window.location.reload();
+						</script>';
+						exit;
+					}
+				}
+			}
+		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}

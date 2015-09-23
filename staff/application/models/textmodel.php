@@ -153,7 +153,7 @@ class Textmodel extends CI_Model {
 	}
 	
 	function ordinal($num){
-		if ( ($num / 10) % 10 != 1 )
+		if( ($num / 10) % 10 != 1 )
 		{
 			switch( $num % 10 )
 			{
@@ -353,7 +353,7 @@ class Textmodel extends CI_Model {
 			foreach($t2 AS $k=>$t):
 				if($k!='name'){
 					$ex = explode('|', $t);
-					$valentine .= '<option data-time="'.$ex[2].'" value="'.$ex[0].'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
+					$valentine .= '<option data-id="'.$ex[3].'" data-time="'.$ex[2].'" value="'.$ex[0].'" '.(($k==$val)?'selected="selected"':'').'>'.$ex[0].'</option>';
 				}
 			endforeach;
 			$valentine .= '</optgroup>';

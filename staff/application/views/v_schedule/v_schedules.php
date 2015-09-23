@@ -24,7 +24,7 @@
 	if(count($settingsQuery)>0){
 		echo '<tr>';
 			echo '<td colspan=2 align="right">
-					<button id="btnsettingcancel" class="btnclass selectSet hidden">Cancel Updates</button>
+					<button id="btnsettingcancel" class="btnclass selectSet hidden">Cancel Update</button>
 				</td>';
 		echo '</tr>';
 	}
@@ -62,7 +62,9 @@
 				<td>
 					<input type="text" id="timestart" class="timepickA padding5px" style="width:113px;" placeholder="start"/>&nbsp;&nbsp;
 					<input type="text" id="timeend" class="timepickA padding5px" style="width:113px;" placeholder="end"/>
-				</td></tr>
+				</td>
+			</tr>
+			<tr><td># of Paid Hours</td><td><input type="number" id="timeHours" class="padding5px" style="width:248px;"/></td></tr>
 			<tr><td><br/></td><td><button id="addTime" class="btnclass">+ Add Time</button></td></tr>
 		</table>
 	</div>
@@ -77,9 +79,9 @@
 		if($t->category==0)
 			$time[$t->timeID]['name'] = $t->timeName;
 		else
-			$time[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName;
+			$time[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName.'|'.$t->timeHours;
 	endforeach;
-
+	
 	foreach($time AS $k=>$tt):
 		echo '<table class="tableInfo">';
 		echo '<tr class="trhead"><td colspan=2>'.$tt['name'].'</td>
@@ -88,7 +90,7 @@
 						<input type="text" name="timeName" class="padding5px" style="width:300px;" value="'.$tt['name'].'"/>
 						<input type="hidden" name="start" class="padding5px" value=""/>
 						<input type="hidden" name="end" class="padding5px" value=""/>
-						<button id="btn'.$k.'" onClick="updateTime('.$k.')">Update</button>
+						<br/><button id="btn'.$k.'" onClick="updateTime('.$k.')">Update</button>
 						<button onClick="hideEditTime('.$k.')">Cancel</button>
 					</div>
 				</td>
@@ -97,17 +99,19 @@
 				if(count($tt)==1) echo '<img src="'.$this->config->base_url().'css/images/delete-icon.png" width="20px" class="cpointer" onClick="deleteTime('.$k.')"/>';
 			echo '</td>
 			</tr>';			
-		foreach($tt AS $n=>$xx):
+		foreach($tt AS $n=>$xx):		
 			if($n!='name'){
 				$ss = explode('|', $xx);
 				$x = explode(' - ', $ss[0]);
 				echo '<tr><td width="150px">'.$ss[0].'</td>
-					<td width="150px">'.$ss[1].'</td>
+					<td width="150px">'.$ss[1].' ['.$ss[2].'h]</td>
 					<td>
 						<div class="hidden" id="editTime'.$n.'">
-							<input type="text" name="timeName" class="padding5px" value="'.$ss[1].'"/>
-							<input type="text" name="start" class="timepickA padding5px" value="'.$x[0].'"/>
-							<input type="text" name="end" class="timepickA padding5px" value="'.$x[1].'"/>
+							<input type="text" name="timeName" class="padding5px" placeholder="Name" value="'.$ss[1].'"/>
+							<input type="text" name="start" class="timepickA padding5px" placeholder="Time Starts" value="'.$x[0].'"/>
+							<input type="text" name="end" class="timepickA padding5px" placeholder="Time Ends" value="'.$x[1].'"/>
+							<input type="number" name="timeHours" class="padding5px" placeholder="# of Paid Hours" value="'.$ss[2].'"/>
+							<br/>
 							<button id="btn'.$n.'" onClick="updateTime('.$n.')">Update</button>
 							<button onClick="hideEditTime('.$n.')">Cancel</button>
 						</div>
@@ -219,7 +223,7 @@
 		<?php $this->load->view('v_schedule/v_holiday'); ?>
 	</div>
 	<h3>All Holiday/Event Schedules
-		<button id="addHolidaybtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
+		<button id="addHolidaybtn" class="btnclass btngreen" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
 	</h3>
 	<table class="tableInfo">
 		<tr class="trlabel">
@@ -229,6 +233,7 @@
 			<td>Type</td>
 			<td>Repetition</td>
 			<td>Work Day?</td>
+			<td>Premium Pay</td>
 			<td><br/></td>
 		</tr>
 	<?php
@@ -240,6 +245,7 @@
 					<td>'.$allDayTypes[$hol->holidayType].'</td>
 					<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
 					<td>'.(($hol->holidayWork==0)?'No':'Yes').'</td>
+					<td>'.$hol->holidayPremium.'%</td>
 					<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
 				</tr>';
 		}
@@ -268,18 +274,19 @@
 		});
 		
 		$('#addTime').click(function(){
-			if($('#timecategory').val()=='' || $('#timestart').val()=='' || $('#timeend').val()==''){
-				alert('Please input missing values.');
+			if($('#timecategory').val()=='' || $('#timestart').val()=='' || $('#timeend').val()=='' || $('#timeHours').val()=='' || $.isNumeric($('#timeHours').val())==false){
+				alert('Please input missing values and invalid values.');
 			}else{
 				$(this).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
-				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtime',name:$('#timeName').val(),start:$('#timestart').val(),end:$('#timeend').val(),cat:$('#timecategory').val()}, function(){
+				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtime',name:$('#timeName').val(),start:$('#timestart').val(),end:$('#timeend').val(),timeHours:$('#timeHours').val(),cat:$('#timecategory').val()}, function(){
 					location.reload(true);
 					alert('Time has been added.');	
 					$('#timecategory').val('');
 					$('#timeName').val('');
 					$('#timestart').val('');
 					$('#timeend').val('');
-				});		
+					$('#timeHours').val('');
+				});	
 			}
 		});
 		
@@ -298,16 +305,16 @@
 				$.post('<?= $this->config->item('career_uri') ?>',{ 
 					submitType:'addCustomSched',
 					schedName:$('#schedname').val(),
-					sunday:$('#sunday').val(),
-					monday:$('#monday').val(),
-					tuesday:$('#tuesday').val(),
-					wednesday:$('#wednesday').val(),
-					thursday:$('#thursday').val(),
-					friday:$('#friday').val(),
-					saturday:$('#saturday').val()
-				}, function(){	
+					sunday:$('option:selected', '#sunday').data('id'),
+					monday:$('option:selected', '#monday').data('id'),
+					tuesday:$('option:selected', '#tuesday').data('id'),
+					wednesday:$('option:selected', '#wednesday').data('id'),
+					thursday:$('option:selected', '#thursday').data('id'),
+					friday:$('option:selected', '#friday').data('id'),
+					saturday:$('option:selected', '#saturday').data('id')
+				}, function(d){	alert(d);
 					location.reload(true);	
-					alert('Custom Schedule has been added.');										
+					alert('Custom Schedule has been added.');							
 				});
 			}
 		});
@@ -344,7 +351,7 @@
 	
 	function updateTime(id){
 		$('#btn'+id).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
-		$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'updateTime',id:id,timeName:$('#editTime'+id+' input[name="timeName"]').val(),start:$('#editTime'+id+' input[name="start"]').val(),end:$('#editTime'+id+' input[name="end"]').val()}, function(){
+		$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'updateTime',id:id,timeName:$('#editTime'+id+' input[name="timeName"]').val(),start:$('#editTime'+id+' input[name="start"]').val(),end:$('#editTime'+id+' input[name="end"]').val(),timeHours:$('#editTime'+id+' input[name="timeHours"]').val()}, function(){
 			$('#editTime'+id).addClass('hidden');
 			location.reload(true);
 			alert('Time has been updated.');
@@ -374,8 +381,8 @@
 		if($('#inputschedName'+id).val()==''){
 			celebrity += 'Name is empty.\n';
 		}
-		if($('.ctimetredit'+id+'#sunday').val()=='' && $('.ctimetredit'+id+'#monday').val()=='' && $('.ctimetredit'+id+'#tuesday').val()=='' && $('.ctimetredit'+id+'#wednesday').val()=='' && 
-			$('.ctimetredit'+id+'#thursday').val()=='' && $('.ctimetredit'+id+'#friday').val()=='' && $('.ctimetredit'+id+'#saturday').val()==''){
+		
+		if($('.ctimetredit'+id+' #sunday').val()=='' && $('.ctimetredit'+id+' #monday').val()=='' && $('.ctimetredit'+id+' #tuesday').val()=='' && $('.ctimetredit'+id+' #wednesday').val()=='' && $('.ctimetredit'+id+' #thursday').val()=='' && $('.ctimetredit'+id+' #friday').val()=='' && $('.ctimetredit'+id+' #saturday').val()==''){
 			celebrity += 'Schedules are empty.';
 		}
 		if(celebrity!=''){
@@ -388,16 +395,16 @@
 				submitType:'updateCustomSched',
 				schedID:id,
 				schedName:$('#inputschedName'+id).val(),
-				sunday:$('.ctimetredit'+id+' #sunday').val(),
-				monday:$('.ctimetredit'+id+' #monday').val(),
-				tuesday:$('.ctimetredit'+id+' #tuesday').val(),
-				wednesday:$('.ctimetredit'+id+' #wednesday').val(),
-				thursday:$('.ctimetredit'+id+' #thursday').val(),
-				friday:$('.ctimetredit'+id+' #friday').val(),
-				saturday:$('.ctimetredit'+id+' #saturday').val()
+				sunday: $('option:selected', '.ctimetredit'+id+' #sunday').data('id'),
+				monday: $('option:selected', '.ctimetredit'+id+' #monday').data('id'),
+				tuesday: $('option:selected', '.ctimetredit'+id+' #tuesday').data('id'),
+				wednesday: $('option:selected', '.ctimetredit'+id+' #wednesday').data('id'),
+				thursday: $('option:selected', '.ctimetredit'+id+' #thursday').data('id'),
+				friday: $('option:selected', '.ctimetredit'+id+' #friday').data('id'),
+				saturday: $('option:selected', '.ctimetredit'+id+' #saturday').data('id')
 			}, function(){
-				location.reload(true);
 				alert('Custom schedule has been updated.');
+				location.reload(true);
 			});
 		}
 	}
@@ -411,31 +418,6 @@
 				alert('Custom schedule has been deleted.');				
 			});
 		}
-	}
-	
-	function editHoliday(id, ths){				
-		$(ths).html('<?= '<img src="'.$this->config->base_url().'css/images/small_loading.gif" width="20px"/>' ?>');
-		
-		$.post('<?= $this->config->base_url().'schedules/' ?>',{submitType:'getHolidayData', id:id}, 
-		function(data){
-			dd = data.split('|');
-			$('#holidayID').val(id);
-			$('#holidayName').val(dd[0]);
-			$('#holidayType').val(dd[1]);
-			$('#holidayWork').val(dd[2]);
-			
-			//for date
-			yy = dd[3].split('-');
-			$('#year').val(yy[0]);
-			$('#month').val(parseInt(yy[1]));
-			$('#day').val(parseInt(yy[2]));
-			
-			$('#addHolidaybtn').hide();
-			$('#addHolidaySchedDiv').show();
-			$('#addHolidaySchedDiv h3').html('Modify Holiday/Event Schedule');
-			$('#addHolidaySched').val('Update Schedule');
-			$(ths).html('<img src="<?= $this->config->base_url() ?>css/images/icon-options-edit.png"/>');
-		});
 	}
 	
 	function changeSetting(id, jee){

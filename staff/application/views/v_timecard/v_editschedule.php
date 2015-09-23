@@ -14,7 +14,7 @@
 		<td><br/></td>
 		<td>
 			<input type="hidden" name="schedID" value="<?= $row->schedID ?>"/>
-			<input type="submit" value="Update" class="btnclass"/>
+			<input type="submit" value="Update" class="btnclass btngreen"/>
 		</td></tr>	
 </table>
 </form>

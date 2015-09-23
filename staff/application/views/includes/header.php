@@ -4,14 +4,19 @@
 	
 	if($this->user!=false && $this->user->empID!=0){
 	
-	if($this->session->userdata('testing')==true){
-		echo $this->user->name.' '.$this->user->empID.'<br/>';
+	//if($this->session->userdata('testing')==true){
+	if($this->config->item('devmode')==true){
+		echo $this->user->name.' '.$this->user->empID.'---'.$this->user->idNum.'<br/>';
 		print_r($this->access->myaccess);
-		echo '
-		<form action="'.$this->config->base_url().'hello/" method="POST">
+		echo '<form action="'.$this->config->base_url().'hello/" method="POST">
 			<b>Change logged in user</b><br/>
 			<input type="text" name="username" value="" class="padding5px" placeholder="username"/><input type="submit" value="Submit"/><br/>
 		</form>';
+		
+		/* echo '<form action="'.$this->config->base_url().'hello/empID/" method="POST">
+			<b>Change logged in user</b><br/>
+			<input type="text" name="empID" value="" class="padding5px" placeholder="emp ID"/><input type="submit" value="Submit"/><br/>
+		</form>'; */
 	}
 	
 	
@@ -40,8 +45,7 @@
 			
 				echo '<li '.(($segment2=='timelogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a></li>';
 				echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
-				echo '<li '.(($segment2=='schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/schedules/">My Schedules</a></li>';
-				echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
+				//echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
 				
 				if($this->user->is_supervisor==1) 
 					echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
@@ -50,6 +54,7 @@
 				echo '<li '.(($segment2=='scheduling')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/scheduling/">Scheduling</a></li>';
 				echo '<li '.(($segment2=='payrolls')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payrolls/">Payrolls</a></li>';
 				echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';				
+				echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managetimecard/">Manage Timecard</a></li>';				
 			}
 			
 			
@@ -98,9 +103,8 @@
 					if($this->access->accessFullHR){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
-					}
-						
-										
+						echo '<li '.(($content=='incidentreports')?'class="current"':'').'><a href="'.$this->config->base_url().'incidentreports/">HR Incident Reports</a></li>';
+					}			
 						
 					echo '</ul>';
 				echo '</li>';
