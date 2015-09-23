@@ -38,7 +38,7 @@
 		<h3>Add Time Category</h3>
 		<table>
 			<tr><td width="120px">Category Name</td><td><input type="text" class="padding5px" style="width:250px;" id="catName"/></td></tr>
-			<tr><td><br/></td><td><button id="addTimeCategory" class="btnclass">+ Add Time Category</button></td></tr>
+			<tr><td><br/></td><td><button id="addTimeCategory" class="btnclass btngreen">+ Add Time Category</button></td></tr>
 		</table>
 	</div>
 <?php if(count($timecategory)>0){ ?>
@@ -65,7 +65,7 @@
 				</td>
 			</tr>
 			<tr><td># of Paid Hours</td><td><input type="number" id="timeHours" class="padding5px" style="width:248px;"/></td></tr>
-			<tr><td><br/></td><td><button id="addTime" class="btnclass">+ Add Time</button></td></tr>
+			<tr><td><br/></td><td><button id="addTime" class="btnclass btngreen">+ Add Time</button></td></tr>
 		</table>
 	</div>
 <?php
@@ -158,13 +158,13 @@
 			</tr>
 		</table>
 		<br/>
-		<button id="addcustomschedule" class="btnclass">+ Add Schedule</button>
+		<button id="addcustomschedule" class="btnclass btngreen">+ Add Schedule</button>
 		<button class="btnclass" onClick="$('#addCustomSchedDiv').hide(); $('#addCustomSchedbtn').show();">Cancel</button>
 		<hr/>
 	</div>
 	
 	<h3/>All Custom Schedules
-		<button id="addCustomSchedbtn" class="btnclass" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addCustomSchedDiv').show(); ">+ Add Custom Schedule</button>
+		<button id="addCustomSchedbtn" class="btnclass btngreen" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addCustomSchedDiv').show(); ">+ Add Custom Schedule</button>
 	</h3>
 	<table class="tableInfo">
 <?php
