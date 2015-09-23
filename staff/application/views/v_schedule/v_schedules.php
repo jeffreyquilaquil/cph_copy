@@ -1,7 +1,7 @@
 <h2>Manage Schedule Settings</h2><hr/>
 
 <div id="schedSettingsDIV" class="schedDiv">
-<button id="btnsettingupdate" class="btnclass" style="float:right; margin-top:-45px;">Update</button>
+<button id="btnsettingupdate" class="btnclass btnorange" style="float:right; margin-top:-45px;">Update</button>
 <table class="tableInfo">
 <?php	
 	$optArr = array('-8','-7','-6','-5','-4','-3', '-2','-1','0','+1','+2','+3','+4','+5','+6','+7','+8');	
