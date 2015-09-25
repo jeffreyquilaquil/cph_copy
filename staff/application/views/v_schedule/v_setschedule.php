@@ -151,8 +151,11 @@ function validateForm(){
 	plate = $('select[name="schedTemplate"]').val();
 	if(plate==''){		
 		$('.schedSelect').each(function(){
-			xx += $(this).val();
-			arrSched.push($(this).val());
+			selval = $('option:selected',this).data('id');
+			if(selval!='undefined'){
+				xx += selval;
+				arrSched.push(selval);
+			}
 		});
 		if(xx==''){
 			alert('Please select schedule.');

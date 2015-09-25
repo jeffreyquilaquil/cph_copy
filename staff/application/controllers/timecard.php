@@ -506,10 +506,9 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
-			
+						
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
-				
 				if(isset($yoyo['holiday'])){
 					$sched = '<div class="daysbox dayholiday"><b>'.$yoyo['holidayType'].':</b><br/>'.$yoyo['holiday'].'</div>';	
 				}
