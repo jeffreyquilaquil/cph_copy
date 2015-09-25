@@ -137,10 +137,14 @@ function validateForm(){
 	xx='';
 	valid = true;
 	var arrSched = [];
-		
-	if($('input[name="endDate"]').val()!='' && $('input[name="startDate"]').val()>$('input[name="endDate"]').val()){
-		alert('Invalid End Date.');
-		valid = false;
+	
+	if($('input[name="endDate"]').val()!=''){
+		var fDate = new Date($('input[name="startDate"]').val());
+		var lDate = new Date($('input[name="endDate"]').val());
+		if(fDate > lDate){
+			alert('Invalid End Date.');
+			valid = false;
+		}
 	}
 		
 	plate = $('select[name="schedTemplate"]').val();
