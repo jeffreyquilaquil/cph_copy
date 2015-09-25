@@ -67,6 +67,7 @@
 		</tr>
 		<tr>
 			<td colspan="2">
+			<i>Click <a href="<?= $this->config->base_url() ?>schedules/" target="_parent">here</a> to set custom time option</i>
 			<table width="100%" class="tacenter fs11px">
 			<?php
 				echo '<tr class="trlabel trs trsched_">';

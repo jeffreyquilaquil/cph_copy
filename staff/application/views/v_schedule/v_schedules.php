@@ -1,39 +1,7 @@
 <h2>Manage Schedule Settings</h2><hr/>
 
-<div id="schedSettingsDIV" class="schedDiv">
-<button id="btnsettingupdate" class="btnclass btnorange" style="float:right; margin-top:-45px;">Update</button>
-<table class="tableInfo">
-<?php	
-	$optArr = array('-8','-7','-6','-5','-4','-3', '-2','-1','0','+1','+2','+3','+4','+5','+6','+7','+8');	
-	foreach($settingsQuery AS $s){
-		echo '<tr>';
-			echo '<td width="70%"><b>'.$s->settingName.'</b><br/>
-				<i>'.$s->settingNote.'</i>				
-				</td>';
-			echo '<td>
-					<span class="spanSet" id="val'.$s->settingID.'">'.$s->settingVal.'</span>';
-			echo '<select class="selectSet forminput hidden" onChange="changeSetting('.$s->settingID.', this);">';
-				foreach($optArr AS $o){
-					echo '<option value="'.$o.' hours" '.(($s->settingVal==$o.' hours')?'selected="selected"':'').'>'.$o.' hours</option>';
-				}
-			echo '</select>';
-			echo '</td>';
-		echo '</tr>';
-	}
-	
-	if(count($settingsQuery)>0){
-		echo '<tr>';
-			echo '<td colspan=2 align="right">
-					<button id="btnsettingcancel" class="btnclass selectSet hidden">Cancel Update</button>
-				</td>';
-		echo '</tr>';
-	}
-?>
-</table>
-</div>
-
 <!-------------------------- START Custom Time ------------------------>
-<div id="customtimeDIV" class="schedDiv hidden">	
+<div id="customtimeDIV" class="schedDiv">	
 	<div style="width:48%; float:left;">
 		<h3>Add Time Category</h3>
 		<table>
@@ -129,6 +97,40 @@
 	
 </div>
 <!-------------------------- END Custom Time ------------------------>
+
+<!-------------------------- TIME SETTINGS ------------------------>
+<div id="schedSettingsDIV" class="schedDiv hidden">
+<button id="btnsettingupdate" class="btnclass btnorange" style="float:right; margin-top:-45px;">Update</button>
+<table class="tableInfo">
+<?php	
+	$optArr = array('-8','-7','-6','-5','-4','-3', '-2','-1','0','+1','+2','+3','+4','+5','+6','+7','+8');	
+	foreach($settingsQuery AS $s){
+		echo '<tr>';
+			echo '<td width="70%"><b>'.$s->settingName.'</b><br/>
+				<i>'.$s->settingNote.'</i>				
+				</td>';
+			echo '<td>
+					<span class="spanSet" id="val'.$s->settingID.'">'.$s->settingVal.'</span>';
+			echo '<select class="selectSet forminput hidden" onChange="changeSetting('.$s->settingID.', this);">';
+				foreach($optArr AS $o){
+					echo '<option value="'.$o.' hours" '.(($s->settingVal==$o.' hours')?'selected="selected"':'').'>'.$o.' hours</option>';
+				}
+			echo '</select>';
+			echo '</td>';
+		echo '</tr>';
+	}
+	
+	if(count($settingsQuery)>0){
+		echo '<tr>';
+			echo '<td colspan=2 align="right">
+					<button id="btnsettingcancel" class="btnclass selectSet hidden">Cancel Update</button>
+				</td>';
+		echo '</tr>';
+	}
+?>
+</table>
+</div>
+<!-------------------------- END TIME SETTINGS ------------------------>
 
 <!-------------------------- Start Custom Schedules ------------------------>
 <div id="customschedDIV" class="schedDiv hidden">
