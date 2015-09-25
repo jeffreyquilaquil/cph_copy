@@ -1711,7 +1711,7 @@ class Staff extends MY_Controller {
 					if($this->user->access=='' && $this->user->level==0 && $this->user->empID != $data['row']->empID_fk)
 						$data['access'] = false;
 				
-					if(!empty($_POST)){						
+					if(!empty($_POST)){
 						$updateArr = array();
 						$actby = '';
 						if($_POST['submitType']=='svisor'){
@@ -2005,7 +2005,27 @@ class Staff extends MY_Controller {
 									$usernote = $this->user->name.' disapproved your refiling request. Reason: '.$_POST['noterefile'];
 								}
 							}
-						}				
+						}else if($_POST['submitType']=='updatestartendleave'){ //this is for maternity leave changing of leave start and end dates							
+							$updateArr['leaveStart'] = date('Y-m-d H:i:s', strtotime($_POST['leaveStart']));
+							$updateArr['leaveEnd'] = date('Y-m-d H:i:s', strtotime($_POST['leaveEnd']));
+							
+							$leaveUpdate['pStart'] = $data['row']->leaveStart;
+							$leaveUpdate['pEnd'] = $data['row']->leaveEnd;
+							$leaveUpdate['nStart'] = $updateArr['leaveStart'];
+							$leaveUpdate['nEnd'] = $updateArr['leaveEnd'];
+							$leaveUpdate['updatedBy'] = $this->user->username;
+							$leaveUpdate['dateUpdated'] = date('Y-m-d H:i:s');
+														
+							if(!empty($data['row']->updateData)) $udata = json_decode($data['row']->updateData);
+							else $udata = array();
+							
+							array_push($udata, $leaveUpdate);
+							$updateArr['updateData'] = json_encode($leaveUpdate);
+
+							$newleavedates = 'maternity leave dates from '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).' - '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).' to '.date('F d, Y h:i a', strtotime($updateArr['leaveStart'])).' - '.date('F d, Y h:i a', strtotime($updateArr['leaveEnd'])).'. ';
+							$actby = 'Updated '.$data['row']->name.'\'s '.$newleavedates;
+							$usernote = $this->user->name.' updated your '.$newleavedates;
+						}			
 						
 						$addnote = ' Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to view leave details.';
 												

@@ -312,7 +312,7 @@
 					thursday:$('option:selected', '#thursday').data('id'),
 					friday:$('option:selected', '#friday').data('id'),
 					saturday:$('option:selected', '#saturday').data('id')
-				}, function(d){	alert(d);
+				}, function(){
 					location.reload(true);	
 					alert('Custom Schedule has been added.');							
 				});

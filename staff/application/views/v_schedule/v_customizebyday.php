@@ -36,6 +36,14 @@
 			</td>
 		</tr>
 		<tr>
+			<td>Work from home</td>
+			<td><?php
+				$selOp = '<option value="0">No</option>';
+				$selOp .= '<option value="1">Yes</option>';
+				echo $this->textM->formfield('select', 'workhome', $selOp, 'forminput');
+			?></td>
+		</tr>
+		<tr>
 			<td><br/></td>
 			<td>
 				<input type="hidden" name="timeText" value=""/>
@@ -50,7 +58,8 @@
 </div>
 
 <?php
-	$mindate = date('Y/m/d');
+	if(!empty($is_edit)) $mindate = date('Y/m/d', strtotime($today));
+	else $mindate = date('Y/m/d');
 ?>
 <script type="text/javascript">
 	$(function(){

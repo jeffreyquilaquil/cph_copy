@@ -2,6 +2,7 @@
 	$disabled = '';
 	$lc = $row->totalHours/8;
 	$resumework = date('Y/m/d', strtotime('+3 days'));
+	$today = date('Y-m-d');
 ?>
 <h2>Leave Details of <?= $row->name ?></h2>
 <hr/>
@@ -90,7 +91,7 @@
 	<?php } ?>
 		<tr>
 			<td><br/></td>
-			<td><input type="submit" class="btnclass" value="Submit"/></td>
+			<td><input type="submit" class="btnclass btngreen" value="Submit"/></td>
 		</tr>
 	</form>
 <?php
@@ -159,11 +160,27 @@
 	</tr>
 	<tr>
 		<td><?= (($row->leaveType==4)?'Start Date and Time of Absence':'Leave Start') ?></td>
-		<td><?= date('F d, Y h:i a', strtotime($row->leaveStart)) ?></td>
+		<td><?php echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
+				echo '<span class="spanupdateleave">'.date('F d, Y h:i a', strtotime($row->leaveStart)).'</span>';
+				if($row->leaveType==6) 
+					echo $this->textM->formfield('input', 'leaveStart', date('F d, Y H:i', strtotime($row->leaveStart)), 'datetimepick forminput updatestart hidden', 'Leave Start', 'required style="border:1px solid red;"');
+		?></td>
 	</tr>
 	<tr>
 		<td><?= (($row->leaveType==4)?'Start End and Time of Absence':'Leave End') ?></td>
-		<td><?= date('F d, Y h:i a', strtotime($row->leaveEnd)) ?></td>
+		<td><?php
+				echo '<span class="spanupdateleave">'.date('F d, Y h:i a', strtotime($row->leaveEnd)).'</span>';
+				if($row->leaveType==6) 
+					echo $this->textM->formfield('input', 'leaveEnd', date('F d, Y H:i', strtotime($row->leaveEnd)), 'datetimepick forminput updatestart hidden', 'Leave End', 'required style="border:1px solid red;"');
+		?></td>
+	</tr>
+	<tr class="updatestart hidden">
+		<td><br/></td>
+		<td><?php
+			echo $this->textM->formfield('hidden', 'submitType', 'updatestartendleave');
+			echo $this->textM->formfield('submit', '', 'Update', 'btnclass btngreen');
+			echo '</form>';
+		?></td>
 	</tr>
 	<tr>
 		<td>Total Number of Hours<?= (($row->leaveType==4)?' to Compensate':' ') ?></td>
@@ -183,7 +200,9 @@
 		$cntBad = count($od);
 		for($o=0; $o<$cntBad; $o++){
 			list($start, $end) = explode(',',$od[$o]);
-			echo '<tr>
+			$ck = '';
+			if(date('Y-m-d', strtotime($start))==$today) $ck = ' class="errortext weightbold"';
+			echo '<tr '.$ck.'>
 					<td>'.date('F d, Y, h:i a', strtotime($start)).'</td>
 					<td>'.date('F d, Y, h:i a', strtotime($end)).'</td>
 				</tr>';
@@ -255,6 +274,15 @@
 		<td>View Leave File</td>
 		<td><a href="<?= $this->config->base_url() ?>leavepdf/<?= $row->leaveID ?>/" onClick="displaypleasewait();"><img src="<?= $this->config->base_url() ?>css/images/pdf-icon.png"/></a></td>
 	</tr>	
+<?php
+	//for maternity leave
+	if($row->leaveType==6 && $this->access->accessFullHR==true){
+		echo '<tr>';
+			echo '<td><br/></td>';
+			echo '<td><button class="btnclass btnorange spanupdateleave" id="updateleave">Update leave start and end</button></td>';
+		echo '</tr>';
+	}
+?>
 	<tr><td colspan=2><br/></td></tr>
 <?php
 	if(count($leaveHistory) > 0){
@@ -525,6 +553,19 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<tr bgcolor="#eee"><td colspan=2><h3>Additional Information Required</h3></td></tr>';
 		echo '<tr><td colspan=2>'.$row->addInfo.'</td></tr>';
 	}
+		
+	if(!empty($row->updateData)){
+		$udata = json_decode($row->updateData);
+		echo '<tr class="trhead">';
+			echo '<td colspan=2>UPDATE DETAILS</td>';
+		echo '</tr>';
+		
+		echo '<tr>';
+			echo '<td>Updated by: '.$udata->updatedBy.' <i>'.$udata->dateUpdated.'</i></td>';
+			echo '<td>From: '.date('F d, Y h:i a', strtotime($udata->pStart)).' - '.date('F d, Y h:i a', strtotime($udata->pEnd)).'<br/>
+					To: '.date('F d, Y h:i a', strtotime($udata->nStart)).' - '.date('F d, Y h:i a', strtotime($udata->nEnd)).'</td>';
+		echo '</tr>';
+	}
 ?>	
 <tr class="trhead trcdetails <?= (($row->canceldata=='')?'hidden':'') ?>">
 	<td colspan=2><center id="canceldetails">CANCEL DETAILS</center></td>
@@ -610,7 +651,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			<td><br/></td>
 			<td>
 				<input type="hidden" name="submitType" value="maternityresume"/>
-				<input type="submit" value="Submit" class="btnclass"/>
+				<input type="submit" value="Submit" class="btnclass btngreen"/>
 			</td>
 		</tr>
 	</form>
@@ -880,6 +921,12 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		$('#btnShortenLeave').click(function(){
 			$('.trshortenleave').removeClass('hidden');
 			$("html, body").animate({ scrollTop: $(document).height() }, "slow");			
+		});
+		
+		
+		$('#updateleave').click(function(){
+			$('.spanupdateleave').addClass('hidden');
+			$('.updatestart').removeClass('hidden');
 		});
 				
 	});

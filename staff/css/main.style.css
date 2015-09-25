@@ -62,6 +62,7 @@ a:hover{ color:red; }
 .paddingtop10px{ padding-top:10px; }
 .errortext{ color:red; }
 .colorgray{ color:#888; }
+.colorgreen{ color:green; }
 .btnclass { padding:5px 10px; border-radius:5px; }
 .btnclass:hover { background-color:#ddd; }
 .btngreen { background-color:green; font-weight:bold; color:#fff; border-radius:5px; }
@@ -492,6 +493,7 @@ ul.tabs2 li.current{
 .calendartbl td{ border:1px solid #000; vertical-align:top; }
 .calendartbl .daynum{ text-align:center; font-weight:bold; padding:5px; background-color:#bbb; }
 .calendartbl .daynum:hover{ background-color:#ffb2b2; }
+.calendartbl .daynumnocolor:hover{ background-color:#bbb; }
 .calendartbl .istoday{ background-color:#800000; color:#fff; }
 .calendartbl .divtoday{ background-color:#ffb2b2; }
 .calendartbl .dayEdit{ text-decoration:none; }
@@ -512,7 +514,7 @@ ul.tabs2 li.current{
 .calendartbl  .daycustomsched{ background-color:#00bb29; }
 .calendartbl  .dayonleave{ background-color:#b90000; }
 .calendartbl  .dayoffset{ background-color:#0058ff; }
-.calendartbl  .daypendingleave{ background-color:#b2ffb2; }
+.calendartbl  .daypendingleave{ background-color:#df9200; }
 
 #divtimelog .daycontent{ text-align:left; padding:5px; }
 

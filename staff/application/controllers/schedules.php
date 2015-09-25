@@ -177,6 +177,7 @@ class Schedules extends MY_Controller {
 				}
 				
 				$insArr['empID_fk'] = $data['row']->empID;
+				$insArr['workhome'] = $_POST['workhome'];
 				$insArr['effectivestart'] = date('Y-m-d', strtotime($_POST['startDate']));
 				if(!empty($_POST['endDate']))
 					$insArr['effectiveend'] = date('Y-m-d', strtotime($_POST['endDate']));
@@ -190,10 +191,11 @@ class Schedules extends MY_Controller {
 				}
 				
 				echo '<script>
-					alert("Schedule has been added");
-					parent.$.fn.colorbox.close();
-					parent.window.location.reload();
-				</script>';
+						alert("Schedule has been added");
+						parent.$.fn.colorbox.close();
+						parent.window.location.reload();
+					</script>';
+				
 				exit;
 			}		
 			
@@ -236,11 +238,14 @@ class Schedules extends MY_Controller {
 		$data['content'] = 'v_schedule/v_customizebyday';
 		$data['empID'] = $this->uri->segment(3);
 		$data['today'] = $this->uri->segment(4);
+		$data['is_edit'] = $this->uri->segment(5);
 		
 		if($this->access->accessFullHR==false){
 			$data['access'] = false;
 		}else{
-			if(!empty($_POST)){				
+			$currentDateToday = date('Y-m-d');
+			
+			if(!empty($_POST)){	
 				$dateArr = array();
 				$dates = $_POST['dates'];			
 				$arr['assignBy'] = $this->user->empID;
@@ -268,13 +273,31 @@ class Schedules extends MY_Controller {
 				}
 				
 				$arr['empID_fk'] = $_POST['empID_fk'];
+				$arr['workhome'] = $_POST['workhome'];
 				foreach($dates AS $d2){
 					$arr['dateToday'] = date('Y-m-d', strtotime($d2));
-					
 					if(!in_array($arr['dateToday'], $dateArr)){
 						$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
-					}	
-				}
+					}
+					
+					//insert to staffdailylogs table if date is less or equal today and update tcAttendance record					
+					$schdArr = $this->timeM->getSchedArr($arr['dateToday'], $arr['timeText']);
+					if(isset($schdArr['start']) && isset($schdArr['end'])){
+						if($currentDateToday>=$arr['dateToday']){
+							$dailyLogID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'tlogID', 'logDate="'.$arr['dateToday'].'" AND empID_fk="'.$data['empID'].'"');
+							if(!empty($dailyLogID)){
+								$upp['schedIn'] = $schdArr['start'];
+								$upp['schedOut'] = $schdArr['end'];
+								$upp['schedHour'] = $arr['timeHours'];
+								$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$dailyLogID), $upp);		
+							}else{
+								$schedToday = $this->timeM->getCalendarSchedule($arr['dateToday'], $arr['dateToday'], $data['empID'], true);
+								$this->timeM->insertToDailyLogs($data['empID'], $arr['dateToday'], $schedToday);
+							}
+							$this->timeM->cntUpdateAttendanceRecord($arr['dateToday']);
+						}
+					}					
+				}				
 
 				echo '<script>
 						alert("Schedule has been updated");

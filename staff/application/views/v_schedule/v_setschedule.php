@@ -58,6 +58,14 @@
 			</td>
 		</tr>
 		<tr>
+			<td>Work from home</td>
+			<td><?php
+				$selOp = '<option value="0">No</option>';
+				$selOp .= '<option value="1">Yes</option>';
+				echo $this->textM->formfield('select', 'workhome', $selOp, 'forminput');
+			?></td>
+		</tr>
+		<tr>
 			<td colspan="2">
 			<table width="100%" class="tacenter fs11px">
 			<?php
@@ -104,7 +112,7 @@
 $(function(){
 	$('.datepick').datetimepicker({ 
 		format:'F d, Y', timepicker:false,
-		minDate:'<?= date('Y/m/d') ?>'
+		minDate:'<?= date('Y/m/d', strtotime('+1 day')) ?>'
 	});
 	
 	$('select[name="schedTemplate"]').change(function(){ 

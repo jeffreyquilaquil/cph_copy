@@ -37,7 +37,7 @@
 			<td align="center" '.(($scurdate<=strtotime($thursday))?'onClick="kailangan('.$all->empID.', \''.$thursday.'\', \''.$all->name.'\', this)':'bgcolor="#ddd" onClick="alert(\'Editing schedule of previous date is invalid.\')"').' ">'.((isset($schedData[$all->empID][$thursday]))?$schedData[$all->empID][$thursday]:'').'</td>
 			<td align="center" '.(($scurdate<=strtotime($friday))?'onClick="kailangan('.$all->empID.', \''.$friday.'\', \''.$all->name.'\', this)':'bgcolor="#ddd" onClick="alert(\'Editing schedule of previous date is invalid.\')"').' ">'.((isset($schedData[$all->empID][$friday]))?$schedData[$all->empID][$friday]:'').'</td>
 			<td align="center" '.(($scurdate<=strtotime($saturday))?'onClick="kailangan('.$all->empID.', \''.$saturday.'\', \''.$all->name.'\', this)':'bgcolor="#ddd" onClick="alert(\'Editing schedule of previous date is invalid.\')"').' ">'.((isset($schedData[$all->empID][$saturday]))?$schedData[$all->empID][$saturday]:'').'</td>
-			<td align="center"><button class="iframe" href="'.$this->config->base_url().'schedules/setschedule/'.$all->empID.'/">Schedule</button></td>
+			<td align="center"><a class="iframe" href="'.$this->config->base_url().'schedules/setschedule/'.$all->empID.'/"><button>Schedule</button></a></td>
 		</tr>';
 	}
 ?>	

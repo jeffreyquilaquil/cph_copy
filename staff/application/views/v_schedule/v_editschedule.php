@@ -14,7 +14,7 @@
 		<td><br/></td>
 		<td>
 			<input type="hidden" name="schedID" value="<?= $row->schedID ?>"/>
-			<input type="submit" value="Update" class="btnclass"/> <input type="button" class="btnclass" value="Cancel" onClick="parent.$.colorbox.close();"/>
+			<input type="submit" value="Update" class="btnclass btngreen"/> <input type="button" class="btnclass" value="Cancel" onClick="parent.$.colorbox.close();"/>
 		</td>
 	</tr>	
 	<tr>

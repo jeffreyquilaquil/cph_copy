@@ -17,38 +17,27 @@
 		}
 	echo '</h3><hr/>';
 	
+	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
+		if(isset($schedToday['sched'])) echo '<b>Schedule Today:</b> '.$schedToday['sched'].'<br/>';
+		if(isset($schedToday['offset'])) echo '<b>Offset Schedule:</b> '.$schedToday['offset'].'<br/>';
+	}else{
+		echo '<b>Schedule Today:</b> NONE ';
+	}
+	
+	
+	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->published==0)))
+		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Set Schedule</a>';
+
 
 	if(count($log)==0){
 		echo '<p class="errortext">No Logs Recorded.</p>';
-	}else{
-		echo '<b>Schedule Today:</b> ';
-	
-		if(count($log)>0 && $log->schedIn!='0000-00-00 00:00:00' && $log->schedOut!='0000-00-00 00:00:00')
-			echo '<b class="errortext">'.date('h:i a', strtotime($log->schedIn)).' - '. date('h:i a', strtotime($log->schedOut)).'</b>';
-		else{
-			echo 'NONE ';
-			if($log->published==0 && $this->access->accessFullHR==true){ //if no schedule add edit link to add schedule
-				echo '<a href="javascript:void(0);" id="editText">Edit</a>';
-				echo '<form id="formeditsched" action="" method="POST" class="hidden" onSubmit="displaypleasewait()">';
-					echo '<br/><i>Time and Date 24-Hour Format</i><br/>';
-					echo $this->textM->formfield('input', 'schedIn', date('F d, Y 00:00', strtotime($today)), 'datetimepick padding5px', 'Schedule In', 'required');
-					echo '&nbsp;&nbsp;'.$this->textM->formfield('input', 'schedOut', date('F d, Y 00:00', strtotime($today)), 'datetimepick padding5px', 'Schedule Out', 'required');
-					
-					echo '<br/>Number of Hours: '.$this->textM->formfield('number', 'schedHour', '8', 'padding5px', '', 'required step="any"');
-					echo '<br/>'.$this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
-					echo $this->textM->formfield('button', '', 'Cancel', 'btnclass', '', 'id="btnEditCancel"');
-					
-					echo $this->textM->formfield('hidden', 'submitType', 'addSched', 'btnclass btngreen');
-					echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID, 'btnclass btngreen');
-				echo '</form>';
-			}
-		}
-		
+	}else{		
 		//PUBLISH
-		$timePaid = $log->schedHour;
 		$timeDeduction = 0;
+		$timePaid = $log->schedHour;
+		if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
 		
-		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->published==0)?'hidden':'').'">';
+		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->published==0)?'hiddend':'').'">';
 		echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
 			echo '<table class="tableInfo" bgcolor="#ffd2d2">';
 			if($log->published==1){
@@ -98,7 +87,25 @@
 				
 			if($timePaid<0 || ($log->timeIn=='0000-00-00 00:00:00' && $log->timeOut=='0000-00-00 00:00:00')) $timePaid = 0;
 			
-			if($log->published==1){
+			//FOR OFFSET
+			if($log->offsetIn!='0000-00-00 00:00:00' && $log->offsetOut!='0000-00-00 00:00:00'){				
+				echo '<tr>';
+					echo '<td>Offset Paid Hours</td>';
+					echo '<td>';
+						echo $log->offsetHour.' Hours';
+						//add time paid if not late
+						if(($log->timeIn!='0000-00-00 00:00:00' && $log->schedIn<$log->timeIn && $log->offTimeIn=='0000-00-00 00:00:00') || 
+						($log->offTimeIn!='0000-00-00 00:00:00' && $log->offsetIn<$log->offTimeIn)){
+							echo '<br/><b class="errortext">Late or no time in: Offset Forfeited</b>';
+						}else{
+							$timePaid += $log->offsetHour;
+						}
+						
+					echo '</td>';
+				echo '</tr>';
+			}
+			
+			if($log->published==1 && isset($publish)){
 				if(count($publish)>0){
 					echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
 					echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
@@ -268,6 +275,22 @@
 				}
 			echo '</td>';
 		echo '</tr>';
+			
+		//THIS IS FOR OFFSET
+		if($log->offsetIn!='00:0000-00-00 00:00:00' && $log->offsetOut!='0000-00-00 00:00:00' && ($log->offTimeIn!='0000-00-00 00:00:00' || $log->offTimeOut!='0000-00-00 00:00:00')){
+			echo '<tr><td class="trhead" colspan=2>Offset Details</td></tr>';
+			echo '<tr>';
+				echo '<td>Offset Time In</td>';
+				echo '<td><b>'.(($log->offTimeIn!='0000-00-00 00:00:00')?date('h:i a', strtotime($log->offTimeIn)):'No Time In').'</b></td>';
+			echo '</tr>';
+			
+			echo '<tr>';
+				echo '<td>Offset Time Out</td>';
+				echo '<td><b>'.(($log->offTimeOut!='0000-00-00 00:00:00')?date('h:i a', strtotime($log->offTimeOut)):'No Time Out').'</b></td>';
+			echo '</tr>';
+			
+		}
+		
 		echo '</table>';
 	}
 	
@@ -279,7 +302,7 @@
 		foreach($updateRequests AS $u){
 			echo '<tr '.(($u->status==1)?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td width="120px">'.date('d M y h:i a', strtotime($u->dateRequested)).'</td>';
-				echo '<td>';
+				echo '<td valign="top">';
 					echo nl2br($u->message);
 					if(!empty($u->docs)){
 						echo '<br/><b>Supporting Docs</b><br/><ul>';

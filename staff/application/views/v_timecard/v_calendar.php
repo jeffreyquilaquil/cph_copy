@@ -36,6 +36,8 @@
 						foreach($arr AS $a=>$v){
 							echo '<b>'.$a.'</b> - <i>'.$v.'</i><br/>';
 						}
+						
+						if($sd->workhome==1) echo '<span class="errortext">Work from home</span>';
 					echo '</td>';
 					
 					if($this->access->accessFullHR && $sd->effectiveend=='0000-00-00') 

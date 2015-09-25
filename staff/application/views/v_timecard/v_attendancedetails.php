@@ -105,6 +105,23 @@
 					echo '<li><a href="'.$this->config->base_url().'staffleaves/'.$leave->leaveID.'/">'.$leave->name.'</a> ('.date('h:i a', strtotime($leave->leaveStart)).' - '.date('h:i a', strtotime($leave->leaveEnd)).')</li>';
 				}
 			echo '</ul>';
+		}
+		
+		if(count($queryOffset)>0){
+			echo '<b>On Offset: ('.count($queryOffset).')</b>';
+			echo '<ul>';			
+				foreach($queryOffset AS $offset){
+					$off = explode('|', $offset->offsetdates);
+					foreach($off AS $o){
+						if(!empty($o)){
+							list($star, $en) = explode(',', $o);
+							if(date('Y-m-d', strtotime($star))==$today){
+								echo '<li><a href="'.$this->config->base_url().'staffleaves/'.$offset->leaveID.'/">'.$offset->name.'</a> ('.date('h:i a', strtotime($star)).' - '.date('h:i a', strtotime($en)).')</li>';
+							}
+						}
+					}
+				}
+			echo '</ul>';
 		}	
 	?>
 	</div>

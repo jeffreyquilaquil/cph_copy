@@ -58,51 +58,31 @@ class Timecard extends MY_Controller {
 		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
-			
-			if(isset($schedToday[$todaySmall])){
-				$sArr = $schedToday[$todaySmall];	
-				
-				if(isset($sArr['sched'])){
-					$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
-					
-					if(isset($schedArr['start']) && isset($schedArr['end'])){
-						$insArr['logDate'] = $today;
-						$insArr['empID_fk'] = $staff->empID;
-						$insArr['schedIn'] = $schedArr['start'];
-						$insArr['schedOut'] = $schedArr['end'];
-						$insArr['schedHour'] = $sArr['schedHour'];
-						
-						$this->dbmodel->insertQuery('tcStaffDailyLogs', $insArr);
-						$scheduled++;
-					}
-				}
-			}
+			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffDailyLogs table
+			if(!empty($logIDD)) $scheduled++;
 		}
 		
-		//INSERT TO TCATTENDANCE TABLE
-		$ins['dateToday'] = $today;
-		$ins['scheduled'] = $scheduled;
-		$ins['unpublished'] = $scheduled;
-		$attID = $this->dbmodel->getSingleField('tcAttendance', 'attendanceID', 'dateToday="'.$ins['dateToday'].'"');		
-		$ins['holidayID_fk'] = $this->dbmodel->getSingleField('staffHolidays', 'holidayID', 'holidayDate="'.$ins['dateToday'].'" OR holidayDate="0000-'.date('m-d', strtotime($ins['dateToday'])).'"');
-		$ins['numEmployees'] = $this->dbmodel->getSingleField('staffs', 'COUNT(empID)', 'active=1 AND startDate <= "'.$ins['dateToday'].'" AND (endDate="0000-00-00" OR endDate>="'.$ins['dateToday'].'")');
-		
-		//leaves
-		$queryLeaves = $this->timeM->getNumDetailsAttendance($ins['dateToday'], 'leave');	
-		$ins['scheduledLeave'] = count($queryLeaves);
-		
-		//offset
-		$queryOffset = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd', 'leaveType=4 AND offsetdates LIKE "%'.$ins['dateToday'].'%" AND status!=0 AND status!=4 AND status!=5 AND iscancelled!=1');		
-		$ins['scheduledOffset'] = count($queryOffset);
-		
-		if(!empty($attID)){
-			if($scheduled==0){
-				unset($ins['scheduled']);
-				unset($ins['unpublished']);
-			} 
-			$this->dbmodel->updateQuery('tcAttendance', array('attendanceID'=>$attID), $ins);
-		}else if($ins['scheduled']>0){
-			$this->dbmodel->insertQuery('tcAttendance', $ins);
+		//INSERT TO TCATTENDANCE TABLE IF NOT EXIST ELSE UPDATE Records
+		$attLog = $this->dbmodel->getSingleInfo('tcAttendance', '*', 'dateToday="'.$today.'"');
+		if(count($attLog)==0){
+			$ins['dateToday'] = $today;
+			$ins['scheduled'] = $scheduled;
+			$ins['unpublished'] = $scheduled;
+			
+			$ins['holidayID_fk'] = $this->dbmodel->getSingleField('staffHolidays', 'holidayID', 'holidayDate="'.$ins['dateToday'].'" OR holidayDate="0000-'.date('m-d', strtotime($ins['dateToday'])).'"');
+			$ins['numEmployees'] = $this->dbmodel->getSingleField('staffs', 'COUNT(empID)', 'active=1 AND startDate <= "'.$ins['dateToday'].'" AND (endDate="0000-00-00" OR endDate>="'.$ins['dateToday'].'")');
+			
+			//leaves
+			$queryLeaves = $this->timeM->getNumDetailsAttendance($ins['dateToday'], 'leave');	
+			$ins['scheduledLeave'] = count($queryLeaves);
+			
+			//offset
+			$queryOffset = $this->timeM->getNumDetailsAttendance($ins['dateToday'], 'offset');
+			$ins['scheduledOffset'] = count($queryOffset);
+			
+			$this->dbmodel->insertQuery('tcAttendance', $ins);	///INSERT TO TCATTENDANCE TABLE
+		}else{
+			$this->timeM->cntUpdateAttendanceRecord($today);
 		}
 	}
 	
@@ -132,22 +112,8 @@ class Timecard extends MY_Controller {
 							
 					if(empty($logID)){
 						$insArr = array();
-						$schedText = $this->timeM->getSchedToday($l->empID, $dateLogTime, true);
-						
-						if(!empty($schedText['sched']) && $schedText['sched']!='On Leave'){
-							$schedArr = $this->timeM->getSchedArr($dateLogTime, $schedText['sched']);
-							
-							if(isset($schedArr['start']) && isset($schedArr['end'])){
-								$insArr['schedIn'] = $schedArr['start'];
-								$insArr['schedOut'] = $schedArr['end'];
-							}
-							if(isset($schedText['schedHour']))
-								$insArr['schedHour'] = $schedText['schedHour'];
-						}
-
-						$insArr['logDate'] = $dateLogTime;
-						$insArr['empID_fk'] = $l->empID;
-						$logID = $this->dbmodel->insertQuery('tcStaffDailyLogs', $insArr);	
+						$schedText = $this->timeM->getSchedToday($l->empID, $dateLogTime, true);						
+						$logID = $this->timeM->insertToDailyLogs($l->empID, $dateLogTime, $schedText); //inserting to tcStaffDailyLogs table
 					}							
 				}else{
 					$logID = $staffs[$l->empID][$dateLogTime]['logID'];
@@ -156,11 +122,12 @@ class Timecard extends MY_Controller {
 				$staffs[$l->empID][$dateLogTime][] = array('type'=>$l->logtype, 'logtime'=>$l->logtime, 'baselogid'=>$l->logID);
 			}
 		}
-			
+		
+		$settingArr = $this->timeM->getTimeSettings();
 		if(count($staffs)>0){
 			foreach($staffs AS $empID){
 				foreach($empID AS $sdate){
-					$logData = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tlogID, logDate, timeIn, timeOut, breaks', 'tlogID="'.$sdate['logID'].'"');
+					$logData = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tlogID, logDate, timeIn, timeOut, breaks, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'tlogID="'.$sdate['logID'].'"');
 					unset($sdate['logID']);
 									
 					//$updateText = '';
@@ -169,8 +136,23 @@ class Timecard extends MY_Controller {
 					else $breaks = json_decode($logData->breaks);
 									
 					foreach($sdate AS $d){
-						if($d['type']=='A' && $logData->timeIn==$date00) $updateArr['timeIn'] = $d['logtime'];
-						else if($d['type']=='Z' && $logData->timeOut==$date00) $updateArr['timeOut'] = $d['logtime'];
+						if($d['type']=='A'){
+							if($logData->timeIn==$date00) $updateArr['timeIn'] = $d['logtime']; //for time in
+							else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+								if(strtotime($d['logtime']) >= strtotime($logData->offsetIn.' '.$settingArr['timeAllowedClockIn'])){
+									$updateArr['offTimeIn'] = $d['logtime']; //for offset
+								}
+							}  
+						} 						
+						
+						else if($d['type']=='Z'){
+							if($logData->timeOut==$date00) $updateArr['timeOut'] = $d['logtime'];
+							else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+								if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$settingArr['timeAllowedClockOut']) ){
+									$updateArr['offTimeOut'] = $d['logtime']; //for offset
+								}
+							}
+						}
 						else array_push($breaks, $d['logtime']);
 						
 						$logIDInserted[] = $d['baselogid'];	
@@ -196,9 +178,10 @@ class Timecard extends MY_Controller {
 					if(!empty($breaks)){					
 						$updateArr['numBreak'] = count($breaks);
 						$updateArr['breaks'] = json_encode($breaks);
-					} 
+					}
 					
 					if(isset($updateArr['timeOut'])) $withTimeOut = true;
+																				
 					if(!empty($updateArr))
 						$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$logData->tlogID), $updateArr);				
 				}
@@ -237,10 +220,6 @@ class Timecard extends MY_Controller {
 			$this->timeM->publishLogs($today);		
 		}
 	}
-	
-	/* public function publishLogs(){
-		$this->timeM->publishLogs(date('Y-m-d'));
-	} */
 		
 	
 	public function timelogs($data){
@@ -258,6 +237,7 @@ class Timecard extends MY_Controller {
 				if($_POST['submitType']=='recordbreak'){
 					$insLog['staffs_idNum_fk'] = $this->user->idNum;
 					$insLog['logtime'] = date('Y-m-d H:i:s');
+					$insLog['dateInserted'] = date('Y-m-d H:i:s');
 					$insLog['logtype'] = $_POST['logtype'];
 					$this->dbmodel->insertQuery('tcTimelogs', $insLog);
 					exit;
@@ -275,19 +255,19 @@ class Timecard extends MY_Controller {
 			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);
 					
 			//this is for logs for the calendar month			
-			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, published', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, published', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
 									
 			$data['dayArr'] = array();
 			$date00 = '0000-00-00 00:00:00';
 			$strtoday = strtotime('TODAY');
 			$dateTimeToday = date('Y-m-d H:i:s');
 			$dayPublished = array();
-												
+																		
 			foreach($data['dateLogs'] AS $dl){
 				$content = '';
 				$err = '';
 				//check if there is schedule
-				if($dl->schedIn==$date00 || $dl->schedOut==$date00) $err .= 'UNSCHEDULED<br/>';
+				if($dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
 					
 				//check for time in, late or early in			
 				if($dl->timeIn!=$date00){
@@ -295,7 +275,7 @@ class Timecard extends MY_Controller {
 					
 					if($dl->schedIn!=$date00){
 						if($dl->timeIn > $dl->schedIn) $err .= 'LATE<br/>';
-						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$data['settingArr']['earlyClockIn']))  $err .= 'EARLY IN<br/>';
+						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$data['settingArr']['earlyClockIn']) && $dl->offsetIn==$date00)  $err .= 'EARLY IN<br/>';
 					}
 				}else if($dl->schedIn>=$dateTimeToday) $err .= 'NO TIME IN YET<br/>';
 				else $err .= 'NO TIME IN<br/>';
@@ -306,7 +286,7 @@ class Timecard extends MY_Controller {
 					
 					if($dl->schedOut!=$date00){
 						if($dl->timeOut < $dl->schedOut) $err .= 'EARLY OUT<br/>';
-						else if(strtotime($dl->timeOut)>= strtotime($dl->schedOut.' '.$data['settingArr']['outLate']))  $err .= 'OUT LATE<br/>';
+						else if(strtotime($dl->timeOut)>= strtotime($dl->schedOut.' '.$data['settingArr']['outLate']) && $dl->offsetOut==$date00)  $err .= 'OUT LATE<br/>';
 					}					
 				}else if($dl->timeIn!=$date00){
 					if($dl->timeOut==$date00 && $dl->schedOut>=$dateTimeToday) $err .= '<span style="color:green;">SHIFT IN PROGRESS</span><br/>';
@@ -318,7 +298,7 @@ class Timecard extends MY_Controller {
 					if((strtotime($dl->timeBreak) - $strtoday) > $data['settingArr']['overBreak']) $err .= 'OVER BREAK<br/>';
 					if($dl->numBreak%2!=0) $err .= 'MISSING BREAK IN<br/>';
 					
-				}else if($dl->timeIn!=$date00) $err .= 'NO BREAKS<br/>';
+				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $err .= 'NO BREAKS<br/>';
 				
 				if(!empty($err) || !empty($content)){
 					$numday = date('j', strtotime($dl->logDate));										
@@ -400,6 +380,7 @@ class Timecard extends MY_Controller {
 				$cntEarlyClockOut = count($this->timeM->getNumDetailsAttendance($data['today'], 'earlyclockout', $condition));			
 				$cntNoClockOut = count($this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition));			
 				$cntLeave = count($this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition));
+				$cntOffset = count($this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition));
 				$cntPublished = count($this->timeM->getNumDetailsAttendance($data['today'], 'published', $condition));	
 				
 				if($cntLate>0) $contento .= '<b class="errortext">Late: '.$cntLate.'</b><br/>';
@@ -410,6 +391,7 @@ class Timecard extends MY_Controller {
 				if($cntInProgress>0) $contento .= '<b style="color:green;">Shift In Progress: '.$cntInProgress.'</b><br/>';
 				if($cntEarlyBird>0) $contento .= '<b style="color:blue;">Early Birds: '.$cntEarlyBird.'</b><br/>';
 				if($cntLeave>0) $contento .= '<b style="color:blue;">On Leave: '.$cntLeave.'</b><br/>';
+				if($cntOffset>0) $contento .= '<b style="color:blue;">On Offset: '.$cntOffset.'</b><br/>';
 				if($cntPublished>0) $contento .= '<b>Published: '.$cntPublished.'</b><br/>';
 				
 				$numDate = date('j', strtotime($data['today']));
@@ -476,6 +458,12 @@ class Timecard extends MY_Controller {
 					}
 				}
 			}
+			
+			$jnum = date('j', strtotime($data['today']));
+			if(!isset($data['dayEditOptionArr'][$jnum])){
+				$data['dayEditOptionArr'][$jnum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$data['today'], 'text'=>'View Details');
+			}
+					
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -499,7 +487,7 @@ class Timecard extends MY_Controller {
 			
 			//for schedule history
 			$data['timeArr'] = $this->commonM->getSchedTimeArray();			
-			$data['schedData'] = $this->dbmodel->getQueryResults('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk'); 
+			$data['schedData'] = $this->dbmodel->getQueryResults('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk'); 
 									
 			//this is for link on the dates
 			$data['dayEditOptionArr'] = array();
@@ -509,7 +497,7 @@ class Timecard extends MY_Controller {
 			$strcurrrentdate = strtotime($data['currentDate']);
 			for($i=1; $i<=$dEnd; $i++){
 				$dtoday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
-				if($this->access->accessFullHR===true && strtotime($dtoday)>$strcurrrentdate)
+				if($this->access->accessFullHR===true && strtotime($dtoday)>=$strcurrrentdate)
 					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'schedules/customizebyday/'.$data['visitID'].'/'.$dtoday.'/', 'text'=>'Edit Schedule');
 			}
 			
@@ -528,14 +516,18 @@ class Timecard extends MY_Controller {
 				
 				if(isset($yoyo['sched']) && $yoyo['sched']!='On Leave'){
 					if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
-						$sched .= '<div class="daysbox dayEditable '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].'</div>';
+						$sched .= '<div class="daysbox dayEditable '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
 					}else{
-						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].'</div>';
+						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
 					}
 				}
-				
+								
 				if(isset($yoyo['leave'])){
 					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';
+				}
+				
+				if(isset($yoyo['pendingleave'])){
+					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$yoyo['pendingleave'].'</div></a>';
 				}
 				
 				if(isset($yoyo['offset'])){
@@ -604,7 +596,8 @@ class Timecard extends MY_Controller {
 						foreach($query AS $q){						
 							$qtext = '';
 							if(isset($q['leave'])) $qtext .= '<span class="errortext"><b>On Leave</b> ('.$q['leave'].')</span><br/>'; 						
-							if(isset($q['sched']) && $q['sched']!='On Leave') $qtext .= $q['sched'];  
+							if(isset($q['sched']) && $q['sched']!='On Leave') $qtext .= $q['sched'].'<br/>';  
+							if(isset($q['offset'])) $qtext .= '<span class="colorgreen"><b>Offset:</b> '.$q['offset'].'</span><br/>';  
 								
 							if(!empty($qtext))
 								$schedArr[$emp][$q['schedDate']] = $qtext;
@@ -796,7 +789,7 @@ class Timecard extends MY_Controller {
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{
-				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'logDate, empID_fk, CONCAT(fname," ",lname) AS name, username', 'requestUpdate=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
 			}
 		}
@@ -952,6 +945,7 @@ class Timecard extends MY_Controller {
 		}
 				
 		$data['settingArr'] = $this->timeM->getTimeSettings();
+		$data['schedToday'] = $this->timeM->getSchedToday($id, $data['today']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		$data['log'] = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"');
 		
@@ -980,6 +974,7 @@ class Timecard extends MY_Controller {
 		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
 		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
 		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);
+		$data['queryOffset'] = $this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition);
 		$data['queryInProgress'] = $this->timeM->getNumDetailsAttendance($data['today'], 'shiftinprogress', $condition);
 		$data['queryEarlyBird'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyBird', $condition);
 		$data['queryEarlyClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyclockout', $condition);

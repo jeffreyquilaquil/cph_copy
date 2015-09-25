@@ -5,7 +5,7 @@
 	<?php
 		echo $this->textM->formfield('textarea', 'reason', '', 'forminput', 'Type reason for removing schedule...', 'rows="10"');
 		echo $this->textM->formfield('hidden', 'submitType', 'removeSched');
-		echo $this->textM->formfield('submit', '', 'Submit', 'btnclass');
+		echo $this->textM->formfield('submit', '', 'Submit', 'btnclass btngreen');
 	?>
 </form>
 

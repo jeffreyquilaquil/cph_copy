@@ -53,7 +53,7 @@
 			else{				
 				echo '<td '.(($day<$dayToday)?'bgcolor="#ddd"':'').' '.(($day==$dayToday)?'class="divtoday"':'').'>';
 				
-						echo '<div class="daynum positionrelative '.((isset($dayEditOptionArr[$day]))?'cpointer':'').' '.(($day==$dayToday)?'istoday':'').'">'.$day;
+						echo '<div class="daynum positionrelative '.((isset($dayEditOptionArr[$day]))?'cpointer':'daynumnocolor').' '.(($day==$dayToday)?'istoday':'').'">'.$day;
 						
 						if(isset($dayEditOptionArr[$day])){
 							echo '<div class="daycontentmenu">';
