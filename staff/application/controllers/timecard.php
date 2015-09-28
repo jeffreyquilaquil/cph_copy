@@ -127,66 +127,67 @@ class Timecard extends MY_Controller {
 		if(count($staffs)>0){
 			foreach($staffs AS $empID){
 				foreach($empID AS $sdate){
-					$logData = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tlogID, logDate, timeIn, timeOut, breaks, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'tlogID="'.$sdate['logID'].'"');
-					unset($sdate['logID']);
-									
-					//$updateText = '';
-					$updateArr = array();
-					if(empty($logData->breaks)) $breaks = array();
-					else $breaks = json_decode($logData->breaks);
-					
-					if(count($sdate)>0){
-						foreach($sdate AS $d){
-							if($d['type']=='A'){
-								if($logData->timeIn==$date00) $updateArr['timeIn'] = $d['logtime']; //for time in
-								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
-									if(strtotime($d['logtime']) >= strtotime($logData->offsetIn.' '.$settingArr['timeAllowedClockIn'])){
-										$updateArr['offTimeIn'] = $d['logtime']; //for offset
-									}
-								}  
-							} 						
-							
-							else if($d['type']=='Z'){
-								if($logData->timeOut==$date00) $updateArr['timeOut'] = $d['logtime'];
-								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
-									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$settingArr['timeAllowedClockOut']) ){
-										$updateArr['offTimeOut'] = $d['logtime']; //for offset
+					if(!empty($sdate['logID'])){
+						$logData = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tlogID, logDate, timeIn, timeOut, breaks, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'tlogID="'.$sdate['logID'].'"');
+						unset($sdate['logID']);
+						
+						$updateArr = array();
+						if(empty($logData->breaks)) $breaks = array();
+						else $breaks = json_decode($logData->breaks);
+						
+						if(count($sdate)>0){
+							foreach($sdate AS $d){
+								if($d['type']=='A'){
+									if($logData->timeIn==$date00) $updateArr['timeIn'] = $d['logtime']; //for time in
+									else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+										if(strtotime($d['logtime']) >= strtotime($logData->offsetIn.' '.$settingArr['timeAllowedClockIn'])){
+											$updateArr['offTimeIn'] = $d['logtime']; //for offset
+										}
+									}  
+								} 						
+								
+								else if($d['type']=='Z'){
+									if($logData->timeOut==$date00) $updateArr['timeOut'] = $d['logtime'];
+									else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+										if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$settingArr['timeAllowedClockOut']) ){
+											$updateArr['offTimeOut'] = $d['logtime']; //for offset
+										}
 									}
 								}
-							}
-							else array_push($breaks, $d['logtime']);
-							
-							$logIDInserted[] = $d['baselogid'];	
-						}
-					}
-					
-					
-					//if timeout but missing break in
-					if(isset($updateArr['timeOut']) && count($breaks)%2!=0) 
-						array_push($breaks, $updateArr['timeOut']);
-					
-					if(count($breaks)%2==0){
-						$compute = 0;
-						$timebreaks = 0;
-						foreach($breaks AS $b){
-							if($compute==0) $compute = strtotime($b);
-							else{
-								$timebreaks += strtotime($b) - $compute;
-								$compute = 0;
+								else array_push($breaks, $d['logtime']);
+								
+								$logIDInserted[] = $d['baselogid'];	
 							}
 						}
-						$updateArr['timeBreak'] = $this->textM->convertTimeToMinHours($timebreaks,true);
+						
+						
+						//if timeout but missing break in
+						if(isset($updateArr['timeOut']) && count($breaks)%2!=0) 
+							array_push($breaks, $updateArr['timeOut']);
+						
+						if(count($breaks)%2==0){
+							$compute = 0;
+							$timebreaks = 0;
+							foreach($breaks AS $b){
+								if($compute==0) $compute = strtotime($b);
+								else{
+									$timebreaks += strtotime($b) - $compute;
+									$compute = 0;
+								}
+							}
+							$updateArr['timeBreak'] = $this->textM->convertTimeToMinHours($timebreaks,true);
+						}
+						
+						if(!empty($breaks)){					
+							$updateArr['numBreak'] = count($breaks);
+							$updateArr['breaks'] = json_encode($breaks);
+						}
+						
+						if(isset($updateArr['timeOut'])) $withTimeOut = true;
+																					
+						if(!empty($updateArr))
+							$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$logData->tlogID), $updateArr);
 					}
-					
-					if(!empty($breaks)){					
-						$updateArr['numBreak'] = count($breaks);
-						$updateArr['breaks'] = json_encode($breaks);
-					}
-					
-					if(isset($updateArr['timeOut'])) $withTimeOut = true;
-																				
-					if(!empty($updateArr))
-						$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$logData->tlogID), $updateArr);				
 				}
 			}
 		}
