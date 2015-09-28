@@ -19,7 +19,6 @@
 		</form>'; */
 	}
 	
-	
 		
 	if(!isset($current)) $current = '';	
 ?>

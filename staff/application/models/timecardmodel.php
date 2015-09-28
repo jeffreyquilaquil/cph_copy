@@ -258,33 +258,33 @@ class Timecardmodel extends CI_Model {
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
 			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
 		}else if($type=='leave'){
-			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1', 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
+			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
 		}else if($type=='offset'){			
-			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1', 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
+			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
 		}else if($type=='shiftinprogress'){
 			$flds = ', schedIn, schedOut, timeIn';
-			$condition = ' AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
 		}else if($type=='earlyBird'){
 			$hourEarly = '02:00:00'; //2 hours
 			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(schedIn), TIME(timeIn)) AS hourEarly';
-			$condition = ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(schedIn), TIME(timeIn))>="'.$hourEarly.'"';			
+			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(schedIn), TIME(timeIn))>="'.$hourEarly.'"';			
 		}else if($type=='noclockout'){
 			$flds = ', schedOut, schedIn, timeIn';
-			$condition = ' AND schedOut!="0000-00-00 00:00:00" AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'"';	
+			$condition .= ' AND schedOut!="0000-00-00 00:00:00" AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'"';	
 		}else if($type=='earlyclockout'){
 			$flds = ', schedOut, timeOut, TIMEDIFF(TIME(schedOut), TIME(timeOut)) AS hourEarly';
-			$condition = ' AND schedOut!="0000-00-00 00:00:00" AND timeOut!="0000-00-00 00:00:00" AND schedOut>timeOut';
+			$condition .= ' AND schedOut!="0000-00-00 00:00:00" AND timeOut!="0000-00-00 00:00:00" AND schedOut>timeOut';
 		}else if($type=='late'){
 			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(timeIn), TIME(schedIn)) AS hourLate';
-			$condition = ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(timeIn), TIME(schedIn))>"00:01:00"';		
+			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(timeIn), TIME(schedIn))>"00:01:00"';		
 		}else if($type=='overbreak'){
 			$over = '01:30:00';
 			$flds = ', schedOut, timeBreak';
-			$condition = ' AND timeBreak>"'.$over.'"';	
+			$condition .= ' AND timeBreak>"'.$over.'"';	
 		}else if($type=='unpublished'){
-			$condition = ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
+			$condition .= ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
-			$condition = ' AND published=1';	
+			$condition .= ' AND published=1';	
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');

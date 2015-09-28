@@ -373,7 +373,7 @@ class Timecard extends MY_Controller {
 					$ids .= $m->empID.',';
 				endforeach;
 				if(!empty($ids))
-					$condition = ' AND empID IN ('.rtrim($ids, ',').')';
+					$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
 			}
 			
 			if($data['currentDate']==$data['today']){
@@ -973,9 +973,9 @@ class Timecard extends MY_Controller {
 				$ids .= $m->empID.',';
 			endforeach;
 			if(!empty($ids))
-				$condition = ' AND empID IN ('.rtrim($ids, ',').')';
+				$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
 		}
-				
+		
 		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
 		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
 		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);
