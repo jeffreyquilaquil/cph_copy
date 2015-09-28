@@ -680,7 +680,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			echo '
 				<tr>	
 					<td>NTE</td>
-					<td>'.$dis->type.'</td>
+					<td>'.ucfirst($dis->type).'</td>
 					<td>'.$this->textM->ordinal($dis->offenselevel).' Offense</td>
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
