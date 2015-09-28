@@ -99,14 +99,16 @@ class Timecardmodel extends CI_Model {
 		if($single===true) $holidayCondition = '(holidayDate LIKE "'.date('0000-m-d', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-d', strtotime($dateStart)).'%"';
 		else $holidayCondition = '(holidayDate LIKE "'.date('0000-m-', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-', strtotime($dateStart)).'%"';
 		
-		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidayWork, holidayDate', $holidayCondition);		
+		//get staff holiday schedule PH-0 US-1
+		$myHoliday = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$empID.'"');
+		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, phWork, usWork, holidayDate', $holidayCondition);		
 		foreach($queryHoliday AS $holiday){
 			$day = date('j', strtotime($holiday->holidayDate));
 			$dayArr[$day]['holiday'] = $holiday->holidayName;
 			$dayArr[$day]['holidayType'] = $holidayTypeArr[$holiday->holidayType];
 			$dayArr[$day]['schedDate'] = $year.date('-m-d', strtotime($holiday->holidayDate));			
 			
-			if($holiday->holidayWork==0 && !empty($dayArr[$day]['sched']))
+			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==1 && $myHoliday==0) || ($holiday->usWork==1 && $myHoliday==1)))
 				unset($dayArr[$day]['sched']);
 		}
 				

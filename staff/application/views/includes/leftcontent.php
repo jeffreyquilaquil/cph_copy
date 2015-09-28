@@ -2,11 +2,13 @@
 <center>
 <?php
 if($this->user!=false && $this->uri->segment(1)=='schedules'){
+	if(isset($_GET['page'])) $page = $_GET['page'];
+	else $page = 'customtime';
 	echo '<ul id="leftMenu" style="margin:0px;">';
-		echo '<li><a id="customtime" class="schedLI current" href="#" onClick="schedChange(this)">Custom Time</a></li>';
-		echo '<li><a id="customsched" class="schedLI" href="#" onClick="schedChange(this)">Custom Schedules</a></li>';
-		echo '<li><a id="schedSettings" class="schedLI" href="#" onClick="schedChange(this)">Time Settings</a></li>';
-		echo '<li><a id="holeventsched" class="schedLI" href="#" onClick="schedChange(this)">Holiday/Event Schedules</a></li>';
+		echo '<li><a id="customtime" class="schedLI '.(($page=='customtime')?'current':'').'" href="#" onClick="schedChange(this)">Custom Time</a></li>';
+		echo '<li><a id="customsched" class="schedLI '.(($page=='customsched')?'current':'').'" href="#" onClick="schedChange(this)">Custom Schedules</a></li>';
+		echo '<li><a id="schedSettings" class="schedLI '.(($page=='schedSettings')?'current':'').'" href="#" onClick="schedChange(this)">Time Settings</a></li>';
+		echo '<li><a id="holeventsched" class="schedLI '.(($page=='holeventsched')?'current':'').'" href="#" onClick="schedChange(this)">Holiday/Event Schedules</a></li>';
 	echo '</ul>';
 ?>
 	<script type="text/javascript">

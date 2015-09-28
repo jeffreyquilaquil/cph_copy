@@ -1,7 +1,11 @@
+<?php
+	if(isset($_GET['page'])) $page = $_GET['page'];
+	else $page = 'customtime';
+?>
 <h2>Manage Schedule Settings</h2><hr/>
 
 <!-------------------------- START Custom Time ------------------------>
-<div id="customtimeDIV" class="schedDiv">	
+<div id="customtimeDIV" class="schedDiv <?= (($page!='customtime')?'hidden':'') ?>">	
 	<div style="width:48%; float:left;">
 		<h3>Add Time Category</h3>
 		<table>
@@ -99,7 +103,7 @@
 <!-------------------------- END Custom Time ------------------------>
 
 <!-------------------------- TIME SETTINGS ------------------------>
-<div id="schedSettingsDIV" class="schedDiv hidden">
+<div id="schedSettingsDIV" class="schedDiv <?= (($page!='schedSettings')?'hidden':'') ?>">
 <button id="btnsettingupdate" class="btnclass btnorange" style="float:right; margin-top:-45px;">Update</button>
 <table class="tableInfo">
 <?php	
@@ -133,7 +137,7 @@
 <!-------------------------- END TIME SETTINGS ------------------------>
 
 <!-------------------------- Start Custom Schedules ------------------------>
-<div id="customschedDIV" class="schedDiv hidden">
+<div id="customschedDIV" class="schedDiv <?= (($page!='customsched')?'hidden':'') ?>">
 	<div id="addCustomSchedDiv" class="hidden">	
 		<h3>Add Custom Schedule</h3><hr class="gray"/>
 		Name&nbsp;&nbsp;&nbsp;<input id="schedname" type="text" class="padding5px" style="width:250px;"/><br/><br/>
@@ -220,39 +224,47 @@
 <!-------------------------- END Custom Schedules ------------------------>
 
 <!-------------------------- Start of Holiday/Event Schedule ------------------------>
-<div id="holeventschedDIV" class="schedDiv hidden" style="margin-top:15px;">
+<div id="holeventschedDIV" class="schedDiv <?= (($page!='holeventsched')?'hidden':'') ?>" style="margin-top:15px;">
 	<div id="addHolidaySchedDiv" class="hidden">
 		<?php $this->load->view('v_schedule/v_holiday'); ?>
 	</div>
 	<h3>All Holiday/Event Schedules
 		<button id="addHolidaybtn" class="btnclass btngreen" style="float:right; margin-top:-10px;" onClick="$(this).hide(); $('#addHolidaySchedDiv').show();">+ Add Holiday/Event Schedule</button>	
 	</h3>
-	<table class="tableInfo">
-		<tr class="trlabel">
-			<td>Date</td>
-			<td>Weekday</td>
-			<td>Name</td>
-			<td>Type</td>
-			<td>Repetition</td>
-			<td>Work Day?</td>
-			<td>Premium Pay</td>
-			<td><br/></td>
-		</tr>
 	<?php
-		foreach($holidaySchedArr AS $hol){
-			echo '<tr class="holidaycolor_'.$hol->holidayType.'">
-					<td>'.date('F d', strtotime($hol->holidayDate)).'</td>
-					<td>'.date('l', strtotime($hol->holidayDate)).'</td>
-					<td>'.$hol->holidayName.'</td>
-					<td>'.$allDayTypes[$hol->holidayType].'</td>
-					<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
-					<td>'.(($hol->holidayWork==0)?'No':'Yes').'</td>
-					<td>'.$hol->holidayPremium.'%</td>
-					<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
-				</tr>';
-		}
+		if(count($holidaySchedArr)==0){
+			echo '<p class="errortext">No Holiday Schedule yet.</p>';
+		}else{	
 	?>
-	</table>
+		<table class="tableInfo">
+			<tr class="trlabel">
+				<td>Date</td>
+				<td>Weekday</td>
+				<td>Name</td>
+				<td>Type</td>
+				<td>Repetition</td>
+				<td>PH Work Day?</td>
+				<td>US Work Day?</td>
+				<td>Premium Pay</td>
+				<td><br/></td>
+			</tr>
+		<?php
+			foreach($holidaySchedArr AS $hol){
+				echo '<tr>
+						<td>'.date('F d', strtotime($hol->holidayDate)).'</td>
+						<td>'.date('l', strtotime($hol->holidayDate)).'</td>
+						<td>'.$hol->holidayName.'</td>
+						<td>'.$allDayTypes[$hol->holidayType].'</td>
+						<td>'.(($hol->holidaySched==0)?'Yearly':'This Year Only').'</td>
+						<td>'.(($hol->phWork==0)?'No':'Yes').'</td>
+						<td>'.(($hol->usWork==0)?'No':'Yes').'</td>
+						<td>'.$hol->holidayPremium.'%</td>
+						<td><a href="#" onClick="editHoliday('.$hol->holidayID.', this)"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png"/></a></td>
+					</tr>';
+			}
+		?>
+		</table>
+	<?php } ?>
 </div>
 <!-------------------------- End of Holiday/Event Schedule ------------------------>
 
@@ -269,8 +281,8 @@
 				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtimecategory',name:$('#catName').val()}, 
 				function(){
 					$('#catName').val('');
-					location.reload(true);
 					alert('Category name has been added.');	
+					location.href='<?= $this->config->base_url().'schedules/?page=customtime' ?>';
 				});
 			}
 		});
@@ -281,7 +293,7 @@
 			}else{
 				$(this).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
 				$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'addtime',name:$('#timeName').val(),start:$('#timestart').val(),end:$('#timeend').val(),timeHours:$('#timeHours').val(),cat:$('#timecategory').val()}, function(){
-					location.reload(true);
+					location.href='<?= $this->config->base_url().'schedules/?page=customtime' ?>';
 					alert('Time has been added.');	
 					$('#timecategory').val('');
 					$('#timeName').val('');
@@ -315,7 +327,7 @@
 					friday:$('option:selected', '#friday').data('id'),
 					saturday:$('option:selected', '#saturday').data('id')
 				}, function(){
-					location.reload(true);	
+					location.href='<?= $this->config->base_url().'schedules/?page=customsched' ?>';
 					alert('Custom Schedule has been added.');							
 				});
 			}
@@ -337,7 +349,7 @@
 	function deleteTime(id){
 		if(confirm('Are you sure you want to delete this time?')){			
 			$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'deleteTime',id:id}, function(){
-				location.reload(true);
+				location.href='<?= $this->config->base_url().'schedules/?page=customtime' ?>';
 				alert('Time has been deleted.');				
 			});
 		}
@@ -355,7 +367,7 @@
 		$('#btn'+id).html('<img src="<?= $this->config->base_url() ?>css/images/small_loading.gif" width="20px"/>');
 		$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'updateTime',id:id,timeName:$('#editTime'+id+' input[name="timeName"]').val(),start:$('#editTime'+id+' input[name="start"]').val(),end:$('#editTime'+id+' input[name="end"]').val(),timeHours:$('#editTime'+id+' input[name="timeHours"]').val()}, function(){
 			$('#editTime'+id).addClass('hidden');
-			location.reload(true);
+			location.href='<?= $this->config->base_url().'schedules/?page=customtime' ?>';
 			alert('Time has been updated.');
 		});
 	}
@@ -406,7 +418,7 @@
 				saturday: $('option:selected', '.ctimetredit'+id+' #saturday').data('id')
 			}, function(){
 				alert('Custom schedule has been updated.');
-				location.reload(true);
+				location.href='<?= $this->config->base_url().'schedules/?page=customsched' ?>';
 			});
 		}
 	}
@@ -416,7 +428,7 @@
 			$('.ctimetr'+id+' .loading').removeClass('hidden');
 			$('.ctimetr'+id+' .una').addClass('hidden');
 			$.post('<?= $this->config->item('career_uri') ?>',{ submitType:'deleteCustomSched',id:id}, function(){
-				location.reload(true);
+				location.href='<?= $this->config->base_url().'schedules/?page=customsched' ?>';
 				alert('Custom schedule has been deleted.');				
 			});
 		}

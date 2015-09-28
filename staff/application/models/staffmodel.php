@@ -499,7 +499,7 @@ class Staffmodel extends CI_Model {
 					<td width="30%">'.$this->textM->constantText('txt_'.$fld).'</td>
 					<td class="td'.$fld.'">';
 				if($t==true){	
-					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'staffHolidaySched', 'levelID_fk', 'terminationType', 'taxstatus'))){
+					if(in_array($fld,array('gender', 'maritalStatus', 'supervisor', 'title', 'empStatus', 'active', 'office', 'staffHolidaySched', 'levelID_fk', 'terminationType', 'taxstatus', 'shiftSched'))){
 						$disp .= '<select id="'.$fld.'" class="forminput '.$c.'input hidden '.$aclass.'">';
 						$disp .= '<option value=""></option>';
 						if($fld=='supervisor'){
@@ -608,6 +608,9 @@ class Staffmodel extends CI_Model {
 		}else if($type=='staffHolidaySched'){
 			$schedLoc = $this->textM->constantArr('staffHolidaySched');
 			$was = $schedLoc[$tval];
+		}else if($type=='shiftSched'){
+			$shft = $this->textM->constantArr('shiftSched');
+			$was = $shft[$tval];
 		}else 
 			$was = $this->textM->convertDecryptedText($type, $tval);
 			

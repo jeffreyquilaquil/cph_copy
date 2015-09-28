@@ -192,6 +192,7 @@
 			
 			
 			echo $this->staffM->displayInfo('jdetails', 'shift', $row->shift, true, 'Ex. 07:00am - 04:00pm Mon-Fri');
+			echo $this->staffM->displayInfo('jdetails', 'shiftSched', $row->shiftSched, true);
 						
 			echo $this->staffM->displayInfo('jdetails', 'supervisor', $row->supervisor, true);			
 			echo $this->staffM->displayInfo('jdetails', 'department', $row->department, false);

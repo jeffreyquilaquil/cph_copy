@@ -192,6 +192,7 @@ $(function () {
 				office:$('#office').val(),
 				holidaySched:$('#holidaySched').val(),
 				shift:$('#shift').val(),
+				shiftSched:$('#shiftSched').val(),
 				startDate:$('#startDate').val(),
 				supervisor:$('#supervisor').val(),
 				title:$('#title').val(),
@@ -202,8 +203,8 @@ $(function () {
 				active:$('#active').val(),
 				levelID_fk:$('#levelID_fk').val(),
 				terminationType:$('#terminationType').val()
-			},function(d){ alert(d);
-				//window.location.reload();
+			},function(){
+				window.location.reload();
 			});
 		}
 	});

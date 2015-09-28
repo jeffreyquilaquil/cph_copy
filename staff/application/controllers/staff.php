@@ -513,6 +513,9 @@ class Staff extends MY_Controller {
 									}else if($k=='staffHolidaySched'){
 										$schedLoc = $this->textM->constantArr($k);
 										$o = $schedLoc[$orig[$k]];
+									}else if($k=='shiftSched'){
+										$shf = $this->textM->constantArr($k);
+										$o = $shf[$orig[$k]];
 									}else{
 										$o = $orig[$k];
 										if($o=='') $o = 'none';

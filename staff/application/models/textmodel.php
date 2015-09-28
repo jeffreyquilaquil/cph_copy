@@ -392,6 +392,7 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_office') $txt = 'Office Branch';
 		else if($t=='txt_staffHolidaySched') $txt = 'Holiday Schedule';
 		else if($t=='txt_shift') $txt = 'Shift Sched';
+		else if($t=='txt_shiftSched') $txt = 'Shift Sched for Inventory';
 		else if($t=='txt_startDate') $txt = 'Start Date';
 		else if($t=='txt_idNum') $txt = 'Payroll ID';
 		else if($t=='txt_supervisor') $txt = 'Supervisor';
@@ -517,6 +518,11 @@ class Textmodel extends CI_Model {
 			$arr = array(
 						0=>'Philippine Holidays',
 						1=>'US Holidays'
+					);	
+		}else if($a=='shiftSched'){
+			$arr = array(
+						0=>'Morning Shift',
+						1=>'Night Shift'
 					);	
 		}else if($a=='terminationType'){
 			$arr = array(

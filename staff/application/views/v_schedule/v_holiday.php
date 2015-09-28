@@ -42,9 +42,22 @@
 		?></td>
 	</tr>	
 	<tr>
-		<td>Work Day?</td>
+		<td>PH Sched Work Day?</td>
 		<td>
-			<select id="holidayWork" class="forminput" required>
+			<select id="phWork" class="forminput" required>
+			<?php
+				$yesno01 = $this->textM->constantArr('yesno01');
+				foreach($yesno01 AS $y=>$yval){
+					echo '<option value="'.$y.'">'.$yval.'</option>';
+				}
+			?>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td>US Sched Work Day?</td>
+		<td>
+			<select id="usWork" class="forminput" required>
 			<?php
 				$yesno01 = $this->textM->constantArr('yesno01');
 				foreach($yesno01 AS $y=>$yval){
@@ -82,7 +95,8 @@
 			$('#day').val(1);
 			$('#year').val('0000');
 			$('#holidaySched').val(0);
-			$('#holidayWork').val(0);
+			$('#phWork').val(0);
+			$('#usWork').val(0);
 			parent.$.colorbox.close();
 		});
 		
@@ -110,7 +124,8 @@
 				holidayName:$('#holidayName').val(),
 				holidayType:$('#holidayType').val(),
 				holidaySched:$('#holidaySched').val(),
-				holidayWork:$('#holidayWork').val(),
+				phWork:$('#phWork').val(),
+				usWork:$('#usWork').val(),
 				holidayPremium:$('input[name="holidayPremium"]').val(),
 				holidayDate:$('#year').val()+'-'+$('#month').val()+'-'+$('#day').val()
 			}, 
@@ -136,11 +151,12 @@
 			$('#holidayID').val(id);
 			$('#holidayName').val(dd[0]);
 			$('#holidayType').val(dd[1]);
-			$('#holidayWork').val(dd[2]);
-			$('input[name="holidayPremium"]').val(dd[4]);
+			$('#phWork').val(dd[2]);
+			$('#usWork').val(dd[3]);
+			$('input[name="holidayPremium"]').val(dd[5]);
 			
 			//for date
-			yy = dd[3].split('-');
+			yy = dd[4].split('-');
 			$('#year').val(yy[0]);
 			$('#month').val(parseInt(yy[1]));
 			$('#day').val(parseInt(yy[2]));

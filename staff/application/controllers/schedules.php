@@ -100,7 +100,7 @@ class Schedules extends MY_Controller {
 					$addUp = 'updateData';					
 					$note = 'You deleted custom schedule '.$_POST['id'].'.';
 				}else if($_POST['submitType']=='getHolidayData'){
-					$beau = $this->dbmodel->getSingleInfo('staffHolidays', 'holidayName, holidayType, holidayWork, holidayDate, holidayPremium', 'holidayID="'.$_POST['id'].'"');
+					$beau = $this->dbmodel->getSingleInfo('staffHolidays', 'holidayName, holidayType, phWork, usWork, holidayDate, holidayPremium', 'holidayID="'.$_POST['id'].'"');
 					foreach($beau AS $k){
 						echo $k.'|';
 					}
@@ -126,7 +126,7 @@ class Schedules extends MY_Controller {
 			$data['timecategory'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'category=0 AND status=1');		
 			$data['alltime'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 'status=1');
 			$data['allCustomSched'] = $this->dbmodel->getQueryResults('tcCustomSched', '*', 'status!=2');
-			$data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, holidayWork, holidayPremium, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
+			$data['holidaySchedArr'] = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, holidaySched, phWork, usWork, holidayPremium, CONCAT("'.date('Y').'", SUBSTRING( holidayDate,5)) AS holidayDate', 'holidaySched=0 OR (holidaySched=1 AND holidayDate LIKE "'.date('Y').'%")', '', 'holidayDate');
 			$data['schedTypeArr'] = $this->textM->constantArr('schedType');
 			$data['allDayTypes'] = $this->textM->constantArr('holidayTypes');	
 			$data['weekdayArray'] = $this->textM->constantArr('weekdayArray');	
