@@ -140,7 +140,7 @@ if($this->access->accessFullHR==true){
 				<td>'.$this->textM->ordinal($a->offenselevel).' Offense</td>
 				<td>'.date('F d, Y', strtotime($a->dateissued)).'</td>
 				<td>'.$a->issuerName.'</td>
-				<td>'.$a->sanction.'</td>
+				<td>'.(($a->status==3)?'None. Response Accepted':$a->sanction).'</td>
 				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$a->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>
 			</tr>
 		';

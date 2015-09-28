@@ -684,13 +684,18 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>'.$this->textM->ordinal($dis->offenselevel).' Offense</td>
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
-			if($dis->status==0)
-				echo '<td><a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
-			else
-				echo '<td>Not yet generated.</td>';
-			echo 	'<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-				</tr>
-			';
+				echo '<td>';
+					if($dis->status==1) echo 'Not yet generated.';
+					else if(!empty($dis->caruploaded)){
+						$xc = explode('|', $dis->caruploaded);
+						if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
+							echo '<a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+						}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+					}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+				echo '</td>';
+			
+				echo '<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>';
+			echo '</tr>';
 		endforeach;		
 	?>
 		
