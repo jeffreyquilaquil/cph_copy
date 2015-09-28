@@ -5,7 +5,7 @@
 	if($this->user!=false && $this->user->empID!=0){
 	
 	//if($this->session->userdata('testing')==true){
-	if($this->config->item('devmode')==true){
+	if($this->config->item('devmode')==true || $this->session->userdata('testing')==true){
 		echo $this->user->name.' '.$this->user->empID.'---'.$this->user->idNum.'<br/>';
 		print_r($this->access->myaccess);
 		echo '<form action="'.$this->config->base_url().'hello/" method="POST">

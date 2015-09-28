@@ -192,6 +192,7 @@ class Timecard extends MY_Controller {
 			}
 		}
 		
+		//change value of isInserted to 1 meaning log is inserted
 		if(count($logIDInserted)>0){
 			$this->dbmodel->updateQueryText('tcTimelogs', 'isInserted="1"', 'logID IN ('.implode(',', $logIDInserted).')');
 		}
@@ -206,6 +207,7 @@ class Timecard extends MY_Controller {
 	/*********
 		This cron will run every 2 hours to update records in tcAttendance
 		check previous date if time is less than or equal to 10AM today
+		and publish data
 	*********/
 	public function cronDailyAttendanceRecord(){
 		$strtoday10 = strtotime(date('Y-m-d 11:00:00'));

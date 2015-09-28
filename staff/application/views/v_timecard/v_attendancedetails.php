@@ -79,16 +79,7 @@
 
 
 	<div style="width:48%; float:left;">
-	<?php
-		if($today==$currentDate && count($queryInProgress)>0){
-			echo '<b>Shift In Progress: ('.count($queryInProgress).')</b>';
-			echo '<ul>';
-				foreach($queryInProgress AS $inprogress){
-					echo '<li><a href="'.$this->config->base_url().'timecard/'.$inprogress->empID_fk.'/timelogs/" target="_blank">'.$inprogress->name.'</a> In: '.date('h:i a', strtotime($inprogress->timeIn)).'</li>';
-				}
-			echo '</ul>';
-		}
-		
+	<?php		
 		if(count($queryEarlyBird)>0){		
 			echo '<b>Early Birds: ('.count($queryEarlyBird).')</b>';
 			echo '<ul>';
@@ -122,7 +113,16 @@
 					}
 				}
 			echo '</ul>';
-		}	
+		}
+
+		if($today==$currentDate && count($queryInProgress)>0){
+			echo '<b>Shift In Progress: ('.count($queryInProgress).')</b>';
+			echo '<ul>';
+				foreach($queryInProgress AS $inprogress){
+					echo '<li><a href="'.$this->config->base_url().'timecard/'.$inprogress->empID_fk.'/timelogs/" target="_blank">'.$inprogress->name.'</a> In: '.date('h:i a', strtotime($inprogress->timeIn)).'</li>';
+				}
+			echo '</ul>';
+		}
 	?>
 	</div>
 </div>

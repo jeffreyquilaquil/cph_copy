@@ -326,6 +326,9 @@ class Timecardmodel extends CI_Model {
 		}
 	}
 	
+	/********
+		If records no discrepancies, insert to update table
+	********/
 	public function publishLogs($today){
 		$condition = 'published=0';
 		$condition .= ' AND logDate="'.$today.'"';
