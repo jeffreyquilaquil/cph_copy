@@ -227,6 +227,8 @@ class Timecard extends MY_Controller {
 		if(count($staffToday)>0){
 			$this->timeM->publishLogs($today);		
 		}
+		
+		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'cronDailyAttendanceRecord', 'cronDailyAttendanceRecord');
 	}
 		
 	
