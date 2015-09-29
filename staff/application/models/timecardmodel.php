@@ -45,7 +45,8 @@ class Timecardmodel extends CI_Model {
 			else $dEnd = $ival;
 		}else{
 			$ival = date('j', strtotime($dateStart));
-			$dEnd = date('t', strtotime($dateStart));
+			//$dEnd = date('t', strtotime($dateStart));
+			$dEnd = date('j', strtotime($dateEnd));
 		}
 		
 		//check for template schedule
@@ -54,8 +55,8 @@ class Timecardmodel extends CI_Model {
 		$queryMainSched = $this->dbmodel->getQueryResults('tcStaffSchedules', 
 							'schedID, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 
 							'empID_fk="'.$empID.'" AND '.$this->timeM->getTodayBetweenSchedCondition($dateStart, $dateEnd), 
-							'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate');				
-				
+							'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate');
+							
 		//if dateStart is greater than dateEnd
 		if($ival>=$dEnd){			
 			foreach($queryMainSched AS $sched){
@@ -71,8 +72,7 @@ class Timecardmodel extends CI_Model {
 							
 							if($sched->workhome==1) $dayArr[$i]['workhome'] = true;	
 						}
-					}
-					
+					}					
 					$start = strtotime($dtoday.' +1 day');
 				}
 			}
@@ -92,7 +92,7 @@ class Timecardmodel extends CI_Model {
 					}
 				}
 			}
-		}		
+		}	
 		
 		//check for holidays
 		$holidayTypeArr = $this->textM->constantArr('holidayTypes');
@@ -270,6 +270,9 @@ class Timecardmodel extends CI_Model {
 			$hourEarly = '02:00:00'; //2 hours
 			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(schedIn), TIME(timeIn)) AS hourEarly';
 			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(schedIn), TIME(timeIn))>="'.$hourEarly.'"';			
+		}else if($type=='noclockin'){
+			$flds = ', schedOut, schedIn, timeIn, timeOut';
+			$condition .= ' AND schedIn!="0000-00-00 00:00:00" AND schedOut!="0000-00-00 00:00:00" AND timeIn="0000-00-00 00:00:00" AND timeOut!="0000-00-00 00:00:00"';	
 		}else if($type=='noclockout'){
 			$flds = ', schedOut, schedIn, timeIn';
 			$condition .= ' AND schedOut!="0000-00-00 00:00:00" AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'"';	
@@ -309,6 +312,7 @@ class Timecardmodel extends CI_Model {
 			$cntEarlyBird = count($this->timeM->getNumDetailsAttendance($today, 'earlyBird'));
 			$cntOverBreak = count($this->timeM->getNumDetailsAttendance($today, 'overbreak'));
 			$cntEarlyClockOut = count($this->timeM->getNumDetailsAttendance($today, 'earlyclockout'));			
+			$cntNoClockIn = count($this->timeM->getNumDetailsAttendance($today, 'noclockin'));
 			$cntNoClockOut = count($this->timeM->getNumDetailsAttendance($today, 'noclockout'));
 			$cntPublished = count($this->timeM->getNumDetailsAttendance($today, 'published'));
 			$cntUnPublished = count($this->timeM->getNumDetailsAttendance($today, 'unpublished'));
@@ -319,6 +323,7 @@ class Timecardmodel extends CI_Model {
 			if($attLog->earlyIn!=$cntEarlyBird) $upArr['earlyIn'] = $cntEarlyBird;
 			if($attLog->overBreak!=$cntOverBreak) $upArr['overBreak'] = $cntOverBreak;
 			if($attLog->earlyOut!=$cntEarlyClockOut) $upArr['earlyOut'] = $cntEarlyClockOut;
+			if($attLog->missingClockIn!=$cntNoClockIn) $upArr['missingClockIn'] = $cntNoClockIn;
 			if($attLog->missingClockOut!=$cntNoClockOut) $upArr['missingClockOut'] = $cntNoClockOut;
 			if($attLog->published!=$cntPublished) $upArr['published'] = $cntPublished;
 			if($attLog->unpublished!=$cntUnPublished) $upArr['unpublished'] = $cntUnPublished;
@@ -342,7 +347,6 @@ class Timecardmodel extends CI_Model {
 		$condition .= ' AND timeBreak<"01:31:00"'; //time break less than 1 hour 30 mins
 		$condition .= ' AND timeOut>schedOut'; //time out greater than sched out
 		$condition .= ' AND timeIn<=schedIn'; //not late
-		//$condition .= ' AND offTimeIn!="0000-00-00 00:00:00"'; //for offset
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour', $condition);
 		
@@ -364,6 +368,10 @@ class Timecardmodel extends CI_Model {
 				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'published=1', 'tlogID IN('.rtrim($logIDs, ',').')');
 		}
 		
+		echo '<pre>';
+		print_r($query);
+		echo '</pre>';
+		
 		//update tcAttendance Records
 		$this->timeM->cntUpdateAttendanceRecord($today);		
 	}
@@ -384,7 +392,7 @@ class Timecardmodel extends CI_Model {
 	public function insertToDailyLogs($empID, $today, $schedToday){
 		$logID = '';
 		$todaySmall = date('j', strtotime($today));
-		
+	
 		if(isset($schedToday[$todaySmall])){
 			$sArr = $schedToday[$todaySmall];	
 			

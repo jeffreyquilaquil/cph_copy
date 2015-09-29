@@ -17,20 +17,25 @@
 		}
 	echo '</h3><hr/>';
 	
+	///LINK TO TIMELOG PAGE
+	echo '<a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone floatright" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
+	
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
 		if(isset($schedToday['sched'])) echo '<b>Schedule Today:</b> '.$schedToday['sched'].'<br/>';
 		if(isset($schedToday['offset'])) echo '<b>Offset Schedule:</b> '.$schedToday['offset'].'<br/>';
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
-	}
+	}	
 	
 	
-	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->published==0)))
+	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->published==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
 		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Set Schedule</a>';
 
 
 	if(count($log)==0){
-		echo '<p class="errortext">No Logs Recorded.</p>';
+		if(isset($schedToday['sched']) && $schedToday['sched']=='On Leave' && isset($schedToday['leaveID'])){
+			echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';
+		}else echo '<p class="errortext">No Logs Recorded.</p>';
 	}else{		
 		//PUBLISH
 		$timeDeduction = 0;
@@ -58,9 +63,10 @@
 				echo '</td></tr>';
 			}
 			
-			if($log->timeBreak>'01:30:00'){
-				echo '<tr><td>Over Break</td><td>';						
-					$overSec = (strtotime($log->timeBreak) - strtotime('TODAY')) - $settingArr['overBreak'];
+			$secBreak = $this->textM->convertTimeToSec($log->timeBreak);
+			if($secBreak > $settingArr['overBreak']){
+				echo '<tr><td>Over Break</td><td>';
+					$overSec = $secBreak - $settingArr['overBreak'];
 					$overHour = $this->timeM->hourDeduction($overSec);
 					
 					$timeDeduction += $overHour;
@@ -82,7 +88,7 @@
 			
 			if($timeDeduction>0){
 				$timePaid -= $timeDeduction;
-				echo '<tr><td>Total Deduction</td><td><b class="errortext">'.$timeDeduction.' Hours</b></td></tr>';
+				echo '<tr><td>Total Deduction</td><td><b class="errortext">'.$timeDeduction.' Hour/s</b></td></tr>';
 			} 
 				
 			if($timePaid<0 || ($log->timeIn=='0000-00-00 00:00:00' && $log->timeOut=='0000-00-00 00:00:00')) $timePaid = 0;
@@ -189,7 +195,7 @@
 						if($out%2!=0) echo ' <b class="errortext">MISSING BREAK IN</b><br/>';
 						
 						echo '<br/>Total Breaks: <b>'.trim($this->textM->convertTimeToStr($log->timeBreak)).'</b>';
-						if((strtotime($log->timeBreak) - strtotime('TODAY')) > $settingArr['overBreak']) echo ' <b class="errortext">OVER BREAK</b>';
+						if($log->timeBreak>'01:30:00') echo ' <b class="errortext">OVER BREAK</b>';
 					}else{
 						echo '<b class="errortext">NO BREAKS</b>';
 					}

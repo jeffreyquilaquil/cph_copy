@@ -136,8 +136,15 @@ class Textmodel extends CI_Model {
 	}
 	
 	function convertTimeToStr($time){
-		$basetime = (strtotime($time) - strtotime('TODAY'));
+		$basetime = $this->convertTimeToSec($time);
 		return $this->convertTimeToMinHours($basetime);
+	}
+	
+	//accepts HH:MM:SS
+	function convertTimeToSec($time){
+		list($hours,$mins,$secs) = explode(':',$time);
+		$seconds = mktime($hours,$mins,$secs) - mktime(0,0,0);
+		return $seconds;
 	}
 	
 	function convertTimeToMinStr($time){

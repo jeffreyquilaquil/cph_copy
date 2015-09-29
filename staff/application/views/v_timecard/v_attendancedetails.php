@@ -44,6 +44,19 @@
 			echo '</ul>';
 		}
 		
+		if(count($queryNoClockIn)>0){	
+			echo '<b>No Clock In: ('.count($queryNoClockIn).')</b>';
+			echo '<ul>';
+				foreach($queryNoClockIn AS $noin){
+					echo '<li>';
+						echo '<a href="'.$this->config->base_url().'timecard/'.$noin->empID_fk.'/timelogs/" target="_blank">'.$noin->name.'</a> Out: '.date('h:i a', strtotime($noin->timeOut));
+						if($noin->published==0 && $this->access->accessFullHR==true)
+							echo ' <a href="'.$this->config->base_url().'timecard/'.$noin->empID_fk.'/viewlogdetails/?d='.$noin->logDate.'&back=attendancedetails">Resolve</a>';
+					echo '</li>';
+				}
+			echo '</ul>';
+		}
+		
 		if(count($queryNoClockOut)>0){	
 			echo '<b>No Clock Out: ('.count($queryNoClockOut).')</b>';
 			echo '<ul>';
