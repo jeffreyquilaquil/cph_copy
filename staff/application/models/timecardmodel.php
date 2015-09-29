@@ -290,6 +290,9 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
 			$condition .= ' AND published=1';	
+		}else if($type=='unscheduled'){
+			$dateoo = '0000-00-00 00:00:00';
+			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');
@@ -316,6 +319,7 @@ class Timecardmodel extends CI_Model {
 			$cntNoClockOut = count($this->timeM->getNumDetailsAttendance($today, 'noclockout'));
 			$cntPublished = count($this->timeM->getNumDetailsAttendance($today, 'published'));
 			$cntUnPublished = count($this->timeM->getNumDetailsAttendance($today, 'unpublished'));
+			$cntUnscheduled = count($this->timeM->getNumDetailsAttendance($today, 'unscheduled'));
 			$cntScheduled = count($this->timeM->getNumDetailsAttendance($today, 'scheduled'));
 			
 			if($attLog->late!=$cntLate) $upArr['late'] = $cntLate;
@@ -327,6 +331,7 @@ class Timecardmodel extends CI_Model {
 			if($attLog->missingClockOut!=$cntNoClockOut) $upArr['missingClockOut'] = $cntNoClockOut;
 			if($attLog->published!=$cntPublished) $upArr['published'] = $cntPublished;
 			if($attLog->unpublished!=$cntUnPublished) $upArr['unpublished'] = $cntUnPublished;
+			if($attLog->unscheduled!=$cntUnscheduled) $upArr['unscheduled'] = $cntUnscheduled;
 			if($attLog->scheduled!=$cntScheduled) $upArr['scheduled'] = $cntScheduled;
 			
 			if(count($upArr)>0) $this->dbmodel->updateQuery('tcAttendance', array('attendanceID'=>$attLog->attendanceID), $upArr);

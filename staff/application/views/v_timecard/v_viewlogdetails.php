@@ -18,7 +18,8 @@
 	echo '</h3><hr/>';
 	
 	///LINK TO TIMELOG PAGE
-	echo '<a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone floatright" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
+	if($this->access->accessFullHR==true)
+		echo '<a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone floatright" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
 	
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
 		if(isset($schedToday['sched'])) echo '<b>Schedule Today:</b> '.$schedToday['sched'].'<br/>';
@@ -42,7 +43,7 @@
 		$timePaid = $log->schedHour;
 		if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
 		
-		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->published==0)?'hiddend':'').'">';
+		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->published==0)?'hidden':'').'">';
 		echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
 			echo '<table class="tableInfo" bgcolor="#ffd2d2">';
 			if($log->published==1){
