@@ -36,6 +36,13 @@ class Timecard extends MY_Controller {
 		}	
 	}
 	
+	public function crontest(){
+		$insPublish['empID_fk'] = 12;
+		$insPublish['publishDate'] = date('Y-m-d');
+		$insPublish['datePublished'] = date('Y-m-d H:i:s');
+		$this->dbmodel->insertQuery('tcStaffPublished', $insPublish);	
+	}
+	
 	//runs everyday at 12am
 	//get staff schedules and insert to tcStaffDailyLogs
 	//insert to tcAttendance for summary of results today
