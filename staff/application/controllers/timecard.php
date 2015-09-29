@@ -35,14 +35,7 @@ class Timecard extends MY_Controller {
 				$this->$method($data);
 		}	
 	}
-	
-	public function crontest(){
-		$insPublish['empID_fk'] = 12;
-		$insPublish['publishDate'] = date('Y-m-d');
-		$insPublish['datePublished'] = date('Y-m-d H:i:s');
-		$this->dbmodel->insertQuery('tcStaffPublished', $insPublish);	
-	}
-	
+		
 	//runs everyday at 12am
 	//get staff schedules and insert to tcStaffDailyLogs
 	//insert to tcAttendance for summary of results today
@@ -203,6 +196,8 @@ class Timecard extends MY_Controller {
 		if(count($logIDInserted)>0){
 			$this->dbmodel->updateQueryText('tcTimelogs', 'isInserted="1"', 'logID IN ('.implode(',', $logIDInserted).')');
 		}
+		
+		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'crondailylogs', 'test');
 		
 		echo '<pre>';		
 		print_r($logQuery);
