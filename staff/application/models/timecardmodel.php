@@ -342,9 +342,10 @@ class Timecardmodel extends CI_Model {
 		$condition .= ' AND timeBreak<"01:31:00"'; //time break less than 1 hour 30 mins
 		$condition .= ' AND timeOut>schedOut'; //time out greater than sched out
 		$condition .= ' AND timeIn<=schedIn'; //not late
-		$condition .= ' AND offTimeIn!="0000-00-00 00:00:00"'; //for offset
+		//$condition .= ' AND offTimeIn!="0000-00-00 00:00:00"'; //for offset
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour', $condition);
+		
 		if(count($query)>0){
 			$logIDs = '';
 			
