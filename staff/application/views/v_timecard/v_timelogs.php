@@ -8,25 +8,37 @@
 	$logtimeout = '';
 	$islate = false;
 	
+	$breaknum = 1;
+	
 		
 	if(!empty($allLogs)){
 		$allLogsText .= '<table width="25%" class="hidden tblalltimein">';
 		foreach($allLogs AS $a){
 			$allLogsText .= '<tr class="border-bottom-black"><td>'.$logtypeArr[$a->logtype].'</td><td align="center">'.date('h:i a', strtotime($a->logtime)).'</td></tr>';
 		
-			if(empty($logtimein) && $a->logtype=='A') $logtimein = $a->logtime;
-			if($a->logtype=='D' && empty($breakouttext)){
-				$breakout = $a->logtime;
-				$breakouttext = $a->logtime;
+			if(empty($logtimein) && $a->logtype=='A'){ //TIME IN
+				$logtimein = $a->logtime;
 			}
-			if($a->logtype=='E' AND !empty($breakout)){
-				$breakstaken += strtotime($a->logtime) - strtotime($breakout);
-				$breakouttext = '';
+			
+			//FOR BREAKS
+			if($a->logtype=='D' || $a->logtype=='E'){
+				if($breaknum%2==0){
+					$breakstaken += strtotime($a->logtime) - strtotime($breakout);
+					$breakouttext = '';
+				}else{
+					$breakout = $a->logtime;
+					$breakouttext = $a->logtime;
+				}
+				$breaknum++;
 			}
-			if($a->logtype=='Z' && empty($logtimeout)){
+			
+			if($a->logtype=='Z' && empty($logtimeout)){ //TIME OUT
 				$logtimeout = $a->logtime;
 			}
 		}
+		
+		
+		
 		$allLogsText .= '</table>';		
 	}
 		
