@@ -15,6 +15,10 @@ class Timecardmodel extends CI_Model {
 		else if($fld == 'earlyClockIn') $val = '-2 HOUR';
 		else if($fld == 'outLate') $val = '+2 HOUR';
 		else if($fld == 'overBreak') $val = '5400';
+		else if($fld == 'overBreakTime') $val = '01:30:00';
+		else if($fld == 'overBreakTimePlus15') $val = '01:45:00';
+		else if($fld == 'over15mins') $val = '900';
+		else if($fld == 'overMinute15') $val = '15 MINUTE';
 		
 		return $val;
 	}
@@ -286,9 +290,8 @@ class Timecardmodel extends CI_Model {
 			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(timeIn), TIME(schedIn)) AS hourLate';
 			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(timeIn), TIME(schedIn))>"00:01:00"';		
 		}else if($type=='overbreak'){
-			$over = '01:30:00';
 			$flds = ', schedOut, timeBreak';
-			$condition .= ' AND timeBreak>"'.$over.'"';	
+			$condition .= ' AND timeBreak>"'.$this->timeM->timesetting('overBreakTime').'"';	
 		}else if($type=='unpublished'){
 			$condition .= ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
@@ -347,17 +350,21 @@ class Timecardmodel extends CI_Model {
 	public function publishLogs($today){
 		$condition = 'published=0';
 		$condition .= ' AND logDate="'.$today.'"';
+		/////TIME IN
 		$condition .= ' AND schedIn!="0000-00-00 00:00:00"';
-		$condition .= ' AND schedOut!="0000-00-00 00:00:00"';
 		$condition .= ' AND timeIn!="0000-00-00 00:00:00"';
+		$condition .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')';
+		
+		//////TIME OUT
+		$condition .= ' AND schedOut!="0000-00-00 00:00:00"';		
 		$condition .= ' AND timeOut!="0000-00-00 00:00:00"';
-		$condition .= ' AND timeBreak!="00:00:00"';
-		$condition .= ' AND timeBreak<"01:31:00"'; //time break less than 1 hour 30 mins
-		$condition .= ' AND timeOut>schedOut'; //time out greater than sched out
-		$condition .= ' AND timeIn<=schedIn'; //not late
+		$condition .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
 		
+		//////BREAKS
+		$condition .= ' AND timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'"'; //time break less than 1 hour 30 mins
+			
 		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour', $condition);
-		
+				
 		if(count($query)>0){
 			$logIDs = '';
 			
@@ -372,16 +379,16 @@ class Timecardmodel extends CI_Model {
 				$logIDs .= $q->tlogID.',';
 			}
 			
-			if(!empty($logIDs))
+			if(!empty($logIDs)){
 				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'published=1', 'tlogID IN('.rtrim($logIDs, ',').')');
+				$this->timeM->cntUpdateAttendanceRecord($today); //update tcAttendance Records		
+			}				
 		}
 		
 		echo '<pre>';
 		print_r($query);
 		echo '</pre>';
-		
-		//update tcAttendance Records
-		$this->timeM->cntUpdateAttendanceRecord($today);		
+		exit;
 	}
 	
 	public function hourDeduction($seconds){

@@ -35,6 +35,11 @@ class Timecard extends MY_Controller {
 				$this->$method($data);
 		}	
 	}
+	
+	public function timetest(){
+		$today = date('Y-m-30');
+		$this->timeM->publishLogs($today);
+	}
 		
 	//runs everyday at 12am
 	//get staff schedules and insert to tcStaffDailyLogs
