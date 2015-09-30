@@ -6,6 +6,19 @@ class Timecardmodel extends CI_Model {
         parent::__construct();			
     }
 	
+	//THIS IS FOR TIMECARD SETTINGS
+	public function timesetting($fld){
+		$val = '';
+		
+		if($fld == 'timeAllowedClockIn') $val = '-4 HOUR';
+		else if($fld == 'timeAllowedClockOut') $val = '+4 HOUR';
+		else if($fld == 'earlyClockIn') $val = '-2 HOUR';
+		else if($fld == 'outLate') $val = '+2 HOUR';
+		else if($fld == 'overBreak') $val = '5400';
+		
+		return $val;
+	}
+	
 	function getTodayBetweenSchedCondition($start, $end){
 		if($start==$end){
 			return '( (("'.$start.'" BETWEEN effectivestart AND effectiveend) AND effectiveend!="0000-00-00")
@@ -19,16 +32,7 @@ class Timecardmodel extends CI_Model {
 				 )';
 		}
 	}
-	
-	public function getTimeSettings(){
-		$setArr = array();
-		$setQuery = $this->dbmodel->getQueryResults('staffSettings', 'settingName, settingVal');
-		foreach($setQuery AS $s){
-			$setArr[$s->settingName] = $s->settingVal;
-		}
-		return $setArr;
-	}
-	
+		
 	//getting schedules based on starting and end date
 	//returns array of schedule format: $dayArr[datenum] with array sched, custom if custom sched
 	public function getCalendarSchedule($dateStart, $dateEnd, $empID, $single=false){
@@ -233,13 +237,12 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function getLogsToday($empID, $dateToday, $schedToday=''){
-		$settingArr = $this->timeM->getTimeSettings();	
 		if(empty($schedToday)) $schedToday = $this->timeM->getSchedToday($empID, $dateToday);
 		
 		if(!empty($schedToday['sched']) && $schedToday['sched']!='On Leave'){		
 			$schedArr = $this->timeM->getSchedArr($dateToday, $schedToday['sched']);
 			if(isset($schedArr['start']) && isset($schedArr['end'])){
-				$datecondition = 'logtime BETWEEN "'.date('Y-m-d H:i:s', strtotime($schedArr['start'].' '.$settingArr['timeAllowedClockIn'])).'" AND "'.date('Y-m-d H:i:s', strtotime($schedArr['end'].' '.$settingArr['timeAllowedClockOut'])).'"';
+				$datecondition = 'logtime BETWEEN "'.date('Y-m-d H:i:s', strtotime($schedArr['start'].' '.$this->timeM->timesetting('timeAllowedClockIn'))).'" AND "'.date('Y-m-d H:i:s', strtotime($schedArr['end'].' '.$this->timeM->timesetting('timeAllowedClockOut'))).'"';
 			}
 		}
 		
@@ -397,16 +400,16 @@ class Timecardmodel extends CI_Model {
 	public function insertToDailyLogs($empID, $today, $schedToday){
 		$logID = '';
 		$todaySmall = date('j', strtotime($today));
-	
+			
 		if(isset($schedToday[$todaySmall])){
 			$sArr = $schedToday[$todaySmall];	
 			
 			$insArr = array();
 			if(isset($sArr['sched'])){
-				$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);					
+				$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);	
+				$insArr['logDate'] = $today;
+				$insArr['empID_fk'] = $empID;
 				if(isset($schedArr['start']) && isset($schedArr['end'])){
-					$insArr['logDate'] = $today;
-					$insArr['empID_fk'] = $empID;
 					$insArr['schedIn'] = $schedArr['start'];
 					$insArr['schedOut'] = $schedArr['end'];
 					$insArr['schedHour'] = $sArr['schedHour'];

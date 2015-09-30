@@ -65,9 +65,10 @@
 			}
 			
 			$secBreak = $this->textM->convertTimeToSec($log->timeBreak);
-			if($secBreak > $settingArr['overBreak']){
+			$oBreak = this->timeM->timesetting('overBreak');
+			if($secBreak > $oBreak){
 				echo '<tr><td>Over Break</td><td>';
-					$overSec = $secBreak - $settingArr['overBreak'];
+					$overSec = $secBreak - $oBreak;
 					$overHour = $this->timeM->hourDeduction($overSec);
 					
 					$timeDeduction += $overHour;
