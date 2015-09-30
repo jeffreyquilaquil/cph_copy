@@ -35,6 +35,10 @@ class Timecard extends MY_Controller {
 				$this->$method($data);
 		}	
 	}
+	
+	public function timetest(){
+		$this->timeM->publishLogs(date('Y-m-28'));
+	}
 		
 	//runs everyday at 12am
 	//get staff schedules and insert to tcStaffDailyLogs
@@ -256,7 +260,7 @@ class Timecard extends MY_Controller {
 			$date00 = '0000-00-00 00:00:00';
 			$strtoday = strtotime('TODAY');
 			$dateTimeToday = date('Y-m-d H:i:s');
-								
+											
 			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 			$OUTL8 = $this->timeM->timesetting('outLate');
 			foreach($data['dateLogs'] AS $dl){
@@ -788,7 +792,7 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function viewlogdetails($data){		
+	public function viewlogdetails($data){	//	$this->timeM->publishLogs(date('Y-m-28')); exit;
 		$data['content'] = 'v_timecard/v_viewlogdetails';
 		$id = $data['visitID'];
 		
@@ -949,6 +953,35 @@ class Timecard extends MY_Controller {
 	
 	public function attendancedetails($data){
 		$data['content'] = 'v_timecard/v_attendancedetails';
+		
+		$condition = '';
+		if($this->access->accessFullHR==false){ //CHECK STAFF UNDER LOGGED IN
+			$ids = ''; //empty value for staffs with no under yet
+			$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
+			foreach($myStaff AS $m):
+				$ids .= $m->empID.',';
+			endforeach;
+			if(!empty($ids))
+				$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
+		}
+		
+		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
+		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
+		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);
+		$data['queryOffset'] = $this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition);
+		$data['queryInProgress'] = $this->timeM->getNumDetailsAttendance($data['today'], 'shiftinprogress', $condition);
+		$data['queryEarlyBird'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyBird', $condition);
+		$data['queryEarlyClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyclockout', $condition);
+		$data['queryNoClockIn'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockin', $condition);
+		$data['queryNoClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition);
+		$data['queryOverBreak'] = $this->timeM->getNumDetailsAttendance($data['today'], 'overbreak', $condition);
+		$data['queryUnPublished'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unpublished', $condition);
+				
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function attendancedetails2($data){
+		$data['content'] = 'v_timecard/v_attendancedetails2';
 		
 		$condition = '';
 		if($this->access->accessFullHR==false){ //CHECK STAFF UNDER LOGGED IN

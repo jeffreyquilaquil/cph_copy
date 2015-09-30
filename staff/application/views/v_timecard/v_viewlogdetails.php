@@ -13,7 +13,7 @@
 		echo 'Log Details for '.date('l, F d, Y', strtotime($today));
 		if(count($log)>0){
 			if($log->published==1) echo ' <b class="errortext">PUBLISHED</b>';
-			else if($this->access->accessFullHR==true) echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
+			else if($this->access->accessFullHR==true && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
 		}
 	echo '</h3><hr/>';
 	

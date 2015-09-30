@@ -1,141 +1,269 @@
 <h3>Details of <?= date('l F d, Y', strtotime($today)) ?> <?= '<b class="errortext">Unpublished: '.count($queryUnPublished).'</b>' ?></h3>
 <hr/>
-<div class="displayinlineblock">
-	<div style="width:48%; float:left;">
-	<?php
-		if(count($queryLate)>0){
-			echo '<b>Late: ('.count($queryLate).')</b>';
-			echo '<ul>';
-				foreach($queryLate AS $late){
-					echo '<li>';
-						echo '<a href="'.$this->config->base_url().'timecard/'.$late->empID_fk.'/timelogs/" target="_blank">'.$late->name.'</a> <b style="color:red;">('.trim($this->textM->convertTimeToMinStr($late->hourLate)).')</b>';
-						if($late->published==0 && $this->access->accessFullHR==true)
-							echo ' <a href="'.$this->config->base_url().'timecard/'.$late->empID_fk.'/viewlogdetails/?d='.$late->logDate.'&back=attendancedetails">Resolve</a>';
-					echo '</li>';
-				}
-			echo '</ul>';
-		}
-		
-		if(count($queryOverBreak)>0){
-			echo '<b>Over Break: ('.count($queryOverBreak).')</b>';
-			echo '<ul>';
-				$strOver = strtotime('01:30:00');
-				foreach($queryOverBreak AS $over){
-					$oHour = $this->textM->convertTimeToMinHours(strtotime($over->timeBreak) - $strOver, true);
-					echo '<li>';
-						echo '<a href="'.$this->config->base_url().'timecard/'.$over->empID_fk.'/timelogs/" target="_blank">'.$over->name.'</a> <b style="color:red;">('.trim($this->textM->convertTimeToMinStr($oHour)).')</b>';
-						if($over->published==0 && $this->access->accessFullHR==true)
-							echo ' <a href="'.$this->config->base_url().'timecard/'.$over->empID_fk.'/viewlogdetails/?d='.$over->logDate.'&back=attendancedetails">Resolve</a>';
-					echo '</li>';
-				}
-			echo '</ul>'; 
-		}
+<?php
+//////UNPUBLISHED
+if(count($queryUnPublished)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Unpublished ('.count($queryUnPublished).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Time In</td>
+				<td>Time Out</td>
+				<td>Time Breaks</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+			
+		foreach($queryUnPublished AS $unpublished){
+			$cl = 'style="background-color:#ffb2b2;"';
+			if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $cl = '';
 				
-		if(count($queryEarlyClockOut)>0){	
-			echo '<b>Early Clock Out: ('.count($queryEarlyClockOut).')</b>';
-			echo '<ul>';
-				foreach($queryEarlyClockOut AS $earlyout){
-					echo '<li>';
-						echo '<a href="'.$this->config->base_url().'timecard/'.$earlyout->empID_fk.'/timelogs/" target="_blank">'.$earlyout->name.'</a> <b style="color:red;">('.trim($this->textM->convertTimeToMinStr($earlyout->hourEarly)).')</b>';
-						if($earlyout->published==0 && $this->access->accessFullHR==true)
-							echo ' <a href="'.$this->config->base_url().'timecard/'.$earlyout->empID_fk.'/viewlogdetails/?d='.$earlyout->logDate.'&back=attendancedetails">Resolve</a>';
-					echo '</li>';
-				}
-			echo '</ul>';
+			echo '<tr '.$cl.'>';
+				echo '<td>'.$unpublished->name.'</td>';
+				echo '<td>'.(($unpublished->timeIn=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeIn))).'</td>';
+				echo '<td>'.(($unpublished->timeOut=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeOut))).'</td>';							
+				echo '<td>'.(($unpublished->timeBreak=='00:00:00')?'None':$this->textM->convertTimeToMinStr($unpublished->timeBreak)).'</td>';	
+				if(empty($cl)) echo '<td><br/></td><td><br/></td>';
+				else echo $this->textM->displayAttAdditional($unpublished);				
 		}
-		
-		if(count($queryNoClockIn)>0){	
-			echo '<b>No Clock In: ('.count($queryNoClockIn).')</b>';
-			echo '<ul>';
-				foreach($queryNoClockIn AS $noin){
-					echo '<li>';
-						echo '<a href="'.$this->config->base_url().'timecard/'.$noin->empID_fk.'/timelogs/" target="_blank">'.$noin->name.'</a> Out: '.date('h:i a', strtotime($noin->timeOut));
-						if($noin->published==0 && $this->access->accessFullHR==true)
-							echo ' <a href="'.$this->config->base_url().'timecard/'.$noin->empID_fk.'/viewlogdetails/?d='.$noin->logDate.'&back=attendancedetails">Resolve</a>';
-					echo '</li>';
-				}
-			echo '</ul>';
-		}
-		
-		if(count($queryNoClockOut)>0){	
-			echo '<b>No Clock Out: ('.count($queryNoClockOut).')</b>';
-			echo '<ul>';
-				foreach($queryNoClockOut AS $noout){
-					echo '<li>';
-						echo '<a href="'.$this->config->base_url().'timecard/'.$noout->empID_fk.'/timelogs/" target="_blank">'.$noout->name.'</a> In: '.date('h:i a', strtotime($noout->timeIn));
-						if($noout->published==0 && $this->access->accessFullHR==true)
-							echo ' <a href="'.$this->config->base_url().'timecard/'.$noout->empID_fk.'/viewlogdetails/?d='.$noout->logDate.'&back=attendancedetails">Resolve</a>';
-					echo '</li>';
-				}
-			echo '</ul>';
-		}
-		
-		if(count($queryAbsent)>0){
-			echo '<b>Absent: ('.count($queryAbsent).')</b>';
-			echo '<ul>';
-				foreach($queryAbsent AS $absent){
-					echo '<li><a href="'.$this->config->base_url().'timecard/'.$absent->empID_fk.'/timelogs/" target="_blank">'.$absent->name.'</a> ('.date('h:i a', strtotime($absent->schedIn)).' - '.date('h:i a', strtotime($absent->schedOut)).')</li>';
-				}
-			echo '</ul>';
-		}
-		
-		if(count($queryUnPublished)>0){
-			echo '<h3 class="errortext"><b>Unpublished: ('.count($queryUnPublished).')</b></h3>';
-			echo '<ul>';
-				foreach($queryUnPublished AS $unpublished){
-					echo '<li><a href="'.$this->config->base_url().'timecard/'.$unpublished->empID_fk.'/viewlogdetails/?d='.$unpublished->logDate.'&back=attendancedetails">'.$unpublished->name.'</a></li>';
-				}
-			echo '</ul>';
-		}
-	?>
-	</div>
+	echo '</table><br/>';
+}
 
+/////////////LATE
+if(count($queryLate)>0){	
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Late ('.count($queryLate).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td>Time In</td>
+				<td>Late</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+		foreach($queryLate AS $late){
+			echo '<tr '.(($late->published==0)?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$late->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($late->schedIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($late->timeIn)).'</td>';
+				echo '<td><b style="color:red;">'.trim($this->textM->convertTimeToMinStr($late->hourLate)).'</b></td>';
+				
+				echo $this->textM->displayAttAdditional($late);
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
 
-	<div style="width:48%; float:left;">
-	<?php		
-		if(count($queryEarlyBird)>0){		
-			echo '<b>Early Birds: ('.count($queryEarlyBird).')</b>';
-			echo '<ul>';
-				foreach($queryEarlyBird AS $early){
-					echo '<li><a href="'.$this->config->base_url().'timecard/'.$early->empID_fk.'/timelogs/" target="_blank">'.$early->name.'</a> ('.trim($this->textM->convertTimeToMinStr($early->hourEarly)).')</li>';
-				}
-			echo '</ul>';
-		}
+//////OVER BREAK
+if(count($queryOverBreak)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=5>Over Break ('.count($queryOverBreak).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Total Break</td>
+				<td>Over Break</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
 		
-		if(count($queryLeave)>0){
-			echo '<b>On-Leave: ('.count($queryLeave).')</b>';
-			echo '<ul>';
-				foreach($queryLeave AS $leave){
-					echo '<li><a href="'.$this->config->base_url().'staffleaves/'.$leave->leaveID.'/">'.$leave->name.'</a> ('.date('h:i a', strtotime($leave->leaveStart)).' - '.date('h:i a', strtotime($leave->leaveEnd)).')</li>';
-				}
-			echo '</ul>';
+		$strOver = strtotime($this->timeM->timesetting('overBreakTime'));
+		foreach($queryOverBreak AS $over){
+			echo '<tr '.(($over->published==0)?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$over->name.'</td>';
+				echo '<td>'.trim($this->textM->convertTimeToMinStr($over->timeBreak)).'</td>';
+				
+				$oHour = $this->textM->convertTimeToMinHours(strtotime($over->timeBreak) - $strOver, true);
+				echo '<td><b style="color:red;">'.trim($this->textM->convertTimeToMinStr($oHour)).'</b></td>';
+				
+				echo $this->textM->displayAttAdditional($over);
+			echo '</tr>';
 		}
+	echo '</table><br/>';
+}
+
+//////EARLY CLOCK OUT
+if(count($queryEarlyClockOut)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Early Clock Out ('.count($queryEarlyClockOut).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched Out</td>
+				<td>Time Out</td>
+				<td>Early By</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+			
+		foreach($queryEarlyClockOut AS $earlyout){
+			echo '<tr '.(($earlyout->published==0)?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$earlyout->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($earlyout->schedOut)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($earlyout->timeOut)).'</td>';
+				echo '<td>'.trim($this->textM->convertTimeToMinStr($earlyout->hourEarly)).'</td>';								
+				echo $this->textM->displayAttAdditional($earlyout);			
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
+
+//////NO CLOCK IN
+if(count($queryNoClockIn)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>No Clock In ('.count($queryNoClockIn).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+			
+		foreach($queryNoClockIn AS $noin){
+			echo '<tr '.(($noin->published==0)?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$noin->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($noin->schedIn)).'</td>';
+								
+				echo $this->textM->displayAttAdditional($noin);						
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
+
+//////NO cLOCK OUT
+if(count($queryNoClockOut)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>No Clock Out ('.count($queryNoClockOut).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched Out</td>
+				<td>Time In</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+			
+		foreach($queryNoClockOut AS $noout){
+			echo '<tr '.(($noout->published==0)?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$noout->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($noout->schedOut)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($noout->timeIn)).'</td>';								
+				echo $this->textM->displayAttAdditional($noout);				
+		}
+	echo '</table><br/>';
+}
+
+//////ABSENT
+if(count($queryAbsent)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Absent ('.count($queryAbsent).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td>Sched Out</td>
+			</tr>';
+			
+		foreach($queryAbsent AS $absent){
+			echo '<tr>';
+				echo '<td>'.$absent->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($absent->schedIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($absent->schedOut)).'</td>';				
+		}
+	echo '</table><br/>';
+}
+
+//////EARLY BIRD
+if(count($queryEarlyBird)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Early Birds ('.count($queryEarlyBird).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td>Time In</td>
+				<td>Early By</td>
+			</tr>';
+			
+		foreach($queryEarlyBird AS $early){
+			echo '<tr>';
+				echo '<td>'.$early->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($early->schedIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($early->timeIn)).'</td>';
+				echo '<td>'.$this->textM->convertTimeToMinStr($early->hourEarly).'</td>';
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
+
+//////ON LEAVES
+if(count($queryLeave)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>On Leave ('.count($queryLeave).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Leave Type</td>
+				<td>Leave Start</td>
+				<td>Leave End</td>
+			</tr>';
 		
-		if(count($queryOffset)>0){
-			echo '<b>On Offset: ('.count($queryOffset).')</b>';
-			echo '<ul>';			
-				foreach($queryOffset AS $offset){
-					$off = explode('|', $offset->offsetdates);
-					foreach($off AS $o){
-						if(!empty($o)){
-							list($star, $en) = explode(',', $o);
-							if(date('Y-m-d', strtotime($star))==$today){
-								echo '<li><a href="'.$this->config->base_url().'staffleaves/'.$offset->leaveID.'/">'.$offset->name.'</a> ('.date('h:i a', strtotime($star)).' - '.date('h:i a', strtotime($en)).')</li>';
-							}
+		$leaveTypeArr = $this->textM->constantArr('leaveType');
+		foreach($queryLeave AS $leave){
+			echo '<tr>';
+				echo '<td>'.$leave->name.'</td>';
+				echo '<td>'.$leaveTypeArr[$leave->leaveType].'</td>';
+				echo '<td>'.date('d M Y h:i a', strtotime($leave->leaveStart)).'</td>';
+				echo '<td>'.date('d M Y h:i a', strtotime($leave->leaveEnd)).'</td>';
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
+
+//////OFFSET
+if(count($queryOffset)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Offset Today ('.count($queryOffset).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Offset In</td>
+				<td>Offset Out</td>
+			</tr>';
+		
+		foreach($queryOffset AS $offset){
+			echo '<tr>';
+				echo '<td>'.$offset->name.'</td>';
+				
+				$off = explode('|', $offset->offsetdates);
+				foreach($off AS $o){
+					if(!empty($o)){
+						list($star, $en) = explode(',', $o);
+						if(date('Y-m-d', strtotime($star))==$today){
+							echo '<td>'.date('h:i a', strtotime($star)).'</td>';
+							echo '<td>'.date('h:i a', strtotime($en)).'</td>';
 						}
 					}
 				}
-			echo '</ul>';
+			echo '</tr>';
 		}
+	echo '</table><br/>';
+}
 
-		if($today==$currentDate && count($queryInProgress)>0){
-			echo '<b>Shift In Progress: ('.count($queryInProgress).')</b>';
-			echo '<ul>';
-				foreach($queryInProgress AS $inprogress){
-					echo '<li><a href="'.$this->config->base_url().'timecard/'.$inprogress->empID_fk.'/timelogs/" target="_blank">'.$inprogress->name.'</a> In: '.date('h:i a', strtotime($inprogress->timeIn)).'</li>';
-				}
-			echo '</ul>';
+//////SHIFT IN PROGRESS
+if($today==$currentDate && count($queryInProgress)>0){
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Shift In Progress ('.count($queryInProgress).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td>Time In</td>
+				<td>Sched Out</td>
+			</tr>';
+		
+		foreach($queryInProgress AS $inprogress){
+			echo '<tr>';
+				echo '<td>'.$inprogress->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($inprogress->schedIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($inprogress->timeIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($inprogress->schedOut)).'</td>';				
+			echo '</tr>';
 		}
-	?>
-	</div>
-</div>
+	echo '</table><br/>';
+}
+	
+
+?>

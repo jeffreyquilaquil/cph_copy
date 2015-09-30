@@ -267,7 +267,7 @@ class Timecardmodel extends CI_Model {
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
 			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
 		}else if($type=='leave'){
-			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
+			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, leaveType, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
 		}else if($type=='offset'){			
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
 		}else if($type=='shiftinprogress'){
@@ -293,6 +293,7 @@ class Timecardmodel extends CI_Model {
 			$flds = ', schedOut, timeBreak';
 			$condition .= ' AND timeBreak>"'.$this->timeM->timesetting('overBreakTime').'"';	
 		}else if($type=='unpublished'){
+			$flds = ', timeIn, timeOut, timeBreak';
 			$condition .= ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
 			$condition .= ' AND published=1';	
@@ -351,27 +352,36 @@ class Timecardmodel extends CI_Model {
 		$condition = 'published=0';
 		$condition .= ' AND logDate="'.$today.'"';
 		/////TIME IN
-		$condition .= ' AND schedIn!="0000-00-00 00:00:00"';
-		$condition .= ' AND timeIn!="0000-00-00 00:00:00"';
-		$condition .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')';
+		$first = 'schedIn!="0000-00-00 00:00:00"';
+		$first .= ' AND timeIn!="0000-00-00 00:00:00"';
+		$first .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')';
 		
 		//////TIME OUT
-		$condition .= ' AND schedOut!="0000-00-00 00:00:00"';		
-		$condition .= ' AND timeOut!="0000-00-00 00:00:00"';
-		$condition .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
+		$first .= ' AND schedOut!="0000-00-00 00:00:00"';		
+		$first .= ' AND timeOut!="0000-00-00 00:00:00"';
+		$first .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
 		
 		//////BREAKS
-		$condition .= ' AND timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'"'; //time break less than 1 hour 30 mins
+		$first .= ' AND timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'"'; //time break less than 1 hour 30 mins
 			
-		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour', $condition);
-				
+		
+		//SECOND CONDITION PUBLISH WITH 0 TIME FOR ABSENT WITH SCHEDULE TODAY
+		$second = 'schedIn!="0000-00-00 00:00:00" AND timeIn="0000-00-00 00:00:00"';
+		$second .= ' AND schedOut!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+		
+		$condition .= ' AND (('.$first.') OR ('.$second.'))';
+		
+		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour, timeIn, timeOut', $condition);
+							
 		if(count($query)>0){
 			$logIDs = '';
 			
 			foreach($query AS $q){
 				$insArr['empID_fk'] = $q->empID_fk;
 				$insArr['publishDate'] = $q->logDate;
-				$insArr['timePaid'] = $q->schedHour;
+				if($q->timeIn=='0000-00-00 00:00:00' && $q->timeOut=='0000-00-00 00:00:00') $insArr['timePaid'] = 0;
+				else $insArr['timePaid'] = $q->schedHour;
+				
 				$insArr['tcStaffDailyLogs_fk'] = $q->tlogID;
 				$insArr['datePublished'] = date('Y-m-d H:i:s');
 				

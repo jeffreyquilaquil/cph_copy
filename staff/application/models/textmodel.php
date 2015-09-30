@@ -814,6 +814,17 @@ class Textmodel extends CI_Model {
 		$k = array_rand($arr);
 		return $arr[$k];
 	}
+	
+	public function displayAttAdditional($say){
+		$hello = '<td>';
+			if($say->published==1) $hello .= 'Published';
+			else if($this->access->accessFullHR==true) $hello .= '<a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->logDate.'&back=attendancedetails"><button>Resolve</button></a>';
+			else $hello .= 'Unpublished';
+		$hello .= '</td>';				
+		$hello .= '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->logDate.'&back=attendancedetails"><button>View log details</button></a></td>';
+		
+		return $hello;
+	}
 		
 }
 
