@@ -65,7 +65,7 @@
 			}
 			
 			$secBreak = $this->textM->convertTimeToSec($log->timeBreak);
-			$oBreak = this->timeM->timesetting('overBreak');
+			$oBreak = $this->timeM->timesetting('overBreak');
 			if($secBreak > $oBreak){
 				echo '<tr><td>Over Break</td><td>';
 					$overSec = $secBreak - $oBreak;
