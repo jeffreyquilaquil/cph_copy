@@ -256,7 +256,6 @@ class Timecard extends MY_Controller {
 			$date00 = '0000-00-00 00:00:00';
 			$strtoday = strtotime('TODAY');
 			$dateTimeToday = date('Y-m-d H:i:s');
-			$dayPublished = array();
 								
 			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 			$OUTL8 = $this->timeM->timesetting('outLate');
@@ -303,10 +302,6 @@ class Timecard extends MY_Controller {
 					$data['dayArr'][$numday] = '<span class="errortext">'.$err.'</span>'.$content;
 					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL</div>'.$data['dayArr'][$numday];
 				}
-				
-				if($dl->published==1){
-					array_push($dayPublished, date('j', strtotime($dl->logDate)));
-				}
 			}
 						
 			//this is to check if no staff have schedule on the day but no logged time
@@ -326,7 +321,7 @@ class Timecard extends MY_Controller {
 			$end = 31;
 			if(strtotime($data['currentDate'])<= strtotime($dateMonthToday.'-31')) $end = date('j', strtotime($data['currentDate']));
 			for($h=1; $h<=$end; $h++){
-				if($checkIfUser && !in_array($h, $dayPublished)){
+				if($checkIfUser){
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
 				}
 					
