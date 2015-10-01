@@ -33,7 +33,7 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['toEmail']	= 'ludivina.marinas@tatepublishing.net';
 	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
 	$config['demnCryptIV']	= 'TaTe';
-	$config['devmode'] = false; //change to false if you want to use live database
+	$config['devmode'] = true; //change to false if you want to use live database
 	$config['showProfiler'] = false;
 }
 
