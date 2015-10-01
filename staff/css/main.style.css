@@ -538,7 +538,7 @@ ul.tabs2 li.current{
 .attendancetbl .calendarweek td{ width:14.28% }
 .attendancetbl .divoptions{ position:absolute; text-align:center; background-color:#ddd; border:1px solid #ccc; border-radius:10px; top:25px; padding:3px; }
 
-
+.timetabletr td{ padding:5px; border-bottom:1px solid #fff; cursor:pointer; }
 
 .orgchart li{ border:1px solid #ccc; padding:5px; margin:5px;}
 .li_0{ background-color:#b30000; }

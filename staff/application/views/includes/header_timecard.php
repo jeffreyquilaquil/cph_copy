@@ -1,4 +1,45 @@
 <?php
+	if($this->access->accessFullHR==true){
+		$allStaffs = $this->dbmodel->getQueryResults('staffs', 'empID, fname, lname');
+		
+		echo '<div class="floatright" style="width:300px;">';
+			echo $this->textM->formfield('text', '', '', 'forminput', 'Search Employee', 'id="searchTimeEmp" style="border:1px solid #800000;"');
+			echo '<div id="divstaffs">';
+				echo '<table id="timetable" class="hidden" style="background-color:#ccc; width:100%; border:1px solid #800000;">';
+					foreach($allStaffs AS $a){
+						echo '<tr class="timetabletr"><td onClick="gototimelogpage('.$a->empID.')">'.$a->fname.' '.$a->lname.'</td></tr>';
+					}
+				echo '</table>';
+			echo '</div>';
+		echo '</div>';
+?>	
+	<script type="text/javascript">
+		$(function(){
+			$("#searchTimeEmp").keyup(function(){ 
+				var filter = $(this).val();
+				$('#timetable').removeClass('hidden');
+				
+				$("#timetable tr").each(function(){ 
+					if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+						$(this).fadeOut();				
+					 } else {				
+						$(this).show();
+						//count++;
+					}
+				});
+				
+				if(filter=='') $('#timetable').addClass('hidden');
+			});
+		});
+		
+		function gototimelogpage(id){
+			location.href='<?= $this->config->base_url().'timecard/' ?>'+id+'/timelogs/';
+			displaypleasewait();
+		}
+	</script>
+<?php
+	}
+
 	if(isset($row)){
 		if($row->empID==$this->user->empID) echo '<h2>My Timecard and Payroll</h2>';
 		else echo '<h2>'.$row->fname.'\'s Timecard and Payroll</h2>';		
