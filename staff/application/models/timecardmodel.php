@@ -40,7 +40,10 @@ class Timecardmodel extends CI_Model {
 	//getting schedules based on starting and end date
 	//returns array of schedule format: $dayArr[datenum] with array sched, custom if custom sched
 	public function getCalendarSchedule($dateStart, $dateEnd, $empID, $single=false){
-		$dayArr = array();
+		$dayArr = array();		
+		$dateStart = date('Y-m-d', strtotime($dateStart));
+		$dateEnd = date('Y-m-d', strtotime($dateEnd));
+		
 		$month = date('m', strtotime($dateStart));
 		$year = date('Y', strtotime($dateStart));
 		
@@ -64,9 +67,9 @@ class Timecardmodel extends CI_Model {
 							'schedID, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 
 							'empID_fk="'.$empID.'" AND '.$this->timeM->getTodayBetweenSchedCondition($dateStart, $dateEnd), 
 							'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate');
-							
+																					
 		//if dateStart is greater than dateEnd
-		if($ival>=$dEnd){			
+		if($ival>=$dEnd){
 			foreach($queryMainSched AS $sched){
 				for($start=$strdateStart; $start<=$strdateEnd; ){	
 					$dtoday = date('Y-m-d', $start);
@@ -100,8 +103,8 @@ class Timecardmodel extends CI_Model {
 					}
 				}
 			}
-		}	
-		
+		}
+				
 		//check for holidays
 		$holidayTypeArr = $this->textM->constantArr('holidayTypes');
 		if($single===true) $holidayCondition = '(holidayDate LIKE "'.date('0000-m-d', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-d', strtotime($dateStart)).'%"';
@@ -186,7 +189,9 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		foreach($dayArr AS $k=>$day){
-			if(isset($day['leave']) && isset($day['sched'])){
+			if(isset($day['schedDate']) && ($day['schedDate']<$dateStart || $day['schedDate']>$dateEnd)){
+				unset($dayArr[$k]);
+			}else if(isset($day['leave']) && isset($day['sched'])){
 				if($day['leave']==$day['sched']){
 					$dayArr[$k]['sched'] = 'On Leave';
 				}else{
@@ -370,6 +375,7 @@ class Timecardmodel extends CI_Model {
 		//SECOND CONDITION PUBLISH WITH 0 TIME FOR ABSENT WITH SCHEDULE TODAY
 		$second = 'schedIn!="0000-00-00 00:00:00" AND timeIn="0000-00-00 00:00:00"';
 		$second .= ' AND schedOut!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+		$second .= ' AND schedOut<="'.date('Y-m-d H:i:s').'"';
 		
 		$condition .= ' AND (('.$first.') OR ('.$second.'))';
 		

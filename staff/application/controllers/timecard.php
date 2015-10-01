@@ -37,7 +37,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function timetest(){
-		$d = date('Y-10-01');
+		$d = date('2015-10-01');
 		$this->timeM->publishLogs($d);
 	}
 		
@@ -245,42 +245,79 @@ class Timecard extends MY_Controller {
 				}
 			}
 			
-			//VARIABLE DECLARATIONS	
-			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-			$dateMonthToday = date('Y-m', strtotime($data['today']));
-			$data['schedToday'] = $this->timeM->getSchedToday($data['visitID'], $data['currentDate']);
-			$data['schedArr'] = $this->timeM->getSchedArr($data['today'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
+			//////////VARIABLE DECLARATIONS	
+			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');								
+			$data['dayArr'] = array();
+			$publishArr = array();
+			$date00 = '0000-00-00 00:00:00';
+			$dateTimeToday = date('Y-m-d H:i:s');			
+			$dateStart = date('Y-m-01', strtotime($data['today']));
+			$dateEnd = date('Y-m-31', strtotime($data['today']));
+			$dateMonthToday = date('Y-m', strtotime($data['today']));											
+			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
+			$OUTL8 = $this->timeM->timesetting('outLate');
+			$strCurDate = strtotime($data['currentDate']);
+			//////////END OF VARIABLE DECLARATIONS	
+			
+			////CHECK FIRST IF TIME TODAY IS LESS THAN 10AM IF IT IS GET PREVIOUS SCHEDULE TO CHECK IF SHIFT STILL IN PROGRESS
+			if(strtotime($dateTimeToday)<strtotime(date('Y-m-d 13:00:00'))){
+				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
+				$schedToday = $this->timeM->getSchedToday($data['visitID'], $rara);
+				$schedArr = $this->timeM->getSchedArr($rara, ((isset($schedToday['sched']))?$schedToday['sched']:''));
+				
+				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'])){
+					$data['schedToday'] = $schedToday;
+					$data['schedArr'] = $schedArr;
+				}				
+			}			
+			if(empty($data['schedToday'])){
+				$data['schedToday'] = $this->timeM->getSchedToday($data['visitID'], $data['currentDate']);
+				$data['schedArr'] = $this->timeM->getSchedArr($data['today'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
+			}
 			
 			//get all logs today
 			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);
-					
+						
+			//GET PUBLISHED RECORDS
+			$dataPublished = $this->dbmodel->getQueryResults('tcStaffPublished', 'DAY(publishDate) AS day, timePaid', 'empID_fk="'.$data['visitID'].'" AND publishDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
+			foreach($dataPublished AS $p){
+				$publishArr[$p->day] = $p->timePaid;
+			}
+			
+			//this is to check if no staff have schedule on the day but no logged time					
+			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);	
+			foreach($querySchedule AS $k=>$q){
+				if($strCurDate>strtotime($q['schedDate']) && !empty($q['sched'])){
+					$data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>';
+					/* if($q['sched']=='On Leave') $data['dayArr'][$k] = '<span class="errortext">ON LEAVE</span>';
+					else $data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>'; */
+				}
+			}
+						
 			//this is for logs for the calendar month			
-			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, published', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
-									
-			$data['dayArr'] = array();
-			$date00 = '0000-00-00 00:00:00';
-			$strtoday = strtotime('TODAY');
-			$dateTimeToday = date('Y-m-d H:i:s');
-											
-			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
-			$OUTL8 = $this->timeM->timesetting('outLate');
+			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, DAY(logDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, published', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+		
 			foreach($data['dateLogs'] AS $dl){
 				$content = '';
 				$err = '';
+				$isOnLeave = false;
+				if(isset($querySchedule[$dl->dayLogDate]['sched']) && $querySchedule[$dl->dayLogDate]['sched']=='On Leave') $isOnLeave = true;
+				
 				//check if there is schedule
-				if($dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
+				if($isOnLeave===true) $err .= '<a href="'.$this->config->base_url().'staffleaves/'.$querySchedule[$dl->dayLogDate]['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br>'.$querySchedule[$dl->dayLogDate]['leave'].'</div></a><br/>';
+				else if($dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
 					
 				//check for time in, late or early in			
 				if($dl->timeIn!=$date00){
 					$content .= '<b>In:</b> '.date('h:i a', strtotime($dl->timeIn)).'<br/>';
 					
 					if($dl->schedIn!=$date00){
-						if($dl->timeIn > $dl->schedIn) $err .= 'LATE<br/>';
+						if($dl->timeIn > date('Y-m-d H:i:s', strtotime($dl->schedIn.' +1 minutes'))) $err .= 'LATE<br/>';
 						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $err .= 'EARLY IN<br/>';
 					}
 				}else if($dl->schedIn>=$dateTimeToday) $err .= 'NO TIME IN YET<br/>';
-				else if($dl->timeIn==$date00 && $dl->timeOut==$date00) $err .= 'ABSENT<br/>';
-				else $err .= 'NO TIME IN<br/>';
+				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && $isOnLeave===false) $err .= 'ABSENT<br/>';
+				else if($isOnLeave===false) $err .= 'NO TIME IN<br/>';
 								
 				//check for clock out
 				if($dl->timeOut!=$date00){
@@ -303,33 +340,18 @@ class Timecard extends MY_Controller {
 				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $err .= 'NO BREAKS<br/>';
 				
 				if(!empty($err) || !empty($content)){
-					$numday = date('j', strtotime($dl->logDate));										
+					$numday = $dl->dayLogDate;										
 					$data['dayArr'][$numday] = '<span class="errortext">'.$err.'</span>'.$content;
-					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL</div>'.$data['dayArr'][$numday];
+					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL '.((isset($publishArr[$numday]))?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
 				}
-			}
-						
-			//this is to check if no staff have schedule on the day but no logged time
-			$dateStart = date('Y-m-01', strtotime($data['today']));
-			$dateEnd = date('Y-m-31', strtotime($data['today']));
-			$strCurDate = strtotime($data['currentDate']);			
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);	
-			foreach($querySchedule AS $k=>$q){
-				if($strCurDate>strtotime($q['schedDate']) && !isset($data['dayArr'][$k]) && !empty($q['sched'])){
-					if($q['sched']=='On Leave') $data['dayArr'][$k] = '<span class="errortext">ON LEAVE</span>';
-					else $data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>';
-				}					
 			}
 			
 			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
 			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
-			$end = 31;
-			if(strtotime($data['currentDate'])<= strtotime($dateMonthToday.'-31')) $end = date('j', strtotime($data['currentDate']));
-			for($h=1; $h<=$end; $h++){
-				if($checkIfUser){
+			foreach($data['dayArr'] AS $h=>$m){
+				if($checkIfUser) 
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
-				}
-					
+				
 				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
 			}
 			
@@ -506,7 +528,7 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-			
+					
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){

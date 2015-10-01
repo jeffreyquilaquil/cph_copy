@@ -15,12 +15,11 @@
 			if($log->published==1) echo ' <b class="errortext">PUBLISHED</b>';
 			else if($this->access->accessFullHR==true && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
 		}
+		
+		///LINK TO TIMELOG PAGE
+		if($this->access->accessFullHR==true) echo ' <a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
 	echo '</h3><hr/>';
-	
-	///LINK TO TIMELOG PAGE
-	if($this->access->accessFullHR==true)
-		echo '<a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone floatright" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
-	
+			
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
 		if(isset($schedToday['sched'])) echo '<b>Schedule Today:</b> '.$schedToday['sched'].'<br/>';
 		if(isset($schedToday['offset'])) echo '<b>Offset Schedule:</b> '.$schedToday['offset'].'<br/>';
@@ -37,7 +36,7 @@
 		if(isset($schedToday['sched']) && $schedToday['sched']=='On Leave' && isset($schedToday['leaveID'])){
 			echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';
 		}else echo '<p class="errortext">No Logs Recorded.</p>';
-	}else{		
+	}else if(!isset($schedToday['sched']) || ($schedToday['sched']!='On Leave' || ($schedToday['sched']=='On Leave' && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00'))){		
 		//PUBLISH
 		$timeDeduction = 0;
 		$timePaid = $log->schedHour;

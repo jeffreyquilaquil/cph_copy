@@ -63,6 +63,7 @@ a:hover{ color:red; }
 .errortext{ color:red; }
 .colorgray{ color:#888; }
 .colorgreen{ color:green; }
+.coloryellow{ color:yellow; }
 .btnclass { padding:5px 10px; border-radius:5px; }
 .btnclass:hover { background-color:#ddd; }
 .btngreen { background-color:green; font-weight:bold; color:#fff; border-radius:5px; }

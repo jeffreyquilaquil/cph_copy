@@ -52,7 +52,10 @@
 	<tr>
 		<td>
 		<div style="padding:10px;">
-			<h3><?= date('l, F d, Y') ?></h3>
+			<h3><?php
+				if(isset($schedToday['schedDate']) && $schedToday['schedDate']!=date('Y-m-d')) echo date('l, F d, Y', strtotime($schedToday['schedDate']));
+				else echo date('l, F d, Y');
+			?></h3>
 			<?php
 				if(empty($schedT) && !isset($schedToday['offset'])) echo 'Today\'s Schedule: <b>NONE</b><br/>';
 				else if(!empty($schedT)) echo 'Today\'s Schedule: <b>'.$schedT.'</b><br/>';
@@ -67,10 +70,10 @@
 					echo (($visitID==$this->user->empID)?'You':$row->fname).' clocked in at <b>'.date('h:i a', strtotime($logtimein)).'</b>.';
 					
 					if(isset($schedArr['start'])){
-						$strstart = strtotime($schedArr['start']);
+						$strstart = strtotime();
 						$strlogtime = strtotime($logtimein);
 						
-						if($strlogtime > $strstart){
+						if($strlogtime > strtotime($schedArr['start'].' +1 minutes')){
 							$diff = $strlogtime - $strstart;
 							$ltype = 'LATE';
 							$islate = true;
@@ -83,9 +86,11 @@
 					echo '<br/>';
 				}
 				
-				if($breakstaken>0){					
+				if($breakstaken>0){
 					$breaktext = $this->textM->convertTimeToMinHours($breakstaken);
-					echo 'Breaks Taken: '.$breaktext.'<br/>';
+					echo 'Breaks Taken: '.$breaktext;
+					if($breakstaken>$this->timeM->timesetting('overBreak')) echo ' <b class="errortext">OVER BREAK</b>';
+					echo '<br/>';
 				} 
 				
 				if(!empty($breakouttext)) echo '<span class="errortext">Pending Break In. Break out time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span>';
