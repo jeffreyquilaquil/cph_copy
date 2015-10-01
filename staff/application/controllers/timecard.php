@@ -342,7 +342,7 @@ class Timecard extends MY_Controller {
 				if(!empty($err) || !empty($content)){
 					$numday = $dl->dayLogDate;										
 					$data['dayArr'][$numday] = '<span class="errortext">'.$err.'</span>'.$content;
-					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL '.((isset($publishArr[$numday]))?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
+					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL <br/>'.((isset($publishArr[$numday]) && $publishArr[$numday]>0)?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
 				}
 			}
 			
