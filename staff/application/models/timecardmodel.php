@@ -172,12 +172,14 @@ class Timecardmodel extends CI_Model {
 				foreach($offset AS $o){
 					if(!empty($o)){
 						list($s, $e) = explode(',', $o);
-						$karon = date('j', strtotime($s));
-						$dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
-						$dayArr[$karon]['leaveID'] = $leave->leaveID;
-						
-						if(!isset($dayArr[$karon]['schedDate']))
-							$dayArr[$karon]['schedDate'] = date('Y-m-d', strtotime($s));
+						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
+							$karon = date('j', strtotime($s));
+							$dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
+							$dayArr[$karon]['leaveID'] = $leave->leaveID;
+							
+							if(!isset($dayArr[$karon]['schedDate']))
+								$dayArr[$karon]['schedDate'] = date('Y-m-d', strtotime($s));
+						}
 					}
 				}
 			}
