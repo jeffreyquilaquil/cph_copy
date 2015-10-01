@@ -144,11 +144,12 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);	
-							
+				
+											
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
 			$end = date('Y-m-d H:i:s', strtotime($leave->leaveEnd));								
-			$leaveEnd = date('Y-m-d H:i:s', strtotime($start.' +9 hours'));
+			$leaveEnd = date('Y-m-d H:i:s', strtotime($start.' +9 hours'));			
 							
 			while(strtotime($leaveEnd)<=strtotime($end) || strtotime($start)<=strtotime($end)){
 				$dayj = date('j', strtotime($start));

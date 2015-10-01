@@ -243,7 +243,7 @@ class Timecard extends MY_Controller {
 					$this->dbmodel->insertQuery('tcTimelogs', $insLog);
 					exit;
 				}
-			}
+			} 
 			
 			//////////VARIABLE DECLARATIONS	
 			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');								

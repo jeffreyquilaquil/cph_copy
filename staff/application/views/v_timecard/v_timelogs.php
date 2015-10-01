@@ -70,10 +70,10 @@
 					echo (($visitID==$this->user->empID)?'You':$row->fname).' clocked in at <b>'.date('h:i a', strtotime($logtimein)).'</b>.';
 					
 					if(isset($schedArr['start'])){
-						$strstart = strtotime();
+						$strstart = strtotime($schedArr['start']);
 						$strlogtime = strtotime($logtimein);
 						
-						if($strlogtime > strtotime($schedArr['start'].' +1 minutes')){
+						if($strlogtime > strtotime($schedArr['start'].' +1 minute')){
 							$diff = $strlogtime - $strstart;
 							$ltype = 'LATE';
 							$islate = true;
