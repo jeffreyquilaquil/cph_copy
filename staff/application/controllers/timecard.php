@@ -268,6 +268,8 @@ class Timecard extends MY_Controller {
 				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'])){
 					$data['schedToday'] = $schedToday;
 					$data['schedArr'] = $schedArr;
+					$data['today'] = $schedToday['schedDate'];
+					$data['currentDate'] = $schedToday['schedDate'];
 				}				
 			}			
 			if(empty($data['schedToday'])){
