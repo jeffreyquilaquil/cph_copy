@@ -264,14 +264,15 @@ class Timecard extends MY_Controller {
 				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
 				$schedToday = $this->timeM->getSchedToday($data['visitID'], $rara);
 				$schedArr = $this->timeM->getSchedArr($rara, ((isset($schedToday['sched']))?$schedToday['sched']:''));
-				
-				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'])){
+								
+				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'].' '.$this->timeM->timesetting('timeAllowedClockOut'))){
 					$data['schedToday'] = $schedToday;
 					$data['schedArr'] = $schedArr;
 					$data['today'] = $schedToday['schedDate'];
 					$data['currentDate'] = $schedToday['schedDate'];
-				}				
-			}			
+				}
+			}	
+		
 			if(empty($data['schedToday'])){
 				$data['schedToday'] = $this->timeM->getSchedToday($data['visitID'], $data['currentDate']);
 				$data['schedArr'] = $this->timeM->getSchedArr($data['today'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
