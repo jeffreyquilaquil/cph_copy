@@ -13,6 +13,8 @@
 			<input type="text" name="username" value="" class="padding5px" placeholder="username"/><input type="submit" value="Submit"/><br/>
 		</form>';
 		
+		echo '  <button onClick="location.href=\'http://129.3.252.99'.$_SERVER['REQUEST_URI'].'\'">Go to test page</button>';
+		
 		/* echo '<form action="'.$this->config->base_url().'hello/empID/" method="POST">
 			<b>Change logged in user</b><br/>
 			<input type="text" name="empID" value="" class="padding5px" placeholder="emp ID"/><input type="submit" value="Submit"/><br/>

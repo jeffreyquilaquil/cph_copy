@@ -37,7 +37,8 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function timetest(){
-		//$this->timeM->publishLogs(date('Y-m-28'));
+		$d = date('Y-10-01');
+		$this->timeM->publishLogs($d);
 	}
 		
 	//runs everyday at 12am
