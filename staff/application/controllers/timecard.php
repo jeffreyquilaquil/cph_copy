@@ -506,7 +506,7 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-						
+									
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -533,7 +533,7 @@ class Timecard extends MY_Controller {
 					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
 				}
 								
-				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd)
+				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd && $yoyo['schedDate']>=$dateStart)
 					$data['dayArr'][$k] = $sched;	
 			}			
 		}	

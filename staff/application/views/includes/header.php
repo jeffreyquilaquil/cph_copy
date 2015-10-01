@@ -14,6 +14,7 @@
 		</form>';
 		
 		echo '  <button onClick="location.href=\'http://129.3.252.99'.$_SERVER['REQUEST_URI'].'\'">Go to test page</button>';
+		echo '  <button onClick="location.href=\'https://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'].'\'">Go to live page</button>';
 		
 		/* echo '<form action="'.$this->config->base_url().'hello/empID/" method="POST">
 			<b>Change logged in user</b><br/>
