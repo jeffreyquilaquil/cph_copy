@@ -252,7 +252,7 @@ class Timecard extends MY_Controller {
 			$date00 = '0000-00-00 00:00:00';
 			$dateTimeToday = date('Y-m-d H:i:s');			
 			$dateStart = date('Y-m-01', strtotime($data['today']));
-			$dateEnd = date('Y-m-31', strtotime($data['today']));
+			$dateEnd = date('Y-m-t', strtotime($data['today']));
 			$dateMonthToday = date('Y-m', strtotime($data['today']));											
 			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 			$OUTL8 = $this->timeM->timesetting('outLate');
@@ -280,7 +280,7 @@ class Timecard extends MY_Controller {
 			
 			//get all logs today
 			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);
-						
+				
 			//GET PUBLISHED RECORDS
 			$dataPublished = $this->dbmodel->getQueryResults('tcStaffPublished', 'DAY(publishDate) AS day, timePaid', 'empID_fk="'.$data['visitID'].'" AND publishDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
 			foreach($dataPublished AS $p){
@@ -508,7 +508,7 @@ class Timecard extends MY_Controller {
 			}
 		
 			$dateStart = date('Y-m-01', strtotime($data['today']));
-			$dateEnd = date('Y-m-31', strtotime($data['today']));
+			$dateEnd = date('Y-m-t', strtotime($data['today']));
 			
 			//for schedule history
 			$data['timeArr'] = $this->commonM->getSchedTimeArray();			
@@ -557,6 +557,10 @@ class Timecard extends MY_Controller {
 				if(isset($yoyo['offset'])){
 					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
 				}
+				
+				if(isset($yoyo['pendingoffset'])){
+					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$yoyo['pendingoffset'].'</div></a>';
+				}				
 								
 				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd && $yoyo['schedDate']>=$dateStart)
 					$data['dayArr'][$k] = $sched;	

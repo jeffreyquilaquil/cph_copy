@@ -40,13 +40,13 @@ class Timecardmodel extends CI_Model {
 	//getting schedules based on starting and end date
 	//returns array of schedule format: $dayArr[datenum] with array sched, custom if custom sched
 	public function getCalendarSchedule($dateStart, $dateEnd, $empID, $single=false){
-		$dayArr = array();		
+		$dayArr = array();
 		$dateStart = date('Y-m-d', strtotime($dateStart));
 		$dateEnd = date('Y-m-d', strtotime($dateEnd));
 		
 		$month = date('m', strtotime($dateStart));
 		$year = date('Y', strtotime($dateStart));
-		
+	
 		$strdateStart = strtotime($dateStart);
 		$strdateEnd = strtotime($dateEnd);
 				
@@ -67,7 +67,7 @@ class Timecardmodel extends CI_Model {
 							'schedID, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 
 							'empID_fk="'.$empID.'" AND '.$this->timeM->getTodayBetweenSchedCondition($dateStart, $dateEnd), 
 							'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate');
-																					
+		
 		//if dateStart is greater than dateEnd
 		if($ival>=$dEnd){
 			foreach($queryMainSched AS $sched){
@@ -136,35 +136,42 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		
-		//check for leaves
+		//CHECK FOR LEAVES
 		if($dateStart==$dateEnd){
 			$conditionLeave = ' AND ("'.$dateStart.'" BETWEEN leaveStart AND leaveEnd OR leaveStart LIKE "'.$dateStart.'%" OR offsetdates LIKE "%'.date('Y-m-d', strtotime($dateStart)).'%")';
 		}else{
-			$conditionLeave = ' AND (leaveStart BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" OR leaveEnd BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateStart)).'%" OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateEnd)).'%")';
+			$conditionLeave = ' AND (';
+				$conditionLeave .= 'leaveStart BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"';
+				$conditionLeave .= ' OR leaveEnd BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"';
+				
+				$conditionLeave .= ' OR "'.$dateStart.'" BETWEEN leaveStart AND leaveEnd';
+				$conditionLeave .= ' OR "'.$dateEnd.'" BETWEEN leaveStart AND leaveEnd';
+				
+				$conditionLeave .= ' OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateStart)).'%"';
+				$conditionLeave .= ' OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateEnd)).'%"';
+			$conditionLeave .= ')';
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);	
-				
-											
+		
+		$leavestrend = strtotime($dateEnd.' +1 day');
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
 			$end = date('Y-m-d H:i:s', strtotime($leave->leaveEnd));								
 			$leaveEnd = date('Y-m-d H:i:s', strtotime($start.' +9 hours'));			
-							
+			
 			while(strtotime($leaveEnd)<=strtotime($end) || strtotime($start)<=strtotime($end)){
 				$dayj = date('j', strtotime($start));
 				
-				$curDate = date('Y-m-d', strtotime($start));					
-				if(strtotime($curDate) >= $strdateStart){
-					if(isset($dayArr[$dayj]['schedDate'])){
-						$dayArr[$dayj]['leaveID'] = $leave->leaveID;
-						
-						if(strtotime($leaveEnd)>strtotime($end)) $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($end));
-						else $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($leaveEnd));
-						
-						if($leave->status==1 || $leave->status==2) $dayArr[$dayj]['leave'] = $leaveSched;
-						else $dayArr[$dayj]['pendingleave'] = $leaveSched;
-					}
+				if(strtotime($start)>=$strdateStart && strtotime($leaveEnd)<=$leavestrend && isset($dayArr[$dayj]['sched'])){
+					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
+					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
+					
+					if(strtotime($leaveEnd)>strtotime($end)) $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($end));
+					else $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($leaveEnd));
+					
+					if($leave->status==1 || $leave->status==2) $dayArr[$dayj]['leave'] = $leaveSched;
+					else $dayArr[$dayj]['pendingleave'] = $leaveSched;					
 				}
 				
 				$start = date('Y-m-d H:i:s', strtotime($start.' +1 day'));
@@ -178,8 +185,9 @@ class Timecardmodel extends CI_Model {
 						list($s, $e) = explode(',', $o);
 						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
 							$karon = date('j', strtotime($s));
-							$dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							$dayArr[$karon]['leaveID'] = $leave->leaveID;
+							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
+							else $dayArr[$karon]['pendingoffset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							
 							if(!isset($dayArr[$karon]['schedDate']))
 								$dayArr[$karon]['schedDate'] = date('Y-m-d', strtotime($s));
