@@ -387,7 +387,7 @@ class Timecardmodel extends CI_Model {
 		$second .= ' AND schedOut<="'.date('Y-m-d H:i:s').'"';
 		
 		$condition .= ' AND (('.$first.') OR ('.$second.'))';
-		echo $condition; exit;
+		
 		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour, timeIn, timeOut', $condition);
 							
 		if(count($query)>0){
