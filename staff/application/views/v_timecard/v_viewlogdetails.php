@@ -179,6 +179,7 @@
 					$out = 0;
 					$compute = 0;
 					if(count($break)>0){
+						$b = '';
 						foreach($break AS $b){						
 							$b = strtotime($b);
 							echo date('h:i a', $b);
@@ -194,6 +195,7 @@
 							$out++;
 						}
 						if($out%2!=0) echo ' <b class="errortext">MISSING BREAK IN</b><br/>';
+						else if(!empty($b) && $log->timeOut!='0000-00-00 00:00:00' && (date('Y-m-d H:i:s', $b)==date('Y-m-d H:i:s', strtotime($log->timeOut)))) echo ' <i class="errortext">Missing Break In, copied time out log</i><br/>';
 						
 						echo '<br/>Total Breaks: <b>'.trim($this->textM->convertTimeToStr($log->timeBreak)).'</b>';
 						if($log->timeBreak>'01:30:00') echo ' <b class="errortext">OVER BREAK</b>';
