@@ -275,8 +275,7 @@ class Staff extends MY_Controller {
 					endforeach;
 					
 					//get coaching staffs
-					$cstaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'coach="'.$this->user->empID.'"');
-				
+					$cstaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'coach="'.$this->user->empID.'"');				
 					foreach($cstaffs AS $c){
 						$ids .= $c->empID.',';
 					}
@@ -662,7 +661,7 @@ class Staff extends MY_Controller {
 				$data['leaveStatusArr'] = $this->textM->constantArr('leaveStatus');
 				$data['timeoff'] = $this->dbmodel->getQueryResults('staffLeaves', '*', 'empID_fk="'.$data['row']->empID.'" AND status!=5','', 'date_requested DESC');
 				$data['disciplinary'] = $this->dbmodel->getQueryResults('staffNTE', 'staffNTE.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE issuer=empID AND issuer!=0) AS issuerName', 'empID_fk="'.$data['row']->empID.'" AND status!=2','', 'timestamp DESC');
-				$data['perfTrackRecords'] = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating, dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated, HRoptionStatus, fname AS name', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');
+				$data['perfTrackRecords'] = $this->dbmodel->getQueryResults('staffCoaching', 'coachID, coachedBy, empID_fk, coachedDate, coachedEval, status, selfRating, supervisorsRating, finalRating, dateSupAcknowledged, date2ndMacknowledged, dateEmpAcknowledge, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=coachedBy LIMIT 1) AS coachedByName, dateGenerated, HRoptionStatus, fname AS name, supervisor', 'status!=4 AND empID_fk="'.$data['row']->empID.'"','LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');
 								
 				$data['pfUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0 AND (fileType!="disciplinary" OR fileType!="performance")','', 'dateUploaded DESC');
 				$data['disciplinaryUploaded'] = $this->dbmodel->getQueryResults('staffUploads', 'upID, docName, fileName, dateUploaded', 'empID_fk="'.$data['row']->empID.'" AND isDeleted=0 AND fileType="disciplinary"','', 'dateUploaded DESC');
@@ -3004,6 +3003,13 @@ class Staff extends MY_Controller {
 					foreach($myStaff AS $m):
 						$ids .= $m->empID.',';
 					endforeach;
+					
+					//get coaching staffs
+					$cstaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'coach="'.$this->user->empID.'"');				
+					foreach($cstaffs AS $c){
+						$ids .= $c->empID.',';
+					}
+					
 					if($ids!='')
 						$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
 				}
