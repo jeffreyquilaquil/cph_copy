@@ -141,7 +141,7 @@
 						if($log->timeIn=='0000-00-00 00:00:00') echo '<b class="errortext">NO TIME IN</b>';
 						else{
 							echo '<b>'.date('h:i a', strtotime($log->timeIn)).'</b>';
-							if($log->schedIn!='0000-00-00 00:00:00' && strtotime($log->schedIn)<strtotime($log->timeIn))
+							if($log->schedIn!='0000-00-00 00:00:00' && strtotime($log->schedIn.' +1 minute')<strtotime($log->timeIn))
 								echo ' <b class="errortext">LATE</b>';
 						}
 						if($log->published==0 && $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divTimeIn\')">[Edit]</a>';
@@ -149,12 +149,12 @@
 				
 				if($log->published==0 && $this->access->accessFullHR==true){
 					echo '<div id="divTimeInSecond" class="width50 hidden">';
-						if($log->timeIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i', strtotime($log->timeIn));
-						else if($log->schedIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i', strtotime($log->schedIn));
-						else $eTimeIn = date('Y-m-d H:i', strtotime($today));
+						if($log->timeIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i:s', strtotime($log->timeIn));
+						else if($log->schedIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i:s', strtotime($log->schedIn));
+						else $eTimeIn = date('Y-m-d H:i:s', strtotime($today));
 					
 						echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
-							echo $this->textM->formfield('text', 'timeVal', $eTimeIn, 'forminput', 'Time In Format (YYYY-MM-DD HH:MM)', 'required');
+							echo $this->textM->formfield('text', 'timeVal', $eTimeIn, 'forminput', 'Time In Format (YYYY-MM-DD HH:MM:SS)', 'required');
 							echo $this->textM->formfield('textarea', 'reason', '', 'forminput', 'Type reason here...', 'required rows=6');
 							
 							echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);
@@ -213,7 +213,7 @@
 						$cnt = 0;
 						if(count($break)>0){
 							foreach($break AS $b){
-								$btext = $this->textM->formfield('input', 'break[]', date('Y-m-d H:i', strtotime($b)), 'padding5px', 'YYYY-MM-DD HH:MM', 'required' );
+								$btext = $this->textM->formfield('input', 'break[]', date('Y-m-d H:i:s', strtotime($b)), 'padding5px', 'YYYY-MM-DD HH:MM:SS', 'required' );
 								if($cnt%2==0){
 									echo '<div id="divBreakEdit'.$cnt.'">';
 									echo $btext.' - ';
@@ -225,7 +225,7 @@
 								$cnt++;
 							}
 							if($cnt%2!=0){
-								echo $this->textM->formfield('input', 'break[]', '', 'padding5px', 'YYYY-MM-DD HH:MM', 'required');
+								echo $this->textM->formfield('input', 'break[]', '', 'padding5px', 'YYYY-MM-DD HH:MM:SS', 'required');
 								echo ' <a href="javascript:void(0);" onClick="removeBreak('.($cnt-2).')">Remove</a>';
 								echo '</div>';	
 							}
@@ -263,12 +263,12 @@
 				
 				if($log->published==0 && $this->access->accessFullHR==true){
 					echo '<div id="divTimeOutSecond" class="width50 hidden">';
-						if($log->timeOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i', strtotime($log->timeOut));
-						else if($log->schedOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i', strtotime($log->schedOut));
-						else $eTimeOut = date('Y-m-d H:i', strtotime($today));
+						if($log->timeOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i:s', strtotime($log->timeOut));
+						else if($log->schedOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i:s', strtotime($log->schedOut));
+						else $eTimeOut = date('Y-m-d H:i:s', strtotime($today));
 					
 						echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
-							echo $this->textM->formfield('text', 'timeVal', $eTimeOut, 'forminput', 'Time Out Format (YYYY-MM-DD HH:MM)', 'required');
+							echo $this->textM->formfield('text', 'timeVal', $eTimeOut, 'forminput', 'Time Out Format (YYYY-MM-DD HH:MM:SS)', 'required');
 							echo $this->textM->formfield('textarea', 'reason', '', 'forminput', 'Type reason here...', 'required rows=6');
 							
 							echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);
@@ -398,7 +398,7 @@
 	
 	function addBreak(t){
 		cnt = $('#cntNum').val();
-		content = '<div id="divBreakEdit'+cnt+'"><input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM" required> - <input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM" required> <a onclick="removeBreak('+cnt+')" href="javascript:void(0);">Remove</a></div>';
+		content = '<div id="divBreakEdit'+cnt+'"><input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM:SS" required> - <input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM:SS" required> <a onclick="removeBreak('+cnt+')" href="javascript:void(0);">Remove</a></div>';
 		$(content).insertBefore(t);
 		$('#cntNum').val((parseInt(cnt)+1));
 	}

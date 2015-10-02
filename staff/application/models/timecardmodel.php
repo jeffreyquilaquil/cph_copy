@@ -370,7 +370,7 @@ class Timecardmodel extends CI_Model {
 		$first .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
 		
 		//////BREAKS
-		$first .= ' AND timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'"'; //time break less than 1 hour 30 mins
+		$first .= ' AND (timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'" OR timeBreak="00:00:00")'; //NO BREAK OR time break less than 1 hour 30 mins
 			
 		
 		//SECOND CONDITION PUBLISH WITH 0 TIME FOR ABSENT WITH SCHEDULE TODAY

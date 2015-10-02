@@ -14,7 +14,12 @@
 	if(!empty($allLogs)){
 		$allLogsText .= '<table width="25%" class="hidden tblalltimein">';
 		foreach($allLogs AS $a){
-			$allLogsText .= '<tr class="border-bottom-black"><td>'.$logtypeArr[$a->logtype].'</td><td align="center">'.date('h:i a', strtotime($a->logtime)).'</td></tr>';
+			if($a->logtype=='D' || $a->logtype=='E'){
+				if($breaknum%2!=0) $logtypeText = 'Break Out';
+				else $logtypeText = 'Break In';
+			}else $logtypeText = $logtypeArr[$a->logtype];
+			
+			$allLogsText .= '<tr class="border-bottom-black"><td>'.$logtypeText.'</td><td align="center">'.date('h:i a', strtotime($a->logtime)).'</td></tr>';
 		
 			if(empty($logtimein) && $a->logtype=='A'){ //TIME IN
 				$logtimein = $a->logtime;
@@ -77,11 +82,13 @@
 							$diff = $strlogtime - $strstart;
 							$ltype = 'LATE';
 							$islate = true;
-						}else{
+						}else if(date('H:i', $strstart) != date('H:i', $strlogtime)){
 							$diff = $strstart - $strlogtime;
 							$ltype = 'EARLY';
 						}
-						echo ' This is '.$this->textM->convertTimeToMinHours($diff).' <b class="errortext">'.$ltype.'</b>.';
+						
+						if(isset($diff)) 
+							echo ' This is '.$this->textM->convertTimeToMinHours($diff).' <b class="errortext">'.$ltype.'</b>.';
 					}
 					echo '<br/>';
 				}
@@ -93,7 +100,7 @@
 					echo '<br/>';
 				} 
 				
-				if(!empty($breakouttext)) echo '<span class="errortext">Pending Break In. Break out time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span>';
+				if(!empty($breakouttext)) echo '<span class="errortext">Pending Break In. Break out time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span><br/>';
 			
 				if(!empty($logtimeout)){
 					echo 'You clocked out at <b>'.date('h:i a', strtotime($logtimeout)).'</b>.';
