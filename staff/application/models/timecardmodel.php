@@ -140,20 +140,21 @@ class Timecardmodel extends CI_Model {
 		if($dateStart==$dateEnd){
 			$conditionLeave = ' AND ("'.$dateStart.'" BETWEEN leaveStart AND leaveEnd OR leaveStart LIKE "'.$dateStart.'%" OR offsetdates LIKE "%'.date('Y-m-d', strtotime($dateStart)).'%")';
 		}else{
+			$dEnd = date('Y-m-d 23:59:00', strtotime($dateEnd));
 			$conditionLeave = ' AND (';
-				$conditionLeave .= 'leaveStart BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"';
-				$conditionLeave .= ' OR leaveEnd BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"';
+				$conditionLeave .= 'leaveStart BETWEEN "'.$dateStart.'" AND "'.$dEnd.'"';
+				$conditionLeave .= ' OR leaveEnd BETWEEN "'.$dateStart.'" AND "'.$dEnd.'"';
 				
 				$conditionLeave .= ' OR "'.$dateStart.'" BETWEEN leaveStart AND leaveEnd';
-				$conditionLeave .= ' OR "'.$dateEnd.'" BETWEEN leaveStart AND leaveEnd';
+				$conditionLeave .= ' OR "'.$dEnd.'" BETWEEN leaveStart AND leaveEnd';
 				
 				$conditionLeave .= ' OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateStart)).'%"';
 				$conditionLeave .= ' OR offsetdates LIKE "%'.date('Y-m-', strtotime($dateEnd)).'%"';
 			$conditionLeave .= ')';
 		}
 		
-		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);	
-		
+		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+			
 		$leavestrend = strtotime($dateEnd.' +1 day');
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
@@ -161,9 +162,9 @@ class Timecardmodel extends CI_Model {
 			$leaveEnd = date('Y-m-d H:i:s', strtotime($start.' +9 hours'));			
 			
 			while(strtotime($leaveEnd)<=strtotime($end) || strtotime($start)<=strtotime($end)){
-				$dayj = date('j', strtotime($start));
+				$dayj = date('j', strtotime($start)); 
 				
-				if(strtotime($start)>=$strdateStart && strtotime($leaveEnd)<=$leavestrend && isset($dayArr[$dayj]['sched'])){
+				if(strtotime($start)>=$strdateStart && date('Y-m-d', strtotime($leaveEnd))<=date('Y-m-d', $leavestrend) && isset($dayArr[$dayj]['sched'])){
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
 					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
 					

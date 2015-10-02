@@ -257,7 +257,7 @@ class Timecard extends MY_Controller {
 			$OUTL8 = $this->timeM->timesetting('outLate');
 			$strCurDate = strtotime($data['currentDate']);
 			//////////END OF VARIABLE DECLARATIONS	
-			
+	$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);			
 			////CHECK FIRST IF TIME TODAY IS LESS THAN 10AM IF IT IS GET PREVIOUS SCHEDULE TO CHECK IF SHIFT STILL IN PROGRESS
 			if(strtotime($dateTimeToday)<strtotime(date('Y-m-d 13:00:00'))){
 				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
