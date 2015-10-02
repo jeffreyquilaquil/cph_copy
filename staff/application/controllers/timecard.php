@@ -205,10 +205,10 @@ class Timecard extends MY_Controller {
 		and publish data
 	*********/
 	public function cronDailyAttendanceRecord(){
-		$strtoday10 = strtotime(date('Y-m-d 15:00:00'));
+		$strtoday11 = strtotime(date('Y-m-d 11:00:00'));
 		$strtoday = strtotime(date('Y-m-d H:i:s'));
 		
-		if($strtoday<=$strtoday10){
+		if($strtoday<=$strtoday11){
 			$today = date('Y-m-d', strtotime('-1 day'));
 			$this->timeM->publishLogs($today);			
 		}
