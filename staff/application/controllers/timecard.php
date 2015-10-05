@@ -297,7 +297,7 @@ class Timecard extends MY_Controller {
 			}
 						
 			//this is for logs for the calendar month			
-			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, DAY(logDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, published', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, DAY(logDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publish_fk', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
 		
 			foreach($data['dateLogs'] AS $dl){
 				$content = '';
@@ -344,7 +344,7 @@ class Timecard extends MY_Controller {
 				if(!empty($err) || !empty($content)){
 					$numday = $dl->dayLogDate;										
 					$data['dayArr'][$numday] = '<span class="errortext">'.$err.'</span>'.$content;
-					if($dl->published==1) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL <br/>'.((isset($publishArr[$numday]) && $publishArr[$numday]>0)?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
+					if($dl->publish_fk>0) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL <br/>'.((isset($publishArr[$numday]) && $publishArr[$numday]>0)?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
 				}
 			}
 			
@@ -931,16 +931,17 @@ class Timecard extends MY_Controller {
 					$arr['empID_fk'] = $data['visitID'];
 					$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
 				}
-			}else if($_POST['submitType']=='publishlog'){				
-				$publishedID = $this->dbmodel->getSingleField('tcStaffPublished', 'empID_fk="'.$data['visitID'].'" AND publishDate="'.$data['today'].'"');
-				if(empty($publishedID)){ //if unpublished insert published record
+			}else if($_POST['submitType']=='publishlog'){
+				$publishedID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'publish_fk', 'tlogID="'.$_POST['tlogID'].'"');
+				if(!isset($publishedID) || (isset($publishedID) && $publishedID==0)){ //if unpublished insert published record
 					$insPublish['empID_fk'] = $data['visitID'];
 					$insPublish['publishDate'] = $data['today'];
 					$insPublish['tcStaffDailyLogs_fk'] = $_POST['tlogID'];
 					$insPublish['timePaid'] = $_POST['timePaid'];
 					$insPublish['datePublished'] = date('Y-m-d H:i:s');
 					$insPublish['publishedBy'] = $this->user->empID;
-					$this->dbmodel->insertQuery('tcStaffPublished', $insPublish);					
+					$publishID = $this->dbmodel->insertQuery('tcStaffPublished', $insPublish);	
+					$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$publishID , 'tlogID="'.$_POST['tlogID'].'"'); //update log to published primary key
 				}else{ //update record if already published
 					$upPublish['timePaid'] = $_POST['timePaid'];
 					$upPublish['datePublished'] = date('Y-m-d H:i:s');
@@ -948,7 +949,6 @@ class Timecard extends MY_Controller {
 					
 					$this->dbmodel->updateQuery('tcStaffPublished', array('publishedID'=>$publishedID), $upPublish);
 				}
-				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'published=1' , 'tlogID="'.$_POST['tlogID'].'"'); //update logs to published=1
 				
 				//timelog update details
 				$inUp['status'] = 0;
@@ -972,8 +972,8 @@ class Timecard extends MY_Controller {
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		$data['log'] = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"');
 		
-		if(isset($data['log']->published) && $data['log']->published==1){
-			$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'tcStaffDailyLogs_fk="'.$data['log']->tlogID.'"');
+		if(isset($data['log']->publish_fk) && $data['log']->publish_fk>0){
+			$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'tcStaffDailyLogs_fk="'.$data['log']->publish_fk.'"');
 		}
 				
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');

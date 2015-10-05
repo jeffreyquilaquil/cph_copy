@@ -1,5 +1,5 @@
 <?php
-	if($visitID==$this->user->empID && (count($log)==0 || (count($log)>0 && $log->published==0))){
+	if($visitID==$this->user->empID && (count($log)==0 || (count($log)>0 && $log->publish_fk==0))){
 		echo '<div class="floatright">';
 			 echo '<br/><button class="btnclass btngreen" onClick="window.location.href=\''.$this->config->base_url().'timecard/requestupdate/?d='.$today.'\'">Request Update</button>';
 		echo '</div>';
@@ -12,7 +12,7 @@
 		if($visitID!=$this->user->empID) echo $row->fname.'\'s ';
 		echo 'Log Details for '.date('l, F d, Y', strtotime($today));
 		if(count($log)>0){
-			if($log->published==1) echo ' <b class="errortext">PUBLISHED</b>';
+			if($log->publish_fk>0) echo ' <b class="errortext">PUBLISHED</b>';
 			else if($this->access->accessFullHR==true && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
 		}
 		
@@ -28,7 +28,7 @@
 	}	
 	
 	
-	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->published==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
+	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->publish_fk==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
 		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Set Schedule</a>';
 
 
@@ -42,10 +42,10 @@
 		$timePaid = $log->schedHour;
 		if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
 		
-		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->published==0)?'hidden':'').'">';
+		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->publish_fk==0)?'hidden':'').'">';
 		echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
 			echo '<table class="tableInfo" bgcolor="#ffd2d2">';
-			if($log->published==1){
+			if($log->publish_fk>0){
 				echo '<tr class="trlabel"><td colspan=2>Published Details</td></tr>';
 			}else{
 				echo '<tr class="trlabel"><td colspan=2>Review Publish Details</td></tr>';
@@ -112,7 +112,7 @@
 				echo '</tr>';
 			}
 			
-			if($log->published==1 && isset($publish)){
+			if($log->publish_fk>0 && isset($publish)){
 				if(count($publish)>0){
 					echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
 					echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
@@ -144,10 +144,10 @@
 							if($log->schedIn!='0000-00-00 00:00:00' && strtotime($log->schedIn.' +1 minute')<strtotime($log->timeIn))
 								echo ' <b class="errortext">LATE</b>';
 						}
-						if($log->published==0 && $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divTimeIn\')">[Edit]</a>';
+						if($log->publish_fk==0 && $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divTimeIn\')">[Edit]</a>';
 				echo '</div>';
 				
-				if($log->published==0 && $this->access->accessFullHR==true){
+				if($log->publish_fk==0 && $this->access->accessFullHR==true){
 					echo '<div id="divTimeInSecond" class="width50 hidden">';
 						if($log->timeIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i:s', strtotime($log->timeIn));
 						else if($log->schedIn!='0000-00-00 00:00:00') $eTimeIn = date('Y-m-d H:i:s', strtotime($log->schedIn));
@@ -204,11 +204,11 @@
 					}
 					
 					
-					if($log->published==0 && $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divBreaks\')">[Edit]</a>';
+					if($log->publish_fk==0 && $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divBreaks\')">[Edit]</a>';
 				echo '</div>';
 				
 				//FOR EDITING BREAKS
-				if($log->published==0 && $this->access->accessFullHR==true){
+				if($log->publish_fk==0 && $this->access->accessFullHR==true){
 					echo '<div id="divBreaksSecond" class="hidden">';	
 					echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
 						$out2 = 0;
@@ -260,10 +260,10 @@
 							echo ' <b class="errortext">EARLY OUT</b>';
 					}
 					
-					if($log->published==0 &&  $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divTimeOut\')">[Edit]</a>';
+					if($log->publish_fk==0 &&  $this->access->accessFullHR==true) echo ' <a href="javascript:void(0);" onClick="showEdit(\'divTimeOut\')">[Edit]</a>';
 				echo '</div>';
 				
-				if($log->published==0 && $this->access->accessFullHR==true){
+				if($log->publish_fk==0 && $this->access->accessFullHR==true){
 					echo '<div id="divTimeOutSecond" class="width50 hidden">';
 						if($log->timeOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i:s', strtotime($log->timeOut));
 						else if($log->schedOut!='0000-00-00 00:00:00') $eTimeOut = date('Y-m-d H:i:s', strtotime($log->schedOut));

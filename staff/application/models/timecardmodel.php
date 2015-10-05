@@ -311,9 +311,9 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND timeBreak>"'.$this->timeM->timesetting('overBreakTime').'"';	
 		}else if($type=='unpublished'){
 			$flds = ', timeIn, timeOut, timeBreak';
-			$condition .= ' AND published=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
+			$condition .= ' AND publish_fk=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
-			$condition .= ' AND published=1';	
+			$condition .= ' AND publish_fk>0';	
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
@@ -323,7 +323,7 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		if($query==''){
-			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, published'.$flds, 'logDate="'.$dateToday.'" '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, publish_fk '.$flds, 'logDate="'.$dateToday.'" '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $query;
@@ -366,7 +366,7 @@ class Timecardmodel extends CI_Model {
 		If records no discrepancies, insert to update table
 	********/
 	public function publishLogs($today){
-		$condition = 'published=0';
+		$condition = 'publish_fk=0';
 		$condition .= ' AND logDate="'.$today.'"';
 		/////TIME IN
 		$first = 'schedIn!="0000-00-00 00:00:00"';
@@ -404,11 +404,11 @@ class Timecardmodel extends CI_Model {
 				$insArr['datePublished'] = date('Y-m-d H:i:s');
 				
 				$ins = $this->dbmodel->insertQuery('tcStaffPublished', $insArr);
+				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$ins, 'tlogID="'.$q->tlogID.'"');
 				$logIDs .= $q->tlogID.',';
 			}
 			
 			if(!empty($logIDs)){
-				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'published=1', 'tlogID IN('.rtrim($logIDs, ',').')');
 				$this->timeM->cntUpdateAttendanceRecord($today); //update tcAttendance Records		
 			}				
 		}
