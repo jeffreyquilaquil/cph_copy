@@ -226,7 +226,7 @@ class Schedules extends MY_Controller {
 				exit;
 			}		
 			$data['row'] = $this->dbmodel->getSingleInfo('tcStaffSchedules', 'schedID, empID_fk, CONCAT(fname," ",lname) AS name, tcCustomSched_fk, effectivestart, effectiveend, sunday, monday, tuesday, wednesday, thursday, friday, saturday', 'schedID="'.$this->uri->segment(3).'" AND effectiveend="0000-00-00"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk LEFT JOIN staffs ON empID_fk=empID');	
-			$data['schedTimes'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1);
+			$data['schedTimes'] = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1, '', 'timeValue');
 			$data['timeArr'] = $this->commonM->getSchedTimeArray();
 		}else{
 			$data['access'] = false;
