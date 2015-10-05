@@ -817,7 +817,7 @@ class Textmodel extends CI_Model {
 	
 	public function displayAttAdditional($say){
 		$hello = '<td>';
-			if($say->published==1) $hello .= 'Published';
+			if($say->publish_fk>0) $hello .= 'Published';
 			else if($this->access->accessFullHR==true) $hello .= '<a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->logDate.'&back=attendancedetails"><button>Resolve</button></a>';
 			else $hello .= 'Unpublished';
 		$hello .= '</td>';				
