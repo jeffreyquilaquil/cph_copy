@@ -281,7 +281,7 @@ class Commonmodel extends CI_Model {
 	public function getSchedTimeArray(){
 		$arr = array();
 		$arr[0] = '';
-		$query = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeID, timeValue');
+		$query = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'timeID, timeValue', 1, '', 'timeValue');
 		foreach($query AS $q){
 			$arr[$q->timeID] = $q->timeValue;
 		}
