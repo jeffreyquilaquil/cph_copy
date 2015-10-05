@@ -85,7 +85,8 @@ class Timecard extends MY_Controller {
 			$queryOffset = $this->timeM->getNumDetailsAttendance($ins['dateToday'], 'offset');
 			$ins['scheduledOffset'] = count($queryOffset);
 			
-			$this->dbmodel->insertQuery('tcAttendance', $ins);	///INSERT TO TCATTENDANCE TABLE
+			if($scheduled>0)
+				$this->dbmodel->insertQuery('tcAttendance', $ins);	///INSERT TO TCATTENDANCE TABLE if there there is scheduled work today
 		}else{
 			$this->timeM->cntUpdateAttendanceRecord($today);
 		}
