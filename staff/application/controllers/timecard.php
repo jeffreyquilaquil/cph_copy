@@ -227,7 +227,8 @@ class Timecard extends MY_Controller {
 	}
 		
 	/****
-		This cron runs every hour to check if employee clocked in and clocked out. If not, then it will send an employee reminding to clock in or clock out.
+		This cron runs every hour to check if employee clocked in and clocked out. 
+		If not, then it will send an employee reminding to clock in or clock out.
 	****/
 	public function cronTimecardLogsEmails(){
 		$date = date('Y-m-d H:i:s');
