@@ -245,7 +245,7 @@ class Timecard extends MY_Controller {
 			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
 		}
 		
-		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'test', 'cronTimecardLogsEmails');
+		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'test', 'cronTimecardLogsEmails '.date('Y-m-d H:i:s"'));
 	}
 	
 	/******
