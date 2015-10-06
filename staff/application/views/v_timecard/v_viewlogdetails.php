@@ -1,7 +1,7 @@
 <?php
-	if($visitID==$this->user->empID && (count($log)==0 || (count($log)>0 && $log->publish_fk==0))){
+	if($visitID==$this->user->empID){
 		echo '<div class="floatright">';
-			 echo '<br/><button class="btnclass btngreen" onClick="window.location.href=\''.$this->config->base_url().'timecard/requestupdate/?d='.$today.'\'">Request Update</button>';
+			 echo '<br/><a href="'.$this->config->base_url().'timecard/requestupdate/?d='.$today.'" class="iframe"><button class="btnclass btngreen">Request Update</button></a>';
 		echo '</div>';
 	}
 	
@@ -112,12 +112,10 @@
 				echo '</tr>';
 			}
 			
-			if($log->publish_fk>0 && isset($publish)){
-				if(count($publish)>0){
-					echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
-					echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
-					echo '<tr><td>Published By</td><td>'.(($publish->publishedBy==0)?'System Published':$this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$publish->publishedBy.'"')).'</td></tr>';
-				}
+			if(count($publish)>0){
+				echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
+				echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
+				echo '<tr><td>Published By</td><td>'.(($publish->publishedBy==0)?'System Published':$this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$publish->publishedBy.'"')).'</td></tr>';
 			}else{
 				echo '<tr><td width="20%">Time Paid</td><td>'.$this->textM->formfield('number', 'timePaid', $timePaid, 'forminput', '', 'required min="0"').'</td></tr>';
 				echo '<tr><td><br/></td><td>';					

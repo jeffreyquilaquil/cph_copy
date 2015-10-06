@@ -70,7 +70,7 @@
 								
 				if(!empty($schedT) && $schedT!='On Leave' && empty($logtimein)){
 					if($visitID==$this->user->empID) echo '<span class="errortext weightbold">'.(($visitID==$this->user->empID)?'You':$row->fname.'\'').' do not have time in yet.</span>';
-					else echo '<span class="errortext weightbold">No time in yet.</span>';
+					else echo '<span class="errortext weightbold">No time in yet.</span><br/>';
 				}else if(!empty($logtimein)){
 					echo (($visitID==$this->user->empID)?'You':$row->fname).' clocked in at <b>'.date('h:i a', strtotime($logtimein)).'</b>.';
 					

@@ -16,10 +16,10 @@
 			echo '<b>Message to HR</b><br/>';
 			echo $this->textM->formfield('textarea', 'message', '', 'forminput', 'Type message here...', 'rows=10 required');
 			echo '<br/><br/>';
-			echo '<b>Upload Supporting Documents</b> (Optional)<br/>';
-			echo $this->textM->formfield('file', 'docs[]').'<br/>';
-			echo $this->textM->formfield('file', 'docs[]').'<br/>';
-			echo $this->textM->formfield('file', 'docs[]').'<br/>';
+			echo '<b>Upload Supporting Documents</b><br/>';
+			echo '* '.$this->textM->formfield('file', 'docs[]', '', '', '', 'required').'<br/>';
+			echo '&nbsp;&nbsp;&nbsp;'.$this->textM->formfield('file', 'docs[]').'<br/>';
+			echo '&nbsp;&nbsp;&nbsp;'.$this->textM->formfield('file', 'docs[]').'<br/>';
 			echo '<br/>';
 			echo '<div class="taright">'.$this->textM->formfield('submit', '', 'Submit Request', 'btnclass btngreen').'</div>';
 			echo $this->textM->formfield('hidden', 'logDate', $today);

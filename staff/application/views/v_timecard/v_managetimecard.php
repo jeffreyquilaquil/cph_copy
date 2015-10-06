@@ -1,10 +1,11 @@
 <h2>Manage Timecard</h2>
 <hr/>
 <ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">Timelogs Pending Request (<?= count($timelogRequests) ?>)</li>
+	<li class="tab-link currentd" data-tab="tab-pending">Timelogs Pending Request (<?= count($timelogRequests) ?>)</li>
+	<li class="tab-link current" data-tab="tab-unpublished">Unpublished Logs (<?= count($dataUnpublished) ?>)</li>
 </ul>
 
-<div id="tab-1" class="tab-content current">	
+<div id="tab-pending" class="tab-content currentd">	
 <?php
 	if(count($timelogRequests)==0){
 		echo '<p class="padding5px">No pending request.</p>';
@@ -32,5 +33,30 @@
 <?php
 	}
 ?>
-	
+</div>
+
+<!--------------- START OF UNPUBLISHED LOGS------------------------->
+<div id="tab-unpublished" class="tab-content current">	
+<?php
+	if(count($dataUnpublished)==0){
+		echo '<p>No unpublish logs.</p>';
+	}else{
+		$pubByDate = array();
+		foreach($dataUnpublished AS $d){
+			$pubByDate[$d->logDate][] = $d;
+		}
+		
+		foreach($pubByDate AS $d8=>$dbyd){
+			echo '<table class="tableInfo">';
+				echo '<tr class="trlabel"><td>'.date('F d, Y', strtotime($d8)).' ('.count($dbyd).')</td></tr>';
+				echo '<tr><td><ul>';
+					foreach($dbyd AS $d){
+						echo '<li><a href="'.$this->config->base_url().'timecard/'.$d->empID_fk.'/viewlogdetails/?d='.$d->logDate.'" class="iframe">'.$d->name.'</a></li>';
+					}
+				echo '</ul></td></tr>';
+			echo '</table>';
+		}
+		
+	}
+?>
 </div>

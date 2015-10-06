@@ -441,9 +441,7 @@ class Timecardmodel extends CI_Model {
 			
 			$insArr = array();
 			if(isset($sArr['sched'])){
-				$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);	
-				$insArr['logDate'] = $today;
-				$insArr['empID_fk'] = $empID;
+				$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
 				if(isset($schedArr['start']) && isset($schedArr['end'])){
 					$insArr['schedIn'] = $schedArr['start'];
 					$insArr['schedOut'] = $schedArr['end'];
@@ -480,6 +478,8 @@ class Timecardmodel extends CI_Model {
 			}
 			
 			if(!empty($insArr)){
+				$insArr['logDate'] = $today;
+				$insArr['empID_fk'] = $empID;
 				$logID = $this->dbmodel->insertQuery('tcStaffDailyLogs', $insArr);
 			}
 		}

@@ -245,5 +245,106 @@ class Emailmodel extends CI_Model {
 		
 		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH', 'helpdesk.cebu@tatepublishing.net');
 	}
+	
+	public function emailTimecard($type, $row){
+		$from = 'careers.cebu@tatepublishing.net';
+		if($type=='notimein'){
+			$subject = 'CareerPH Timecard No Time In Reminder';
+			$to = $row->email;
+			$cc = $row->supEmail;
+			
+			
+			$body = '<p>Hi '.trim($row->fname).',</p>';
+			$body .= '<p>This is an auto email to remind you that you do not have time in yet for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
+			$body .= '<p><i>Kindly ignore this message if you already clocked in.</i></p>';
+			$body .= '<p>&nbsp;</p>';
+			$body .= '<p>Thanks!<br/>CAREERPH</p>';
+		}else if($type=='noclockout2hours'){
+			$subject = 'CareerPH Timecard No Time Out Reminder';
+			$to = $row->email;
+			$cc = $row->supEmail;
+						
+			$body = '<p>Hi '.trim($row->fname).',</p>';
+			$body .= '<p>This is an auto email to remind you that you do not have time out recorded for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
+			$body .= '<p><i>Kindly ignore this message if you already clocked out or click <a href="'.$this->config->base_url().'timecard/timelogs/">here</a> to view your timelogs.</i></p>';
+			$body .= '<p>&nbsp;</p>';
+			$body .= '<p>Thanks!<br/>CAREERPH</p>';
+		}
+		
+		if(!empty($to))
+			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+	}
+	
+	public function emailTimecardCheckLogforPay($period, $deadline){
+		$subject = 'DEADLINE to Resolve Attendance for Payroll Calculation';
+		$from = 'careers.cebu@tatepublishing.net';
+		$to = 'dayshift.cebu@tatepublishing.net,nightshift.cebu@tatepublishing.net';
+		$cc = 'leaders.cebu@tatepublishing.net';
+		
+		$body = '<p>Hi All,</p>';
+		$body .= '<p>Please be reminded to double-check your time card logs on "<a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>" > "<a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a>"</a> page in CareerPH. Any status that does not equal to "Published to Payroll (Number of Hours)" from <b>'.$period.'</b> may lead to deductions. So even if you have already passed your forms through careerph.tatepublishing.net, please follow up with us until ALL your time logs show "Published to Payroll (Number of Hours)".</p>';
+		$body .= '<p>If you have dates where your attendance is not published to payroll, please send message to HR by clicking "Request Update" on the date options or email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> AND CC:<a href="mailto:accounting.cebu@tatepublishing.net">accounting.cebu@tatepublishing.net</a> on or before <b>'.$deadline.'</b> to ensure that you do not have any payroll discrepancies for the upcoming pay day.</p>';
+		$body .= '<p>Send email to <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> if you have any questions.</p>';
+		$body .= '<p>&nbsp;</p>';
+		$body .= '<p>Thanks!<br/>CareerPH</p>';
+		
+		$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+	}
+	
+	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){
+		$empArr = array();
+		foreach($query AS $q){
+			$empArr[$q->empID_fk]['email'] = $q->email;
+			$empArr[$q->empID_fk]['fname'] = $q->fname;
+			$empArr[$q->empID_fk]['lname'] = $q->lname;
+			$empArr[$q->empID_fk]['logDate'][] = $q->logDate;
+		}
+		
+		if(count($empArr)>0){
+			$subject = 'CareerPH Timecard Reminder - Unpublished Logs';
+			$from = 'careers.cebu@tatepublishing.net';
+			
+			if($type=='HR'){ //sending message reminder to HR
+				$body = '<p>Hi HR,</p>';
+				$body .= '<p>Please check unpublished logs for pay period <b>'.strtoupper(date('M d', strtotime($dateStart)).' - '.date('M d', strtotime($dateEnd))).'</b> for the following employees:</p>';
+				$body .= '<ul>';
+				foreach($empArr AS $k=>$emp){
+					$body .= '<li>';
+						$body .= $emp['fname'].' '.$emp['lname'];
+						$body .= '<ul>';
+							foreach($emp['logDate'] AS $log)
+								$body .= '<li><a href="'.$this->config->base_url().'timecard/'.$k.'/viewlogdetails/?d='.$log.'">'.date('F d, Y', strtotime($log)).'</a></li>';
+						$body .= '</ul>';
+					$body .= '</li>';
+				}	
+				$body .= '</ul>';
+				
+				$body .= '<p>&nbsp;</p>';
+				$body .= '<p>Thanks!<br/>CareerPH</p>';
+				$this->emailM->sendEmail($from, 'hr.cebu@tatepublishing.net', $subject, $body, 'CareerPH'); //SEND EMAIL
+			}else{ //sending messages to staffs
+				foreach($empArr AS $emp){
+					$to = $emp['email'];
+					
+					$log = '<ul>';
+					foreach($emp['logDate'] AS $l){
+						$log .= '<li>'.date('F d, Y', strtotime($l)).'</li>';
+					}
+					$log .= '</ul>';
+					
+					$body = '<p><b>Please ignore if you are not part of the test group.</b><br/><br/></p>';
+					$body .= '<p>Hi '.$emp['fname'].',</p>';
+					$body .= '<p>Please be reminded to double-check your time card logs on "<a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>" > "<a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a>"</a> page in CareerPH. Logs on the dates below are not yet published to payroll for the pay period <b>'.strtoupper(date('M d', strtotime($dateStart)).' - '.date('M d', strtotime($dateEnd))).'</b>.</p>';
+					$body .= $log;
+					$body .= '<p>If you have dates where your attendance is not published to payroll and need updates, please send message to HR by clicking "Request Update" on the date options or email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> AND CC:<a href="mailto:accounting.cebu@tatepublishing.net">accounting.cebu@tatepublishing.net</a> immediately to ensure that you do not have any payroll discrepancies for the upcoming pay day.</p>';
+					$body .= '<p>Send email to <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> if you have any questions.</p>';
+					$body .= '<p>&nbsp;</p>';
+					$body .= '<p>Thanks!<br/>CareerPH</p>';
+					
+					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH'); //SEND EMAIL
+				}
+			}		
+		}
+	}
 }
 ?>

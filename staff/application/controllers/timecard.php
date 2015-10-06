@@ -36,6 +36,10 @@ class Timecard extends MY_Controller {
 		}	
 	}
 	
+	public function sendTest(){
+		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'tetsetet', 'eeeeee', 'CAREERPH');
+	}
+	
 	public function timetest(){
 		$d = date('2015-10-01');
 		$this->timeM->publishLogs($d);
@@ -201,9 +205,9 @@ class Timecard extends MY_Controller {
 	}
 	
 	/*********
-		This cron will run every 2 hours to update records in tcAttendance
+		This cron will run every hour to update records in tcAttendance
 		check previous date if time is less than or equal to 10AM today
-		and publish data
+		and PUBLISH data
 	*********/
 	public function cronDailyAttendanceRecord(){
 		$strtoday11 = strtotime(date('Y-m-d 11:00:00'));
@@ -222,6 +226,67 @@ class Timecard extends MY_Controller {
 		}
 	}
 		
+	/****
+		This cron runs every hour to check if employee clocked in and clocked out. If not, then it will send an employee reminding to clock in or clock out.
+	****/
+	public function cronTimecardLogsEmails(){
+		$date = date('Y-m-d H:i:s');
+		
+		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.$date.'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
+		if(count($queryNoTimeIn)>0){
+			foreach($queryNoTimeIn AS $timein) $this->emailM->emailTimecard('notimein', $timein);
+		}		
+		
+		//SEND EMAIL TO EMPLOYEES IF NO CLOCK OUT YET AFTER 4 HOURS
+		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:i:s', strtotime($date.' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
+		if(count($queryNoClockOut)>0){
+			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
+		}		
+	}
+	
+	/******
+		This cron runs every 9th and 24th of the month to remind employees to check their logs for the current pay period
+		For 15th pay send on 9th of the month for pay period - from 26-10 deadline is 11th
+		For 30th pay send on 24th of the month for pay period - from 11-25 deadline is 26th
+	******/
+	public function cronEmailReviewLogReminder(){
+		if(date('d')==9){ //check if day today is 9th of the month
+			$period = date('M 26', strtotime(' -1 month')).' - '.date('M 10');
+			$deadline = date('l, F 11, Y 07:00 A');
+		}else{
+			$period = date('M 11').' - '.date('M 25');
+			$deadline = date('l, F 26, Y 07:00 A');
+		}
+		
+		$this->emailM->emailTimecardCheckLogforPay($period, $deadline); //SENDING TO DAYSHIFT AND NIGHT SHIFT CC LEADERS	
+		exit;
+	}
+	
+	/**********
+		This is a cron that will send email to employees and HR for unpublished logs
+		Runs on 11th and 26th of the month 7AM for HR and 10AM for employees for 15th and 30th pay period
+		15th pay for 26-10
+		30th pay for 11-25
+	**********/
+	public function cronEmailUnpublishedLogs(){
+		$page = $this->uri->segment(3);
+			
+		if(date('d')==6){ //check if day today is 11th of the month
+			$dateStart = date('Y-m-26', strtotime('-1 month'));
+			$dateEnd = date('Y-m-10');
+		}else{ //if today is 26th of the month
+			$dateStart = date('Y-m-11');
+			$dateEnd = date('Y-m-25');
+		}
+		
+		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, email, fname, lname', 'publish_fk=0 AND logDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'logDate');
+		if(count($query)>0){
+			if($page=='hr') $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, 'HR');
+			else $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query);
+		}
+		exit;
+	}
 	
 	public function timelogs($data){
 		$data['content'] = 'v_timecard/v_timelogs';
@@ -493,7 +558,6 @@ class Timecard extends MY_Controller {
 	
 		$this->load->view('includes/template', $data);
 	}
-	
 	
 	public function calendar($data){
 		$data['content'] = 'v_timecard/v_calendar';	
@@ -807,14 +871,16 @@ class Timecard extends MY_Controller {
 	}
 	
 	
-	public function managetimecard(){
+	public function managetimecard($data){
 		$data['content'] = 'v_timecard/v_managetimecard';
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
 				
 			}
 		}
@@ -972,13 +1038,10 @@ class Timecard extends MY_Controller {
 		$data['schedToday'] = $this->timeM->getSchedToday($id, $data['today']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		$data['log'] = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"');
-		
-		if(isset($data['log']->publish_fk) && $data['log']->publish_fk>0){
-			$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'tcStaffDailyLogs_fk="'.$data['log']->publish_fk.'"');
-		}
-				
+		$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'empID_fk="'.$id.'" AND publishDate="'.$data['today'].'"');
+						
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-		$this->load->view('includes/templatecolorbox', $data);
+		$this->load->view('includes/templatecolorbox', $data);		
 	}
 	
 	public function attendancedetails($data){
