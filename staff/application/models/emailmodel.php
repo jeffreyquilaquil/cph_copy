@@ -253,8 +253,8 @@ class Emailmodel extends CI_Model {
 			$to = $row->email;
 			$cc = $row->supEmail;
 			
-			
-			$body = '<p>Hi '.trim($row->fname).',</p>';
+			$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
+			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time in yet for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked in.</i></p>';
 			$body .= '<p>&nbsp;</p>';
@@ -263,8 +263,9 @@ class Emailmodel extends CI_Model {
 			$subject = 'CareerPH Timecard No Time Out Reminder';
 			$to = $row->email;
 			$cc = $row->supEmail;
-						
-			$body = '<p>Hi '.trim($row->fname).',</p>';
+			
+			$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
+			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time out recorded for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked out or click <a href="'.$this->config->base_url().'timecard/timelogs/">here</a> to view your timelogs.</i></p>';
 			$body .= '<p>&nbsp;</p>';
@@ -272,7 +273,7 @@ class Emailmodel extends CI_Model {
 		}
 		
 		if(!empty($to))
-			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
 	}
 	
 	public function emailTimecardCheckLogforPay($period, $deadline){
@@ -321,7 +322,7 @@ class Emailmodel extends CI_Model {
 				
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
-				$this->emailM->sendEmail($from, 'hr.cebu@tatepublishing.net', $subject, $body, 'CareerPH'); //SEND EMAIL
+				$this->emailM->sendEmail($from, 'hr.cebu@tatepublishing.net', $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
 					$to = $emp['email'];
@@ -341,7 +342,7 @@ class Emailmodel extends CI_Model {
 					$body .= '<p>&nbsp;</p>';
 					$body .= '<p>Thanks!<br/>CareerPH</p>';
 					
-					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH'); //SEND EMAIL
+					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 				}
 			}		
 		}
