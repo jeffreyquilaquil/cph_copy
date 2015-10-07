@@ -231,16 +231,14 @@ class Timecard extends MY_Controller {
 		If not, then it will send an employee reminding to clock in or clock out.
 	****/
 	public function cronTimecardLogsEmails(){
-		$date = date('Y-m-d H:i:s');
-		
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
-		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.$date.'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
 		if(count($queryNoTimeIn)>0){
 			foreach($queryNoTimeIn AS $timein) $this->emailM->emailTimecard('notimein', $timein);
 		}		
 		
 		//SEND EMAIL TO EMPLOYEES IF NO CLOCK OUT YET AFTER 4 HOURS
-		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime($date.' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
+		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
 		if(count($queryNoClockOut)>0){
 			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
 		}
