@@ -153,8 +153,8 @@ class Timecard extends MY_Controller {
 								}  
 							} 						
 							
-							else if($d['type']=='Z'){
-								if($logData->timeOut==$date00) $updateArr['timeOut'] = $d['logtime'];
+							else if($d['type']=='Z'){ //for time out
+								if($logData->timeOut==$date00 && $logData->timeIn!=$date00) $updateArr['timeOut'] = $d['logtime'];
 								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
@@ -1039,6 +1039,7 @@ class Timecard extends MY_Controller {
 		$data['schedToday'] = $this->timeM->getSchedToday($id, $data['today']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		$data['log'] = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"');
+		$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
 		$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'empID_fk="'.$id.'" AND publishDate="'.$data['today'].'"');
 						
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');

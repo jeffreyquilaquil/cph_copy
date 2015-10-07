@@ -294,8 +294,26 @@
 			echo '<tr>';
 				echo '<td>Offset Time Out</td>';
 				echo '<td><b>'.(($log->offTimeOut!='0000-00-00 00:00:00')?date('h:i a', strtotime($log->offTimeOut)):'No Time Out').'</b></td>';
-			echo '</tr>';
-			
+			echo '</tr>';	
+		}
+		
+		//BIOMETRIC LOGS
+		if(count($allLogs)>0){
+			echo '<tr><td class="trhead" colspan=2>Biometric Logs</td></tr>';
+			$breaknum = 0;
+			foreach($allLogs AS $l){
+				echo '<tr>';
+					echo '<td>';
+						if($l->logtype=='D' || $l->logtype=='E'){
+							if($breaknum%2!=0) echo 'Break Out';
+							else echo 'Break In';
+						}else echo $logtypeArr[$l->logtype];
+					echo '</td>';					
+					echo '<td>'.date('h:i a', strtotime($l->logtime)).'</td>';
+				echo '</tr>';
+				
+				$breaknum++;
+			}
 		}
 		
 		echo '</table>';
