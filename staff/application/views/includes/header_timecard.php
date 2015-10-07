@@ -74,7 +74,6 @@
 	}
 	if($this->access->accessFullHRFinance==true){
 		echo '<li class="tab-link admin '.(($tpage=='payrolls')?'current':'').'" data-tab="payrolls">Payrolls</li> ';
-		echo '<li class="tab-link admin '.(($tpage=='managetimecard')?'current':'').'" data-tab="managetimecard">Manage Timecard</li> ';
 		//echo '<li class="tab-link admin '.(($tpage=='reports')?'current':'').'" data-tab="reports">Reports</li> ';
 	}
 ?>	
