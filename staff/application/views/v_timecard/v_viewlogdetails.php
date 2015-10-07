@@ -1,4 +1,8 @@
 <?php
+	/////////VARIABLE DECLARATION
+	$cntlog = count($log);
+	
+	
 	if($visitID==$this->user->empID){
 		echo '<div class="floatright">';
 			 echo '<br/><a href="'.$this->config->base_url().'timecard/requestupdate/?d='.$today.'" class="iframe"><button class="btnclass btngreen">Request Update</button></a>';
@@ -11,9 +15,9 @@
 	echo '<h3>';
 		if($visitID!=$this->user->empID) echo $row->fname.'\'s ';
 		echo 'Log Details for '.date('l, F d, Y', strtotime($today));
-		if(count($log)>0){
-			if($log->publish_fk>0) echo ' <b class="errortext">PUBLISHED</b>';
-			else if($this->access->accessFullHR==true && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
+		if($cntlog>0){
+			if($log->publish_fk>0 || isset($publish->publishedID)) echo ' <b class="errortext">PUBLISHED</b>';
+			else if($this->access->accessFullHR==true && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
 		}
 		
 		///LINK TO TIMELOG PAGE
@@ -25,33 +29,46 @@
 		if(isset($schedToday['offset'])) echo '<b>Offset Schedule:</b> '.$schedToday['offset'].'<br/>';
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
-	}	
+	}
+	
+	///CHANGE SCHEDULE
+	if($this->access->accessFullHR==true && ($cntlog==0 || ($cntlog >0 && $log->publish_fk==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
+		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Change Schedule</a>';
+	
+	///CHECK IF THERE IS LEAVE
+	if(isset($schedToday['leaveID']))
+		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view leave details.</p>';
 	
 	
-	if($this->access->accessFullHR==true && (count($log)==0 || (count($log)>0 && $log->publish_fk==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
-		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Set Schedule</a>';
+	if($cntlog==0){
+		if(!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave'))
+			echo '<p class="errortext">No Logs Recorded.</p>';
+	//}else if(!isset($schedToday['sched']) || ($schedToday['sched']!='On Leave' || ($schedToday['sched']=='On Leave' && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00'))){	
+	}
+	
 
-
-	if(count($log)==0){
-		if(isset($schedToday['sched']) && $schedToday['sched']=='On Leave' && isset($schedToday['leaveID'])){
-			echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';
-		}else echo '<p class="errortext">No Logs Recorded.</p>';
-	}else if(!isset($schedToday['sched']) || ($schedToday['sched']!='On Leave' || ($schedToday['sched']=='On Leave' && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00'))){		
-		//PUBLISH
 		$timeDeduction = 0;
-		$timePaid = $log->schedHour;
-		if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
+		if($cntlog>0){
+			$timePaid = $log->schedHour;
+			if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
+		}else $timePaid = 0;
 		
-		echo '<div style="padding:10px 0;" id="divpublish" class="'.(($log->publish_fk==0)?'hidden':'').'">';
+		
+		echo '<div style="padding:10px 0;" id="divpublish" class="'.((!isset($publish->publishedID))?'hidden':'').'">';
 		echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
 			echo '<table class="tableInfo" bgcolor="#ffd2d2">';
-			if($log->publish_fk>0){
-				echo '<tr class="trlabel"><td colspan=2>Published Details</td></tr>';
+			if(isset($publish->publishedID)){
+				echo '<tr class="trlabel"><td colspan=2>Published Details';
+				if($this->access->accessFullHR==true) echo ' <button type="button" onClick="updatePublish(1)" id="btnUpdatePub">Update</button>';
+				echo '</td></tr>';
 			}else{
 				echo '<tr class="trlabel"><td colspan=2>Review Publish Details</td></tr>';
 			}
-				
-			echo '<tr><td width="20%">Base Paid Hours</td><td>'.$timePaid.' Hours</td></tr>';	
+			
+			if($timePaid>0)
+				echo '<tr><td width="20%">Base Paid Hours</td><td>'.$timePaid.' Hours</td></tr>';	
+		
+		if($cntlog>0){
 			if($log->schedIn!='0000-00-00 00:00:00' && strtotime($log->schedIn)<strtotime($log->timeIn)){ ///IF LATE
 				echo '<tr><td>Late</td><td>';
 					$lateSec = strtotime($log->timeIn) - strtotime($log->schedIn);
@@ -111,13 +128,14 @@
 					echo '</td>';
 				echo '</tr>';
 			}
+		} ///end of if($cntlog>0)
 			
 			if(count($publish)>0){
 				echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
 				echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($publish->publishedBy==0)?'System Published':$this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$publish->publishedBy.'"')).'</td></tr>';
-			}else{
-				echo '<tr><td width="20%">Time Paid</td><td>'.$this->textM->formfield('number', 'timePaid', $timePaid, 'forminput', '', 'required min="0"').'</td></tr>';
+			}else if($cntlog>0){
+				echo '<tr><td width="20%">Time Paid <i>(Hours)</i></td><td>'.$this->textM->formfield('number', 'timePaid', $timePaid, 'forminput', '', 'required min="0"').'</td></tr>';
 				echo '<tr><td><br/></td><td>';					
 					echo $this->textM->formfield('hidden', 'submitType', 'publishlog');
 					echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);
@@ -127,8 +145,26 @@
 			}				
 			echo '</table>';
 		echo '</form>';
-		echo '</div>';		
 		
+		//FOR EDITING PUBLISHED LOGS
+		if(count($publish)>0){
+			echo '<form id="formUpdatePub" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
+			echo '<table class="tableInfo">';
+				echo '<tr><td class="trhead" colspan=2>Update Published Log</td></tr>';
+				echo '<tr><td width="20%">From Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
+				echo '<tr><td>To Total Time Paid <i>(Hours)</i></td><td>'.$this->textM->formfield('number', 'newTimePaid', '', 'forminput', 'Number of Hours', 'min=0 required').'</td></tr>';
+				echo '<tr><td>Reason</td><td>'.$this->textM->formfield('textarea', 'reasonUpdate', '', 'forminput', '', 'required').'</td></tr>';
+				echo '<tr><td><br/></td><td>'.$this->textM->formfield('submit', '', 'Update', 'btnclass btngreen').' '.$this->textM->formfield('button', '', 'Cancel', 'btnclass', '', 'onClick="updatePublish(0);"').'</td></tr>';
+			echo '</table>';
+			echo $this->textM->formfield('hidden', 'publishedID', $publish->publishedID);
+			echo $this->textM->formfield('hidden', 'submitType', 'updatePublished');
+			echo '</form>';
+		}
+		echo '</div>';	
+	
+	
+	
+	if($cntlog>0 || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')){		
 		echo '<table class="tableInfo" style="margin-top:10px;">';		
 			echo '<tr class="trlabel"><td colspan=2>All Logs</td></tr>';
 		//TIME IN
@@ -296,6 +332,7 @@
 				echo '<td><b>'.(($log->offTimeOut!='0000-00-00 00:00:00')?date('h:i a', strtotime($log->offTimeOut)):'No Time Out').'</b></td>';
 			echo '</tr>';	
 		}
+	} ///end of  if($cntlog>0)
 		
 		//BIOMETRIC LOGS
 		if(count($allLogs)>0){
@@ -317,11 +354,11 @@
 		}
 		
 		echo '</table>';
-	}
+	///}
 	
 	
 	if(count($updateRequests)>0){
-		echo '<br/><br/><table class="tableInfo">';
+		echo '<br/><table class="tableInfo">';
 		echo '<tr class="trlabel"><td colspan=3>Update History</td></tr>';
 		echo '<tr class="trhead"><td>Date</td><td>Message</td><td>Status</td></tr>';
 		foreach($updateRequests AS $u){
@@ -357,11 +394,8 @@
 						}							
 					} 
 					else{
-						if(!empty($u->type)){
-							echo '<b>Updated</b><br/>						
-							<i>Update Note:</i>'.nl2br($u->updateNote).'<br/>';
-						}
-						echo '<i>Updated By:</i>'.$u->updatedBy.' - '.$u->dateUpdated;
+						echo '<i>Updated By:</i> '.$u->updatedBy.' - '.$u->dateUpdated;
+						if(!empty($u->updateNote)) echo '<br/><i>Update Note:</i> '.nl2br($u->updateNote);
 					}
 				echo '</td>';
 			echo '</tr>';
@@ -430,5 +464,15 @@
 		content = '<div id="divBreakEdit'+cnt+'"><input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM:SS" required> - <input type="input" class="padding5px" name="break[]" placeholder="YYYY-MM-DD HH:MM:SS" required> <a onclick="removeBreak('+cnt+')" href="javascript:void(0);">Remove</a></div>';
 		$(content).insertBefore(t);
 		$('#cntNum').val((parseInt(cnt)+1));
+	}
+	
+	function updatePublish(confess){
+		if(confess==1){
+			$('#btnUpdatePub').hide();
+			$('#formUpdatePub').show();
+		}else{
+			$('#btnUpdatePub').show();
+			$('#formUpdatePub').hide();
+		}
 	}
 </script>

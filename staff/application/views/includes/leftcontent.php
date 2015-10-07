@@ -21,6 +21,11 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		}
 	</script>
 <?php
+}else if(isset($tpage) && $tpage=='managetimecard'){ //MANAGE TIMECARD LEFT CONTENT
+	echo '<ul id="leftMenu" style="margin:0px;">';
+		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/unpublishedlogs/" class="'.(($proudpage=='unpublishedlogs')?'current':'').'">Unpublished Logs ('.count($dataUnpublished).')</a></li>';
+		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/logpendingrequest/" class="'.(($proudpage=='logpendingrequest')?'current':'').'">Timelog Pending Requests ('.count($timelogRequests).')</a></li>';
+	echo '</ul>';
 }else if($this->user!=false && count($row)>0){
 	$fname = '';
 

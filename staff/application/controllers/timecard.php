@@ -873,23 +873,31 @@ class Timecard extends MY_Controller {
 	
 	
 	public function managetimecard($data){
-		$data['content'] = 'v_timecard/v_managetimecard';
+		$data['content'] = 'v_timecard/v_manage_unpublishedlogs';	
+		$data['tpage'] = 'managetimecard';
+		$data['column'] = 'withLeft';
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{
-				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['proudpage'] = $this->uri->segment(3);
+				if(empty($data['proudpage'])) $data['proudpage'] = 'unpublishedlogs';
 				
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				
+				if($data['proudpage']=='logpendingrequest'){
+					$data['content'] = 'v_timecard/v_manage_logpendingreq';
+				}				
 			}
 		}
 		
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function viewlogdetails($data){	//	$this->timeM->publishLogs(date('Y-m-28')); exit;
+	public function viewlogdetails($data){
 		$data['content'] = 'v_timecard/v_viewlogdetails';
 		$id = $data['visitID'];
 		
@@ -1033,6 +1041,24 @@ class Timecard extends MY_Controller {
 				
 				//update tcAttendance Records
 				$this->timeM->cntUpdateAttendanceRecord($data['today']);
+			}else if($_POST['submitType']=='updatePublished'){
+				$publish = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'publishedID="'.$_POST['publishedID'].'"');
+				
+				$upArr['timePaid'] = $_POST['newTimePaid'];
+				$upArr['datePublished'] = date('Y-m-d H:i:s');
+				$upArr['publishedBy'] = $this->user->empID;
+				$this->dbmodel->updateQuery('tcStaffPublished', array('publishedID'=>$_POST['publishedID']), $upArr); //UPDATE PUBLISH RECORD
+				
+				//INSERT HISTORY ON tcTimelogUpdates
+				$ins['empID_fk'] = $publish->empID_fk;
+				$ins['logDate'] = $publish->publishDate;
+				$ins['status'] = 0;
+				$ins['message'] = 'Updated Time Paid From '.$publish->timePaid.' Hours to '.$_POST['newTimePaid'].' Hours';
+				$ins['dateRequested'] = date('Y-m-d H:i:s');
+				$ins['dateUpdated'] = date('Y-m-d H:i:s');
+				$ins['updatedBy'] = $this->user->username;
+				$ins['updateNote'] = $_POST['reasonUpdate'];
+				$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
 			}
 		}
 		
