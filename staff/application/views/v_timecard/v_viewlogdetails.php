@@ -17,7 +17,7 @@
 		}
 		
 		///LINK TO TIMELOG PAGE
-		if($this->access->accessFullHR==true) echo ' <a href="'.$this->config->base_url().'timecard/'.$visitID.'/" class="tanone" target="_parent"><button class="btnclass">Go to Timelog page</button></a>';
+		if($this->access->accessFullHR==true) echo ' <a href="'.$this->config->base_url().'timecard/'.$visitID.'/?d='.$today.'" class="tanone" target="_blank"><button class="btnclass">Go to Timelog page</button></a>';
 	echo '</h3><hr/>';
 			
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
