@@ -299,10 +299,10 @@
 		
 		//BIOMETRIC LOGS
 		if(count($allLogs)>0){
-			echo '<tr><td class="trhead" colspan=2>Biometric Logs</td></tr>';
+			echo '<tr><td class="trhead" colspan=2>Biometric Logs <a class="cpointer fs11px" id="bioshow">[Show]</a></td></tr>';
 			$breaknum = 0;
 			foreach($allLogs AS $l){
-				echo '<tr>';
+				echo '<tr class="bioclass hidden">';
 					echo '<td>';
 						if($l->logtype=='D' || $l->logtype=='E'){
 							if($breaknum%2!=0) echo 'Break Out';
@@ -388,6 +388,17 @@
 		$('#btncancelpublish').click(function(){
 			$('#divpublish').addClass('hidden');
 			$('#btnpublish').removeClass('hidden');			
+		});
+		
+		$('#bioshow').click(function(){
+			txt = $(this).text();
+			if(txt=='[Show]'){
+				$(this).text('[Hide]');
+				$('.bioclass').removeClass('hidden');
+			}else{
+				$(this).text('[Show]');
+				$('.bioclass').addClass('hidden');
+			}
 		});
 	});
 
