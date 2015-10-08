@@ -329,7 +329,7 @@ class Emailmodel extends CI_Model {
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
 				
-				$to = 'ludivina.marinas@tatepublishing.net'o;
+				$to = 'ludivina.marinas@tatepublishing.net';
 				$this->emailM->sendEmail($from, $to, $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
