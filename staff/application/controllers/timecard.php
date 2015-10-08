@@ -495,47 +495,47 @@ class Timecard extends MY_Controller {
 					$data['dayEditOptionArr'][$hisNum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$his->dateToday, 'text'=>'View Details');
 						
 					$hisText = '';					
-					if(strtotime($his->dateToday)<$strToday){					
+					if(strtotime($his->dateToday)<$strToday){
+						if($his->unpublished>0){
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">UNPUBLISHED: '.$his->unpublished.'</b><br/>';
+							else{ $cntUnpublished = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'unpublished', $condition));
+								if($cntUnpublished>0) $hisText .= '<b style="color:red;">UNPUBLISHED: '.$cntUnpublished.'</b><br/>'; }
+						}
+						
 						if($his->absent>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Absent: '.$his->absent.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Absent: '.$his->absent.'</b><br/>';
 							else{ $cntAbsent = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'absent', $condition));
-								if($cntAbsent>0) $hisText .= '<b style="color:red;">Absent: '.$cntAbsent.'</b><br/>'; }
+								if($cntAbsent>0) $hisText .= '<b style="color:#888;">Absent: '.$cntAbsent.'</b><br/>'; }
 						}
 						
 						if($his->overBreak>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Overbreak: '.$his->overBreak.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Overbreak: '.$his->overBreak.'</b><br/>';
 							else{ $cntOverbreak = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'overbreak', $condition));
-								if($cntOverbreak>0) $hisText .= '<b style="color:red;">Overbreak: '.$cntOverbreak.'</b><br/>'; }
+								if($cntOverbreak>0) $hisText .= '<b style="color:#888;">Overbreak: '.$cntOverbreak.'</b><br/>'; }
 						}
 						
 						if($his->late>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Late: '.$his->late.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Late: '.$his->late.'</b><br/>';
 							else{ $cntLate = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'late', $condition));
-								if($cntLate>0) $hisText .= '<b style="color:red;">Late: '.$cntLate.'</b><br/>'; }
+								if($cntLate>0) $hisText .= '<b style="color:#888;">Late: '.$cntLate.'</b><br/>'; }
 						}
 						
 						if($his->earlyOut>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Early Out: '.$his->earlyOut.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Early Out: '.$his->earlyOut.'</b><br/>';
 							else{ $cntEarlyOut = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'earlyclockout', $condition));
-								if($cntEarlyOut>0) $hisText .= '<b style="color:red;">Early Out: '.$cntEarlyOut.'</b><br/>'; }
+								if($cntEarlyOut>0) $hisText .= '<b style="color:#888;">Early Out: '.$cntEarlyOut.'</b><br/>'; }
 						}
 						
 						if($his->earlyIn>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Early In: '.$his->earlyIn.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Early In: '.$his->earlyIn.'</b><br/>';
 							else{ $cntEarlyIn = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'earlyBird', $condition));
-								if($cntEarlyIn>0) $hisText .= '<b style="color:red;">Early In: '.$cntEarlyIn.'</b><br/>'; }
+								if($cntEarlyIn>0) $hisText .= '<b style="color:#888;">Early In: '.$cntEarlyIn.'</b><br/>'; }
 						}
 						
 						if($his->missingClockOut>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Missing Out: '.$his->missingClockOut.'</b><br/>';
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Missing Out: '.$his->missingClockOut.'</b><br/>';
 							else{ $cntMissingOut = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'noclockout', $condition));
-								if($cntMissingOut>0) $hisText .= '<b style="color:red;">Missing Out: '.$cntMissingOut.'</b><br/>'; }
-						}
-						
-						if($his->unpublished>0){
-							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Unpublished: '.$his->unpublished.'</b><br/>';
-							else{ $cntUnpublished = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'unpublished', $condition));
-								if($cntUnpublished>0) $hisText .= '<b style="color:red;">Unpublished: '.$cntUnpublished.'</b><br/>'; }
+								if($cntMissingOut>0) $hisText .= '<b style="color:#888;">Missing Out: '.$cntMissingOut.'</b><br/>'; }
 						}
 						
 						$hisText .= '<b>Published: '.$his->published.'</b><br/>';
