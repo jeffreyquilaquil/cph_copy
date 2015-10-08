@@ -37,12 +37,8 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){
-		$this->timeM->cntUpdateAttendanceRecord('2015-10-01');
-		$this->timeM->cntUpdateAttendanceRecord('2015-10-02');
-		$this->timeM->cntUpdateAttendanceRecord('2015-10-03');
 		$this->timeM->cntUpdateAttendanceRecord('2015-10-05');
 		$this->timeM->cntUpdateAttendanceRecord('2015-10-06');
-		$this->timeM->cntUpdateAttendanceRecord('2015-10-07');
 	}
 		
 	//runs everyday at 12am

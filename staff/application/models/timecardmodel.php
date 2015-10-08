@@ -278,7 +278,7 @@ class Timecardmodel extends CI_Model {
 	public function getNumDetailsAttendance($dateToday, $type, $condition=''){
 		$flds = '';
 		
-		$query = array();
+		$query = '';
 		if($type=='absent'){
 			$flds = ', schedIn, schedOut, timeIn, timeOut';
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
