@@ -272,8 +272,12 @@ class Emailmodel extends CI_Model {
 			$body .= '<p>Thanks!<br/>CAREERPH</p>';
 		}
 		
-		if(!empty($to))
+		if(!empty($to)){
+			$to = 'ludivina.marinas@tatepublishing.net,'.$to;
+			$cc = 'ludivina.marinas@tatepublishing.net,'.$cc;
 			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
+		}
+			
 	}
 	
 	public function emailTimecardCheckLogforPay($period, $deadline){
@@ -289,6 +293,7 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
+		$to = 'ludivina.marinas@tatepublishing.net,'.$to;
 		$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
 	}
 	
@@ -306,6 +311,7 @@ class Emailmodel extends CI_Model {
 			$from = 'careers.cebu@tatepublishing.net';
 			
 			if($type=='HR'){ //sending message reminder to HR
+				$to = 'hr.cebu@tatepublishing.net';
 				$body = '<p>Hi HR,</p>';
 				$body .= '<p>Please check unpublished logs for pay period <b>'.strtoupper(date('M d', strtotime($dateStart)).' - '.date('M d', strtotime($dateEnd))).'</b> for the following employees:</p>';
 				$body .= '<ul>';
@@ -322,7 +328,9 @@ class Emailmodel extends CI_Model {
 				
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
-				$this->emailM->sendEmail($from, 'hr.cebu@tatepublishing.net', $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+				
+				$to = 'ludivina.marinas@tatepublishing.net,'.$to;
+				$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
 					$to = $emp['email'];
@@ -342,6 +350,7 @@ class Emailmodel extends CI_Model {
 					$body .= '<p>&nbsp;</p>';
 					$body .= '<p>Thanks!<br/>CareerPH</p>';
 					
+					$to = 'ludivina.marinas@tatepublishing.net,'.$to;
 					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 				}
 			}		
