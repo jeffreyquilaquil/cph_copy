@@ -26,7 +26,7 @@
 			}
 			
 			//FOR BREAKS
-			if($a->logtype=='D' || $a->logtype=='E'){
+			if(!empty($logtimein) && ($a->logtype=='D' || $a->logtype=='E')){
 				if($breaknum%2==0){
 					$breakstaken += strtotime($a->logtime) - strtotime($breakout);
 					$breakouttext = '';
@@ -71,7 +71,7 @@
 				if(!empty($schedT) && $schedT!='On Leave' && empty($logtimein)){
 					if($visitID==$this->user->empID) echo '<span class="errortext weightbold">'.(($visitID==$this->user->empID)?'You':$row->fname.'\'').' do not have time in yet.</span>';
 					else echo '<span class="errortext weightbold">No time in yet.</span><br/>';
-				}else if(!empty($logtimein)){
+				}else if(!empty($logtimein)){ //IF LOGGED IN
 					echo (($visitID==$this->user->empID)?'You':$row->fname).' clocked in at <b>'.date('h:i a', strtotime($logtimein)).'</b>.';
 					
 					if(isset($schedArr['start'])){
@@ -93,6 +93,8 @@
 					echo '<br/>';
 				}
 				
+				
+				//BREAKS
 				if($breakstaken>0){
 					$breaktext = $this->textM->convertTimeToMinHours($breakstaken);
 					echo 'Breaks Taken: '.$breaktext;
@@ -102,6 +104,7 @@
 				
 				if(!empty($breakouttext)) echo '<span class="errortext">Pending Break In. Break out time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span><br/>';
 			
+				///CHECK IF LOGGED OUT
 				if(!empty($logtimeout)){
 					echo 'You clocked out at <b>'.date('h:i a', strtotime($logtimeout)).'</b>.';
 					

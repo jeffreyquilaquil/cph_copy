@@ -292,8 +292,8 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
 		}else if($type=='earlyBird'){
 			$hourEarly = '02:00:00'; //2 hours
-			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(schedIn), TIME(timeIn)) AS hourEarly';
-			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(schedIn), TIME(timeIn))>="'.$hourEarly.'"';			
+			$flds = ', schedIn, timeIn, TIMEDIFF(schedIn, timeIn) AS hourEarly';
+			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(schedIn, timeIn)>="'.$hourEarly.'"';			
 		}else if($type=='noclockin'){
 			$flds = ', schedOut, schedIn, timeIn, timeOut';
 			$condition .= ' AND schedIn!="0000-00-00 00:00:00" AND schedOut!="0000-00-00 00:00:00" AND timeIn="0000-00-00 00:00:00" AND timeOut!="0000-00-00 00:00:00"';	
@@ -301,11 +301,11 @@ class Timecardmodel extends CI_Model {
 			$flds = ', schedOut, schedIn, timeIn';
 			$condition .= ' AND schedOut!="0000-00-00 00:00:00" AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'"';	
 		}else if($type=='earlyclockout'){
-			$flds = ', schedOut, timeOut, TIMEDIFF(TIME(schedOut), TIME(timeOut)) AS hourEarly';
+			$flds = ', schedOut, timeOut, TIMEDIFF(schedOut, timeOut) AS hourEarly';
 			$condition .= ' AND schedOut!="0000-00-00 00:00:00" AND timeOut!="0000-00-00 00:00:00" AND schedOut>timeOut';
 		}else if($type=='late'){
-			$flds = ', schedIn, timeIn, TIMEDIFF(TIME(timeIn), TIME(schedIn)) AS hourLate';
-			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(TIME(timeIn), TIME(schedIn))>"00:01:00"';		
+			$flds = ', schedIn, timeIn, TIMEDIFF(timeIn, schedIn) AS hourLate';
+			$condition .= ' AND timeIn!="0000-00-00 00:00:00" AND schedIn!="0000-00-00 00:00:00" AND TIMEDIFF(timeIn, schedIn)>"00:01:00"';		
 		}else if($type=='overbreak'){
 			$flds = ', schedOut, timeBreak';
 			$condition .= ' AND timeBreak>"'.$this->timeM->timesetting('overBreakTime').'"';	

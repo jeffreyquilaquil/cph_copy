@@ -4,7 +4,7 @@
 //////UNPUBLISHED
 if(count($queryUnPublished)>0){
 	echo '<table class="tableInfo">';
-		echo '<tr class="trlabel"><td colspan=6>Unpublished ('.count($queryUnPublished).')</td></tr>';
+		echo '<tr class="trlabel"><td colspan=6>UNPUBLISHED ('.count($queryUnPublished).')</td></tr>';
 		echo '<tr class="trhead">
 				<td width="200px">Name</td>
 				<td>Time In</td>
@@ -15,7 +15,7 @@ if(count($queryUnPublished)>0){
 			</tr>';
 			
 		foreach($queryUnPublished AS $unpublished){
-			$cl = 'style="background-color:#ffb2b2;"';
+			$cl = 'style="background-color:#bdff98;"';
 			if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $cl = '';
 				
 			echo '<tr '.$cl.'>';
@@ -29,6 +29,8 @@ if(count($queryUnPublished)>0){
 	echo '</table><br/>';
 }
 
+echo '<h3>DETAILS</h3>';
+echo '<i>* Colored red background are not yet published.</i>';
 /////////////LATE
 if(count($queryLate)>0){	
 	echo '<table class="tableInfo">';

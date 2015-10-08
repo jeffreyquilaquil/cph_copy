@@ -35,14 +35,11 @@ class Timecard extends MY_Controller {
 				$this->$method($data);
 		}	
 	}
-	
-	public function sendTest(){
-		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'tetsetet', 'eeeeee', 'CAREERPH');
-	}
-	
+		
 	public function timetest(){
-		$d = date('2015-10-01');
-		$this->timeM->publishLogs($d);
+		$this->timeM->publishLogs('2015-10-05');
+		$this->timeM->publishLogs('2015-10-06');
+		$this->timeM->publishLogs('2015-10-07');
 	}
 		
 	//runs everyday at 12am
@@ -109,6 +106,8 @@ class Timecard extends MY_Controller {
 		$timeAllowedClockIn = $this->timeM->timesetting('timeAllowedClockIn');
 		$timeAllowedClockOut = $this->timeM->timesetting('timeAllowedClockOut');
 		
+		echo $timeAllowedClockIn.'<br/>'.$timeAllowedClockOut.'<br/>'; exit;
+		
 		$logArr = array();
 		$date00 = '0000-00-00 00:00:00';
 		$logIDInserted = array();
@@ -160,7 +159,7 @@ class Timecard extends MY_Controller {
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
 									}
 								}
-							}else array_push($breaks, $d['logtime']);
+							}else if($logData->timeIn!=$date00) array_push($breaks, $d['logtime']);
 							
 							$logIDInserted[] = $d['baselogid'];	
 						}
@@ -242,8 +241,6 @@ class Timecard extends MY_Controller {
 		if(count($queryNoClockOut)>0){
 			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
 		}
-		
-		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'test', 'cronTimecardLogsEmails '.date('Y-m-d H:i:s"'));
 	}
 	
 	/******
@@ -489,15 +486,15 @@ class Timecard extends MY_Controller {
 				$data['dayArr'][$numDate] =  '<div class="taleft padding5px">'.$contento.'</div>';
 			}
 			
-			
 			$attHistory = $this->dbmodel->getQueryResults('tcAttendance', '*', 'dateToday LIKE "'.date('Y-m-', strtotime($data['today'])).'%"');
-			$strToday = strtotime($data['today']);			
+			
+			$strToday = strtotime(date('Y-m-d', strtotime($data['currentDate'])));			
 			foreach($attHistory AS $his){
 				if($his->scheduled!=0){
 					$hisNum = date('j', strtotime($his->dateToday));
 					$data['dayEditOptionArr'][$hisNum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$his->dateToday, 'text'=>'View Details');
 						
-					$hisText = '';
+					$hisText = '';					
 					if(strtotime($his->dateToday)<$strToday){					
 						if($his->absent>0){
 							if($this->access->accessFullHR==true) $hisText .= '<b style="color:red;">Absent: '.$his->absent.'</b><br/>';
@@ -549,7 +546,7 @@ class Timecard extends MY_Controller {
 					}
 				}
 			}
-			
+						
 			$jnum = date('j', strtotime($data['today']));
 			if(!isset($data['dayEditOptionArr'][$jnum])){
 				$data['dayEditOptionArr'][$jnum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$data['today'], 'text'=>'View Details');
