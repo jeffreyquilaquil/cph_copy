@@ -30,7 +30,7 @@ if(count($queryUnPublished)>0){
 }
 
 echo '<h3>DETAILS</h3>';
-echo '<i>* Colored red background are not yet published.</i>';
+echo '<i>* Colored red are not yet published.</i>';
 /////////////LATE
 if(count($queryLate)>0){	
 	echo '<table class="tableInfo">';

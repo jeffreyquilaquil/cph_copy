@@ -273,9 +273,9 @@ class Emailmodel extends CI_Model {
 		}
 		
 		if(!empty($to)){
-			$to = 'ludivina.marinas@tatepublishing.net,'.$to;
-			$cc = 'ludivina.marinas@tatepublishing.net,'.$cc;
-			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
+			$to = 'ludivina.marinas@tatepublishing.net';
+			$cc = 'ludivina.marinas@tatepublishing.net';
+			$this->emailM->sendEmail($from, $to, $subject.'---'.$to.' CC:--'.$cc, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
 		}
 			
 	}
@@ -293,8 +293,8 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
-		$to = 'ludivina.marinas@tatepublishing.net,'.$to;
-		$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+		$to = 'ludivina.marinas@tatepublishing.net';
+		$this->emailM->sendEmail($from, $to, $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH', $to );
 	}
 	
 	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){
@@ -329,8 +329,8 @@ class Emailmodel extends CI_Model {
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
 				
-				$to = 'ludivina.marinas@tatepublishing.net,'.$to;
-				$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+				$to = 'ludivina.marinas@tatepublishing.net'o;
+				$this->emailM->sendEmail($from, $to, $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
 					$to = $emp['email'];
@@ -350,8 +350,8 @@ class Emailmodel extends CI_Model {
 					$body .= '<p>&nbsp;</p>';
 					$body .= '<p>Thanks!<br/>CareerPH</p>';
 					
-					$to = 'ludivina.marinas@tatepublishing.net,'.$to;
-					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+					$to = 'ludivina.marinas@tatepublishing.net';
+					$this->emailM->sendEmail($from, $to, $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 				}
 			}		
 		}
