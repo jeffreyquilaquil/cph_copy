@@ -157,7 +157,7 @@
 		<td colspan=2>
 	<?php 
 		if($this->access->accessFullHR==true || $row->issuer==$this->user->empID){
-			echo '<button id="generateC" class="btnclass">Generate CAR</button>';
+			echo '<button id="generateC" class="btnclass btngreen">Generate CAR</button>';
 		}else{
 			echo 'CAR not yet generated.';
 		}

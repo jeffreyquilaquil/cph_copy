@@ -880,7 +880,7 @@ class Timecard extends MY_Controller {
 				$data['proudpage'] = $this->uri->segment(3);
 				if(empty($data['proudpage'])) $data['proudpage'] = 'unpublishedlogs';
 				
-				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, schedIn, schedOut, timeIn, timeOut, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
 				if($data['proudpage']=='logpendingrequest'){
