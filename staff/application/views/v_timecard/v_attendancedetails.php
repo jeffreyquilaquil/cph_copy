@@ -202,6 +202,7 @@ if(count($queryLeave)>0){
 				<td>Leave Type</td>
 				<td>Leave Start</td>
 				<td>Leave End</td>
+				<td><br/></td>
 			</tr>';
 		
 		$leaveTypeArr = $this->textM->constantArr('leaveType');
@@ -211,6 +212,7 @@ if(count($queryLeave)>0){
 				echo '<td>'.$leaveTypeArr[$leave->leaveType].'</td>';
 				echo '<td>'.date('d M Y h:i a', strtotime($leave->leaveStart)).'</td>';
 				echo '<td>'.date('d M Y h:i a', strtotime($leave->leaveEnd)).'</td>';
+				echo '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$leave->empID_fk.'/viewlogdetails/?d='.$today.'&back=attendancedetails"><button>View Details</button></a></td>';
 			echo '</tr>';
 		}
 	echo '</table><br/>';

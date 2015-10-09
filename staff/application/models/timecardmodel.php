@@ -284,14 +284,12 @@ class Timecardmodel extends CI_Model {
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
 			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
 		}else if($type=='leave'){
-			$empID_sched = array();
+			/* $empID_sched = array();
 			$scheduld = $this->timeM->getNumDetailsAttendance($dateToday, 'scheduled', $condition);
 			foreach($scheduld AS $s)
 				$empID_sched[] = $s->empID_fk;
-			
-			if(count($empID_sched)>0){
-				$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, leaveType, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1 AND empID_fk IN ('.implode(',', $empID_sched).') '.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');
-			}			
+				 */
+			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, leaveType, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1 '.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');			
 		}else if($type=='offset'){			
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
 		}else if($type=='shiftinprogress'){

@@ -349,12 +349,13 @@ class Timecard extends MY_Controller {
 			}
 			
 			//this is to check if no staff have schedule on the day but no logged time					
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);	
+			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
 			foreach($querySchedule AS $k=>$q){
 				if($strCurDate>strtotime($q['schedDate']) && !empty($q['sched'])){
 					$data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>';
-					/* if($q['sched']=='On Leave') $data['dayArr'][$k] = '<span class="errortext">ON LEAVE</span>';
-					else $data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>'; */
+					if($q['sched']=='On Leave') $data['dayArr'][$k] = '<a href="'.$this->config->base_url().'staffleaves/'.$q['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br>'.$q['leave'].'</div></a><br/>';
+					
+					/* else $data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>'; */
 				}
 			}
 						
@@ -368,8 +369,7 @@ class Timecard extends MY_Controller {
 				if(isset($querySchedule[$dl->dayLogDate]['sched']) && $querySchedule[$dl->dayLogDate]['sched']=='On Leave') $isOnLeave = true;
 				
 				//check if there is schedule
-				if($isOnLeave===true) $err .= '<a href="'.$this->config->base_url().'staffleaves/'.$querySchedule[$dl->dayLogDate]['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br>'.$querySchedule[$dl->dayLogDate]['leave'].'</div></a><br/>';
-				else if($dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
+				if($isOnLeave==false && $dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
 					
 				//check for time in, late or early in			
 				if($dl->timeIn!=$date00){
@@ -1003,16 +1003,18 @@ class Timecard extends MY_Controller {
 					$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
 				}
 			}else if($_POST['submitType']=='publishlog'){
-				$publishedID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'publish_fk', 'tlogID="'.$_POST['tlogID'].'"');
+				if(isset($_POST['tlogID'])) $publishedID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'publish_fk', 'tlogID="'.$_POST['tlogID'].'"');
+				
 				if(!isset($publishedID) || (isset($publishedID) && $publishedID==0)){ //if unpublished insert published record
 					$insPublish['empID_fk'] = $data['visitID'];
-					$insPublish['publishDate'] = $data['today'];
-					$insPublish['tcStaffDailyLogs_fk'] = $_POST['tlogID'];
+					$insPublish['publishDate'] = $data['today'];						
 					$insPublish['timePaid'] = $_POST['timePaid'];
 					$insPublish['datePublished'] = date('Y-m-d H:i:s');
 					$insPublish['publishedBy'] = $this->user->empID;
+					if(isset($_POST['tlogID'])) $insPublish['tcStaffDailyLogs_fk'] = $_POST['tlogID'];
+					
 					$publishID = $this->dbmodel->insertQuery('tcStaffPublished', $insPublish);	
-					$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$publishID , 'tlogID="'.$_POST['tlogID'].'"'); //update log to published primary key
+					if(isset($_POST['tlogID'])) $this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$publishID , 'tlogID="'.$_POST['tlogID'].'"'); //update log to published primary key
 				}else{ //update record if already published
 					$upPublish['timePaid'] = $_POST['timePaid'];
 					$upPublish['datePublished'] = date('Y-m-d H:i:s');

@@ -1,8 +1,7 @@
 <?php
 	/////////VARIABLE DECLARATION
 	$cntlog = count($log);
-	
-	
+		
 	if($visitID==$this->user->empID){
 		echo '<div class="floatright">';
 			 echo '<br/><a href="'.$this->config->base_url().'timecard/requestupdate/?d='.$today.'" class="iframe"><button class="btnclass btngreen">Request Update</button></a>';
@@ -15,11 +14,11 @@
 	echo '<h3>';
 		if($visitID!=$this->user->empID) echo $row->fname.'\'s ';
 		echo 'Log Details for '.date('l, F d, Y', strtotime($today));
-		if($cntlog>0){
-			if($log->publish_fk>0 || isset($publish->publishedID)) echo ' <b class="errortext">PUBLISHED</b>';
-			else if($this->access->accessFullHR==true && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00') echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
-		}
-		
+	
+		if(($cntlog>0 && $log->publish_fk>0) || isset($publish->publishedID)) echo ' <b class="errortext">PUBLISHED</b>';
+		else if($this->access->accessFullHR==true && (($cntlog>0 && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00') || (!isset($publish->publishedID))))
+			echo ' <button id="btnpublish" class="btnclass btngreen">Publish</button>';
+			
 		///LINK TO TIMELOG PAGE
 		if($this->access->accessFullHR==true) echo ' <a href="'.$this->config->base_url().'timecard/'.$visitID.'/?d='.$today.'" class="tanone" target="_blank"><button class="btnclass">Go to Timelog page</button></a>';
 	echo '</h3><hr/>';
@@ -36,23 +35,43 @@
 		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Change Schedule</a>';
 	
 	///CHECK IF THERE IS LEAVE
-	if(isset($schedToday['leaveID']))
-		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view leave details.</p>';
+	if(isset($schedToday['leaveID'])){
+		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view all leave details.</p>';
+		$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, status, leaveType, leaveStart, leaveEnd, totalHours', 'leaveID="'.$schedToday['leaveID'].'"');
+		if(count($leave)>0){
+			$leaveStatusArr = $this->textM->constantArr('leaveStatus');
+			$leaveTypeArr = $this->textM->constantArr('leaveType');
+			
+			echo '<table class="tableInfo">';
+				echo '<tr><td class="trlabel" colspan=2>Leave Details</td></tr>';
+				echo '<tr><td width="20%">Status</td><td><b>'.ucfirst($leaveStatusArr[$leave->status]).'</b></td></tr>';
+				echo '<tr><td>Leave Type</td><td>'.$leaveTypeArr[$leave->leaveType].'</td></tr>';
+				echo '<tr><td>Leave Start</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveStart)).'</td></tr>';
+				echo '<tr><td>Leave End</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveEnd)).'</td></tr>';
+				echo '<tr><td>Total Leave Hours</td><td>'.$leave->totalHours.'</td></tr>';
+			echo '</table>';
+			
+			if($leave->status==1) $timePaid = 8;
+			else  $timePaid = 0;
+			
+			$leaveText = '<i class="errortext">Please publish leave <b>WITHOUT PAY 0 hour</b> and number of hours leave today for <b>WITH pay</b>.</i>';
+		}
+	}
+		
 	
 	
 	if($cntlog==0){
 		if(!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave'))
 			echo '<p class="errortext">No Logs Recorded.</p>';
-	//}else if(!isset($schedToday['sched']) || ($schedToday['sched']!='On Leave' || ($schedToday['sched']=='On Leave' && $log->timeIn!='0000-00-00 00:00:00' && $log->timeOut!='0000-00-00 00:00:00'))){	
-	}
-	
+	}	
 
 		$timeDeduction = 0;
-		if($cntlog>0){
-			$timePaid = $log->schedHour;
-			if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
-		}else $timePaid = 0;
-		
+		if(!isset($timePaid)){
+			if($cntlog>0){
+				$timePaid = $log->schedHour;
+				if($log->offsetHour!=0) $timePaid -= $log->offsetHour;
+			}else $timePaid = 0;
+		}		
 		
 		echo '<div style="padding:10px 0;" id="divpublish" class="'.((!isset($publish->publishedID))?'hidden':'').'">';
 		echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
@@ -129,20 +148,22 @@
 				echo '</tr>';
 			}
 		} ///end of if($cntlog>0)
-			
+						
 			if(count($publish)>0){
 				echo '<tr><td width="20%">Total Time Paid</td><td><b>'.$publish->timePaid.' Hours</b></td></tr>';
 				echo '<tr><td width="20%">Date Published</td><td>'.date('F d, Y h:i a', strtotime($publish->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($publish->publishedBy==0)?'System Published':$this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS name', 'empID="'.$publish->publishedBy.'"')).'</td></tr>';
-			}else if($cntlog>0){
+			}else{
 				echo '<tr><td width="20%">Time Paid <i>(Hours)</i></td><td>'.$this->textM->formfield('number', 'timePaid', $timePaid, 'forminput', '', 'required min="0"').'</td></tr>';
 				echo '<tr><td><br/></td><td>';					
 					echo $this->textM->formfield('hidden', 'submitType', 'publishlog');
-					echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);
+						if($cntlog>0) echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);					
 					echo $this->textM->formfield('submit', '', 'Publish', 'btnclass btngreen');
 					echo ' '.$this->textM->formfield('button', '', 'Cancel', 'btnclass', '', 'id="btncancelpublish"');
+					
+					if(isset($leaveText)) echo '<br/>'.$leaveText;
 				echo '</td></tr>';
-			}				
+			}		
 			echo '</table>';
 		echo '</form>';
 		
@@ -161,8 +182,6 @@
 			echo '</form>';
 		}
 		echo '</div>';	
-	
-	
 	
 	if($cntlog>0 || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')){		
 		echo '<table class="tableInfo" style="margin-top:10px;">';		
