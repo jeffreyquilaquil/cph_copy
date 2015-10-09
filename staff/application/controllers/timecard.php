@@ -105,9 +105,7 @@ class Timecard extends MY_Controller {
 		//Additional hours set here
 		$timeAllowedClockIn = $this->timeM->timesetting('timeAllowedClockIn');
 		$timeAllowedClockOut = $this->timeM->timesetting('timeAllowedClockOut');
-		
-		echo $timeAllowedClockIn.'<br/>'.$timeAllowedClockOut.'<br/>'; exit;
-		
+				
 		$logArr = array();
 		$date00 = '0000-00-00 00:00:00';
 		$logIDInserted = array();
