@@ -246,6 +246,9 @@ class Emailmodel extends CI_Model {
 		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH', 'helpdesk.cebu@tatepublishing.net');
 	}
 	
+	
+	
+	//TIMECARD EMAILSSSSSSSSS
 	public function emailTimecard($type, $row){
 		$from = 'careers.cebu@tatepublishing.net';
 		if($type=='notimein'){
@@ -273,9 +276,7 @@ class Emailmodel extends CI_Model {
 		}
 		
 		if(!empty($to)){
-			$to = 'ludivina.marinas@tatepublishing.net';
-			$cc = 'ludivina.marinas@tatepublishing.net';
-			$this->emailM->sendEmail($from, $to, $subject.'---'.$to.' CC:--'.$cc, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
+			$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.' CC:--'.$cc, $body, 'CareerPH', 'ludivina.marinas@tatepublishing.net', 'ludivina.marinas@tatepublishing.net');
 		}
 			
 	}
@@ -293,8 +294,7 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
-		$to = 'ludivina.marinas@tatepublishing.net';
-		$this->emailM->sendEmail($from, $to, $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH', $to );
+		$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH', $to );
 	}
 	
 	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){
@@ -329,8 +329,7 @@ class Emailmodel extends CI_Model {
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
 				
-				$to = 'ludivina.marinas@tatepublishing.net';
-				$this->emailM->sendEmail($from, $to, $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+				$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
 					$to = $emp['email'];
@@ -350,8 +349,7 @@ class Emailmodel extends CI_Model {
 					$body .= '<p>&nbsp;</p>';
 					$body .= '<p>Thanks!<br/>CareerPH</p>';
 					
-					$to = 'ludivina.marinas@tatepublishing.net';
-					$this->emailM->sendEmail($from, $to, $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+					$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 				}
 			}		
 		}
