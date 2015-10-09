@@ -15,7 +15,7 @@
 		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view leave details.</p>';
 	}else{
 		if(isset($schedToday['leaveID'])){
-			echo '<p class="errortext">On Leave ('.$schedToday['leave'].'). Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';
+			echo '<p class="errortext">On Leave'.((isset($schedToday['leave']))?' ('.isset($schedToday['leave']).')':'').'. Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';
 		}
 ?>	
 	<form action="" method="POST" onSubmit="return checkSubmit();">
