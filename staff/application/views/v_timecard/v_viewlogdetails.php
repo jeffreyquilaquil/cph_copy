@@ -1,6 +1,7 @@
 <?php
 	/////////VARIABLE DECLARATION
 	$cntlog = count($log);
+	$todaySchedule = '';
 		
 	if($visitID==$this->user->empID){
 		echo '<div class="floatright">';
@@ -24,15 +25,22 @@
 	echo '</h3><hr/>';
 			
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
-		if(isset($schedToday['sched'])) echo '<b>Schedule Today:</b> '.$schedToday['sched'].'<br/>';
-		if(isset($schedToday['offset'])) echo '<b>Offset Schedule:</b> '.$schedToday['offset'].'<br/>';
+		if(isset($schedToday['sched'])){
+			echo '<b>Schedule Today:</b> <b class="errortext">'.$schedToday['sched'].'</b><br/>';
+			$todaySchedule .= $schedToday['sched'];
+		} 
+		if(isset($schedToday['offset'])){
+			echo '<b>Offset Schedule:</b> <b class="errortext">'.$schedToday['offset'].'</b><br/>';
+			$todaySchedule .= $schedToday['offset'];
+		} 
 	}else{
+		$todaySchedule = 'NONE';
 		echo '<b>Schedule Today:</b> NONE ';
 	}
 	
 	///CHANGE SCHEDULE
-	if($this->access->accessFullHR==true && ($cntlog==0 || ($cntlog >0 && $log->publish_fk==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
-		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Change Schedule</a>';
+	/* if($this->access->accessFullHR==true && ($cntlog==0 || ($cntlog >0 && $log->publish_fk==0)) && (!isset($schedToday['sched']) || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')))
+		echo ' <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$today.'/edit/" class="iframe errortext">+ Change Schedule</a>'; */
 	
 	///CHECK IF THERE IS LEAVE
 	if(isset($schedToday['leaveID'])){
@@ -181,7 +189,42 @@
 			echo $this->textM->formfield('hidden', 'submitType', 'updatePublished');
 			echo '</form>';
 		}
-		echo '</div>';	
+		echo '</div>';
+
+	if($cntlog>0 && $this->access->accessFullHR==true){
+		$attractsched = (($log->schedIn!="0000-00-00 00:00:00")?date('h:i a', strtotime($log->schedIn)):'None');
+		$attractsched .= ' - '.(($log->schedOut!="0000-00-00 00:00:00")?date('h:i a', strtotime($log->schedOut)):'None');
+		
+		if($todaySchedule!=$attractsched){
+			echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
+			echo '<table class="tableInfo" style="margin-top:10px;">';
+				echo '<tr class="trlabel"><td colspan=2>Log Schedule Today</td></tr>';
+				echo '<tr>';
+					echo '<td width="20%">Schedule In</td>';
+					echo '<td>';
+						echo '<span class="schedspan">'.(($log->schedIn!="0000-00-00 00:00:00")?date('h:i a', strtotime($log->schedIn)):'None').'</span>';
+						echo $this->textM->formfield('text', 'schedIN', (($log->schedIn!="0000-00-00 00:00:00")?date('F d, Y H:i', strtotime($log->schedIn)):date('F d, Y H:i', strtotime($today))), 'forminput datetimepick editsched hidden', '', 'required');
+					echo '</td>';
+				echo '</tr>';
+				echo '<tr>';
+					echo '<td>Schedule Out</td>';
+					echo '<td>';
+						echo '<span class="schedspan">'.(($log->schedOut!="0000-00-00 00:00:00")?date('h:i a', strtotime($log->schedOut)):'None').'</span>';
+						echo $this->textM->formfield('text', 'schedOUT', (($log->schedOut!="0000-00-00 00:00:00")?date('F d, Y H:i', strtotime($log->schedOut)):date('F d, Y H:i', strtotime($today))), 'forminput datetimepick editsched hidden', '', 'required');
+					echo '</td>';
+				echo '</tr>';
+				echo '<tr class="editsched hidden"><td>Paid Hours</td><td>'.$this->textM->formfield('number', 'schedHOUR', $log->schedHour, 'forminput').'</td></tr>';
+				echo '<tr class="editsched hidden"><td><br/></td><td>'.$this->textM->formfield('submit', '', 'Update', 'btnclass btngreen').'</td></tr>';
+				
+				echo '<tr class="schedspan"><td colspan=2><i class="errortext">* If <b>Schedule Today</b> above do not match with the <b>Log Schedule Today</b> click <a id="aeditsched" href="javascript:void(0);">here</a> to edit log schedule.</i></td></tr>';
+			echo'</table>';
+			
+			echo $this->textM->formfield('hidden', 'tlogID', $log->tlogID);
+			echo $this->textM->formfield('hidden', 'schedToday', ((isset($schedToday['sched']))?$schedToday['sched']:''));
+			echo $this->textM->formfield('hidden', 'submitType', 'editSchedLog');
+			echo '</form>';
+		}
+	}
 	
 	if($cntlog>0 || (isset($schedToday['sched']) && $schedToday['sched']!='On Leave')){		
 		echo '<table class="tableInfo" style="margin-top:10px;">';		
@@ -452,6 +495,11 @@
 				$(this).text('[Show]');
 				$('.bioclass').addClass('hidden');
 			}
+		});
+		
+		$('#aeditsched').click(function(){
+			$('.editsched').removeClass('hidden');
+			$('.schedspan').addClass('hidden');
 		});
 	});
 

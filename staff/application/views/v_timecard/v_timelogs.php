@@ -69,8 +69,8 @@
 					echo 'Offset Schedule: <b>'.$schedToday['offset'].'</b><br/>';
 								
 				if(!empty($schedT) && $schedT!='On Leave' && empty($logtimein)){
-					if($visitID==$this->user->empID) echo '<span class="errortext weightbold">'.(($visitID==$this->user->empID)?'You':$row->fname.'\'').' do not have time in yet.</span>';
-					else echo '<span class="errortext weightbold">No time in yet.</span><br/>';
+					if($visitID==$this->user->empID) echo '<span class="errortext weightbold">'.(($visitID==$this->user->empID)?'You':$row->fname.'\'').' do not have time in yet.</span> ';
+					else echo '<span class="errortext weightbold">No time in yet.</span> <br/>';
 				}else if(!empty($logtimein)){ //IF LOGGED IN
 					echo (($visitID==$this->user->empID)?'You':$row->fname).' clocked in at <b>'.date('h:i a', strtotime($logtimein)).'</b>.';
 					
@@ -112,7 +112,7 @@
 						$strend = strtotime($schedArr['end']);
 						$strlogout = strtotime($logtimeout);
 						
-						if($strlogtime < $strend){
+						if(isset($strlogtime) && $strlogtime < $strend){
 							$diffEnd = $strend - $strlogout;
 							echo ' This is '.$this->textM->convertTimeToMinHours($diffEnd).' <b class="errortext">EARLY OUT</b>.<br/>';
 						}

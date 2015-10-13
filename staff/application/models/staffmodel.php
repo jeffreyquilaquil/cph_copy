@@ -583,7 +583,7 @@ class Staffmodel extends CI_Model {
 			);
 		endforeach;
 						
-		foreach ($notesArr as $key => $row) {
+		foreach ($notesArr AS $key => $row) {
 			$volume[$key]  = $row['timestamp'];
 		}
 

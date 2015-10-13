@@ -412,9 +412,14 @@ class Timecard extends MY_Controller {
 			
 			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
 			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
+			$str5daysbefore = strtotime($data['currentDate'].' -5 days'); //strtotime 7 days before today
 			foreach($data['dayArr'] AS $h=>$m){
-				if($checkIfUser) 
+				if($checkIfUser){
+					if(strtotime($dateMonthToday.'-'.$h) >= $str5daysbefore)
+						$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'fileleave/', 'text'=>'File Leave/Offset');
+					
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
+				}					
 				
 				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
 			}
@@ -580,10 +585,16 @@ class Timecard extends MY_Controller {
 			$year = date('Y', strtotime($data['today']));
 			$dEnd = date('t', strtotime($data['today']));
 			$strcurrrentdate = strtotime($data['currentDate']);
+			$canfilelessthan5days = strtotime($data['currentDate'].' -5 days'); //enable file leave/offset option if date is greater than 7 days before today
 			for($i=1; $i<=$dEnd; $i++){
 				$dtoday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
-				if($this->access->accessFullHR===true && strtotime($dtoday)>=$strcurrrentdate)
+				$strdatetoday = strtotime($dtoday);
+				
+				if($this->access->accessFullHR===true && $strdatetoday>=$strcurrrentdate)
 					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'schedules/customizebyday/'.$data['visitID'].'/'.$dtoday.'/', 'text'=>'Edit Schedule');
+				
+				if($this->user->empID==$data['visitID'] && $strdatetoday>=$canfilelessthan5days)
+					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'fileleave/', 'text'=>'File Leave/Offset');
 			}
 			
 			$data['datelink'] = $this->config->base_url().'timecard/'.$data['visitID'].'/calendar/';
@@ -1056,6 +1067,21 @@ class Timecard extends MY_Controller {
 				$ins['updatedBy'] = $this->user->username;
 				$ins['updateNote'] = $_POST['reasonUpdate'];
 				$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
+			}else if($_POST['submitType']=='editSchedLog'){
+				$feelings['schedIn'] = date('Y-m-d H:i:s', strtotime($_POST['schedIN']));
+				$feelings['schedOut'] = date('Y-m-d H:i:s', strtotime($_POST['schedOUT']));
+				$feelings['schedHour'] = $_POST['schedHOUR'];
+				$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$_POST['tlogID']), $feelings); ///UPDATE
+				
+				//INSERT TIMELOG UPDATE
+				$happy['empID_fk'] = $id;
+				$happy['logDate'] = $data['today'];
+				$happy['status'] = 0;
+				$happy['message'] = $this->user->fname.' updated schedule from '.((!empty($_POST['schedToday']))?$_POST['schedToday']:' ').' to '.date('h:i a', strtotime($_POST['schedIN'])).' - '.date('h:i a', strtotime($_POST['schedOUT']));
+				$happy['dateRequested'] = date('Y-m-d H:i:s');
+				$happy['updatedBy'] = $this->user->username;
+				$happy['dateUpdated'] = date('Y-m-d H:i:s');
+				$this->dbmodel->insertQuery('tcTimelogUpdates', $happy);				
 			}
 		}
 		

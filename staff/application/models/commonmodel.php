@@ -300,13 +300,23 @@ class Commonmodel extends CI_Model {
 	
 	function customTimeArrayByCat(){
 		$timeArr = array();
-		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1, '', 'timeValue');
+		//$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1, '', 'timeValue');
+		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'tcCustomSchedTime.*, SUBSTRING(timeValue, 1, 8) AS str', 1);
+		
+		foreach ($schedTimes AS $key => $row) {
+			$volume[$key]  = date('H:i:s', strtotime($row->str));
+		}
+		
+		if(!empty($schedTimes) && !empty($volume))
+			array_multisort($volume, SORT_ASC, $schedTimes);
+			
 		foreach($schedTimes AS $t):
 			if($t->category==0)
 				$timeArr[$t->timeID]['name'] = $t->timeName;
 			else
 				$timeArr[$t->category][$t->timeID] = $t->timeValue.'|'.$t->timeName.'|'.$t->timeHours.'|'.$t->timeID;
 		endforeach;
+		
 		return $timeArr;
 	}
 	

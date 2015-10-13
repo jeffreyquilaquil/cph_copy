@@ -353,8 +353,9 @@ class Textmodel extends CI_Model {
 	
 	//assign $time to empty if you dont want to call customTimeArrayByCat function. Please call customTimeArrayByCat first if this is loop
 	function customTimeSelect($val='', $fvalue=''){
-		$time = $this->commonM->customTimeArrayByCat();
+		$time = $this->commonM->customTimeArrayByCat();		
 		$valentine = '<option value="">'.$fvalue.'</option>';
+		
 		foreach($time AS $t=>$t2):
 			$valentine .= '<optgroup label="'.$t2['name'].'">';						
 			foreach($t2 AS $k=>$t):
