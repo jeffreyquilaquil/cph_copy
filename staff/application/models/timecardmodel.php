@@ -371,16 +371,18 @@ class Timecardmodel extends CI_Model {
 		If records no discrepancies, insert to update table
 	********/
 	public function publishLogs($today){
+		$time00 = '0000-00-00 00:00:00';
+		
 		$condition = 'publish_fk=0';
 		$condition .= ' AND logDate="'.$today.'"';
 		/////TIME IN
-		$first = 'schedIn!="0000-00-00 00:00:00"';
-		$first .= ' AND timeIn!="0000-00-00 00:00:00"';
+		$first = 'schedIn!="'.$time00.'"';
+		$first .= ' AND timeIn!="'.$time00.'"';
 		$first .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')';
 		
 		//////TIME OUT
-		$first .= ' AND schedOut!="0000-00-00 00:00:00"';		
-		$first .= ' AND timeOut!="0000-00-00 00:00:00"';
+		$first .= ' AND schedOut!="'.$time00.'"';		
+		$first .= ' AND timeOut!="'.$time00.'"';
 		$first .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
 		
 		//////BREAKS
@@ -388,8 +390,8 @@ class Timecardmodel extends CI_Model {
 			
 		
 		//SECOND CONDITION PUBLISH WITH 0 TIME FOR ABSENT WITH SCHEDULE TODAY
-		$second = 'schedIn!="0000-00-00 00:00:00" AND timeIn="0000-00-00 00:00:00"';
-		$second .= ' AND schedOut!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+		$second = 'schedIn!="'.$time00.'" AND timeIn="'.$time00.'"';
+		$second .= ' AND schedOut!="'.$time00.'" AND timeOut="'.$time00.'"';
 		$second .= ' AND schedOut<="'.date('Y-m-d H:i:s').'"';
 		
 		$condition .= ' AND (('.$first.') OR ('.$second.'))';
@@ -402,7 +404,7 @@ class Timecardmodel extends CI_Model {
 			foreach($query AS $q){
 				$insArr['empID_fk'] = $q->empID_fk;
 				$insArr['publishDate'] = $q->logDate;
-				if($q->timeIn=='0000-00-00 00:00:00' && $q->timeOut=='0000-00-00 00:00:00') $insArr['timePaid'] = 0;
+				if($q->timeIn==$time00 && $q->timeOut==$time00) $insArr['timePaid'] = 0;
 				else $insArr['timePaid'] = $q->schedHour;
 				
 				$insArr['tcStaffDailyLogs_fk'] = $q->tlogID;
