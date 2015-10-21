@@ -389,7 +389,7 @@ class Timecardmodel extends CI_Model {
 		
 		//ABSENT
 		$condition .= ' OR ';
-		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00")';
+		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'")';
 		
 		$condition .= ')';
 		
