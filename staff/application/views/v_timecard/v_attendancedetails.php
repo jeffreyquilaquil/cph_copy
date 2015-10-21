@@ -3,28 +3,38 @@
 <?php
 //////UNPUBLISHED
 if(count($queryUnPublished)>0){
-	echo '<table class="tableInfo">';
+	echo '<table class="tableInfo" style="background-color:#bdff98;">';
 		echo '<tr class="trlabel"><td colspan=6>UNPUBLISHED ('.count($queryUnPublished).')</td></tr>';
 		echo '<tr class="trhead">
 				<td width="200px">Name</td>
 				<td>Time In</td>
 				<td>Time Out</td>
 				<td>Time Breaks</td>
+				<td>Status</td>
 				<td width="50px"><br/></td>
-				<td width="125px"><br/></td>
 			</tr>';
-			
-		foreach($queryUnPublished AS $unpublished){
-			$cl = 'style="background-color:#bdff98;"';
-			if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $cl = '';
-				
-			echo '<tr '.$cl.'>';
-				echo '<td>'.$unpublished->name.'</td>';
+		
+		$overBreak = $this->timeM->timesetting('overBreakTime');
+		foreach($queryUnPublished AS $unpublished){				
+			echo '<tr>';
+				echo '<td><a href="'.$this->config->base_url().'timecard/timelogs/'.$unpublished->empID_fk.'/?d='.$unpublished->slogDate.'" target="_parent">'.$unpublished->name.'</a></td>';
 				echo '<td>'.(($unpublished->timeIn=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeIn))).'</td>';
 				echo '<td>'.(($unpublished->timeOut=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeOut))).'</td>';							
 				echo '<td>'.(($unpublished->timeBreak=='00:00:00')?'None':$this->textM->convertTimeToMinStr($unpublished->timeBreak)).'</td>';	
-				if(empty($cl)) echo '<td><br/></td><td><br/></td>';
-				else echo $this->textM->displayAttAdditional($unpublished);				
+				echo '<td>';
+					///STATUS
+					$err = '';
+					if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $err .= 'ABSENT,';
+					else{
+						if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut!='0000-00-00 00:00:00') $err .= ' NO TIME IN,';
+						if($unpublished->timeIn!='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $err .= ' NO TIME OUT,';						
+						if($unpublished->timeIn>$unpublished->schedIn) $err .= ' LATE,';
+						if($unpublished->timeBreak>$overBreak) $err .= ' OVER BREAK,';
+					}
+					echo '<b class="errortext">'.rtrim($err, ',').'</b>';
+				echo '</td>';			
+				echo '<td><a href="'.$this->config->base_url().'timecard/'.$unpublished->empID_fk.'/viewlogdetails/?d='.$unpublished->slogDate.'&back=attendancedetails&publish=show"><button>Publish</button></a></td>';
+			echo '</tr>';
 		}
 	echo '</table><br/>';
 }
@@ -44,7 +54,7 @@ if(count($queryLate)>0){
 				<td width="125px"><br/></td>
 			</tr>';
 		foreach($queryLate AS $late){
-			echo '<tr '.(($late->publish_fk==0)?'style="background-color:#ffb2b2;"':'').'>';
+			echo '<tr '.(($late->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td>'.$late->name.'</td>';
 				echo '<td>'.date('h:i a', strtotime($late->schedIn)).'</td>';
 				echo '<td>'.date('h:i a', strtotime($late->timeIn)).'</td>';
@@ -70,7 +80,7 @@ if(count($queryOverBreak)>0){
 		
 		$strOver = strtotime($this->timeM->timesetting('overBreakTime'));
 		foreach($queryOverBreak AS $over){
-			echo '<tr '.(($over->publish_fk==0)?'style="background-color:#ffb2b2;"':'').'>';
+			echo '<tr '.(($over->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td>'.$over->name.'</td>';
 				echo '<td>'.trim($this->textM->convertTimeToMinStr($over->timeBreak)).'</td>';
 				
@@ -97,7 +107,7 @@ if(count($queryEarlyClockOut)>0){
 			</tr>';
 			
 		foreach($queryEarlyClockOut AS $earlyout){
-			echo '<tr '.(($earlyout->publish_fk==0)?'style="background-color:#ffb2b2;"':'').'>';
+			echo '<tr '.(($earlyout->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td>'.$earlyout->name.'</td>';
 				echo '<td>'.date('h:i a', strtotime($earlyout->schedOut)).'</td>';
 				echo '<td>'.date('h:i a', strtotime($earlyout->timeOut)).'</td>';
@@ -120,7 +130,7 @@ if(count($queryNoClockIn)>0){
 			</tr>';
 			
 		foreach($queryNoClockIn AS $noin){
-			echo '<tr '.(($noin->publish_fk==0)?'style="background-color:#ffb2b2;"':'').'>';
+			echo '<tr '.(($noin->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td>'.$noin->name.'</td>';
 				echo '<td>'.date('h:i a', strtotime($noin->schedIn)).'</td>';
 								
@@ -143,7 +153,7 @@ if(count($queryNoClockOut)>0){
 			</tr>';
 			
 		foreach($queryNoClockOut AS $noout){
-			echo '<tr '.(($noout->publish_fk==0)?'style="background-color:#ffb2b2;"':'').'>';
+			echo '<tr '.(($noout->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td>'.$noout->name.'</td>';
 				echo '<td>'.date('h:i a', strtotime($noout->schedOut)).'</td>';
 				echo '<td>'.date('h:i a', strtotime($noout->timeIn)).'</td>';								

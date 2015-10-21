@@ -11,6 +11,7 @@ class Timecard extends MY_Controller {
 		$segment3 = $this->uri->segment(3);
 		$segment4 = $this->uri->segment(4);
 		$data['currentDate'] = date('Y-m-d'); //this is the exact date today		
+		$data['currentDatetime'] = date('Y-m-d H:i:s'); //this is the exact date today		
 		$data['visitID'] = (($this->user!=false)?$this->user->empID:'');
 		$data['timecardpage'] = true;
 						
@@ -37,12 +38,14 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){
-		$this->timeM->publishLogs('2015-10-08');
+		$this->timeM->publishLogs();
+		exit;
 	}
 		
 	//runs everyday at 12am
-	//get staff schedules and insert to tcStaffDailyLogs
+	//get staff schedules and insert to tcStaffLogPublish
 	//insert to tcAttendance for summary of results today
+	//public function cronDailySchedulesAndAttendance(){
 	public function cronDailySchedulesAndAttendance(){
 		$today = date('Y-m-d');
 		$todaySmall = date('j');
@@ -50,7 +53,7 @@ class Timecard extends MY_Controller {
 		
 		//CHECK FOR STAFFS TODAY SCHEDULES
 		$staffID = '';
-		$querySchd = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk', 'logDate="'.$today.'"');
+		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'"');
 		if(count($querySchd)>0){
 			foreach($querySchd AS $s) $staffID .= $s->empID_fk.',';
 		}
@@ -62,7 +65,7 @@ class Timecard extends MY_Controller {
 		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
-			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffDailyLogs table
+			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffLogPublish table
 			if(!empty($logIDD)) $scheduled++;
 		}
 		
@@ -95,8 +98,8 @@ class Timecard extends MY_Controller {
 	/**********
 		This cron runs every 5 minutes.
 			- check if there are logs
-			- check if there is entry on tcStaffDailyLogs insert 1 if none. Inserted data will serve as clocked in with no schedule (this needs resolve)
-			- insert to tcStaffDailyLogs
+			- check if there is entry on tcStaffLogPublish insert 1 if none. Inserted data will serve as clocked in with no schedule (this needs resolve)
+			- insert to tcStaffLogPublish
 			- changed tcTimelogs isInserted to 1
 	**********/
 	public function cronDailyLogs(){
@@ -107,66 +110,70 @@ class Timecard extends MY_Controller {
 		$logArr = array();
 		$date00 = '0000-00-00 00:00:00';
 		$logIDInserted = array();
-		$withTimeOut = false;
 		
-		$logQuery = $this->dbmodel->getQueryResults('tcTimelogs', 'tcTimelogs.*, empID, username', 'isInserted=0', 'LEFT JOIN staffs ON idNum=staffs_idNum_fk', 'logtime');		
+		$logQuery = $this->dbmodel->getQueryResults('tcTimelogs', 'tcTimelogs.*, empID, username', 'isInserted=0', 'LEFT JOIN staffs ON idNum=staffs_idNum_fk', 'logtime');				
 		if(count($logQuery)>0){
 			foreach($logQuery AS $log){
-				$logID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'tlogID', 'empID_fk="'.$log->empID.'" AND ("'.$log->logtime.'" BETWEEN DATE_ADD(schedIn, INTERVAL '.$timeAllowedClockIn.')  AND DATE_ADD(schedOut, INTERVAL '.$timeAllowedClockOut.'))'); //get log id belong to certain schedule
+				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND ("'.$log->logtime.'" BETWEEN DATE_ADD(schedIn, INTERVAL '.$timeAllowedClockIn.')  AND DATE_ADD(schedOut, INTERVAL '.$timeAllowedClockOut.'))'); //get log id belong to certain schedule
 				
 				if(empty($logID)){ //check if there is logs with no schedule on the same day
-					$logID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'tlogID', 'empID_fk="'.$log->empID.'" AND logDate="'.date('Y-m-d', strtotime($log->logtime)).'"');
+					$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND slogDate="'.date('Y-m-d', strtotime($log->logtime)).'"');
 				}
 				
 				if(empty($logID)){ //if still empty insert records
 					$logdate = date('Y-m-d', strtotime($log->logtime));
 					$schedText[date('j', strtotime($log->logtime))] = $this->timeM->getSchedToday($log->empID, $logdate, true);								
-					$logID = $this->timeM->insertToDailyLogs($log->empID, $logdate, $schedText); //inserting to tcStaffDailyLogs table
-					$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
+					$logID = $this->timeM->insertToDailyLogs($log->empID, $logdate, $schedText); //inserting to tcStaffLogPublish table
+					//$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
 				}
 				
 				if(!empty($logID))
 					$logArr[$logID][] = array('baselogid'=>$log->logID, 'logtime'=>$log->logtime, 'type'=>$log->logtype);			
 			}
-		
+	
 			if(count($logArr)>0){
 				foreach($logArr AS $id=>$trying){
-					$logData = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tlogID, logDate, timeIn, timeOut, breaks, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'tlogID="'.$id.'"');
-					
-					$updateArr = array();
-					if(empty($logData->breaks)) $breaks = array();
-					else $breaks = json_decode($logData->breaks);
-									
+					$logData = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'slogID, slogDate, timeIn, timeOut, breaks, timeBreak, numBreak, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'slogID="'.$id.'"');
+															
+					$updateArr = array();									
 					if(count($trying)>0){
+						//breaks record
+						$updateArr['breaks'] = $logData->breaks;
+						$updateArr['numBreak'] = $logData->numBreak;
+												
 						foreach($trying AS $d){
 							if($d['type']=='A'){
-								if($logData->timeIn==$date00) $updateArr['timeIn'] = $d['logtime']; //for time in
+								if($logData->timeIn==$date00 && !isset($updateArr['timeIn'])) $updateArr['timeIn'] = $d['logtime']; //for time in
 								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetIn.' '.$timeAllowedClockIn)){
 										$updateArr['offTimeIn'] = $d['logtime']; //for offset
 									}
 								}  
-							} 						
-							
-							else if($d['type']=='Z'){ //for time out
-								if($logData->timeOut==$date00 && $logData->timeIn!=$date00) $updateArr['timeOut'] = $d['logtime'];
+							}else if($d['type']=='Z'){ //for time out
+								if(($logData->timeOut==$date00 || isset($updateArr['timeOut'])) && ($logData->timeIn!=$date00 || isset($updateArr['timeIn']))) $updateArr['timeOut'] = $d['logtime'];
 								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
 									}
 								}
-							}else if($logData->timeIn!=$date00) array_push($breaks, $d['logtime']);
+							}else if($logData->timeIn!=$date00 || isset($updateArr['timeIn'])){ //this is for breaks and there is time in recorded
+								$updateArr['breaks'] .= $d['logtime'].'|';
+								$updateArr['numBreak']++;
+							}
 							
 							$logIDInserted[] = $d['baselogid'];	
 						}
-
+												
 						//if timeout but missing break in
-						if(isset($updateArr['timeOut']) && count($breaks)%2!=0) 
-							array_push($breaks, $updateArr['timeOut']);
+						if((isset($updateArr['timeOut']) || $logData->timeOut!=$date00) && $updateArr['numBreak']%2!=0){
+							$updateArr['breaks'] .= ((isset($updateArr['timeOut']))?$updateArr['timeOut']:$logData->timeOut).'|';
+							$updateArr['numBreak']++;
+						}
 						
-						if(count($breaks)%2==0){
+						if($updateArr['numBreak']%2==0){
 							$compute = 0;
 							$timebreaks = 0;
+							$breaks = explode('|', rtrim($updateArr['breaks'], '|'));
 							foreach($breaks AS $b){
 								if($compute==0) $compute = strtotime($b);
 								else{
@@ -176,16 +183,9 @@ class Timecard extends MY_Controller {
 							}
 							$updateArr['timeBreak'] = $this->textM->convertTimeToMinHours($timebreaks,true);
 						}
-						
-						if(!empty($breaks)){					
-							$updateArr['numBreak'] = count($breaks);
-							$updateArr['breaks'] = json_encode($breaks);
-						}
-						
-						if(isset($updateArr['timeOut'])) $withTimeOut = true;
-																					
+															
 						if(!empty($updateArr))
-							$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$id), $updateArr);	
+							$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $updateArr);
 					}				
 				}
 			}
@@ -195,9 +195,12 @@ class Timecard extends MY_Controller {
 				$this->dbmodel->updateQueryText('tcTimelogs', 'isInserted="1"', 'logID IN ('.implode(',', $logIDInserted).')');
 				echo 'Successfully inserted.';
 			}
+			
+			$this->cronDailyAttendanceRecord();////CALL TO PUBLISH AND UPDATE RECORDS
 		}
 		exit;		
 	}
+	
 	
 	/*********
 		This cron will run every hour to update records in tcAttendance
@@ -205,20 +208,7 @@ class Timecard extends MY_Controller {
 		and PUBLISH data
 	*********/
 	public function cronDailyAttendanceRecord(){
-		$strtoday11 = strtotime(date('Y-m-d 11:00:00'));
-		$strtoday = strtotime(date('Y-m-d H:i:s'));
-		
-		if($strtoday<=$strtoday11){
-			$today = date('Y-m-d', strtotime('-1 day'));
-			$this->timeM->publishLogs($today);			
-		}
-		
-		//today attendance logs, check first if there are schedules today less than current hour
-		$today = date('Y-m-d');
-		$staffToday = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID', 'logDate="'.$today.'" AND schedIn<="'.date('Y-m-d H:i:s').'"');
-		if(count($staffToday)>0){
-			$this->timeM->publishLogs($today);		
-		}
+		$this->timeM->publishLogs();	
 	}
 		
 	/****
@@ -227,13 +217,13 @@ class Timecard extends MY_Controller {
 	****/
 	public function cronTimecardLogsEmails(){
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
-		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
 		if(count($queryNoTimeIn)>0){
 			foreach($queryNoTimeIn AS $timein) $this->emailM->emailTimecard('notimein', $timein);
 		}		
 		
 		//SEND EMAIL TO EMPLOYEES IF NO CLOCK OUT YET AFTER 4 HOURS
-		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
+		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
 		if(count($queryNoClockOut)>0){
 			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
 		}
@@ -276,7 +266,7 @@ class Timecard extends MY_Controller {
 			$dateEnd = date('Y-m-25');
 		}
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, email, fname, lname', 'publish_fk=0 AND logDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'logDate');
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, email, fname, lname', 'publishBy="" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'slogDate');
 		if(count($query)>0){
 			if($page=='hr') $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, 'HR');
 			else $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query);
@@ -287,10 +277,10 @@ class Timecard extends MY_Controller {
 	public function timelogs($data){
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
-		
+						
 		if($this->user!=false){
-			$segment2 = $this->uri->segment(2);
-			if(is_numeric($segment2) && ($this->access->accessFullHR==false || $segment2==$this->user->empID)){
+			$id = $this->uri->segment(2);
+			if(is_numeric($id) && ($this->access->accessFullHR==false || $id==$this->user->empID)){
 				header('Location:'.$this->config->base_url().'timecard/timelogs/');
 				exit;
 			}
@@ -302,14 +292,17 @@ class Timecard extends MY_Controller {
 					$insLog['dateInserted'] = date('Y-m-d H:i:s');
 					$insLog['logtype'] = $_POST['logtype'];
 					$this->dbmodel->insertQuery('tcTimelogs', $insLog);
+					
+					if($_POST['logtype']=='Z') $this->cronDailyLogs(); ///CALL TO INSERT LOG
 					exit;
 				}
-			} 
+			}
 			
 			//////////VARIABLE DECLARATIONS	
 			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');								
 			$data['dayArr'] = array();
-			$publishArr = array();
+			$displayArray = array();
+			
 			$date00 = '0000-00-00 00:00:00';
 			$dateTimeToday = date('Y-m-d H:i:s');			
 			$dateStart = date('Y-m-01', strtotime($data['today']));
@@ -317,7 +310,6 @@ class Timecard extends MY_Controller {
 			$dateMonthToday = date('Y-m', strtotime($data['today']));											
 			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 			$OUTL8 = $this->timeM->timesetting('outLate');
-			$strCurDate = strtotime($data['currentDate']);
 			//////////END OF VARIABLE DECLARATIONS	
 			
 			////CHECK FIRST IF TIME TODAY IS LESS THAN 10AM IF IT IS GET PREVIOUS SCHEDULE TO CHECK IF SHIFT STILL IN PROGRESS
@@ -325,106 +317,126 @@ class Timecard extends MY_Controller {
 				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
 				$schedToday = $this->timeM->getSchedToday($data['visitID'], $rara);
 				$schedArr = $this->timeM->getSchedArr($rara, ((isset($schedToday['sched']))?$schedToday['sched']:''));
-								
+												
 				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'].' '.$this->timeM->timesetting('timeAllowedClockOut'))){
 					$data['schedToday'] = $schedToday;
 					$data['schedArr'] = $schedArr;
 					$data['today'] = $schedToday['schedDate'];
 					$data['currentDate'] = $schedToday['schedDate'];
 				}
-			}	
-		
+			}			
 			if(empty($data['schedToday'])){
 				$data['schedToday'] = $this->timeM->getSchedToday($data['visitID'], $data['currentDate']);
-				$data['schedArr'] = $this->timeM->getSchedArr($data['today'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
+				$data['schedArr'] = $this->timeM->getSchedArr($data['currentDate'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
 			}
+			
 			
 			//get all logs today
-			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);
-				
-			//GET PUBLISHED RECORDS
-			$dataPublished = $this->dbmodel->getQueryResults('tcStaffPublished', 'DAY(publishDate) AS day, timePaid', 'empID_fk="'.$data['visitID'].'" AND publishDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
-			foreach($dataPublished AS $p){
-				$publishArr[$p->day] = $p->timePaid;
-			}
-			
-			//this is to check if no staff have schedule on the day but no logged time					
+			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);				
+						
+			//this is for on leave			
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
-			foreach($querySchedule AS $k=>$q){
-				if($strCurDate>strtotime($q['schedDate']) && !empty($q['sched'])){
-					$data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>';
-					if($q['sched']=='On Leave') $data['dayArr'][$k] = '<a href="'.$this->config->base_url().'staffleaves/'.$q['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br>'.$q['leave'].'</div></a><br/>';
-					
-					/* else $data['dayArr'][$k] = '<span class="errortext">NO LOG RECORDED</span>'; */
-				}
+			foreach($querySchedule AS $leave){
+				if(isset($leave['sched']) && $leave['sched']=='On Leave')
+					$displayArray[date('j', strtotime($leave['schedDate']))]['onleave'] = $leave['leave'];
 			}
 						
 			//this is for logs for the calendar month			
-			$data['dateLogs'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, empID_fk, logDate, DAY(logDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publish_fk', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
 		
-			foreach($data['dateLogs'] AS $dl){
-				$content = '';
-				$err = '';
-				$isOnLeave = false;
-				if(isset($querySchedule[$dl->dayLogDate]['sched']) && $querySchedule[$dl->dayLogDate]['sched']=='On Leave') $isOnLeave = true;
+			foreach($dateLogs AS $dl){
+				$numDay = $dl->dayLogDate;
 				
-				//check if there is schedule
-				if($isOnLeave==false && $dl->schedIn==$date00 && $dl->schedOut==$date00 && $dl->offsetIn==$date00 && $dl->offsetOut==$date00) $err .= 'UNSCHEDULED<br/>';
-					
 				//check for time in, late or early in			
 				if($dl->timeIn!=$date00){
-					$content .= '<b>In:</b> '.date('h:i a', strtotime($dl->timeIn)).'<br/>';
-					
+					$displayArray[$numDay]['timeIn'] = date('h:i a', strtotime($dl->timeIn));
+										
 					if($dl->schedIn!=$date00){
-						if($dl->timeIn > date('Y-m-d H:i:s', strtotime($dl->schedIn.' +1 minutes'))) $err .= 'LATE<br/>';
-						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $err .= 'EARLY IN<br/>';
+						if($dl->timeIn > date('Y-m-d H:i:s', strtotime($dl->schedIn.' +1 minutes'))) $displayArray[$numDay]['err'][] = 'isLate';
+						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
 					}
-				}else if($dl->schedIn>=$dateTimeToday) $err .= 'NO TIME IN YET<br/>';
-				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && $isOnLeave===false) $err .= 'ABSENT<br/>';
-				else if($isOnLeave===false) $err .= 'NO TIME IN<br/>';
-								
+				}else if($dl->schedIn>=$dateTimeToday) $displayArray[$numDay]['err'][] = 'noTimeInYet';
+				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['onleave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
+				else if(!isset($displayArray[$numDay]['onleave'])) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
+												
 				//check for clock out
 				if($dl->timeOut!=$date00){
-					$content .= '<b>Out:</b> '.date('h:i a', strtotime($dl->timeOut)).'<br/>';
+					$displayArray[$numDay]['timeOut'] = date('h:i a', strtotime($dl->timeOut));
 					
 					if($dl->schedOut!=$date00){
-						if($dl->timeOut < $dl->schedOut) $err .= 'EARLY OUT<br/>';
-						else if(strtotime($dl->timeOut)>= strtotime($dl->schedOut.' '.$OUTL8) && $dl->offsetOut==$date00)  $err .= 'OUT LATE<br/>';
+						if($dl->timeOut < $dl->schedOut) $displayArray[$numDay]['err'][] = 'isEarlyOut';
+						else if(strtotime($dl->timeOut)>= strtotime($dl->schedOut.' '.$OUTL8) && $dl->offsetOut==$date00)  $displayArray[$numDay]['green'][] = 'isOutLate';
 					}					
 				}else if($dl->timeIn!=$date00){
-					if($dl->timeOut==$date00 && $dl->schedOut>=$dateTimeToday) $err .= '<span style="color:green;">SHIFT IN PROGRESS</span><br/>';
-					else $err .= 'NO CLOCK OUT<br/>';
+					if($dl->timeOut==$date00 && $dl->schedOut>=$dateTimeToday) $displayArray[$numDay]['green'][] = 'shiftInProgress';
+					else$displayArray[$numDay]['err'][] = 'isNoClockOut';
 				}
 				
-				if(!empty($dl->breaks)){										
-					$content .= '<b>Break:</b> '.$this->textM->convertTimeToMinStr($dl->timeBreak).'<br/>'; 
-					if($dl->timeBreak>'01:30:00') $err .= 'OVER BREAK<br/>';
-					if($dl->numBreak%2!=0) $err .= 'MISSING BREAK IN<br/>';
+				if(!empty($dl->breaks)){
+					$displayArray[$numDay]['breaks'] = $dl->timeBreak;
 					
-				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $err .= 'NO BREAKS<br/>';
+					if($dl->timeBreak>'01:30:00') $displayArray[$numDay]['err'][] = 'isOverBreak';
+					if($dl->numBreak%2!=0) $err .= $displayArray[$numDay]['err'][] = 'isMissingBreakIn';
+					
+				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $displayArray[$numDay]['green'][] = 'isNoBreak';
 				
-				if(!empty($err) || !empty($content)){
-					$numday = $dl->dayLogDate;										
-					$data['dayArr'][$numday] = '<span class="errortext">'.$err.'</span>'.$content;
-					if($dl->publish_fk>0) $data['dayArr'][$numday] = '<div class="daysbox daysched">PUBLISHED TO PAYROLL <br/>'.((isset($publishArr[$numday]) && $publishArr[$numday]>0)?'<b class="coloryellow">'.$publishArr[$numday].' HOURS</b>':'').'</div>'.$data['dayArr'][$numday];
-				}
+				if(!empty($dl->publishBy))
+					$displayArray[$numDay]['publish'] = $dl->publishTimePaid;
 			}
+			
+			//this is for the display
+			foreach($displayArray AS $k=>$d){
+				$want = '';
+				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED TO PAYROLL<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
+				if(isset($d['onleave'])) $want .= '<div class="daysbox daypendingleave">On Leave<br/>'.$d['onleave'].'</div>';
+					
+				if(isset($d['err'])){
+					$want .= '<span class="errortext">';
+					foreach($d['err'] AS $err){
+						if($err=='isLate') $want .= 'LATE<br/>';
+						else if($err=='noTimeInYet') $want .= 'NO TIME IN YET<br/>';
+						else if($err=='isAbsent') $want .= 'ABSENT<br/>';
+						else if($err=='isNoTimeIn') $want .= 'NO TIME IN<br/>';
+						else if($err=='isEarlyOut') $want .= 'EARLY OUT<br/>';
+						else if($err=='isNoClockOut') $want .= 'NO CLOCK OUT<br/>';
+						else if($err=='isOverBreak') $want .= 'OVER BREAK<br/>';
+						else if($err=='isMissingBreakIn') $want .= 'MISSING BREAK IN<br/>';
+					}
+					$want .= '</span>';
+				}
+				
+				if(isset($d['green'])){
+					$want .= '<div style="color:green">';
+						foreach($d['green'] AS $g){
+							if($g=='shiftInProgress') $want .= 'SHIFT IN PROGRESS<br/>';
+							else if($g=='isEarlyIn') $want .= 'EARLY IN<br/>';
+							else if($g=='isOutLate') $want .= 'OUT LATE<br/>';
+							else if($g=='isNoBreak') $want .= 'NO BREAK<br/>';
+						}						
+					$want .= '</div>';
+				}
+				
+				if(isset($d['timeIn'])) $want .= '<b>IN: </b>'.$d['timeIn'].'<br/>';
+				if(isset($d['timeOut'])) $want .= '<b>OUT: </b>'.$d['timeOut'].'<br/>';
+				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$this->textM->convertTimeToMinStr($d['breaks']).'<br/>';
+				
+				$data['dayArr'][$k] = $want;				
+			}
+			
 			
 			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
 			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
 			$str5daysbefore = strtotime($data['currentDate'].' -5 days'); //strtotime 7 days before today
 			foreach($data['dayArr'] AS $h=>$m){
-				if($checkIfUser){
-					if(strtotime($dateMonthToday.'-'.$h) >= $str5daysbefore)
-						$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'fileleave/', 'text'=>'File Leave/Offset');
-					
+				if($checkIfUser){					
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
 				}					
 				
 				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
 			}
 			
-			//checking if there are pending requests
+			
+			//CHECK FOR PENDING LOG REQUEST
 			$updateRequests = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND status=1');
 			$updateArr = array();
 			if(count($updateRequests) > 0){		
@@ -436,14 +448,15 @@ class Timecard extends MY_Controller {
 				
 				foreach($updateArr AS $k=>$u2){
 					$ttext = '<b class="errortext">Pending ('.$u2.')</b><br/>';
-					if(isset($data['dayArr'][$k])) $data['dayArr'][$k] = $ttext.$data['dayArr'][$k];
+					if(isset($data['dayArr'][$k])) $data['dayArr'][$k] = $data['dayArr'][$k].$ttext;
 					else $data['dayArr'][$k] = $ttext;
 				}
-			}				
+			}			
 		}
 		
 		$this->load->view('includes/template', $data);
 	}
+	
 	
 	public function attendance($data){	
 		$data['content'] = 'v_timecard/v_attendance';	
@@ -748,103 +761,6 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	/* public function checkAccessPage($timecardpage){		
-		if(is_numeric($this->uri->segment(2)) && ($this->uri->segment(2)!=$this->user->empID || $timecardpage=='scheduling' || $timecardpage=='attendance')){
-			header('Location:'.$this->config->base_url().'timecard/'.$timecardpage.'/');
-			exit;
-		}
-	} */
-	
-	
-	public function viewalllogs(){
-		$data['content'] = 'v_timecard/v_viewalllogs';
-		$id = $this->uri->segment(3);
-		$data['logText'] = $this->textM->constantArr('timeLogTypeText');			
-		$info = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', 'tcStaffDailyLogs.*, idNum, email, fname', 'tlogID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
-				
-		if(!empty($_POST)){
-			if(empty($info->note)) $note = array();
-			else $note = json_decode($info->note, true);
-			
-			if(isset($_POST['submitType']) && $_POST['submitType']=='reqUpdate'){				
-				$upNote['type'] = 'updaterequest';
-				$upNote['reason'] = 'Sent message to '.$_POST['email'].'<br/><i><b>Content:</b></i> '.$_POST['message'];		
-				$upNote['by'] = $this->user->username;
-				$upNote['dateEdited'] = date('Y-m-d H:i:s');
-				
-				array_push($note, $upNote);
-				$upArr['note'] = json_encode($note);
-				$upArr['requestUpdate'] = 0;
-				$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$id), $upArr);				
-				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $_POST['email'], 'Update on Timelog Request', nl2br($_POST['message']));
-			}else{
-				$upArr = array();				
-				$newdate = date('Y-m-d H:i:s', strtotime($_POST['datetext'].' '.$_POST['hh'].':'.$_POST['mm'].':00 '.$_POST['ampm']));			
-				if($_POST['type']=='timeIn'){
-					$upArr['timeIn'] = $newdate;
-				}else if($_POST['type']=='timeOut'){
-					$upArr['timeOut'] = $newdate;
-				}else if($_POST['type']=='breakOut' || $_POST['type']=='breakIn'){
-					$breaks = json_decode($info->breaks, true);
-					
-					$getIndex = 0;
-					foreach($breaks AS $i=>$b){
-						if($b[1]==$_POST['prevVal']){
-							$getIndex = $i;
-							break;
-						}
-					}
-					$breaks[$getIndex] = array($_POST['type'], $newdate);
-					$upArr['breaks'] = json_encode($breaks);
-				}
-				
-				if(!empty($upArr)){
-					$upNote['type'] = $_POST['type'];
-					$upNote['prevVal'] = $_POST['prevVal'];
-					$upNote['newVal'] = $newdate;
-					$upNote['reason'] = $_POST['reason'];
-					$upNote['by'] = $this->user->username;
-					$upNote['dateEdited'] = date('Y-m-d H:i:s');
-					
-					array_push($note, $upNote);
-					$upArr['note'] = json_encode($note);
-									
-					$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$id), $upArr);
-				}
-			}	
-			
-			header('Location:'.$this->config->base_url().'timecard/viewalllogs/'.$id.'/');
-			exit;
-		}
-	
-		$allLogs = array();
-		if(count($info)>0){
-			if($info->timeIn!='0000-00-00 00:00:00') $allLogs[] = array('timeIn', $info->timeIn);
-			if($info->timeOut!='0000-00-00 00:00:00') $allLogs[] = array('timeOut', $info->timeOut);
-			
-			if(!empty($info->breaks)){
-				$breaks = json_decode($info->breaks, true);
-				
-				foreach($breaks AS $b){
-					$allLogs[] = array($b[0], $b[1]);
-				}				
-			}
-		}
-
-		if(count($allLogs)>0){
-			foreach ($allLogs as $key => $val) {
-				$time[$key] = $val[1];
-			}
-			array_multisort($time, SORT_ASC, $allLogs);	
-		}
-		
-				
-		$data['logInfo'] = $info;
-		$data['allLogs'] = $allLogs;
-		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-		$data['uploadDir'] = 'uploads/timecard/timeloguploaddocs/';
-		$this->load->view('includes/templatecolorbox', $data);
-	}
 	
 	function requestupdate($data){
 		$data['content'] = 'v_timecard/v_requestupdate';
@@ -877,7 +793,6 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	
 	public function managetimecard($data){
 		$data['content'] = 'v_timecard/v_manage_unpublishedlogs';	
 		$data['tpage'] = 'managetimecard';
@@ -891,7 +806,7 @@ class Timecard extends MY_Controller {
 				$data['proudpage'] = $this->uri->segment(3);
 				if(empty($data['proudpage'])) $data['proudpage'] = 'unpublishedlogs';
 				
-				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, schedIn, schedOut, timeIn, timeOut, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publish_fk=0 AND logDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publishBy="" AND slogDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
 				if($data['proudpage']=='logpendingrequest'){
@@ -918,179 +833,89 @@ class Timecard extends MY_Controller {
 				$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upArr);
 				header('Location:'.$this->config->item('career_uri'));
 				exit;
-			}else if($_POST['submitType']=='editLog' || $_POST['submitType']=='editBreaks'){
-				if($_POST['submitType']=='editBreaks'){					
-					$newBreak = array();
+			}else if($_POST['submitType']=='resolvelog'){
+				$message = '';
+				$updatePub = array();				
+				if($_POST['changetype']=='breaks'){
+					$br = '';
+					$message = '';
+					$numb = 0;
 					$totalBreak = 0;
 					$compute = 0;
-					foreach($_POST['break'] AS $b){
-						if(!empty($b)){
-							array_push($newBreak, $b);
-							if($compute==0) $compute = strtotime($b);
+										
+					foreach($_POST['breakval'] AS $bb){
+						if(!empty($bb)){
+							$br .= $bb.'|';
+							$message .= date('h:i a', strtotime($bb)).', ';
+							if($compute==0) $compute = strtotime($bb);
 							else{
-								$totalBreak += strtotime($b) - $compute;
+								$totalBreak += strtotime($bb) - $compute;
 								$compute = 0;
 							}
+							
+							$numb++;
 						}
 					}
+					$updatePub['timeBreak'] = $this->textM->convertTimeToMinHours($totalBreak,true);
+					$updatePub['numBreak'] = $numb;
+					$updatePub['breaks'] = $br;
 					
-					$prevBreak = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'breaks', 'tlogID="'.$_POST['tlogID'].'"');
-					$prevBreak = json_decode($prevBreak);
-					
-					$upArr['timeBreak'] = $this->textM->convertTimeToMinHours($totalBreak,true);
-					$upArr['numBreak'] = count($newBreak);
-					$upArr['breaks'] = json_encode($newBreak);
-					$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$_POST['tlogID']), $upArr);
-					
-					
-					$edited = '';
-					$added = '';
-					$pcount = count($prevBreak);
-					$ncount = count($newBreak);
-					for($p=0; $p<$pcount || $p<$ncount; $p++){
-						if(isset($prevBreak[$p]))
-							$pbreak = date('Y-m-d H:i', strtotime($prevBreak[$p]));
-												
-						if(isset($newBreak[$p]) && !isset($prevBreak[$p]))
-							$added .= $newBreak[$p].', ';
+					if($numb==0) $message = 'Updated break to : '.$message;
+				}else{
+					$updatePub[$_POST['changetype']] = $_POST['inoutval'];
+					$message = 'Updated '.$this->textM->constantText($_POST['changetype']).' to '.$_POST['inoutval'];
+				}
+				
+				if(!empty($updatePub)){
+					if(!empty($_POST['slogID'])){
+						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), $updatePub); ///update records
 						
-						if(isset($newBreak[$p]) && isset($prevBreak[$p]) && $newBreak[$p]!=$pbreak)
-							$edited .= 'from '.$pbreak.' to '.$newBreak[$p].', ';
-					}
-					 
-					$insUpdate['message'] = '';
-					if($edited!='') $insUpdate['message'] .= 'Edited breaks '.rtrim($edited, ', ').'<br/>';
-					if($added!='') $insUpdate['message'] .= 'Added breaks '.rtrim($added, ', ').'<br/>';
-					if(!empty($insUpdate['message'])) $insUpdate['message'] .= '<br/>';
-					$insUpdate['message'] .= 'Reason: '.$_POST['reason'];
-				}else{
-					$this->dbmodel->updateQueryText('tcStaffDailyLogs', '`'.$_POST['timeType'].'` = "'.$_POST['timeVal'].'"', 'tlogID="'.$_POST['tlogID'].'"');
-					$insUpdate['message'] = $_POST['prev'].' to '.date('d M Y h:i a', strtotime($_POST['timeVal'])).'<br/>Reason:'.$_POST['reason'];
+						//check if there is pending request
+						if(!empty($_POST['updateID'])){
+							$upA['status'] = 0;
+							$upA['updatedBy'] = $this->user->username;
+							$upA['dateUpdated'] = date('Y-m-d H:i:s');
+							$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upA);
+						}
+						
+						//insert to tcTimelogUpdates
+						$this->timeM->addToLogUpdate($id, $data['today'], $message.'<br/>Reason: '.$_POST['reason']);						
+					}					
 				}
-				
-				//INSERT LOG HISTORY
-				$insUpdate['empID_fk'] = $id;
-				$insUpdate['logDate'] = $data['today'];				
-				$insUpdate['dateRequested'] = date('Y-m-d H:i:s');
-				$insUpdate['dateUpdated'] = date('Y-m-d H:i:s');
-				$insUpdate['updatedBy'] = $this->user->username;
-				$insUpdate['status'] = 0;
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $insUpdate);
-				
-				//updateAttendaceRecord
-				$this->timeM->cntUpdateAttendanceRecord($data['today']);
-			}else if($_POST['submitType']=='addSched'){
-				$updArr['schedIn'] = date('Y-m-d H:i:s', strtotime($_POST['schedIn']));
-				$updArr['schedOut'] = date('Y-m-d H:i:s', strtotime($_POST['schedOut']));
-				$updArr['schedHour'] = $_POST['schedHour'];
-								
-				$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$_POST['tlogID']), $updArr);
-				//updateAttendaceRecord
-				$tLogDate = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'logDate', 'tlogID="'.$_POST['tlogID'].'"');
-				if(!empty($tLogDate)) $this->timeM->cntUpdateAttendanceRecord($tLogDate);
-			
-				//INSERT LOG HISTORY
-				$insUpdate['message'] = 'Added schedule In:'.$_POST['schedIn'].' Out:'.$_POST['schedOut'];
-				$insUpdate['empID_fk'] = $id;
-				$insUpdate['logDate'] = $data['today'];				
-				$insUpdate['dateRequested'] = date('Y-m-d H:i:s');
-				$insUpdate['dateUpdated'] = date('Y-m-d H:i:s');
-				$insUpdate['updatedBy'] = $this->user->username;
-				$insUpdate['status'] = 0;
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $insUpdate);
-				
-				//CHECK CURRENT SCHEDULE ON tcStaffScheduleByDates
-				$schedID = $this->dbmodel->getSingleField('tcStaffScheduleByDates', 'dateID', 'dateToday="'.$data['today'].'" AND empID_fk="'.$data['visitID'].'"');
-				$arr['timeText'] = date('h:i a', strtotime($_POST['schedIn'])).' - '.date('h:i a', strtotime($_POST['schedOut']));
-				$arr['timeHours'] = $_POST['schedHour'];
-				$arr['status'] = 1;
-				$arr['assignBy'] = $this->user->empID;
-				$arr['assignDate'] = date('Y-m-d H:i:s');
-				if(!empty($schedID)){
-					$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$schedID), $arr);
-				}else{
-					$arr['dateToday'] = $data['today'];
-					$arr['empID_fk'] = $data['visitID'];
-					$this->dbmodel->insertQuery('tcStaffScheduleByDates', $arr);
-				}
+				$data['alerttext'] = 'Please don\'t forget to PUBLISH.';
 			}else if($_POST['submitType']=='publishlog'){
-				if(isset($_POST['tlogID'])) $publishedID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'publish_fk', 'tlogID="'.$_POST['tlogID'].'"');
+				$pubArr['publishTimePaid'] = $_POST['publishTimePaid'];
+				$pubArr['publishNote'] = $_POST['publishNote'];
+				$pubArr['datePublished'] = date('Y-m-d H:i:s');
+				$pubArr['publishBy'] = $this->user->username;
+				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), $pubArr);
 				
-				if(!isset($publishedID) || (isset($publishedID) && $publishedID==0)){ //if unpublished insert published record
-					$insPublish['empID_fk'] = $data['visitID'];
-					$insPublish['publishDate'] = $data['today'];						
-					$insPublish['timePaid'] = $_POST['timePaid'];
-					$insPublish['datePublished'] = date('Y-m-d H:i:s');
-					$insPublish['publishedBy'] = $this->user->empID;
-					if(isset($_POST['tlogID'])) $insPublish['tcStaffDailyLogs_fk'] = $_POST['tlogID'];
-					
-					$publishID = $this->dbmodel->insertQuery('tcStaffPublished', $insPublish);	
-					if(isset($_POST['tlogID'])) $this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$publishID , 'tlogID="'.$_POST['tlogID'].'"'); //update log to published primary key
-				}else{ //update record if already published
-					$upPublish['timePaid'] = $_POST['timePaid'];
-					$upPublish['datePublished'] = date('Y-m-d H:i:s');
-					$upPublish['publishedBy'] = $this->user->empID;
-					
-					$this->dbmodel->updateQuery('tcStaffPublished', array('publishedID'=>$publishedID), $upPublish);
-				}
+				//insert to tcTimelogUpdates
+				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');				
+			}else if($_POST['submitType']=='unpublish'){
+				//insert to tcTimelogUpdates
+				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'"');	
+				$message = '<b>Unpublished log.</b>';
+				if(count($info)>0){
+					$message .= '<br/>Details:<br/>Time Paid: '.$info->publishTimePaid;
+					$message .= '<br/>Prev Date Published: '.$info->datePublished;
+					$message .= '<br/>Prev Published By: '.$info->publishBy;
+				}				
+				$this->timeM->addToLogUpdate($id, $data['today'], $message);
 				
-				//timelog update details
-				$inUp['status'] = 0;
-				$inUp['empID_fk'] = $data['visitID'];
-				$inUp['logDate'] = $data['today'];
-				$inUp['message'] = 'Published logs. Time Paid: '.$_POST['timePaid'].' Hours';
-				$inUp['updatedBy'] = $this->user->username;
-				$inUp['dateRequested'] = date('Y-m-d H:i:s');
-				$inUp['dateUpdated'] = date('Y-m-d H:i:s');
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $inUp);	
-				
-				//Add my notification
-				$this->commonM->addMyNotif($this->user->empID, 'You published logs of '.$data['row']->name. ' for '.$data['today'], 5);
-				
-				//update tcAttendance Records
-				$this->timeM->cntUpdateAttendanceRecord($data['today']);
-			}else if($_POST['submitType']=='updatePublished'){
-				$publish = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'publishedID="'.$_POST['publishedID'].'"');
-				
-				$upArr['timePaid'] = $_POST['newTimePaid'];
-				$upArr['datePublished'] = date('Y-m-d H:i:s');
-				$upArr['publishedBy'] = $this->user->empID;
-				$this->dbmodel->updateQuery('tcStaffPublished', array('publishedID'=>$_POST['publishedID']), $upArr); //UPDATE PUBLISH RECORD
-				
-				//INSERT HISTORY ON tcTimelogUpdates
-				$ins['empID_fk'] = $publish->empID_fk;
-				$ins['logDate'] = $publish->publishDate;
-				$ins['status'] = 0;
-				$ins['message'] = 'Updated Time Paid From '.$publish->timePaid.' Hours to '.$_POST['newTimePaid'].' Hours';
-				$ins['dateRequested'] = date('Y-m-d H:i:s');
-				$ins['dateUpdated'] = date('Y-m-d H:i:s');
-				$ins['updatedBy'] = $this->user->username;
-				$ins['updateNote'] = $_POST['reasonUpdate'];
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
-			}else if($_POST['submitType']=='editSchedLog'){
-				$feelings['schedIn'] = date('Y-m-d H:i:s', strtotime($_POST['schedIN']));
-				$feelings['schedOut'] = date('Y-m-d H:i:s', strtotime($_POST['schedOUT']));
-				$feelings['schedHour'] = $_POST['schedHOUR'];
-				$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$_POST['tlogID']), $feelings); ///UPDATE
-				
-				//INSERT TIMELOG UPDATE
-				$happy['empID_fk'] = $id;
-				$happy['logDate'] = $data['today'];
-				$happy['status'] = 0;
-				$happy['message'] = $this->user->fname.' updated schedule from '.((!empty($_POST['schedToday']))?$_POST['schedToday']:' ').' to '.date('h:i a', strtotime($_POST['schedIN'])).' - '.date('h:i a', strtotime($_POST['schedOUT']));
-				$happy['dateRequested'] = date('Y-m-d H:i:s');
-				$happy['updatedBy'] = $this->user->username;
-				$happy['dateUpdated'] = date('Y-m-d H:i:s');
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $happy);				
+				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), array('publishTimePaid'=>'', 'datePublished'=>'', 'publishBy'=>'', 'publishNote'=>'')); ///REMOVE PUBLISH DETAILS
+				$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
+				exit;
 			}
+			
+			$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
 		}
 		
 		$data['schedToday'] = $this->timeM->getSchedToday($id, $data['today']);
+		$data['dataLog'] = $this->dbmodel->getSingleInfo('tcStaffLogPublish', '*', 'empID_fk="'.$id.'" AND slogDate="'.$data['today'].'"');
+		$data['dataBiometrics'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
-		$data['log'] = $this->dbmodel->getSingleInfo('tcStaffDailyLogs', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"');
-		$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
-		$data['publish'] = $this->dbmodel->getSingleInfo('tcStaffPublished', '*', 'empID_fk="'.$id.'" AND publishDate="'.$data['today'].'"');
-						
+							
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
 		$this->load->view('includes/templatecolorbox', $data);		
 	}

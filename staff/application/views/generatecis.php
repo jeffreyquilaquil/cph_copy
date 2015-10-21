@@ -154,7 +154,7 @@ if($updated==false && count($row)>0){
 		<td><br/></td>
 		<td>
 			<i style="font-size:10px;">After submission, download and print the file, let the employee and supervisors sign it.  Then submit it to HR for final update.</i><br/>
-			<input type="submit" value="Submit" class="btnclass"/>
+			<input type="submit" value="Submit" class="btnclass btngreen"/>
 		</td>
 	</tr>
 </form>
@@ -326,7 +326,7 @@ echo '<table class="tableInfo">';
 		echo '<tr><td>Approval</td><td><input type="radio" name="approval" value="1" checked> Approve&nbsp;&nbsp;&nbsp;<input type="radio" name="approval" value="2"> Disapprove</td></tr>';
 		echo '<tr id="efftr"><td>Effective date of this change</td><td><input type="text" value="'.date('F d, Y', strtotime($row->effectivedate)).'" name="effectivedate" id="effectivedate" class="forminput datepick"/></td></tr>';
 		echo '<tr><td>Reason for approve/disapprove</td><td><textarea class="forminput" name="reason" id="reason"></textarea></td></tr>';	
-		echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()" class="btnclass"/></td></tr>';
+		echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()" class="btnclass btngreen"/></td></tr>';
 	}else{
 		echo '<tr class="trhead"><td colspan=2>Details</td></tr>';
 		echo '<tr><td>Status</td><td class="errortext">';

@@ -15,11 +15,19 @@ class Textmodel extends CI_Model {
 		else echo '</pre>';
 	}
 	
-	function formfield($type, $name='', $val='', $class='', $placeholder='', $additional=''){
+	function formfield($type, $name='', $val='', $class='', $placeholder='', $additional='', $opSelect=''){
 		$t = '';
 		
 		if($type=='select'){
 			$t = '<select name="'.$name.'" class="'.$class.'" '.$additional.'>'.$val.'</select>';
+		}else if($type=='selectoption'){
+			$t = '<select name="'.$name.'" class="'.$class.'" '.$additional.'>';
+				if(!empty($placeholder)) $t .= '<option value="">'.$placeholder.'</option>';
+				
+				foreach($opSelect AS $k=>$p){
+					$t .= '<option value="'.$k.'" '.(($k==$val)?'selected="selected"':'').'>'.$p.'</option>';
+				}
+			$t .= '</select>';
 		}else if($type=='textarea'){
 			$t = '<textarea name="'.$name.'" class="'.$class.'" '.$additional.' placeholder="'.$placeholder.'">'.$val.'</textarea>';
 		}else{
@@ -158,6 +166,7 @@ class Textmodel extends CI_Model {
 		if(empty($str)) $str = '0';
 		return $str;		
 	}
+	
 	
 	function ordinal($num){
 		if( ($num / 10) % 10 != 1 )
@@ -698,6 +707,15 @@ class Textmodel extends CI_Model {
 		return $arr;
 	}
 	
+	public function constantValues($type){
+		$val = '';
+		
+		if($type=='datetimepattern')
+			$val = '(?:19|20)[0-9]{2}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31)) (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}';
+		
+		return $val;
+	}
+	
 	//$filename is $_FILES['uploadfilename']['name']
 	public function getFileExtn($filename){
 		return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
@@ -818,11 +836,11 @@ class Textmodel extends CI_Model {
 	
 	public function displayAttAdditional($say){
 		$hello = '<td>';
-			if($say->publish_fk>0) $hello .= 'Published';
-			else if($this->access->accessFullHR==true) $hello .= '<a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->logDate.'&back=attendancedetails"><button>Resolve</button></a>';
+			if($say->publishBy!="") $hello .= 'Published';
+			else if($this->access->accessFullHR==true) $hello .= '<a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->slogDate.'&back=attendancedetails"><button>Resolve</button></a>';
 			else $hello .= 'Unpublished';
 		$hello .= '</td>';				
-		$hello .= '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->logDate.'&back=attendancedetails"><button>View log details</button></a></td>';
+		$hello .= '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->slogDate.'&back=attendancedetails"><button>View log details</button></a></td>';
 		
 		return $hello;
 	}

@@ -285,12 +285,12 @@ class Schedules extends MY_Controller {
 					$schdArr = $this->timeM->getSchedArr($arr['dateToday'], $arr['timeText']);
 					if(isset($schdArr['start']) && isset($schdArr['end'])){
 						if($currentDateToday>=$arr['dateToday']){
-							$dailyLogID = $this->dbmodel->getSingleField('tcStaffDailyLogs', 'tlogID', 'logDate="'.$arr['dateToday'].'" AND empID_fk="'.$data['empID'].'"');
+							$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$arr['dateToday'].'" AND empID_fk="'.$data['empID'].'"');
 							if(!empty($dailyLogID)){
 								$upp['schedIn'] = $schdArr['start'];
 								$upp['schedOut'] = $schdArr['end'];
 								$upp['schedHour'] = $arr['timeHours'];
-								$this->dbmodel->updateQuery('tcStaffDailyLogs', array('tlogID'=>$dailyLogID), $upp);		
+								$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$dailyLogID), $upp);		
 							}else{
 								$schedToday = $this->timeM->getCalendarSchedule($arr['dateToday'], $arr['dateToday'], $data['empID'], true);
 								$this->timeM->insertToDailyLogs($data['empID'], $arr['dateToday'], $schedToday);

@@ -315,20 +315,20 @@ class Timecardmodel extends CI_Model {
 			$flds = ', schedOut, timeBreak';
 			$condition .= ' AND timeBreak>"'.$this->timeM->timesetting('overBreakTime').'"';	
 		}else if($type=='unpublished'){
-			$flds = ', timeIn, timeOut, timeBreak';
-			$condition .= ' AND publish_fk=0 AND schedOut<"'.date('Y-m-d H:i:s').'"';				
+			$flds = ', timeIn, timeOut, timeBreak, schedIn, schedOut';
+			$condition .= ' AND publishBy="" AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
-			$condition .= ' AND publish_fk>0';	
+			$condition .= ' AND publishBy!=""';	
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk', 'logDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');
 		}
 		
 		if($query==''){
-			$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, CONCAT(fname," ",lname) AS name, publish_fk '.$flds, 'logDate="'.$dateToday.'" '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, CONCAT(fname," ",lname) AS name, publishBy '.$flds, 'slogDate="'.$dateToday.'" '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $query;
@@ -362,7 +362,7 @@ class Timecardmodel extends CI_Model {
 			if($attLog->unpublished!=$cntUnPublished) $upArr['unpublished'] = $cntUnPublished;
 			if($attLog->unscheduled!=$cntUnscheduled) $upArr['unscheduled'] = $cntUnscheduled;
 			if($attLog->scheduled!=$cntScheduled) $upArr['scheduled'] = $cntScheduled;
-			
+						
 			if(count($upArr)>0) $this->dbmodel->updateQuery('tcAttendance', array('attendanceID'=>$attLog->attendanceID), $upArr);
 		}
 	}
@@ -370,61 +370,57 @@ class Timecardmodel extends CI_Model {
 	/********
 		If records no discrepancies, insert to update table
 	********/
-	public function publishLogs($today){
+	public function publishLogs(){
 		$time00 = '0000-00-00 00:00:00';
+		$condition = 'publishBy=""';
+		$updateArray = array();
 		
-		$condition = 'publish_fk=0';
-		$condition .= ' AND logDate="'.$today.'"';
-		/////TIME IN
-		$first = 'schedIn!="'.$time00.'"';
-		$first .= ' AND timeIn!="'.$time00.'"';
-		$first .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')';
+		$condition .= ' AND (';
+		$condition .= ' (schedIn!="'.$time00.'" AND schedOut!="'.$time00.'"';
+		$condition .= ' AND timeIn!="'.$time00.'" AND timeOut!="'.$time00.'"';
+		$condition .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')'; //late
+		$condition .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')'; //early out
+		$condition .= ' AND (timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'" OR timeBreak="00:00:00"))'; //NO BREAK OR time break less than 1 hour 30 mins
 		
-		//////TIME OUT
-		$first .= ' AND schedOut!="'.$time00.'"';		
-		$first .= ' AND timeOut!="'.$time00.'"';
-		$first .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')';
+		$condition .= ' OR ';
+		$condition .= ' (leaveID_fk>0 AND timeIn="'.$time00.'" AND timeOut="'.$time00.'")';
+		$condition .= ')';
 		
-		//////BREAKS
-		$first .= ' AND (timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'" OR timeBreak="00:00:00")'; //NO BREAK OR time break less than 1 hour 30 mins
-			
-		
-		//SECOND CONDITION PUBLISH WITH 0 TIME FOR ABSENT WITH SCHEDULE TODAY
-		$second = 'schedIn!="'.$time00.'" AND timeIn="'.$time00.'"';
-		$second .= ' AND schedOut!="'.$time00.'" AND timeOut="'.$time00.'"';
-		$second .= ' AND schedOut<="'.date('Y-m-d H:i:s').'"';
-		
-		$condition .= ' AND (('.$first.') OR ('.$second.'))';
-		
-		$query = $this->dbmodel->getQueryResults('tcStaffDailyLogs', 'tlogID, logDate, empID_fk, schedHour, timeIn, timeOut', $condition);
-							
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedIn, schedOut, schedHour, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
+
 		if(count($query)>0){
-			$logIDs = '';
+			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
-				$insArr['empID_fk'] = $q->empID_fk;
-				$insArr['publishDate'] = $q->logDate;
-				if($q->timeIn==$time00 && $q->timeOut==$time00) $insArr['timePaid'] = 0;
-				else $insArr['timePaid'] = $q->schedHour;
+				if($q->leaveID_fk>0){
+					$info = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, leaveStart, leaveEnd, status', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1');					
+					if(count($info)>0){
+						if(strtotime($info->leaveStart)<= strtotime($q->schedIn) && strtotime($info->leaveEnd)>= strtotime($q->schedOut)){
+							if($info->status==1) $upArr['publishTimePaid'] = $q->schedHour;
+							else $upArr['publishTimePaid'] = 0;
+						}
+					}
+				}else $upArr['publishTimePaid'] = $q->schedHour;
 				
-				$insArr['tcStaffDailyLogs_fk'] = $q->tlogID;
-				$insArr['datePublished'] = date('Y-m-d H:i:s');
-				
-				$ins = $this->dbmodel->insertQuery('tcStaffPublished', $insArr);
-				$this->dbmodel->updateQueryText('tcStaffDailyLogs', 'publish_fk='.$ins, 'tlogID="'.$q->tlogID.'"');
-				$logIDs .= $q->tlogID.',';
+				if(isset($upArr['publishTimePaid'])){
+					$upArr['datePublished'] = $dateToday;
+					$upArr['publishBy'] = 'system';
+					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$q->slogID), $upArr);
+					
+					$updateArray[$q->slogDate] = true;
+				}
 			}
-			
-			if(!empty($logIDs)){
-				$this->timeM->cntUpdateAttendanceRecord($today); //update tcAttendance Records		
-			}				
 		}
 		
-		echo '<pre>';
-		print_r($query);
-		echo '</pre>';
-		exit;
+		
+		//update attendance record 
+		foreach($updateArray AS $k=>$u){
+			$this->timeM->cntUpdateAttendanceRecord($k);
+		}
+		
+		exit;		
 	}
+	
 	
 	public function hourDeduction($seconds){
 		$hr = 0;
@@ -445,10 +441,13 @@ class Timecardmodel extends CI_Model {
 			
 		if(isset($schedToday[$todaySmall])){
 			$sArr = $schedToday[$todaySmall];	
-			
+						
 			$insArr = array();
 			if(isset($sArr['sched'])){
-				$schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
+				
+				if($sArr['sched']=='On Leave' && isset($sArr['leave'])) $schedArr = $this->timeM->getSchedArr($today, $sArr['leave']);
+				else $schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
+					
 				if(isset($schedArr['start']) && isset($schedArr['end'])){
 					$insArr['schedIn'] = $schedArr['start'];
 					$insArr['schedOut'] = $schedArr['end'];
@@ -465,7 +464,7 @@ class Timecardmodel extends CI_Model {
 					$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
 					
 					if(!isset($insArr['schedIn'])){ //if no schedule for today
-						$insArr['logDate'] = $today;
+						$insArr['slogDate'] = $today;
 						$insArr['empID_fk'] = $empID;
 						
 						$insArr['schedIn'] = $offArr['start'];
@@ -485,13 +484,28 @@ class Timecardmodel extends CI_Model {
 			}
 			
 			if(!empty($insArr)){
-				$insArr['logDate'] = $today;
+				$insArr['slogDate'] = $today;
 				$insArr['empID_fk'] = $empID;
-				$logID = $this->dbmodel->insertQuery('tcStaffDailyLogs', $insArr);
+				if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
+								
+				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
+				if(empty($logID))
+					$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
 			}
 		}
 		
 		return $logID;
+	}
+	
+	public function addToLogUpdate($empID, $logDate, $message){
+		$ins['empID_fk'] = $empID;
+		$ins['logDate'] = $logDate;
+		$ins['message'] = $message;
+		$ins['status'] = 0;
+		$ins['dateRequested'] = date('Y-m-d H:i:s');
+		$ins['updatedBy'] = $this->user->username;
+		$ins['dateUpdated'] = $ins['dateRequested'];
+		$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
 	}
 	
 	

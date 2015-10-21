@@ -303,7 +303,7 @@ class Emailmodel extends CI_Model {
 			$empArr[$q->empID_fk]['email'] = $q->email;
 			$empArr[$q->empID_fk]['fname'] = $q->fname;
 			$empArr[$q->empID_fk]['lname'] = $q->lname;
-			$empArr[$q->empID_fk]['logDate'][] = $q->logDate;
+			$empArr[$q->empID_fk]['slogDate'][] = $q->slogDate;
 		}
 		
 		if(count($empArr)>0){
@@ -319,7 +319,7 @@ class Emailmodel extends CI_Model {
 					$body .= '<li>';
 						$body .= $emp['fname'].' '.$emp['lname'];
 						$body .= '<ul>';
-							foreach($emp['logDate'] AS $log)
+							foreach($emp['slogDate'] AS $log)
 								$body .= '<li><a href="'.$this->config->base_url().'timecard/'.$k.'/viewlogdetails/?d='.$log.'">'.date('F d, Y', strtotime($log)).'</a></li>';
 						$body .= '</ul>';
 					$body .= '</li>';
@@ -335,7 +335,7 @@ class Emailmodel extends CI_Model {
 					$to = $emp['email'];
 					
 					$log = '<ul>';
-					foreach($emp['logDate'] AS $l){
+					foreach($emp['slogDate'] AS $l){
 						$log .= '<li>'.date('F d, Y', strtotime($l)).'</li>';
 					}
 					$log .= '</ul>';
