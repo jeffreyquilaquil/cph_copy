@@ -38,7 +38,7 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){
-		$this->cronDailyAttendanceRecord();
+		$this->cronDailyLogs();
 		exit;
 	}
 		
@@ -838,7 +838,6 @@ class Timecard extends MY_Controller {
 				$updatePub = array();				
 				if($_POST['changetype']=='breaks'){
 					$br = '';
-					$message = '';
 					$numb = 0;
 					$totalBreak = 0;
 					$compute = 0;
@@ -846,12 +845,17 @@ class Timecard extends MY_Controller {
 					foreach($_POST['breakval'] AS $bb){
 						if(!empty($bb)){
 							$br .= $bb.'|';
-							$message .= date('h:i a', strtotime($bb)).', ';
-							if($compute==0) $compute = strtotime($bb);
-							else{
+							
+							if($compute==0){
+								$compute = strtotime($bb);
+								$message .= ', ';
+							}else{
 								$totalBreak += strtotime($bb) - $compute;
 								$compute = 0;
+								$message .= ' - ';
 							}
+							
+							$message .= date('h:i a', strtotime($bb));
 							
 							$numb++;
 						}
@@ -860,7 +864,7 @@ class Timecard extends MY_Controller {
 					$updatePub['numBreak'] = $numb;
 					$updatePub['breaks'] = $br;
 					
-					if($numb==0) $message = 'Updated break to : '.$message;
+					if($numb>0) $message = 'Updated break to: '.trim($message, ', ');
 				}else{
 					$updatePub[$_POST['changetype']] = $_POST['inoutval'];
 					$message = 'Updated '.$this->textM->constantText($_POST['changetype']).' to '.$_POST['inoutval'];

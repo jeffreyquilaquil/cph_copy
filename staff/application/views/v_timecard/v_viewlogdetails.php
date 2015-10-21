@@ -397,13 +397,11 @@
 			}else{
 				$('.trresolve').removeClass('hidden');
 				if(sss=='breaks'){
-					$('.breakinside').attr('required', 'required');	
 					$('input[name="inoutval"]').removeAttr('required');
 					$('#divBreaks').show();	
 					$('#divInOut').hide();			
 				}else{
 					$('input[name="inoutval"]').attr('required', 'required');
-					$('.breakinside').removeAttr('required');
 					$('#divInOut').show();
 					$('#divBreaks').hide();
 					
