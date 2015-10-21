@@ -112,7 +112,7 @@
 						$strend = strtotime($schedArr['end']);
 						$strlogout = strtotime($logtimeout);
 						
-						if(isset($strlogtime) && $strlogtime < $strend){
+						if(isset($strlogout) && $strlogout < $strend){
 							$diffEnd = $strend - $strlogout;
 							echo ' This is '.$this->textM->convertTimeToMinHours($diffEnd).' <b class="errortext">EARLY OUT</b>.<br/>';
 						}
