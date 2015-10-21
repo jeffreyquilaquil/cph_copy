@@ -465,7 +465,7 @@ class Timecard extends MY_Controller {
 				}
 			}			
 		}
-		
+	
 		$this->load->view('includes/template', $data);
 	}
 	

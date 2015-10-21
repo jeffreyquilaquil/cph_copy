@@ -153,7 +153,7 @@ class Timecardmodel extends CI_Model {
 			$conditionLeave .= ')';
 		}
 		
-		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
 		
 		$leavestrend = strtotime($dateEnd.' +1 day');
 		foreach($queryLeaves AS $leave){
@@ -166,8 +166,12 @@ class Timecardmodel extends CI_Model {
 							 
 				if(isset($dayArr[$dayj]['sched']) && strtotime($start)>=$strdateStart && (strtotime($leaveEnd)<=$leavestrend || strtotime($start)<=$leavestrend)){
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
-					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
-					if($leave->status==1) $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];
+					$dayArr[$dayj]['leaveID'] = $leave->leaveID;					
+					$dayArr[$dayj]['leaveStatus'] = $leave->status;					
+					if($leave->status==1){
+						if($leave->totalHours==4) $dayArr[$dayj]['schedHour'] = 4;
+						else $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];
+					}
 					else $dayArr[$dayj]['schedHour'] = 0;
 					
 					if(strtotime($leaveEnd)>strtotime($end)) $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($end));
@@ -219,10 +223,12 @@ class Timecardmodel extends CI_Model {
 						
 						if($day['leave']==$start.' - '.$firstend4 || $day['leave']==$start.' - '.$firstend5){
 							$dayArr[$k]['sched'] = $secondstart4.' - '.$end;
-							$dayArr[$k]['schedHour'] = 4;
+							if($dayArr[$k]['schedHour']==4) $dayArr[$k]['schedHour'] = 8;
+							else $dayArr[$k]['schedHour'] = 4;
 						}else if($day['leave']==$secondstart4.' - '.$end || $day['leave']==$secondstart5.' - '.$end){
 							$dayArr[$k]['sched'] = $start.' - '.$firstend4;
-							$dayArr[$k]['schedHour'] = 4;
+							if($dayArr[$k]['schedHour']==4) $dayArr[$k]['schedHour'] = 8;
+							else $dayArr[$k]['schedHour'] = 4;
 						}
 					}									
 				} 
