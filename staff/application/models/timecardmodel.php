@@ -401,17 +401,7 @@ class Timecardmodel extends CI_Model {
 			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
-				if($q->leaveID_fk>0){
-					$info = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, leaveStart, leaveEnd, status', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1');					
-					if(count($info)>0){
-						if(strtotime($info->leaveStart)<= strtotime($q->schedIn) && strtotime($info->leaveEnd)>= strtotime($q->schedOut)){
-							$upArr['publishTimePaid'] = 0;
-							
-							if($q->schedHour==4) $upArr['publishTimePaid'] += $q->schedHour; //if half day					
-							if($info->status==1) $upArr['publishTimePaid'] += $q->schedHour; //if paid
-						}
-					}
-				}else if($q->timeIn==$time00 && $q->timeOut==$time00){
+				if($q->timeIn==$time00 && $q->timeOut==$time00){
 					$upArr['publishTimePaid'] = 0;
 				}else $upArr['publishTimePaid'] = $q->schedHour;
 				

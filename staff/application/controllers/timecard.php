@@ -39,6 +39,18 @@ class Timecard extends MY_Controller {
 		
 	public function timetest(){
 		$this->cronDailyLogs();
+		$this->cronDailyAttendanceRecord();
+		/* $this->cronDailySchedulesAndAttendance('2015-10-11');
+		$this->cronDailySchedulesAndAttendance('2015-10-12');
+		$this->cronDailySchedulesAndAttendance('2015-10-13');
+		$this->cronDailySchedulesAndAttendance('2015-10-14');
+		$this->cronDailySchedulesAndAttendance('2015-10-15');
+		$this->cronDailySchedulesAndAttendance('2015-10-16');
+		$this->cronDailySchedulesAndAttendance('2015-10-17');
+		$this->cronDailySchedulesAndAttendance('2015-10-18');
+		$this->cronDailySchedulesAndAttendance('2015-10-19');
+		$this->cronDailySchedulesAndAttendance('2015-10-20');
+		$this->cronDailySchedulesAndAttendance('2015-10-21'); */
 		exit;
 	}
 		
@@ -46,8 +58,8 @@ class Timecard extends MY_Controller {
 	//get staff schedules and insert to tcStaffLogPublish
 	//insert to tcAttendance for summary of results today
 	//public function cronDailySchedulesAndAttendance(){
-	public function cronDailySchedulesAndAttendance(){
-		$today = date('Y-m-d');
+	public function cronDailySchedulesAndAttendance($today){
+		//$today = date('Y-m-d');
 		$todaySmall = date('j');
 		$scheduled = 0;
 		
