@@ -376,17 +376,24 @@ class Timecardmodel extends CI_Model {
 		$updateArray = array();
 		
 		$condition .= ' AND (';
+		///SCHEDULE NO DISCREPANCIES
 		$condition .= ' (schedIn!="'.$time00.'" AND schedOut!="'.$time00.'"';
 		$condition .= ' AND timeIn!="'.$time00.'" AND timeOut!="'.$time00.'"';
 		$condition .= ' AND timeIn<=DATE_ADD(schedIn, INTERVAL '.$this->timeM->timesetting('overMinute15').')'; //late
 		$condition .= ' AND timeOut>=DATE_ADD(schedOut, INTERVAL -'.$this->timeM->timesetting('overMinute15').')'; //early out
 		$condition .= ' AND (timeBreak<"'.$this->timeM->timesetting('overBreakTimePlus15').'" OR timeBreak="00:00:00"))'; //NO BREAK OR time break less than 1 hour 30 mins
 		
+		//ON LEAVE
 		$condition .= ' OR ';
 		$condition .= ' (leaveID_fk>0 AND timeIn="'.$time00.'" AND timeOut="'.$time00.'")';
+		
+		//ABSENT
+		$condition .= ' OR ';
+		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00")';
+		
 		$condition .= ')';
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedIn, schedOut, schedHour, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedIn, schedOut, schedHour, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
 
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
@@ -400,6 +407,8 @@ class Timecardmodel extends CI_Model {
 							else $upArr['publishTimePaid'] = 0;
 						}
 					}
+				}else if($q->timeIn==$time00 && $q->timeOut==$time00){
+					$upArr['publishTimePaid'] = 0;
 				}else $upArr['publishTimePaid'] = $q->schedHour;
 				
 				if(isset($upArr['publishTimePaid'])){
@@ -411,7 +420,6 @@ class Timecardmodel extends CI_Model {
 				}
 			}
 		}
-		
 		
 		//update attendance record 
 		foreach($updateArray AS $k=>$u){
