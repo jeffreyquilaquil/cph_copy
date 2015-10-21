@@ -167,6 +167,8 @@ class Timecardmodel extends CI_Model {
 				if(isset($dayArr[$dayj]['sched']) && strtotime($start)>=$strdateStart && (strtotime($leaveEnd)<=$leavestrend || strtotime($start)<=$leavestrend)){
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
 					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
+					if($leave->status==1) $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];
+					else $dayArr[$dayj]['schedHour'] = 0;
 					
 					if(strtotime($leaveEnd)>strtotime($end)) $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($end));
 					else $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($leaveEnd));
@@ -393,7 +395,7 @@ class Timecardmodel extends CI_Model {
 		
 		$condition .= ')';
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedIn, schedOut, schedHour, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
 
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
@@ -403,8 +405,10 @@ class Timecardmodel extends CI_Model {
 					$info = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, leaveStart, leaveEnd, status', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1');					
 					if(count($info)>0){
 						if(strtotime($info->leaveStart)<= strtotime($q->schedIn) && strtotime($info->leaveEnd)>= strtotime($q->schedOut)){
-							if($info->status==1) $upArr['publishTimePaid'] = $q->schedHour;
-							else $upArr['publishTimePaid'] = 0;
+							$upArr['publishTimePaid'] = 0;
+							
+							if($q->schedHour==4) $upArr['publishTimePaid'] += $q->schedHour; //if half day					
+							if($info->status==1) $upArr['publishTimePaid'] += $q->schedHour; //if paid
 						}
 					}
 				}else if($q->timeIn==$time00 && $q->timeOut==$time00){
