@@ -52,10 +52,10 @@
 				echo '<tr class="trlabel"><td colspan=2>PUBLISH DETAILS';
 					if($this->access->accessFullHR==true) echo '&nbsp;<button id="unpublish">Unpublish</button>';
 				echo '</td></tr>';
-				echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' Hours</td></tr>';
+				echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' '.(($dataLog->schedHour>1)?'Hours':'Hour').'</td></tr>';
 				if($dataLog->offsetHour>0)
-					echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' Hours</td></tr>';
-				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' Hours</b></td></tr>';
+					echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' '.(($dataLog->offsetHour>1)?'Hours':'Hour').'</td></tr>';
+				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' '.(($dataLog->publishTimePaid>1)?'Hours':'Hour').'</b></td></tr>';
 				if(!empty($dataLog->publishNote)) echo '<tr><td>Note</td><td>'.$dataLog->publishNote.'</td></tr>';
 				echo '<tr><td>Date Published</td><td>'.date('F d, Y h:i a', strtotime($dataLog->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($dataLog->publishBy=="system")?'System':$dataLog->publishBy).'</td></tr>';
@@ -72,7 +72,7 @@
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
-					echo '<tr><td width="15%">Status</td><td><b>'.(($leave->status==1)?'Approved WITH pay':'Approved WITHOUT pay').'</b></td></tr>';
+					echo '<tr><td width="15%">Status</td><td><b>'.(($leave->status==1)?'Approved WITH pay':'Approved WITHOUT pay').'</b> '.(($leave->leaveType==4)?'<span class="errortext">Hours paid based on offset schedules</span>':'').'</td></tr>';
 					echo '<tr><td>Leave Type</td><td>'.$leaveTypeArr[$leave->leaveType].'</td></tr>';
 					echo '<tr><td>Leave Start</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveStart)).'</td></tr>';
 					echo '<tr><td>Leave End</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveEnd)).'</td></tr>';
@@ -407,6 +407,8 @@
 					
 					if(sss=='timeIn') $('input[name="inoutval"]').val('<?= $changeTimeIn ?>');
 					else if(sss=='timeOut') $('input[name="inoutval"]').val('<?= $changeTimeOut ?>');
+					else if(sss=='schedIn') $('input[name="inoutval"]').val('<?= date('Y-m-d H:00:00', strtotime($changeTimeIn)) ?>');
+					else if(sss=='schedOut') $('input[name="inoutval"]').val('<?= date('Y-m-d H:00:00', strtotime($changeTimeOut)) ?>');
 				}
 					
 			}
@@ -445,6 +447,9 @@
 		$('#btnpublish').click(function(){
 			$(this).hide();
 			$('#formpublish').removeClass('hidden');
+			
+			var tag = $("#tblpublishlog");
+			$('html,body').animate({scrollTop: tag.offset().top},'slow');
 		});
 		
 		$('#btncancelpublish').click(function(){
