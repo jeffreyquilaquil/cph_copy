@@ -38,9 +38,9 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){		
-		$this->cronDailySchedulesAndAttendance('2015-29-28');
-		$this->cronDailySchedulesAndAttendance('2015-29-29');
-		$this->cronDailySchedulesAndAttendance('2015-29-30');
+		$this->cronDailySchedulesAndAttendance('2015-09-28');
+		$this->cronDailySchedulesAndAttendance('2015-09-29');
+		$this->cronDailySchedulesAndAttendance('2015-09-30');
 		
 		$this->cronDailySchedulesAndAttendance('2015-10-01');
 		$this->cronDailySchedulesAndAttendance('2015-10-02');
