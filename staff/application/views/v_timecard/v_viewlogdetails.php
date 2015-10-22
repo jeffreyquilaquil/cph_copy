@@ -72,7 +72,7 @@
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
-					echo '<tr><td width="15%">Status</td><td><b>'.(($leave->status==1)?'Approved WITH pay':'Approved WITHOUT pay').'</b></td></tr>';
+					echo '<tr><td width="15%">Status</td><td><b>'.(($leave->status==1)?'Approved WITH pay':'Approved WITHOUT pay').'</b> '.(($leave->leaveType==4)?'<span class="errortext">Hours paid based on offset schedules</span>':'').'</td></tr>';
 					echo '<tr><td>Leave Type</td><td>'.$leaveTypeArr[$leave->leaveType].'</td></tr>';
 					echo '<tr><td>Leave Start</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveStart)).'</td></tr>';
 					echo '<tr><td>Leave End</td><td>'.date('F d, Y h:i a', strtotime($leave->leaveEnd)).'</td></tr>';

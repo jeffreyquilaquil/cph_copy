@@ -75,8 +75,8 @@ class Timecard extends MY_Controller {
 	//get staff schedules and insert to tcStaffLogPublish
 	//insert to tcAttendance for summary of results today
 	//public function cronDailySchedulesAndAttendance(){
-	public function cronDailySchedulesAndAttendance($today){
-		//$today = date('Y-m-d');
+	public function cronDailySchedulesAndAttendance(){
+		$today = date('Y-m-d');
 		$todaySmall = date('j');
 		$scheduled = 0;
 		
