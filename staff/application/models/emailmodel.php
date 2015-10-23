@@ -276,7 +276,7 @@ class Emailmodel extends CI_Model {
 		}
 		
 		if(!empty($to)){
-			$this->emailM->sendEmail($from, $to, $subjec, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
+			$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
 		}
 			
 	}

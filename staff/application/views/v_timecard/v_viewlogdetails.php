@@ -62,16 +62,19 @@
 			echo '</table>';
 		}
 		
-		
+
 		////LEAVE DETAILS
 		if($dataLog->leaveID_fk>0){
 			$leaveTypeArr = $this->textM->constantArr('leaveType');
 			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'"');
 			if(count($leave)>0){
-				if($leave->status!=1 || $leave->leaveType==4){
+				if($leave->leaveType==4 && $leave->status==1){
+					if($dataLog->offsetHour==0){
+						$isOffset = true;
+						$deductionHour += $dataLog->offsetHour;
+					}
+				}else if($leave->status!=1)
 					$deductionHour = $dataLog->schedHour;
-					if($leave->leaveType==4) $isOffset = true;
-				}
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
@@ -291,14 +294,14 @@
 		echo '<form id="formpublish" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
 		echo '<table id="tblpublishlog" class="tableInfo" style="margin:10px 0; background-color:#ffb2b2;">';
 			echo '<tr class="trlabel"><td colspan=2>REVIEW PUBLISH DETAILS</td></tr>';
-			echo '<tr><td width="15%">Base Paid Hours</td><td>'.($dataLog->schedHour - $dataLog->offsetHour).' Hours</td></tr>';
+			echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' Hours</td></tr>';
 			if($dataLog->offsetHour>0){
 				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' Hours '.((isset($offsetinvalid))?'<span class="errortext">Offset forfeited</span>':'').'</td></tr>';
 				if(isset($offsetinvalid)) $deductionHour += $dataLog->offsetHour;
 			}
 				
 			if($deductionHour>0)
-				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If OFFSET today and approved WITH pay, please publish with 0 hour</span>':'').'</td></tr>';
+				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If leave type is offset and leave today with approved WITH pay, please publish with 0 hour </span>':'').'</td></tr>';
 			
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
