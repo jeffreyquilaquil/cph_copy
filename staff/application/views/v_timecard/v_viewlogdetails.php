@@ -211,12 +211,11 @@
 												
 												echo 'LATE ('.trim($this->textM->convertTimeToMinHours($lateSec)).')';
 												echo '<br/><b>Hour Deduction: '.$lateHour.' '.(($lateHour>1)?'Hours':'Hour').'</b>';
+												$offsetinvalid = true; ///MAKE OFFSET HOUR 0 IF LATE
 											}else if(strtotime($dataLog->timeIn)<= strtotime($dataLog->schedIn.' '.$EARLYCIN) && $dataLog->offsetIn==$date00)  echo 'EARLY IN';
 										}
 									echo '</span>';
-									$offsetinvalid = true; ///MAKE OFFSET HOUR 0 IF LATE
 								}
-								
 							} 
 						echo '</td>';
 					echo '</tr>';
