@@ -68,7 +68,10 @@
 			$leaveTypeArr = $this->textM->constantArr('leaveType');
 			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'"');
 			if(count($leave)>0){
-				if($leave->status!=1) $deductionHour = $dataLog->schedHour;
+				if($leave->status!=1 || $leave->leaveType==4){
+					$deductionHour = $dataLog->schedHour;
+					if($leave->leaveType==4) $isOffset = true;
+				}
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
@@ -295,7 +298,7 @@
 			}
 				
 			if($deductionHour>0)
-				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').'</td></tr>';
+				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If OFFSET, please publish with 0 hour</span>':'').'</td></tr>';
 			
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
