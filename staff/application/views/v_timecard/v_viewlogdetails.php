@@ -298,7 +298,7 @@
 			}
 				
 			if($deductionHour>0)
-				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If OFFSET, please publish with 0 hour</span>':'').'</td></tr>';
+				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If OFFSET today and approved WITH pay, please publish with 0 hour</span>':'').'</td></tr>';
 			
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
