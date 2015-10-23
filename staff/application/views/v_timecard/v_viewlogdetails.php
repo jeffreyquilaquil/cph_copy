@@ -190,8 +190,10 @@
 					echo '<tr>';
 						echo '<td><b>Time In</b></td>';
 						echo '<td colspan=3>';
-							if($dataLog->timeIn==$date00) echo '<span class="errortext">NO TIME IN</span>';
-							else{
+							if($dataLog->timeIn==$date00){
+								echo '<span class="errortext">NO TIME IN</span>';
+								$offsetinvalid = true; ///MAKE OFFSET HOUR 0 IF NO TIME IN
+							}else{
 								echo '<b>'.date('h:i a', strtotime($dataLog->timeIn)).'</b>';
 								if($dataLog->schedIn!=$date00){
 									echo ' <span class="errortext">';
@@ -206,6 +208,7 @@
 											}else if(strtotime($dataLog->timeIn)<= strtotime($dataLog->schedIn.' '.$EARLYCIN) && $dataLog->offsetIn==$date00)  echo 'EARLY IN';
 										}
 									echo '</span>';
+									$offsetinvalid = true; ///MAKE OFFSET HOUR 0 IF LATE
 								}
 								
 							} 
@@ -286,8 +289,11 @@
 		echo '<table id="tblpublishlog" class="tableInfo" style="margin:10px 0; background-color:#ffb2b2;">';
 			echo '<tr class="trlabel"><td colspan=2>REVIEW PUBLISH DETAILS</td></tr>';
 			echo '<tr><td width="15%">Base Paid Hours</td><td>'.($dataLog->schedHour - $dataLog->offsetHour).' Hours</td></tr>';
-			if($dataLog->offsetHour>0)
-				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' Hours</td></tr>';
+			if($dataLog->offsetHour>0){
+				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' Hours '.((isset($offsetinvalid))?'<span class="errortext">Offset forfeited</span>':'').'</td></tr>';
+				if(isset($offsetinvalid)) $deductionHour += $dataLog->offsetHour;
+			}
+				
 			if($deductionHour>0)
 				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').'</td></tr>';
 			
