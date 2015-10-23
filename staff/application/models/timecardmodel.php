@@ -171,8 +171,7 @@ class Timecardmodel extends CI_Model {
 					if($leave->status==1){
 						if($leave->totalHours==4) $dayArr[$dayj]['schedHour'] = 4;
 						else $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];
-					}
-					else $dayArr[$dayj]['schedHour'] = 0;
+					}else $dayArr[$dayj]['schedHour'] = 0;
 					
 					if(strtotime($leaveEnd)>strtotime($end)) $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($end));
 					else $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($leaveEnd));
@@ -401,16 +400,35 @@ class Timecardmodel extends CI_Model {
 		
 		$condition .= ')';
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
-
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
+				
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
-				if($q->timeIn==$time00 && $q->timeOut==$time00){
-					$upArr['publishTimePaid'] = 0;
-				}else $upArr['publishTimePaid'] = $q->schedHour;
+				$upArr = array();
+				if($q->leaveID_fk>0){					
+					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND status=1 AND leaveType!=4');					
+					if(count($leave)>0){
+						if($leave->totalHours==4){
+							$upArr['publishTimePaid'] = 4; ///for half day leave
+						}else if($leave->totalHours%8==0){
+							$upArr['publishTimePaid'] = 8; //for whole day leave
+						}else{ ///if leave is a day and with half day							
+							if($leave->leaveEnd<$q->schedOut || $leave->leaveStart>$q->schedIn) $upArr['publishTimePaid'] = 4;
+							else $upArr['publishTimePaid'] = 8;
+						}
+					}
+				}
 				
+				if(!isset($upArr['publishTimePaid'])){
+					if($q->timeIn==$time00 && $q->timeOut==$time00) $upArr['publishTimePaid'] = 0;
+					else{
+						if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $upArr['publishTimePaid'] = $q->schedHour - $q->offsetHour; //if offset and late 
+						else $upArr['publishTimePaid'] = $q->schedHour;
+					} 
+				}
+												
 				if(isset($upArr['publishTimePaid'])){
 					$upArr['datePublished'] = $dateToday;
 					$upArr['publishBy'] = 'system';

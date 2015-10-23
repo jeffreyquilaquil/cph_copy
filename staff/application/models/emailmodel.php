@@ -276,7 +276,7 @@ class Emailmodel extends CI_Model {
 		}
 		
 		if(!empty($to)){
-			$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.' CC:--'.$cc, $body, 'CareerPH', 'ludivina.marinas@tatepublishing.net', 'ludivina.marinas@tatepublishing.net');
+			$this->emailM->sendEmail($from, $to, $subjec, $body, 'CareerPH', $cc, 'ludivina.marinas@tatepublishing.net');
 		}
 			
 	}
@@ -294,7 +294,8 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
-		$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH', $to );
+		//$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+		$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH' );
 	}
 	
 	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){

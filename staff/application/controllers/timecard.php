@@ -245,16 +245,30 @@ class Timecard extends MY_Controller {
 		If not, then it will send an employee reminding to clock in or clock out.
 	****/
 	public function cronTimecardLogsEmails(){
+		///GET SCHEDULES STAFFS
+		$staffs = array();
+		$staffWithSched = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk');
+		foreach($staffWithSched AS $s)
+			array_push($staffs, $s->empID_fk);
+	
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
-		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');		
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');	
 		if(count($queryNoTimeIn)>0){
-			foreach($queryNoTimeIn AS $timein) $this->emailM->emailTimecard('notimein', $timein);
+			foreach($queryNoTimeIn AS $timein){
+				if(in_array($timein->empID_fk, $staffs))
+					$this->emailM->emailTimecard('notimein', $timein);
+			}
 		}		
 		
 		//SEND EMAIL TO EMPLOYEES IF NO CLOCK OUT YET AFTER 4 HOURS
 		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
+		
+		
 		if(count($queryNoClockOut)>0){
-			foreach($queryNoClockOut AS $timeOut) $this->emailM->emailTimecard('noclockout2hours', $timeOut);
+			foreach($queryNoClockOut AS $timeOut){
+				if(in_array($timein->empID_fk, $staffs))
+					$this->emailM->emailTimecard('noclockout2hours', $timeOut);
+			} 
 		}
 		
 		exit;
@@ -366,10 +380,16 @@ class Timecard extends MY_Controller {
 			//this is for on leave			
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
 			foreach($querySchedule AS $leave){
-				if(isset($leave['sched']) && $leave['sched']=='On Leave')
-					$displayArray[date('j', strtotime($leave['schedDate']))]['onleave'] = $leave['leave'];
+				if(isset($leave['leaveID'])){
+					$datej = date('j', strtotime($leave['schedDate']));
+					$displayArray[$datej]['leaveID'] = $leave['leaveID'];
+					if(isset($leave['leave'])) $displayArray[$datej]['leave'] = $leave['leave'];
+					if(isset($leave['pendingleave'])) $displayArray[$datej]['pendingleave'] = $leave['pendingleave']; //for pending leave
+					if(isset($leave['offset'])) $displayArray[$datej]['offset'] = $leave['offset']; //for offset
+					if(isset($leave['pendingoffset'])) $displayArray[$datej]['pendingoffset'] = $leave['pendingoffset']; //for pending offset
+				}
 			}
-						
+				
 			//this is for logs for the calendar month			
 			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
 		
@@ -385,8 +405,8 @@ class Timecard extends MY_Controller {
 						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
 					}
 				}else if($dl->schedIn>=$dateTimeToday) $displayArray[$numDay]['err'][] = 'noTimeInYet';
-				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['onleave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
-				else if(!isset($displayArray[$numDay]['onleave'])) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
+				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
+				else if(!isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
 												
 				//check for clock out
 				if($dl->timeOut!=$date00){
@@ -412,18 +432,23 @@ class Timecard extends MY_Controller {
 				if(!empty($dl->publishBy))
 					$displayArray[$numDay]['publish'] = $dl->publishTimePaid;
 			}
-			
+						
 			//this is for the display
 			foreach($displayArray AS $k=>$d){
 				$want = '';
 				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED TO PAYROLL<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
-				if(isset($d['onleave'])) $want .= '<div class="daysbox daypendingleave">On Leave<br/>'.$d['onleave'].'</div>';
-					
+				if(isset($d['leaveID'])){
+					if(isset($d['leave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'].'</div></a>';
+					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
+					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
+					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
+				}
+				
 				if(isset($d['err'])){
 					$want .= '<span class="errortext">';
 					foreach($d['err'] AS $err){
 						if($err=='isLate') $want .= 'LATE<br/>';
-						else if($err=='noTimeInYet') $want .= 'NO TIME IN YET<br/>';
+						else if($err=='noTimeInYet' && !isset($d['leave'])) $want .= 'NO TIME IN YET<br/>';
 						else if($err=='isAbsent') $want .= 'ABSENT<br/>';
 						else if($err=='isNoTimeIn') $want .= 'NO TIME IN<br/>';
 						else if($err=='isEarlyOut') $want .= 'EARLY OUT<br/>';

@@ -19,9 +19,6 @@ class MY_Controller extends CI_Controller {
 		
 		$this->user = $this->getLoggedUser();
 		$this->access = $this->getUserAccess();
-		
-		if($this->config->item('devmode')===true)
-			error_reporting(E_ALL); ini_set('display_errors', 1);	
 	}
 	
 	function getLoggedUser(){ 
