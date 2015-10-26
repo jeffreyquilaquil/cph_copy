@@ -5,6 +5,7 @@ class Timecard extends MY_Controller {
 	public function __construct(){
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
+		$this->load->model('payrollmodel', 'payrollM');
 	}
 		
 	public function _remap($method){
@@ -222,8 +223,7 @@ class Timecard extends MY_Controller {
 		foreach($staffWithSched AS $s)
 			array_push($staffs, $s->empID_fk);
 	
-		//$dateToday = date('Y-m-d H:00:00');
-		$dateToday = '2015-10-26 07:00:00';
+		$dateToday = date('Y-m-d H:00:00');
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
 		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail, leaveID_fk', 'schedIn="'.$dateToday.'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');	
 		
@@ -762,14 +762,34 @@ class Timecard extends MY_Controller {
 	public function payslips($data){		
 		$data['content'] = 'v_timecard/v_payslips';	
 		$data['tpage'] = 'payslips';	
-	
-		if($this->user!=false){
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriod', 'empID_fk="'.$data['visitID'].'"', '', 'dategenerated DESC');
+		
+		$query = $this->dbmodel->getQueryResults('tcPayrollitems', '*');
+		$query = $this->dbmodel->getQueryResults('tcPayrollitems', '*');
+		
+		$qu = $this->dbmodel->dbQuery('SHOW COLUMNS');
+	echo '<pre>';
+	print_r($qu);
+	echo '</pre>';
+	exit;
+		
+		foreach($query AS $q){
+			$item = str_replace(' ','_', trim($q->itemName));
+			$item = str_replace('-','', trim($item));
+			$item = str_replace(',','', trim($item));
+			$item = str_replace('.','', trim($item));
 			
-			
+			$this->dbmodel->dbQuery('ALTER TABLE `tcPayslips` ADD  item'.$q->itemID.'_'.$item.' FLOAT NOT NULL');
+		}
+		echo '<pre>';
+		print_r($query);
+		echo '</pre>';
+		exit;
+
+		/* if($this->user!=false){
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd', 'empID_fk="'.$data['visitID'].'"', '', 'dategenerated DESC');
 		}
 	
-		$this->load->view('includes/template', $data);
+		$this->load->view('includes/template', $data); */
 	}
 	
 	public function payrolls($data){		
@@ -840,19 +860,34 @@ class Timecard extends MY_Controller {
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{
-				$data['proudpage'] = $this->uri->segment(3);
-				if(empty($data['proudpage'])) $data['proudpage'] = 'unpublishedlogs';
+				$proudpage = $this->uri->segment(3);
+				if(empty($proudpage)) $proudpage = 'unpublishedlogs';
 				
 				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publishBy="" AND slogDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
-				if($data['proudpage']=='logpendingrequest'){
-					$data['content'] = 'v_timecard/v_manage_logpendingreq';
-				}				
+				if($proudpage=='logpendingrequest'){
+					$data['content'] = 'v_timecard/v_manage_logpendingreq';					
+				}else if($proudpage=='managepayroll'){ ///MANAGE PAYROLL PAGE
+					$data = $this->managepayroll($data);
+				}
+				
+
+				$data['proudpage'] = $proudpage;
 			}
 		}
 		
 		$this->load->view('includes/template', $data);
+	}
+	
+	
+	public function managepayroll($data){
+		$data['content'] = 'v_timecard/v_manage_payroll';
+		
+		$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
+		$data['dataItems'] = $this->dbmodel->getQueryResults('tcPayrollitems', '*');
+		
+		return $data;
 	}
 	
 	public function viewlogdetails($data){
@@ -988,37 +1023,7 @@ class Timecard extends MY_Controller {
 		$data['queryUnPublished'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unpublished', $condition);
 				
 		$this->load->view('includes/templatecolorbox', $data);
-	}
-	
-	public function attendancedetails2($data){
-		$data['content'] = 'v_timecard/v_attendancedetails2';
+	}	
 		
-		$condition = '';
-		if($this->access->accessFullHR==false){ //CHECK STAFF UNDER LOGGED IN
-			$ids = ''; //empty value for staffs with no under yet
-			$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
-			foreach($myStaff AS $m):
-				$ids .= $m->empID.',';
-			endforeach;
-			if(!empty($ids))
-				$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
-		}
-		
-		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
-		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
-		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);
-		$data['queryOffset'] = $this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition);
-		$data['queryInProgress'] = $this->timeM->getNumDetailsAttendance($data['today'], 'shiftinprogress', $condition);
-		$data['queryEarlyBird'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyBird', $condition);
-		$data['queryEarlyClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'earlyclockout', $condition);
-		$data['queryNoClockIn'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockin', $condition);
-		$data['queryNoClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition);
-		$data['queryOverBreak'] = $this->timeM->getNumDetailsAttendance($data['today'], 'overbreak', $condition);
-		$data['queryUnPublished'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unpublished', $condition);
-				
-		$this->load->view('includes/templatecolorbox', $data);
-	}
-	
-	
 }
 ?>
