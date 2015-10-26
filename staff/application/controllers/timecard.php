@@ -409,7 +409,7 @@ class Timecard extends MY_Controller {
 					$displayArray[$numDay]['breaks'] = $dl->timeBreak;
 					
 					if($dl->timeBreak>'01:30:00') $displayArray[$numDay]['err'][] = 'isOverBreak';
-					if($dl->numBreak%2!=0) $err .= $displayArray[$numDay]['err'][] = 'isMissingBreakIn';
+					if($dl->numBreak%2!=0) $displayArray[$numDay]['err'][] = 'isMissingBreakIn';
 					
 				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $displayArray[$numDay]['green'][] = 'isNoBreak';
 				
