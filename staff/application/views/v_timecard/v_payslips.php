@@ -23,7 +23,7 @@
 			</td></tr>
 		<?php
 			foreach($dataPayslips AS $d){	
-				echo '<tr><td>'.$this->textM->formfield('checkbox', 'payslip[]', $d->payslipID, 'payslipname').' '.$d->payPeriod.'</td></tr>';	
+				echo '<tr><td>'.$this->textM->formfield('checkbox', 'payslip[]', $d->payslipID, 'payslipname').' '.date('F d, Y', strtotime($d->payPeriodStart)).' - '.date('F d, Y', strtotime($d->payPeriodEnd)).'</td></tr>';	
 			}
 		?>
 		</table>

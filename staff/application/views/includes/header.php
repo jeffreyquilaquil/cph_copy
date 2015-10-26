@@ -54,7 +54,7 @@
 				echo '<li '.(($segment2=='scheduling')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/scheduling/">Scheduling</a></li>';
 				echo '<li '.(($segment2=='payrolls')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payrolls/">Payrolls</a></li>';
 				echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';				
-				echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managetimecard/">Manage Timecard</a></li>';				
+				echo '<li '.(($segment2=='managetimecard')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managetimecard/">Manage Timecard & Payroll</a></li>';				
 			}
 			
 			

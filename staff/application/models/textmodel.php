@@ -702,6 +702,14 @@ class Textmodel extends CI_Model {
 					8 => 'CAR and NOD printed',
 					9 => 'Signed CAR and NOD uploaded'
 				);
+		}else if($a=='payrollItemType'){
+			$arr = array(
+				0 => 'Pay',
+				1 => 'Allowance',
+				2 => 'Bonus',
+				3 => 'Deduction',
+				4 => 'Net'
+			);
 		}
 		
 		return $arr;

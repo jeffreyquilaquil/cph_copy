@@ -6,6 +6,7 @@ class Timecard extends MY_Controller {
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
 		$this->load->model('payrollmodel', 'payrollM');
+		
 	}
 		
 	public function _remap($method){
@@ -763,33 +764,11 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_payslips';	
 		$data['tpage'] = 'payslips';	
 		
-		$query = $this->dbmodel->getQueryResults('tcPayrollitems', '*');
-		$query = $this->dbmodel->getQueryResults('tcPayrollitems', '*');
-		
-		$qu = $this->dbmodel->dbQuery('SHOW COLUMNS');
-	echo '<pre>';
-	print_r($qu);
-	echo '</pre>';
-	exit;
-		
-		foreach($query AS $q){
-			$item = str_replace(' ','_', trim($q->itemName));
-			$item = str_replace('-','', trim($item));
-			$item = str_replace(',','', trim($item));
-			$item = str_replace('.','', trim($item));
-			
-			$this->dbmodel->dbQuery('ALTER TABLE `tcPayslips` ADD  item'.$q->itemID.'_'.$item.' FLOAT NOT NULL');
-		}
-		echo '<pre>';
-		print_r($query);
-		echo '</pre>';
-		exit;
-
-		/* if($this->user!=false){
+		if($this->user!=false){
 			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd', 'empID_fk="'.$data['visitID'].'"', '', 'dategenerated DESC');
 		}
 	
-		$this->load->view('includes/template', $data); */
+		$this->load->view('includes/template', $data);
 	}
 	
 	public function payrolls($data){		
@@ -797,7 +776,7 @@ class Timecard extends MY_Controller {
 		$data['tpage'] = 'payrolls';
 	
 		if($this->user!=false){	
-			//$this->checkAccessPage($data['tpage']);
+			
 			
 			
 		}
