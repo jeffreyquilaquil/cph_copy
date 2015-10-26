@@ -37,37 +37,8 @@ class Timecard extends MY_Controller {
 		}	
 	}
 		
-	public function timetest(){		
-		$this->cronDailySchedulesAndAttendance('2015-09-28');
-		$this->cronDailySchedulesAndAttendance('2015-09-29');
-		$this->cronDailySchedulesAndAttendance('2015-09-30');
-		
-		$this->cronDailySchedulesAndAttendance('2015-10-01');
-		$this->cronDailySchedulesAndAttendance('2015-10-02');
-		$this->cronDailySchedulesAndAttendance('2015-10-03');
-		$this->cronDailySchedulesAndAttendance('2015-10-04');
-		$this->cronDailySchedulesAndAttendance('2015-10-05');
-		$this->cronDailySchedulesAndAttendance('2015-10-06');
-		$this->cronDailySchedulesAndAttendance('2015-10-07');
-		$this->cronDailySchedulesAndAttendance('2015-10-08');
-		$this->cronDailySchedulesAndAttendance('2015-10-09');
-		$this->cronDailySchedulesAndAttendance('2015-10-10');
-		
-		$this->cronDailySchedulesAndAttendance('2015-10-11');
-		$this->cronDailySchedulesAndAttendance('2015-10-12');
-		$this->cronDailySchedulesAndAttendance('2015-10-13');
-		$this->cronDailySchedulesAndAttendance('2015-10-14');
-		$this->cronDailySchedulesAndAttendance('2015-10-15');
-		$this->cronDailySchedulesAndAttendance('2015-10-16');
-		$this->cronDailySchedulesAndAttendance('2015-10-17');
-		$this->cronDailySchedulesAndAttendance('2015-10-18');
-		$this->cronDailySchedulesAndAttendance('2015-10-19');
-		$this->cronDailySchedulesAndAttendance('2015-10-20');
-		$this->cronDailySchedulesAndAttendance('2015-10-21');
-		
-		$this->cronDailyLogs();
-		$this->cronDailyAttendanceRecord();
-		
+	public function timetest(){	
+		$this->timeM->publishLogs();
 		exit;
 	}
 		
@@ -241,7 +212,7 @@ class Timecard extends MY_Controller {
 	}
 		
 	/****
-		This cron runs every hour to check if employee clocked in and clocked out. 
+		This cron runs every 30 minutes of an hour to check if employee clocked in and clocked out. 
 		If not, then it will send an employee reminding to clock in or clock out.
 	****/
 	public function cronTimecardLogsEmails(){

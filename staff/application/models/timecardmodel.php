@@ -379,7 +379,8 @@ class Timecardmodel extends CI_Model {
 	********/
 	public function publishLogs(){
 		$time00 = '0000-00-00 00:00:00';
-		$condition = 'publishBy=""';
+		//$condition = 'publishBy=""';
+		$condition = 'slogDate="2015-10-26"';
 		$updateArray = array();
 		
 		$condition .= ' AND (';
@@ -401,16 +402,19 @@ class Timecardmodel extends CI_Model {
 		$condition .= ')';
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
-				
+			
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
 				$upArr = array();
 				if($q->leaveID_fk>0){					
-					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND status=1 AND leaveType!=4');					
+					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND (status=1 OR status=2)');	
+									
 					if(count($leave)>0){
-						if($leave->totalHours==4){
+						if($leave->leaveType==4 || $leave->status==2){
+							$upArr['publishTimePaid'] = 0; ///for offset
+						}else if($leave->totalHours==4){
 							$upArr['publishTimePaid'] = 4; ///for half day leave
 						}else if($leave->totalHours%8==0){
 							$upArr['publishTimePaid'] = 8; //for whole day leave
@@ -419,21 +423,19 @@ class Timecardmodel extends CI_Model {
 							else $upArr['publishTimePaid'] = 8;
 						}
 					}
-				}
-				
-				if(!isset($upArr['publishTimePaid'])){
+				}else{
 					if($q->timeIn==$time00 && $q->timeOut==$time00) $upArr['publishTimePaid'] = 0;
 					else{
 						if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $upArr['publishTimePaid'] = $q->schedHour - $q->offsetHour; //if offset and late 
 						else $upArr['publishTimePaid'] = $q->schedHour;
-					} 
+					}
 				}
 												
 				if(isset($upArr['publishTimePaid'])){
 					$upArr['datePublished'] = $dateToday;
 					$upArr['publishBy'] = 'system';
 					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$q->slogID), $upArr);
-					
+				
 					$updateArray[$q->slogDate] = true;
 				}
 			}
