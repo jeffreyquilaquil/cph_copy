@@ -222,12 +222,24 @@ class Timecard extends MY_Controller {
 		foreach($staffWithSched AS $s)
 			array_push($staffs, $s->empID_fk);
 	
+		//$dateToday = date('Y-m-d H:00:00');
+		$dateToday = '2015-10-26 07:00:00';
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
-		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedIn="'.date('Y-m-d H:00:00').'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');	
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail, leaveID_fk', 'schedIn="'.$dateToday.'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');	
+		
 		if(count($queryNoTimeIn)>0){
 			foreach($queryNoTimeIn AS $timein){
-				if(in_array($timein->empID_fk, $staffs))
-					$this->emailM->emailTimecard('notimein', $timein);
+				if(in_array($timein->empID_fk, $staffs)){
+					$email = true;
+					if($timein->leaveID_fk>0){ ////check for leaves if paid or not paid dont send email
+						$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$timein->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$timein->schedIn.'") AND (status=1 OR status=2)');
+						if(count($leave)>0) $email = false;
+					}
+					
+					if($email===true)
+						$this->emailM->emailTimecard('notimein', $timein);
+				}
+					
 			}
 		}		
 		
