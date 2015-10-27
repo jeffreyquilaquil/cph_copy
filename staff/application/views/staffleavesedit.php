@@ -394,7 +394,7 @@
 					<td>';
 					
 				//status is regualar AND total number of hours less than total of leave credits OR type is offset or paternity leave OR anniversary date is less than start date
-				if($row->empStatus=='regular' && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5) || $leaveReset==true))
+				if(($row->empStatus=='regular' || ($row->empStatus=='probationary' && $row->leaveType==5)) && ($lc <= $row->leaveCredits || ($row->leaveType==4 || $row->leaveType==5) || $leaveReset==true))
 					echo '<input type="radio" name="approve" value="1" '.$disabled.' '.(($row->status=='1')?'checked':"").'> Approved '.(($row->leaveType!=4)?'With Pay':'').'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 				if($row->leaveType!=4 && $row->leaveType!=5)
 					echo '<input type="radio" '.(($row->leaveType==6)?'checked':'').' name="approve" value="2" '.$disabled.' '.(($row->status=='2')?'checked':"").'> Approved Without Pay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
