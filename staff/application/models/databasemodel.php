@@ -98,6 +98,21 @@ class Databasemodel extends CI_Model {
 			return $this->db->insert_id();
 		}	
 	}
+	
+	function insertQueryUpdateExist($table, $pKey, $arrayExist, $arrayInsertUpdate){
+		date_default_timezone_set("Asia/Manila");
+		$where = '';
+		foreach($arrayExist AS $k=>$w){
+			if(!empty($where)) $where .= ' AND ';
+			$where .= '`'.$k.'`="'.$w.'"';
+		}
+	
+		$id = $this->getSingleField($table, $pKey, $where);
+		if(empty($id)) $id = $this->insertQuery($table, $arrayInsertUpdate);
+		else $this->updateQuery($table, $arrayExist, $arrayInsertUpdate);	
+
+		return $id;
+	}
 		
 	function updateQuery($table, $where = array(), $data = array()) {
 		$this->db->where($where);

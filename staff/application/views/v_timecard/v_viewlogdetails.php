@@ -56,6 +56,8 @@
 				if($dataLog->offsetHour>0)
 					echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' '.(($dataLog->offsetHour>1)?'Hours':'Hour').'</td></tr>';
 				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' '.(($dataLog->publishTimePaid>1)?'Hours':'Hour').'</b></td></tr>';
+				echo '<tr><td>Night Differential</td><td><b>'.$dataLog->publishND.' '.(($dataLog->publishND>1)?'Hours':'Hour').'</b></td></tr>';
+				if($dataLog->publishDeduct>0) echo '<tr><td>Total Deduction</td><td>'.$dataLog->publishDeduct.' '.(($dataLog->publishDeduct>1)?'Hours':'Hour').'</td></tr>';
 				if(!empty($dataLog->publishNote)) echo '<tr><td>Note</td><td>'.$dataLog->publishNote.'</td></tr>';
 				echo '<tr><td>Date Published</td><td>'.date('F d, Y h:i a', strtotime($dataLog->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($dataLog->publishBy=="system")?'System':$dataLog->publishBy).'</td></tr>';
@@ -305,6 +307,8 @@
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
 			echo '<tr><td>Total Paid Hours</td><td>'.$this->textM->formfield('number', 'publishTimePaid', $totalpaid, 'forminput', '', 'required').'</td></tr>';
+			echo '<tr><td>Night Differential Hours<br/><i class="colorgray fs11px">(10PM - 6AM minus 1 hour for break)</i></td><td>'.$this->textM->formfield('number', 'publishND', $this->timeM->getNightDiff($dataLog), 'forminput', '', 'required').'</td></tr>';
+			echo '<tr><td>Total Deduction</td><td>'.$this->textM->formfield('number', 'publishDeduct', $deductionHour, 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Note <i class="colorgray">(Optional)</i></td><td>'.$this->textM->formfield('text', 'publishNote', '', 'forminput').'</td></tr>';			
 			echo '<tr><td><br/></td><td>';
 				echo $this->textM->formfield('hidden', 'submitType', 'publishlog');

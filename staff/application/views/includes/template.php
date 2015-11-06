@@ -13,6 +13,9 @@
 	echo '<link href="'.$this->config->base_url().'css/colorbox.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/main.style.css" rel="stylesheet" type="text/css" />';
 	
+	if(isset($showtemplatefull))
+		echo '<link href="'.$this->config->base_url().'css/templatefull.style.css" rel="stylesheet" type="text/css" />';
+	
 	//SCRIPTS
 	echo '<script src="'.$this->config->base_url().'js/jquery.js" type="text/javascript"></script>';	
 ?>	
@@ -91,6 +94,7 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 	$(function(){
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
 		$(".iframesmall").colorbox({iframe:true, width:"40%", height:"60%"});
+		$(".inline").colorbox({inline:true, width:"40%", height:"60%"});
 		$('.datatable').dataTable();		
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });

@@ -1,0 +1,28 @@
+#container{
+	width: 100%;
+}
+
+header{
+	width: 100%;
+	margin: 0 10px;
+	background: url(images/header.png) no-repeat;
+	background-size: 98.5% 165px;
+}
+
+#wrapper {
+	width: 100%;
+	background:none;
+}
+
+#contentfull{
+	width:97.2%;
+}
+
+#content2right{
+	width: 81%;
+}
+
+footer{
+	background: url(images/footer.png) repeat-x;
+	width:100%;
+}

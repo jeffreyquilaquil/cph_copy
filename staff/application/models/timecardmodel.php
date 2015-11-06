@@ -3,7 +3,8 @@
 class Timecardmodel extends CI_Model {
 	function __construct() {
         // Call the Model constructor
-        parent::__construct();			
+        parent::__construct();	
+		$this->load->model('payrollmodel', 'payrollM');				
     }
 	
 	//THIS IS FOR TIMECARD SETTINGS
@@ -379,8 +380,7 @@ class Timecardmodel extends CI_Model {
 	********/
 	public function publishLogs(){
 		$time00 = '0000-00-00 00:00:00';
-		//$condition = 'publishBy=""';
-		$condition = 'slogDate="2015-10-26"';
+		$condition = 'publishBy=""';
 		$updateArray = array();
 		
 		$condition .= ' AND (';
@@ -402,7 +402,7 @@ class Timecardmodel extends CI_Model {
 		$condition .= ')';
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
-			
+					
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
 			
@@ -428,12 +428,14 @@ class Timecardmodel extends CI_Model {
 					else{
 						if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $upArr['publishTimePaid'] = $q->schedHour - $q->offsetHour; //if offset and late 
 						else $upArr['publishTimePaid'] = $q->schedHour;
+						
+						$upArr['publishND'] = $this->payrollM->getNightDiffTime($q);
 					}
 				}
 												
 				if(isset($upArr['publishTimePaid'])){
 					$upArr['datePublished'] = $dateToday;
-					$upArr['publishBy'] = 'system';
+					$upArr['publishBy'] = 'system';					
 					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$q->slogID), $upArr);
 				
 					$updateArray[$q->slogDate] = true;
@@ -535,6 +537,9 @@ class Timecardmodel extends CI_Model {
 		$ins['dateUpdated'] = $ins['dateRequested'];
 		$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
 	}
+	
+	
+	
 	
 	
 	

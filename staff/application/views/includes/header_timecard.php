@@ -40,12 +40,16 @@
 <?php
 	}
 
+	echo '<h2>';
 	if(isset($row)){
-		if($row->empID==$this->user->empID) echo '<h2>My Timecard and Payroll</h2>';
-		else echo '<h2>'.$row->fname.'\'s Timecard and Payroll</h2>';		
+		if($row->empID==$this->user->empID) echo 'My Timecard and Payroll';
+		else echo $row->fname.'\'s Timecard and Payroll';		
 	}else{
-		echo '<h2>Timecard and Payroll</h2>';
+		echo 'Timecard and Payroll';
 	}
+	if($this->access->accessFullHRFinance==true)
+		echo ' <a href="'.$this->config->base_url().'timecard/'.$visitID.'/mypayrollsetting/" class="iframe"><button>Payroll Setting</button></a>';
+	echo '</h2>';
 ?>
 <hr/>
 <ul class="tabs2">
@@ -78,6 +82,7 @@
 	}
 ?>	
 </ul>
+
 
 <script type="text/javascript">
 	$(function(){

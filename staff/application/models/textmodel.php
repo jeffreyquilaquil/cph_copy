@@ -98,7 +98,7 @@ class Textmodel extends CI_Model {
 	}
 	
 	public function convertNumFormat($n){
-		return number_format((int)str_replace(',','',$n),2);
+		return number_format((double)str_replace(',','',$n),2);
 	}
 	
 	function convertTimeToMinHours($tdiff, $numOnly=false){
@@ -617,7 +617,7 @@ class Textmodel extends CI_Model {
 			);
 		}else if($a=='holidayTypes'){
 			$arr = array(
-				'0' => 'Regular Holiday',
+				'0' => 'Regular',
 				'1' => 'Regular PHL Holiday',
 				'2' => 'Special PHL Holiday',
 				'3' => 'US Holiday',
@@ -704,12 +704,26 @@ class Textmodel extends CI_Model {
 				);
 		}else if($a=='payrollItemType'){
 			$arr = array(
-				0 => 'Pay',
-				1 => 'Allowance',
-				2 => 'Bonus',
-				3 => 'Deduction',
-				4 => 'Net'
+				0 => 'pay',
+				1 => 'allowance',
+				2 => 'bonus',
+				3 => 'deduction',
+				4 => 'incentive',
+				5 => 'adjustment (+)',				
+				6 => 'adjustment (-)',				
+				7 => 'deduction other'				
 			);
+			
+			////incentives are taxable income added to gross pay
+			////bonus are non-taxable added to net pay
+			/// adjustment non-taxable either add or minus added/subtracted after net pay
+		}else if($a=='managePayOptions'){
+			$arr = array('reviewattendance'=>'Review Attendance', 
+						'generatepayslip'=>'Generate Payslip'
+					);
+		}else if($a=='payrollType'){
+			$arr = array('semi'=>'Semi-Monthly', 
+				'monthly'=>'Monthly');
 		}
 		
 		return $arr;
