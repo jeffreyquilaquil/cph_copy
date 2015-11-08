@@ -5,7 +5,7 @@
 	<title>Tate Publishing And Enterprises (Philippines), INC</title>
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
-	<link rel="shortcut icon" href="http://careerph.tatepublishing.net/img/favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="<?= $this->config->item('career_url') ?>img/favicon.ico" type="image/x-icon">
 <?php
 	//CSS
 	echo '<link href="'.$this->config->base_url().'css/jquery.dataTables.css" rel="stylesheet" type="text/css" />';
