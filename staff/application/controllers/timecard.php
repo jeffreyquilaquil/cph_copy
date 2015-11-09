@@ -506,6 +506,11 @@ class Timecard extends MY_Controller {
 	public function attendance($data){	
 		$data['content'] = 'v_timecard/v_attendance';	
 		$data['tpage'] = 'attendance';
+		
+		if(is_numeric($this->uri->segment(2))==true || is_numeric($this->uri->segment(3))==true){
+			header('Location:'.$this->config->base_url().'timecard/attendance/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
+			exit;
+		}
 	
 		if($this->user!=false){
 			$condition = '';
