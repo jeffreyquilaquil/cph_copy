@@ -39,7 +39,8 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){	
-		$this->timeM->publishLogs();
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-03');
+		//$this->timeM->publishLogs();
 		exit;
 	}
 		
@@ -417,11 +418,18 @@ class Timecard extends MY_Controller {
 			}
 						
 			//this is for the display
+			$leaveStatArr = $this->textM->constantArr('leaveStatus');
 			foreach($displayArray AS $k=>$d){
 				$want = '';
 				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED TO PAYROLL<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
 				if(isset($d['leaveID'])){
-					if(isset($d['leave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'].'</div></a>';
+					if(isset($d['leave'])){
+						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
+						$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
+						if($leaveInfo->leaveType==4) $want .= '<br/> <b>(offset)</b>';
+						else $want .= '<br/><b>('.$leaveStatArr($leaveInfo->status).')</b>';
+						$want .= '</div></a>';
+					}
 					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
 					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
 					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
