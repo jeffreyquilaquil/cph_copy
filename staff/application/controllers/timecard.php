@@ -1002,6 +1002,7 @@ class Timecard extends MY_Controller {
 		$data['queryNoClockIn'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockin', $condition);
 		$data['queryNoClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition);
 		$data['queryOverBreak'] = $this->timeM->getNumDetailsAttendance($data['today'], 'overbreak', $condition);
+		$data['queryUnscheduled'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unscheduled', $condition);
 		$data['queryUnPublished'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unpublished', $condition);
 				
 		$this->load->view('includes/templatecolorbox', $data);

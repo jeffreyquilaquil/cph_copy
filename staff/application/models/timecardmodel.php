@@ -330,7 +330,9 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND publishBy!=""';	
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
+			$flds = ', timeIn, timeOut';
+			$condition .= ' AND schedIn="'.$dateoo.'" AND schedOut="'.$dateoo.'"';	
+			//$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, publishBy', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');

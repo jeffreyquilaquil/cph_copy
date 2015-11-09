@@ -25,6 +25,7 @@ if(count($queryUnPublished)>0){
 					///STATUS
 					$err = '';
 					if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $err .= 'ABSENT,';
+					else if($unpublished->schedIn=='0000-00-00 00:00:00' && $unpublished->schedOut=='0000-00-00 00:00:00') $err .= 'UNSCHEDULED,';
 					else{
 						if($unpublished->timeIn=='0000-00-00 00:00:00' && $unpublished->timeOut!='0000-00-00 00:00:00') $err .= ' NO TIME IN,';
 						if($unpublished->timeIn!='0000-00-00 00:00:00' && $unpublished->timeOut=='0000-00-00 00:00:00') $err .= ' NO TIME OUT,';						
@@ -41,6 +42,29 @@ if(count($queryUnPublished)>0){
 
 echo '<h3>DETAILS</h3>';
 echo '<i>* Colored red are not yet published.</i>';
+/////////////UNSCHEDULED
+if(count($queryUnscheduled)>0){	
+	echo '<table class="tableInfo">';
+		echo '<tr class="trlabel"><td colspan=6>Unscheduled ('.count($queryUnscheduled).')</td></tr>';
+		echo '<tr class="trhead">
+				<td width="200px">Name</td>
+				<td>Sched In</td>
+				<td>Sched Out</td>
+				<td width="50px"><br/></td>
+				<td width="125px"><br/></td>
+			</tr>';
+		foreach($queryUnscheduled AS $unsched){
+			echo '<tr '.(($unsched->publishBy=="")?'style="background-color:#ffb2b2;"':'').'>';
+				echo '<td>'.$unsched->name.'</td>';
+				echo '<td>'.date('h:i a', strtotime($unsched->timeIn)).'</td>';
+				echo '<td>'.date('h:i a', strtotime($unsched->timeOut)).'</td>';
+				
+				echo $this->textM->displayAttAdditional($unsched);
+			echo '</tr>';
+		}
+	echo '</table><br/>';
+}
+
 /////////////LATE
 if(count($queryLate)>0){	
 	echo '<table class="tableInfo">';
