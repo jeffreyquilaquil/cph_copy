@@ -280,7 +280,7 @@ class Timecardmodel extends CI_Model {
 		if(!isset($datecondition)) $datecondition = 'logtime LIKE "'.$dateToday.'%"';			
 		$staffIDNum = $this->dbmodel->getSingleField('staffs', 'idNum', 'empID="'.$empID.'"');
 		$allLogs = $this->dbmodel->getQueryResults('tcTimelogs', 'logID, logtime, logtype', 'staffs_idNum_fk="'.$staffIDNum.'" AND '.$datecondition, '', 'logtime');
-		echo 'staffs_idNum_fk="'.$staffIDNum.'" AND '.$datecondition;
+		
 		return $allLogs;
 	}
 	
