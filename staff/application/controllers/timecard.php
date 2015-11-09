@@ -125,7 +125,7 @@ class Timecard extends MY_Controller {
 					$logdate = date('Y-m-d', strtotime($log->logtime));
 					$schedText[date('j', strtotime($log->logtime))] = $this->timeM->getSchedToday($log->empID, $logdate, true);								
 					$logID = $this->timeM->insertToDailyLogs($log->empID, $logdate, $schedText); //inserting to tcStaffLogPublish table
-					//$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
+					$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
 				}
 				
 				if(!empty($logID))

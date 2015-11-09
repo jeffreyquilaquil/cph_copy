@@ -467,14 +467,13 @@ class Timecardmodel extends CI_Model {
 	
 	public function insertToDailyLogs($empID, $today, $schedToday){
 		$logID = '';
+		$insArr = array();
 		$todaySmall = date('j', strtotime($today));
 			
-		if(isset($schedToday[$todaySmall])){
+		if(isset($schedToday[$todaySmall])){ 		
 			$sArr = $schedToday[$todaySmall];	
-						
-			$insArr = array();
-			if(isset($sArr['sched'])){
-				
+			
+			if(isset($sArr['sched'])){				
 				if($sArr['sched']=='On Leave' && isset($sArr['leave'])) $schedArr = $this->timeM->getSchedArr($today, $sArr['leave']);
 				else $schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
 					
@@ -513,16 +512,16 @@ class Timecardmodel extends CI_Model {
 				}					
 			}
 			
-			if(!empty($insArr)){
-				$insArr['slogDate'] = $today;
-				$insArr['empID_fk'] = $empID;
-				if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
-								
-				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
-				if(empty($logID))
-					$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
-			}
+			///INSERTION
+			$insArr['slogDate'] = $today;
+			$insArr['empID_fk'] = $empID;
+			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
+							
+			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
+			if(empty($logID))
+				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
 		}
+		
 		
 		return $logID;
 	}
