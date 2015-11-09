@@ -280,7 +280,7 @@ class Timecardmodel extends CI_Model {
 		if(!isset($datecondition)) $datecondition = 'logtime LIKE "'.$dateToday.'%"';			
 		$staffIDNum = $this->dbmodel->getSingleField('staffs', 'idNum', 'empID="'.$empID.'"');
 		$allLogs = $this->dbmodel->getQueryResults('tcTimelogs', 'logID, logtime, logtype', 'staffs_idNum_fk="'.$staffIDNum.'" AND '.$datecondition, '', 'logtime');
-		
+		echo 'staffs_idNum_fk="'.$staffIDNum.'" AND '.$datecondition;
 		return $allLogs;
 	}
 	
@@ -291,7 +291,7 @@ class Timecardmodel extends CI_Model {
 		if($type=='absent'){
 			$flds = ', schedIn, schedOut, timeIn, timeOut';
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
-			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND (leaveID_fk=0 OR (leaveID_fk>0 AND (SELECT leaveType FROM staffLeaves WHERE leaveID_fk=leaveID)=4))';
 		}else if($type=='leave'){
 			/* $empID_sched = array();
 			$scheduld = $this->timeM->getNumDetailsAttendance($dateToday, 'scheduled', $condition);
@@ -330,9 +330,7 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND publishBy!=""';	
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$flds = ', timeIn, timeOut';
-			$condition .= ' AND schedIn="'.$dateoo.'" AND schedOut="'.$dateoo.'"';	
-			//$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, publishBy', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');
