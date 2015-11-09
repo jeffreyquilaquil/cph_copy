@@ -271,7 +271,7 @@
 							}else{
 								echo '<b>'.date('h:i a', strtotime($dataLog->timeOut)).'</b>';
 								
-								if($schedToday['sched']!='On Leave'){
+								if(isset($schedToday['sched']) && $schedToday['sched']!='On Leave'){
 									if($dataLog->timeOut < $dataLog->schedOut){
 										$outSec = strtotime($dataLog->schedOut) - strtotime($dataLog->timeOut);
 										$outHour = $this->timeM->hourDeduction($outSec);
