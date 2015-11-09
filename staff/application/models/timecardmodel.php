@@ -266,6 +266,7 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function getLogsToday($empID, $dateToday, $schedToday=''){
+		$dateToday = date('Y-m-d', strtotime($dateToday));
 		if(empty($schedToday)) $schedToday = $this->timeM->getSchedToday($empID, $dateToday);
 		
 		if(!empty($schedToday['sched']) && $schedToday['sched']!='On Leave'){		
