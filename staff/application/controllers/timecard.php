@@ -426,8 +426,8 @@ class Timecard extends MY_Controller {
 					if(isset($d['leave'])){
 						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
 						$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
-						if($leaveInfo->leaveType==4) $want .= '<br/> <b>(offset)</b>';
-						else $want .= '<br/><b>('.$leaveStatArr($leaveInfo->status).')</b>';
+						if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
+						else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
 						$want .= '</div></a>';
 					}
 					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
@@ -1002,7 +1002,6 @@ class Timecard extends MY_Controller {
 		$data['queryNoClockIn'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockin', $condition);
 		$data['queryNoClockOut'] = $this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition);
 		$data['queryOverBreak'] = $this->timeM->getNumDetailsAttendance($data['today'], 'overbreak', $condition);
-		$data['queryUnscheduled'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unscheduled', $condition);
 		$data['queryUnPublished'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unpublished', $condition);
 				
 		$this->load->view('includes/templatecolorbox', $data);
