@@ -535,7 +535,7 @@ class Timecard extends MY_Controller {
 				$cntNoClockOut = count($this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition));			
 				$cntLeave = count($this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition));
 				$cntOffset = count($this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition));
-				$cntPublished = count($this->timeM->getNumDetailsAttendance($data['today'], 'published', $condition));	
+				$cntPublished = count($this->timeM->getNumDetailsAttendance($data['today'], 'published', $condition));
 				
 				if($cntLate>0) $contento .= '<b class="errortext">Late: '.$cntLate.'</b><br/>';
 				if($cntAbsent>0) $contento .= '<b class="errortext">Absent: '.$cntAbsent.'</b><br/>';
@@ -551,7 +551,7 @@ class Timecard extends MY_Controller {
 				$numDate = date('j', strtotime($data['today']));
 				$data['dayArr'][$numDate] =  '<div class="taleft padding5px">'.$contento.'</div>';
 			}
-			
+		
 			$attHistory = $this->dbmodel->getQueryResults('tcAttendance', '*', 'dateToday LIKE "'.date('Y-m-', strtotime($data['today'])).'%"');
 			
 			$strToday = strtotime(date('Y-m-d', strtotime($data['currentDate'])));			
@@ -604,7 +604,11 @@ class Timecard extends MY_Controller {
 								if($cntMissingOut>0) $hisText .= '<b style="color:#888;">Missing Out: '.$cntMissingOut.'</b><br/>'; }
 						}
 						
-						$hisText .= '<b>Published: '.$his->published.'</b><br/>';
+						if($his->published>0){
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Published: '.$his->published.'</b><br/>';
+							else{ $cntPublished = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'noclockout', $condition));
+								if($cntPublished>0) $hisText .= '<b style="color:#888;">Published: '.$cntPublished.'</b><br/>'; }
+						}
 					}
 					
 					if(!empty($hisText)){
@@ -997,6 +1001,7 @@ class Timecard extends MY_Controller {
 				$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
 		}
 		
+		$data['queryUnscheduled'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unscheduled', $condition);
 		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
 		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
 		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);

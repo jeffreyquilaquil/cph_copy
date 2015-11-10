@@ -293,11 +293,6 @@ class Timecardmodel extends CI_Model {
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
 			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND (leaveID_fk=0 OR (leaveID_fk>0 AND (SELECT leaveType FROM staffLeaves WHERE leaveID_fk=leaveID)=4))';
 		}else if($type=='leave'){
-			/* $empID_sched = array();
-			$scheduld = $this->timeM->getNumDetailsAttendance($dateToday, 'scheduled', $condition);
-			foreach($scheduld AS $s)
-				$empID_sched[] = $s->empID_fk;
-				 */
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, leaveType, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1 '.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');			
 		}else if($type=='offset'){			
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
@@ -327,7 +322,7 @@ class Timecardmodel extends CI_Model {
 			$flds = ', timeIn, timeOut, timeBreak, schedIn, schedOut';
 			$condition .= ' AND publishBy="" AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
-			$condition .= ' AND publishBy!=""';	
+			$condition .= ' AND publishBy!=""';
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
