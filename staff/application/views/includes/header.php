@@ -44,7 +44,7 @@
 					echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
 					echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
 					
-					if($this->user->is_supervisor==1 || $this->access->accessFullHR==true) 
+					if($this->user->level>0 || $this->access->accessFullHR==true) 
 						echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
 					
 					if($this->access->accessFullHR==true){	
