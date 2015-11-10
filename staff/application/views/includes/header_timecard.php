@@ -70,7 +70,7 @@
 	echo '<li class="tab-link '.(($tpage=='calendar')?'current':'').'" data-tab="calendar">'.$tnt.'Calendar</li> ';
 	echo '<li class="tab-link '.(($tpage=='payslips')?'current':'').'" data-tab="payslips">'.$tnt.'Payslips</li> ';
 	
-	if($this->user->is_supervisor==1 || $this->access->accessFullHRFinance==true)
+	if($this->user->level>0 || $this->access->accessFullHRFinance==true)
 		echo '<li class="tab-link admin '.(($tpage=='attendance')?'current':'').'" data-tab="attendance">Attendance</li> ';
 	
 	if($this->access->accessFullHR==true){		
