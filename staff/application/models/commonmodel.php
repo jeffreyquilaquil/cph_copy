@@ -219,13 +219,20 @@ class Commonmodel extends CI_Model {
 		return $a;		
 	}
 	
-	//$username = username or empID
+	
+	/******
+		Check if staff is under me return false if not
+		Accepts $username = username or empID
+		if username is the same with login user and not an hr, full or finance it returns FALSE
+	******/
 	function checkStaffUnderMe($username){
 		$valid = true;
 		if(md5($username.'dv') != $this->session->userdata('u')){
-			$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
-			$row = $query->row();
-			if(!isset($row->username)) $valid = false;
+			if($this->access->accessFullHRFinance==false){
+				$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
+				$row = $query->row();
+				if(!isset($row->username)) $valid = false;
+			}			
 		}	
 		return $valid;
 	}

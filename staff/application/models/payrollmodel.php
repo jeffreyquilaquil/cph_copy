@@ -49,7 +49,11 @@ class Payrollmodel extends CI_Model {
 			$down['net'] = ($down['earnings'] + $down['bonuses'] + $down['allowances']) - $down['deductions'];
 			$down['net'] = ($down['net'] + $adjustmentAdd) - $adjustmentDeduct;
 			
-			$this->dbmodel->updateQuery('tcPayslips', array('payslipID'=>$payslipID), $down);				
+			$this->dbmodel->updateQuery('tcPayslips', array('payslipID'=>$payslipID), $down);
+			
+			//number generated
+			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'"');
+			$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"', 'payrollsID="'.$info['payrollsID'].'"');
 		}
 	}
 	
@@ -65,7 +69,7 @@ class Payrollmodel extends CI_Model {
 		$payItemStaff = $this->dbmodel->getQueryResults('tcPayslipItemStaffs', 'itemID, tcPayslipItemStaffs.itemPeriod, itemName, payValue AS itemValue, tblReferred', 'empID_fk="'.$info->empID_fk.'" AND (payStart="0000-00-00" OR "'.$info->payPeriodEnd.'" BETWEEN payStart AND payEnd)', 'LEFT JOIN tcPayslipItems ON itemID=itemID_fk'); //staff items
 		foreach($payItemStaff AS $s)
 			$itemArr[$s->itemID] = $s;
-					
+								
 		///INSERT PAYSLIP DETAILS	
 		//$payItems declared above
 		foreach($itemArr AS $item){			
@@ -90,13 +94,14 @@ class Payrollmodel extends CI_Model {
 					}
 				}
 				
-				if($payValue>0) $this->payrollM->insertPayEachDetail($payslipID, $item->itemID, $payValue, $hr);
+				//if($payValue>0) 
+				$this->payrollM->insertPayEachDetail($payslipID, $item->itemID, $payValue, $hr);
 			}
 		}
 	}
 	
 	
-	public function insertPayEachDetail($payslipID, $itemID, $payValue, $hr=0){ echo $itemID.'<br/>';
+	public function insertPayEachDetail($payslipID, $itemID, $payValue, $hr=0){
 		$detailID = $this->dbmodel->getSingleField('tcPayslipDetails', 'detailID', 'payslipID_fk="'.$payslipID.'" AND itemID_fk="'.$itemID.'"');
 		if(empty($detailID)){
 			$insDetails['payslipID_fk'] = $payslipID;
@@ -173,7 +178,7 @@ class Payrollmodel extends CI_Model {
 		
 		$earnings = $info->earnings;
 		if($earnings==0.00) $earnings = $this->payrollM->getComputedPayslipValue('earning', $payslipID);		
-		$deduction = $this->dbmodel->getSingleField('tcPayslipDetails', 'SUM(payValue)', 'itemID_fk IN (1,2,3,18)'); ///1-SSS, 2-Pag-ibig, 3-Philhealth, 18-Regular Taken
+		$deduction = $this->dbmodel->getSingleField('tcPayslipDetails', 'SUM(payValue)', 'payslipID_fk="'.$payslipID.'" AND itemID_fk IN (1,2,3,18)'); ///1-SSS, 2-Pag-ibig, 3-Philhealth, 18-Regular Taken
 		
 		return $earnings - $deduction;
 	}
@@ -181,7 +186,7 @@ class Payrollmodel extends CI_Model {
 	
 	public function getTax($payslipID){		
 		$tax = 0;
-		$prevTaxIncome = 0;
+		$prevTax = 0;
 		
 		$info = $this->dbmodel->getSingleInfo('tcPayslips', 'empID, totalTaxable, taxstatus, monthlyRate, basePay, earnings, payPeriodStart, payPeriodEnd, payType, payrollsID', 'payslipID="'.$payslipID.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
 				
@@ -213,6 +218,7 @@ class Payrollmodel extends CI_Model {
 	*****/
 	public function computeTax($taxType, $taxableIncome, $status, $prevTax=0){
 		$tax = 0;
+		$taxableIncome = str_replace(',','',$taxableIncome);
 		
 		if($taxType=='monthly') $taxableIncome += $prevTax; ///if monthly add previous taxable income		
 		
