@@ -125,15 +125,17 @@ class Timecardmodel extends CI_Model {
 		}
 				
 		//check for custom schedule. This will show schedule even if holiday with work
-		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND status=1 AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
+		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
 		
 		foreach($queryCustomSched AS $yeye){
 			$d = date('j', strtotime($yeye->dateToday));
-			$dayArr[$d]['sched'] = $yeye->timeText;	
-			$dayArr[$d]['schedHour'] = $yeye->timeHours;	
-			$dayArr[$d]['schedDate'] = $yeye->dateToday;	
-			$dayArr[$d]['custom'] = true;	
-			if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;							
+			if($yeye->status==1){
+				$dayArr[$d]['sched'] = $yeye->timeText;	
+				$dayArr[$d]['schedHour'] = $yeye->timeHours;	
+				$dayArr[$d]['schedDate'] = $yeye->dateToday;	
+				$dayArr[$d]['custom'] = true;	
+				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
+			}else unset($dayArr[$d]);		
 		}
 		
 		

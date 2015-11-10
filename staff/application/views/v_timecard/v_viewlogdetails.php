@@ -3,7 +3,7 @@
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
 	
-	$paidHour = $dataLog->schedHour;
+	$paidHour = ((isset($dataLog->schedHour))?$dataLog->schedHour:0);
 	$deductionHour = 0;
 		
 	

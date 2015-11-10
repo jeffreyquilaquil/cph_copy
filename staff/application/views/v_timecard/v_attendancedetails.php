@@ -17,7 +17,7 @@ if(count($queryUnPublished)>0){
 		$overBreak = $this->timeM->timesetting('overBreakTime');
 		foreach($queryUnPublished AS $unpublished){				
 			echo '<tr>';
-				echo '<td><a href="'.$this->config->base_url().'timecard/timelogs/'.$unpublished->empID_fk.'/?d='.$unpublished->slogDate.'" target="_parent">'.$unpublished->name.'</a></td>';
+				echo '<td><a href="'.$this->config->base_url().'timecard/'.$unpublished->empID_fk.'/timelogs/?d='.$unpublished->slogDate.'" target="_blank">'.$unpublished->name.'</a></td>';
 				echo '<td>'.(($unpublished->timeIn=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeIn))).'</td>';
 				echo '<td>'.(($unpublished->timeOut=='0000-00-00 00:00:00')?'None':date('h:i a', strtotime($unpublished->timeOut))).'</td>';							
 				echo '<td>'.(($unpublished->timeBreak=='00:00:00')?'None':$this->textM->convertTimeToMinStr($unpublished->timeBreak)).'</td>';	

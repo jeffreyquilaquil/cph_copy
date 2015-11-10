@@ -389,8 +389,8 @@ class Timecard extends MY_Controller {
 						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
 					}
 				}else if($dl->schedIn>=$dateTimeToday) $displayArray[$numDay]['err'][] = 'noTimeInYet';
-				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
-				else if(!isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
+				else if($dl->schedIn!=$date00 && $dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
+				else if(!isset($displayArray[$numDay]['leave']) && $dl->schedIn!=$date00) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
 												
 				//check for clock out
 				if($dl->timeOut!=$date00){
@@ -635,8 +635,8 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			$data['dayArr'] = array();
 			$segment2 = $this->uri->segment(2);
-			
-			if(is_numeric($segment2) && ($this->access->accessFullHR==false || $segment2==$this->user->empID || $this->commonM->checkStaffUnderMe($data['row']->username)==false)){
+							
+			if(is_numeric($segment2) && ($segment2==$this->user->empID || ($this->access->accessFullHR==false && $this->commonM->checkStaffUnderMe($data['row']->username)==false))){
 				header('Location:'.$this->config->base_url().'timecard/calendar/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
 				exit;
 			}
@@ -671,7 +671,7 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-					
+								
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -679,11 +679,11 @@ class Timecard extends MY_Controller {
 				}
 				
 				if(isset($yoyo['sched']) && $yoyo['sched']!='On Leave'){
-					if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
+					//if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
 						$sched .= '<div class="daysbox dayEditable '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					}else{
+					/* }else{
 						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					}
+					} */
 				}
 								
 				if(isset($yoyo['leave'])){
