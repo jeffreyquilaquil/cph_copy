@@ -463,7 +463,8 @@ class Timecard extends MY_Controller {
 				
 				if(isset($d['timeIn'])) $want .= '<b>IN: </b>'.$d['timeIn'].'<br/>';
 				if(isset($d['timeOut'])) $want .= '<b>OUT: </b>'.$d['timeOut'].'<br/>';
-				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$this->textM->convertTimeToMinStr($d['breaks']).'<br/>';
+				//if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$this->textM->convertTimeToMinStr($d['breaks']).'<br/>';
+				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$d['breaks'].'<br/>';
 				
 				$data['dayArr'][$k] = $want;				
 			}
@@ -634,7 +635,8 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			$data['dayArr'] = array();
 			$segment2 = $this->uri->segment(2);
-			if(is_numeric($segment2) && ($this->access->accessFullHR==false || $segment2==$this->user->empID)){
+			
+			if(is_numeric($segment2) && ($this->access->accessFullHR==false || $segment2==$this->user->empID || $this->commonM->checkStaffUnderMe($data['row']->username)==false)){
 				header('Location:'.$this->config->base_url().'timecard/calendar/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
 				exit;
 			}
