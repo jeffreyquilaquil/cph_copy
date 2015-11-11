@@ -176,7 +176,7 @@ function sendEmail( $from, $to, $subject, $body, $fromName='', $CC='', $BCC='' )
 	$hosturl = $_SERVER['HTTP_HOST'];
 	if($hosturl=='129.3.252.99'){
 		$subject = $subject.' to-'.$to;
-		$to = 'ludivina.marinas@tatepublishing.net';
+		$to = 'marjune.abellana@tatepublishing.net';
 		
 		if(!empty($CC)){
 			$subject .= '==CC: -'.$CC;
