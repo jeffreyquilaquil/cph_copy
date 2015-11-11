@@ -3,7 +3,7 @@
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
 	
-	$paidHour = $dataLog->schedHour;
+	$paidHour = ((isset($dataLog->schedHour))?$dataLog->schedHour:0);
 	$deductionHour = 0;
 		
 	
@@ -43,7 +43,7 @@
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
 	}
-	
+		
 	//THIS IS INSERTED LOG ON tcStaffLogPublish
 	if(!empty($dataLog)){
 		///PUBLISH DETAILS
@@ -164,7 +164,7 @@
 			echo '</table>';
 			echo '</form>';
 		}
-				
+						
 		if((isset($schedToday['sched']) && $schedToday['sched']!='On Leave') || $dataLog->timeIn!=$date00 || $dataLog->timeOut!=$date00){
 			echo '<table id="tblinsertedlog" class="tableInfo" style="margin-top:10px;">';
 				///INSERTED LOGS RECORD
@@ -271,7 +271,7 @@
 							}else{
 								echo '<b>'.date('h:i a', strtotime($dataLog->timeOut)).'</b>';
 								
-								if($schedToday['sched']!='On Leave'){
+								if(isset($schedToday['sched']) && $schedToday['sched']!='On Leave'){
 									if($dataLog->timeOut < $dataLog->schedOut){
 										$outSec = strtotime($dataLog->schedOut) - strtotime($dataLog->timeOut);
 										$outHour = $this->timeM->hourDeduction($outSec);
@@ -307,7 +307,7 @@
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
 			echo '<tr><td>Total Paid Hours</td><td>'.$this->textM->formfield('number', 'publishTimePaid', $totalpaid, 'forminput', '', 'required').'</td></tr>';
-			echo '<tr><td>Night Differential Hours<br/><i class="colorgray fs11px">(10PM - 6AM minus 1 hour for break)</i></td><td>'.$this->textM->formfield('number', 'publishND', $this->timeM->getNightDiff($dataLog), 'forminput', '', 'required').'</td></tr>';
+			echo '<tr><td>Night Differential Hours<br/><i class="colorgray fs11px">(10PM - 6AM minus 1 hour for break)</i></td><td>'.$this->textM->formfield('number', 'publishND', $this->payrollM->getNightDiffTime($dataLog), 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Total Deduction</td><td>'.$this->textM->formfield('number', 'publishDeduct', $deductionHour, 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Note <i class="colorgray">(Optional)</i></td><td>'.$this->textM->formfield('text', 'publishNote', '', 'forminput').'</td></tr>';			
 			echo '<tr><td><br/></td><td>';

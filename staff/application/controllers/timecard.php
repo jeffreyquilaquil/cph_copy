@@ -39,7 +39,8 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){	
-		$this->timeM->publishLogs();
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-03');
+		//$this->timeM->publishLogs();
 		exit;
 	}
 		
@@ -125,7 +126,7 @@ class Timecard extends MY_Controller {
 					$logdate = date('Y-m-d', strtotime($log->logtime));
 					$schedText[date('j', strtotime($log->logtime))] = $this->timeM->getSchedToday($log->empID, $logdate, true);								
 					$logID = $this->timeM->insertToDailyLogs($log->empID, $logdate, $schedText); //inserting to tcStaffLogPublish table
-					//$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
+					$this->timeM->cntUpdateAttendanceRecord($logdate); //update records
 				}
 				
 				if(!empty($logID))
@@ -306,7 +307,7 @@ class Timecard extends MY_Controller {
 						
 		if($this->user!=false){
 			$id = $this->uri->segment(2);
-			if(is_numeric($id) && ($this->access->accessFullHR==false || $id==$this->user->empID)){
+			if(is_numeric($id) && $this->commonM->checkStaffUnderMe($id)==false){
 				header('Location:'.$this->config->base_url().'timecard/timelogs/');
 				exit;
 			}
@@ -388,8 +389,8 @@ class Timecard extends MY_Controller {
 						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
 					}
 				}else if($dl->schedIn>=$dateTimeToday) $displayArray[$numDay]['err'][] = 'noTimeInYet';
-				else if($dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
-				else if(!isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
+				else if($dl->schedIn!=$date00 && $dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
+				else if(!isset($displayArray[$numDay]['leave']) && $dl->schedIn!=$date00) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
 												
 				//check for clock out
 				if($dl->timeOut!=$date00){
@@ -417,11 +418,18 @@ class Timecard extends MY_Controller {
 			}
 						
 			//this is for the display
+			$leaveStatArr = $this->textM->constantArr('leaveStatus');
 			foreach($displayArray AS $k=>$d){
 				$want = '';
 				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED TO PAYROLL<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
 				if(isset($d['leaveID'])){
-					if(isset($d['leave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'].'</div></a>';
+					if(isset($d['leave'])){
+						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
+						$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
+						if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
+						else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
+						$want .= '</div></a>';
+					}
 					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
 					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
 					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
@@ -455,7 +463,8 @@ class Timecard extends MY_Controller {
 				
 				if(isset($d['timeIn'])) $want .= '<b>IN: </b>'.$d['timeIn'].'<br/>';
 				if(isset($d['timeOut'])) $want .= '<b>OUT: </b>'.$d['timeOut'].'<br/>';
-				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$this->textM->convertTimeToMinStr($d['breaks']).'<br/>';
+				//if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$this->textM->convertTimeToMinStr($d['breaks']).'<br/>';
+				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$d['breaks'].'<br/>';
 				
 				$data['dayArr'][$k] = $want;				
 			}
@@ -498,6 +507,11 @@ class Timecard extends MY_Controller {
 	public function attendance($data){	
 		$data['content'] = 'v_timecard/v_attendance';	
 		$data['tpage'] = 'attendance';
+		
+		if(is_numeric($this->uri->segment(2))==true || is_numeric($this->uri->segment(3))==true){
+			header('Location:'.$this->config->base_url().'timecard/attendance/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
+			exit;
+		}
 	
 		if($this->user!=false){
 			$condition = '';
@@ -522,7 +536,7 @@ class Timecard extends MY_Controller {
 				$cntNoClockOut = count($this->timeM->getNumDetailsAttendance($data['today'], 'noclockout', $condition));			
 				$cntLeave = count($this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition));
 				$cntOffset = count($this->timeM->getNumDetailsAttendance($data['today'], 'offset', $condition));
-				$cntPublished = count($this->timeM->getNumDetailsAttendance($data['today'], 'published', $condition));	
+				$cntPublished = count($this->timeM->getNumDetailsAttendance($data['today'], 'published', $condition));
 				
 				if($cntLate>0) $contento .= '<b class="errortext">Late: '.$cntLate.'</b><br/>';
 				if($cntAbsent>0) $contento .= '<b class="errortext">Absent: '.$cntAbsent.'</b><br/>';
@@ -538,7 +552,7 @@ class Timecard extends MY_Controller {
 				$numDate = date('j', strtotime($data['today']));
 				$data['dayArr'][$numDate] =  '<div class="taleft padding5px">'.$contento.'</div>';
 			}
-			
+		
 			$attHistory = $this->dbmodel->getQueryResults('tcAttendance', '*', 'dateToday LIKE "'.date('Y-m-', strtotime($data['today'])).'%"');
 			
 			$strToday = strtotime(date('Y-m-d', strtotime($data['currentDate'])));			
@@ -591,7 +605,11 @@ class Timecard extends MY_Controller {
 								if($cntMissingOut>0) $hisText .= '<b style="color:#888;">Missing Out: '.$cntMissingOut.'</b><br/>'; }
 						}
 						
-						$hisText .= '<b>Published: '.$his->published.'</b><br/>';
+						if($his->published>0){
+							if($this->access->accessFullHR==true) $hisText .= '<b style="color:#888;">Published: '.$his->published.'</b><br/>';
+							else{ $cntPublished = count($this->timeM->getNumDetailsAttendance($his->dateToday, 'noclockout', $condition));
+								if($cntPublished>0) $hisText .= '<b style="color:#888;">Published: '.$cntPublished.'</b><br/>'; }
+						}
 					}
 					
 					if(!empty($hisText)){
@@ -616,8 +634,8 @@ class Timecard extends MY_Controller {
 		
 		if($this->user!=false){
 			$data['dayArr'] = array();
-			$segment2 = $this->uri->segment(2);
-			if(is_numeric($segment2) && ($this->access->accessFullHR==false || $segment2==$this->user->empID)){
+			$id = $this->uri->segment(2);
+			if(is_numeric($id) && $this->commonM->checkStaffUnderMe($id)==false){
 				header('Location:'.$this->config->base_url().'timecard/calendar/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
 				exit;
 			}
@@ -652,7 +670,7 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-					
+								
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -660,11 +678,11 @@ class Timecard extends MY_Controller {
 				}
 				
 				if(isset($yoyo['sched']) && $yoyo['sched']!='On Leave'){
-					if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
+					//if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
 						$sched .= '<div class="daysbox dayEditable '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					}else{
+					/* }else{
 						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					}
+					} */
 				}
 								
 				if(isset($yoyo['leave'])){
@@ -764,7 +782,7 @@ class Timecard extends MY_Controller {
 		$data['tpage'] = 'payslips';
 		
 		if($this->user!=false){
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
 			
 			
 		}
@@ -984,6 +1002,7 @@ class Timecard extends MY_Controller {
 				$condition = ' AND empID IN ('.$ids.$this->user->empID.')';
 		}
 		
+		$data['queryUnscheduled'] = $this->timeM->getNumDetailsAttendance($data['today'], 'unscheduled', $condition);
 		$data['queryLate'] = $this->timeM->getNumDetailsAttendance($data['today'], 'late', $condition);
 		$data['queryAbsent'] = $this->timeM->getNumDetailsAttendance($data['today'], 'absent', $condition);
 		$data['queryLeave'] = $this->timeM->getNumDetailsAttendance($data['today'], 'leave', $condition);
@@ -1129,10 +1148,18 @@ class Timecard extends MY_Controller {
 	
 	public function allpayrolls(){
 		$data['content'] = 'v_timecard/v_payroll_all';
-		$id = $this->uri->segment(3);
-		if(is_numeric($id)){
-			$data['dataInfo'] = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$id.'"');
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', '*', 'payrollsID_fk="'.$data['dataInfo']->payrollsID.'"');
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				$id = $this->uri->segment(3);
+				if(is_numeric($id)){
+					$data['dataInfo'] = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$id.'"');
+					$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, earnings, net, CONCAT(lname,", ",fname) AS name', 
+							'payrollsID_fk="'.$data['dataInfo']->payrollsID.'"',
+							'LEFT JOIN staffs ON empID=empID_fk');
+				}
+			}			
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -1150,28 +1177,43 @@ class Timecard extends MY_Controller {
 		$data['tpage'] = 'payslips';
 		
 		if($this->user!=false){
-			if($data['visitID']!=$this->user->empID)
-				$payID = $this->uri->segment(4);
-			else $payID = $this->uri->segment(3);
-		
+			//if($this->access->accessFullHR==false && $segment2!=$this->user->empID && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
+			/* if($this->access->accessFullHR==false){
+				header('Location:'.$this->config->base_url().'timecard/payslips/');
+				exit;
+			} */
+			
+			$empID = $this->uri->segment(2);
+			if(!is_numeric($empID)){
+				$empID = $this->user->empID;
+				$payID = $this->uri->segment(3);
+			}else $payID = $this->uri->segment(4);			
+			if($empID==$this->user->empID) unset($data['column']);
+			
+			$data['payslipID'] = $payID;
+			
 			$data['payItemArr'] = $this->textM->constantArr('payrollItemType');
 			$data['holidayArr'] = $this->textM->constantArr('holidayTypes');
 			
 			$data['payInfo'] = $this->dbmodel->getSingleInfo('tcPayslips', 
 				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earnings, bonuses, allowances, adjustments, deductions, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, title', 
-				'payslipID="'.$payID.'"', 
+				'payslipID="'.$payID.'" AND empID_fk="'.$empID.'"', 
 				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
-			$data['dataPay'] = $this->dbmodel->getQueryResults('tcPayslipDetails', 'itemID, payValue, itemType, itemName, itemHR', 
-				'payslipID_fk="'.$payID.'"',
-				'LEFT JOIN tcPayslipItems ON itemID=itemID_fk', 'itemType');
-			
-			$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
-			$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-				'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishBy', 
-				'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
-				'', 
-				'slogDate');
+			if(count($data['payInfo'])>0){
+				
+				
+				$data['dataPay'] = $this->dbmodel->getQueryResults('tcPayslipDetails', 'itemID, payValue, itemType, itemName, itemHR', 
+					'payslipID_fk="'.$payID.'"',
+					'LEFT JOIN tcPayslipItems ON itemID=itemID_fk', 'itemType');
+				
+				$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
+				$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
+					'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishBy', 
+					'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
+					'', 
+					'slogDate');
+			}
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -1182,11 +1224,27 @@ class Timecard extends MY_Controller {
 		
 		if($this->user!=false){
 			$id = $this->uri->segment(3);
-			$data['info'] = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd', 'payrollsID='.$id);
+			$data['info'] = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd, payDate', 'payrollsID='.$id);
 			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earnings, deductions, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id, 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 		}
 		
 		$this->load->view('includes/template', $data);
+	}
+	
+	public function regeneratepayslip(){
+		if($this->user!=false){
+			$id = $this->uri->segment(3);
+			$info = array();
+			$query = $this->dbmodel->getSingleInfo('tcPayslips', 'empID_fk, payPeriodEnd, payPeriodStart, payrollsID, payType', 'payslipID="'.$id.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+			if(count($query)>0){
+				foreach($query AS $k=>$v) $info[$k] = $v;
+				$info['empIDs'] = $query->empID_fk;
+				$this->payrollM->generatepayroll($info);
+				
+				/* header('Location:'.$this->config->base_url().'timecard/'.$query->empID_fk.'/payslipdetail/'.$id.'/');
+				exit; */
+			}			
+		}
 	}
 		
 }

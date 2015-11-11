@@ -125,15 +125,17 @@ class Timecardmodel extends CI_Model {
 		}
 				
 		//check for custom schedule. This will show schedule even if holiday with work
-		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND status=1 AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
+		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
 		
 		foreach($queryCustomSched AS $yeye){
 			$d = date('j', strtotime($yeye->dateToday));
-			$dayArr[$d]['sched'] = $yeye->timeText;	
-			$dayArr[$d]['schedHour'] = $yeye->timeHours;	
-			$dayArr[$d]['schedDate'] = $yeye->dateToday;	
-			$dayArr[$d]['custom'] = true;	
-			if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;							
+			if($yeye->status==1){
+				$dayArr[$d]['sched'] = $yeye->timeText;	
+				$dayArr[$d]['schedHour'] = $yeye->timeHours;	
+				$dayArr[$d]['schedDate'] = $yeye->dateToday;	
+				$dayArr[$d]['custom'] = true;	
+				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
+			}else unset($dayArr[$d]);		
 		}
 		
 		
@@ -266,6 +268,7 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function getLogsToday($empID, $dateToday, $schedToday=''){
+		$dateToday = date('Y-m-d', strtotime($dateToday));
 		if(empty($schedToday)) $schedToday = $this->timeM->getSchedToday($empID, $dateToday);
 		
 		if(!empty($schedToday['sched']) && $schedToday['sched']!='On Leave'){		
@@ -290,13 +293,8 @@ class Timecardmodel extends CI_Model {
 		if($type=='absent'){
 			$flds = ', schedIn, schedOut, timeIn, timeOut';
 			if($dateToday==date('Y-m-d')) $condition .= ' AND schedIn<="'.date('Y-m-d H:i:s').'"';
-			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"';
+			$condition .= 'AND timeIn="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND (leaveID_fk=0 OR (leaveID_fk>0 AND (SELECT leaveType FROM staffLeaves WHERE leaveID_fk=leaveID)=4))';
 		}else if($type=='leave'){
-			/* $empID_sched = array();
-			$scheduld = $this->timeM->getNumDetailsAttendance($dateToday, 'scheduled', $condition);
-			foreach($scheduld AS $s)
-				$empID_sched[] = $s->empID_fk;
-				 */
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, leaveType, CONCAT(fname," ",lname) AS name', '"'.$dateToday.'" BETWEEN leaveStart AND leaveEnd AND (status=1 OR status=2) AND iscancelled!=1 '.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');			
 		}else if($type=='offset'){			
 			$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, leaveStart, leaveEnd, offsetdates, CONCAT(fname," ",lname) AS name', 'leaveType=4 AND offsetdates LIKE "%'.$dateToday.'%" AND (status=1 OR status=2) AND iscancelled!=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'leaveStart');	
@@ -326,7 +324,7 @@ class Timecardmodel extends CI_Model {
 			$flds = ', timeIn, timeOut, timeBreak, schedIn, schedOut';
 			$condition .= ' AND publishBy="" AND schedOut<"'.date('Y-m-d H:i:s').'"';				
 		}else if($type=='published'){
-			$condition .= ' AND publishBy!=""';	
+			$condition .= ' AND publishBy!=""';
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
 			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
@@ -467,14 +465,13 @@ class Timecardmodel extends CI_Model {
 	
 	public function insertToDailyLogs($empID, $today, $schedToday){
 		$logID = '';
+		$insArr = array();
 		$todaySmall = date('j', strtotime($today));
 			
-		if(isset($schedToday[$todaySmall])){
+		if(isset($schedToday[$todaySmall])){ 		
 			$sArr = $schedToday[$todaySmall];	
-						
-			$insArr = array();
-			if(isset($sArr['sched'])){
-				
+			
+			if(isset($sArr['sched'])){				
 				if($sArr['sched']=='On Leave' && isset($sArr['leave'])) $schedArr = $this->timeM->getSchedArr($today, $sArr['leave']);
 				else $schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
 					
@@ -513,16 +510,16 @@ class Timecardmodel extends CI_Model {
 				}					
 			}
 			
-			if(!empty($insArr)){
-				$insArr['slogDate'] = $today;
-				$insArr['empID_fk'] = $empID;
-				if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
-								
-				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
-				if(empty($logID))
-					$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
-			}
+			///INSERTION
+			$insArr['slogDate'] = $today;
+			$insArr['empID_fk'] = $empID;
+			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
+							
+			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
+			if(empty($logID))
+				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
 		}
+		
 		
 		return $logID;
 	}

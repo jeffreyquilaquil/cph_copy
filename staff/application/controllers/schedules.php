@@ -411,7 +411,7 @@ class Schedules extends MY_Controller {
 							$upArr['updateData'] = $updata;
 							$upArr['assignDate'] = date('Y-m-d H:i:s');
 							
-							$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$dInfo->dateID), $upArr);							
+							$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$dInfo->dateID), $upArr);
 						}else{
 							$insArr['dateToday'] = $data['schedData']['date'];
 							$insArr['empID_fk'] = $data['schedData']['id'];
@@ -421,6 +421,15 @@ class Schedules extends MY_Controller {
 							$insArr['updateData'] = 'Set INACTIVE from:'.$data['schedData']['sched'].' REASON:'.$_POST['reason'].' BY:'.$this->user->username.' |';
 							$this->dbmodel->insertQuery('tcStaffScheduleByDates', $insArr);
 						}
+						
+						//update tclogpublished data to no schedule
+						$updateSched['schedIn'] = '0000-00-00 00:00:00';
+						$updateSched['schedOut'] = '0000-00-00 00:00:00';
+						$updateSched['datePublished'] = '0000-00-00 00:00:00';
+						$updateSched['publishBy'] = '';
+						$updateSched['schedHour'] = 0;
+						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$data['schedData']['date']), $updateSched);
+						
 						echo '<script>
 							alert("Schedule has been removed");
 							parent.$.fn.colorbox.close();

@@ -1,28 +1,39 @@
-<?php
-	$hourlyRate = $this->payrollM->getDailyHourlyRate($payInfo->monthlyRate, 'hourly');
-	
-	$detailArr = array();
-	foreach($dataPay AS $d){
-		$detailArr[$d->itemType][] = $d;
-	}
-?>
+<br/>
 <a href="<?= $this->config->base_url().'timecard/'.$visitID.'/payslips/' ?>"><button class="floatright btnclass"><< Back to All Payslips</button></a>
-<h3>Payroll Info</h3>
-<hr/>
+
+<?php
+	echo '<h3>Payroll Info';
+		if($this->access->accessFullHRFinance==true) echo '&nbsp;&nbsp;<button onClick="regenerate()">Regenerate Payslip</button>';
+	echo '</h3><hr/>';
+
+	if(count($payInfo)==0){
+		echo 'No payslip record.';
+	}else{
+		$hourlyRate = $this->payrollM->getDailyHourlyRate($payInfo->monthlyRate, 'hourly');
+		
+		$detailArr = array();
+		foreach($dataPay AS $d){
+			$detailArr[$d->itemType][] = $d;
+		}
+?>
 
 <table class="tableInfo">
 	<tr class="trlabel"><td colspan=2>Payroll</td></tr>
+	<tr>
+		<td width="20%">Employee Name</td>
+		<td><?= $payInfo->lname.', '.$payInfo->fname ?></td>
+	</tr>
 	<tr>
 		<td width="20%">Period</td>
 		<td><?= date('F d, Y', strtotime($payInfo->payPeriodStart)).' - '.date('F d, Y', strtotime($payInfo->payPeriodEnd)) ?></td>
 	</tr>
 	<tr>
-		<td>Hourly Rate</td>
-		<td><?= $hourlyRate ?></td>
+		<td>Monthly Pay</td>
+		<td><?= $this->textM->convertNumFormat($payInfo->monthlyRate) ?></td>
 	</tr>
 	<tr>
-		<td>Gross Pay</td>
-		<td><?= $this->textM->convertNumFormat($payInfo->basePay) ?></td>
+		<td>Hourly Rate</td>
+		<td><?= $hourlyRate ?></td>
 	</tr>
 	<tr>
 		<td>Total Taxable</td>
@@ -46,6 +57,12 @@
 		<td>Name</td>
 		<td>Hours</td>
 		<td>Amount</td>
+	</tr>
+	<tr>
+		<td>pay</td>
+		<td>Base Pay</td>
+		<td>-</td>
+		<td><?= $this->textM->convertNumFormat($payInfo->basePay) ?></td>
 	</tr>
 	<?php
 		foreach($dataPay AS $d){
@@ -120,7 +137,18 @@
 </table>
 <?php
 	if($unpublished === true) echo '<i>Pink background is unpublished</i>';
+
+}
 ?>
+
+<script type="text/javascript">
+	function regenerate(){
+		displaypleasewait();
+		$.post('<?= $this->config->base_url().'timecard/regeneratepayslip/'.$payslipID.'/' ?>',{}, function(){
+			location.reload();
+		});
+	}
+</script>
 
 
 

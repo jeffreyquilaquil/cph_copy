@@ -1,5 +1,6 @@
 <a href="<?= $this->config->base_url() ?>timecard/managetimecard/managepayroll/"><button class="btnclass floatright"><< Back to Manage Payroll</button></a>
 <h3>Payrolls for Period: <?= $info->payPeriodStart.' to '.$info->payPeriodEnd ?></h3>
+<b>Pay Date: </b><?= date('F d, Y', strtotime($info->payDate)) ?>
 <hr/>
 <table class="tableInfo">
 	<tr class="trlabel">
