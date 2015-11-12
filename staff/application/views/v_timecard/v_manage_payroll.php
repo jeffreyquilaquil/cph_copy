@@ -93,7 +93,7 @@
 					echo '<ul class="dropmenu" style="margin:0px;">
 							<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
 								<ul class="dropleft">
-									<li><a href="'.$this->config->base_url().'timecard/allpayrolls/'.$pay->payrollsID.'/" target="_blank">Details</a></li>
+									<li><a href="'.$this->config->base_url().'timecard/managepayrolldetail/'.$pay->payrollsID.'/">View Details</a></li>
 								</ul>
 							</li>
 						</ul>';

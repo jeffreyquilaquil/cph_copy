@@ -4,8 +4,21 @@
 	if(count($dataPayslips)==0){
 		echo '<p>No payslip generated yet.</p>';
 	}else{
-		foreach($dataPayslips AS $pay){
-			
-		}
+		echo '<table class="tableInfo">';
+			echo '<tr class="trlabel">';
+				echo '<td>Employee Name</td>';
+				echo '<td>Gross Pay</td>';
+				echo '<td>Net Pay</td>';
+				echo '<td><br/></td>';
+			echo '</tr>';
+			foreach($dataPayslips AS $pay){
+				echo '<tr>';
+					echo '<td>'.$pay->name.'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($pay->earnings).'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($pay->net).'</td>';
+					echo '<td></td>';
+				echo '</tr>';
+			}
+		echo '</table>';
 	}
 ?>
