@@ -61,7 +61,7 @@
 			$from = $hiring_manager_email;
 			$to = 'careers.cebu@tatepublishing.net';
 			$body = "
-				<p>Job Offer for Job Req {$jo_reg_id} {$position}, {$info['fname]} {$info['lname']} is approved by hiring manager {$hiring_manager_name}</p>
+				<p>Job Offer for Job Req {$jo_reg_id} {$position}, {$info['fname']} {$info['lname']} is approved by hiring manager {$hiring_manager_name}</p>
 				<p>Go to CPH recruitment manager, download the approved generated job offer and schedule job offer with the applicant.</p>
 			";
 			sendEmail( $from, $to, 'CPH Job Offer Generated Approved by the Hiring Manager', $body, $hiring_manager_name);
