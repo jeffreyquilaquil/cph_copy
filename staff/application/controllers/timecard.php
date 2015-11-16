@@ -151,13 +151,12 @@ class Timecard extends MY_Controller {
 										$updateArr['offTimeIn'] = $d['logtime']; //for offset
 									}
 								}  
-							}else if($d['type']=='Z'){ //for time out
-								if(($logData->timeOut==$date00 || isset($updateArr['timeOut'])) && ($logData->timeIn!=$date00 || isset($updateArr['timeIn']))) $updateArr['timeOut'] = $d['logtime'];
-								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+							}else if($d['type']=='Z'){ //for time out								
+								if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
-									}
-								}
+									}else $updateArr['timeOut'] = $d['logtime'];
+								}else $updateArr['timeOut'] = $d['logtime'];
 							}else if($logData->timeIn!=$date00 || isset($updateArr['timeIn'])){ //this is for breaks and there is time in recorded
 								$updateArr['breaks'] .= $d['logtime'].'|';
 								$updateArr['numBreak']++;

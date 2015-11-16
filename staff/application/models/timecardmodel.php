@@ -489,6 +489,7 @@ class Timecardmodel extends CI_Model {
 					$insArr['offsetIn'] = $offArr['start'];
 					$insArr['offsetOut'] = $offArr['end'];
 					$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
+					if($insArr['offsetHour']==9) $insArr['offsetHour']=8; 
 					
 					if(!isset($insArr['schedIn'])){ //if no schedule for today
 						$insArr['slogDate'] = $today;
@@ -497,6 +498,10 @@ class Timecardmodel extends CI_Model {
 						$insArr['schedIn'] = $offArr['start'];
 						$insArr['schedOut'] = $offArr['end'];
 						$insArr['schedHour'] = $insArr['offsetHour'];
+						
+						unset($insArr['offsetIn']);
+						unset($insArr['offsetOut']);
+						unset($insArr['offsetHour']);
 					}else{
 						if($insArr['schedOut']==$offArr['start']){
 							$insArr['schedOut'] = $offArr['end']; //if timeOut equals to start of offset

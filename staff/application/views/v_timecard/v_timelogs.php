@@ -37,7 +37,7 @@
 				$breaknum++;
 			}
 			
-			if($a->logtype=='Z' && empty($logtimeout)){ //TIME OUT
+			if($a->logtype=='Z'){ //TIME OUT
 				$logtimeout = $a->logtime;
 			}
 		}
