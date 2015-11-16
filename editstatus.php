@@ -51,7 +51,8 @@
 	if( isset($response) ){
 		if( $response == 'N' ){
 			//update jo status
-			$update_array = array('status' => 2);			
+            $update_array = array('status' => 2);			
+            addStatusNote($id, 'genJobOffer', 'admin', $info['position'], 'Job Offer Generated has declined by Hiring Manager');
 		} else if( $response == 'Y' ) {
 			$update_array = array('status' => 1);
 			//if approved send notification to recruitment
@@ -64,7 +65,8 @@
 				<p>Job Offer for Job Req {$jo_reg_id} {$position}, {$info['fname']} {$info['lname']} is approved by hiring manager {$hiring_manager_name}</p>
 				<p>Go to CPH recruitment manager, download the approved generated job offer and schedule job offer with the applicant.</p>
 			";
-			sendEmail( $from, $to, 'CPH Job Offer Generated Approved by the Hiring Manager', $body, $hiring_manager_name);
+            sendEmail( $from, $to, 'CPH Job Offer Generated Approved by the Hiring Manager', $body, $hiring_manager_name);
+            addStatusNote($id, 'genJobOffer', 'admin', $position, $body);
 		}
 		$db->updateQuery('generatedJO', $update_array, 'joID = '.$joID);
 	}
@@ -216,14 +218,11 @@
 			if($_POST['prefix']=='Ms.') $db->updateQuery('applicants', array('gender' => 'female'), 'id='.$id);
 			else $db->updateQuery('applicants', array('gender' => 'male'), 'id='.$id);				
 				
-			
-
-			
-
 			$from = 'careers.cebu@tatepublishing.net';
 			$to = $hiring_manager_email;
 			$applicant_name = $info['fname'].' '.$info['lname'];
-			$approve_url = HOME_URL .'~marjune/careerph/editstatus.php?id='.$applicant_id.'&joID='.$joInsID.'&response';
+            $approve_url = HOME_URL .'editstatus.php?id='.$applicant_id.'&joID='.$joInsID.'&response';
+            $job_offer_file = 'gen_jo.php?jo_id='.$joInsID.'&method=I&appID='.$applicant_id;
 			
 			$ebody = '<p>Hi '. $hiring_manager_name .', </p>
 			<p>Job Offer to applicant '. $applicant_name .' for the position of '.$position.' has been generated.<br/>
@@ -233,7 +232,8 @@
 			Otherwise, please click the link below to deny the job offer.<br/>
 			<a href="'.$approve_url.'=N">'.$approve_url.'=N</a><br/>';			
 							
-			sendEmail( $from, $to, 'CPH Job Offer Generated for your approval', $ebody, 'Career Index Auto Email' );
+            sendEmail( $from, $to, 'CPH Job Offer Generated for your approval', $ebody, 'Career Index Auto Email' );
+            addStatusNote($id, 'genJobOffer', 'admin', $info['position']. $ebody);
 			//end send email
 			
 			
