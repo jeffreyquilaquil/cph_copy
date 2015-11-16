@@ -151,13 +151,12 @@ class Timecard extends MY_Controller {
 										$updateArr['offTimeIn'] = $d['logtime']; //for offset
 									}
 								}  
-							}else if($d['type']=='Z'){ //for time out
-								if(($logData->timeOut==$date00 || isset($updateArr['timeOut'])) && ($logData->timeIn!=$date00 || isset($updateArr['timeIn']))) $updateArr['timeOut'] = $d['logtime'];
-								else if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
+							}else if($d['type']=='Z'){ //for time out								
+								if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
-									}
-								}
+									}else $updateArr['timeOut'] = $d['logtime'];
+								}else $updateArr['timeOut'] = $d['logtime'];
 							}else if($logData->timeIn!=$date00 || isset($updateArr['timeIn'])){ //this is for breaks and there is time in recorded
 								$updateArr['breaks'] .= $d['logtime'].'|';
 								$updateArr['numBreak']++;
@@ -324,7 +323,7 @@ class Timecard extends MY_Controller {
 					exit;
 				}
 			}
-			
+						
 			//////////VARIABLE DECLARATIONS	
 			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');								
 			$data['dayArr'] = array();
@@ -340,7 +339,7 @@ class Timecard extends MY_Controller {
 			//////////END OF VARIABLE DECLARATIONS	
 			
 			////CHECK FIRST IF TIME TODAY IS LESS THAN 10AM IF IT IS GET PREVIOUS SCHEDULE TO CHECK IF SHIFT STILL IN PROGRESS
-			if(strtotime($dateTimeToday)<strtotime(date('Y-m-d 13:00:00'))){
+			if(date('m', strtotime($data['currentDate'])) == date('m', strtotime($data['today'])) && strtotime($dateTimeToday)<strtotime(date('Y-m-d 13:00:00'))){
 				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
 				$schedToday = $this->timeM->getSchedToday($data['visitID'], $rara);
 				$schedArr = $this->timeM->getSchedArr($rara, ((isset($schedToday['sched']))?$schedToday['sched']:''));
@@ -375,7 +374,7 @@ class Timecard extends MY_Controller {
 			}
 				
 			//this is for logs for the calendar month			
-			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
 		
 			foreach($dateLogs AS $dl){
 				$numDay = $dl->dayLogDate;
@@ -388,10 +387,19 @@ class Timecard extends MY_Controller {
 						if($dl->timeIn > date('Y-m-d H:i:s', strtotime($dl->schedIn.' +1 minutes'))) $displayArray[$numDay]['err'][] = 'isLate';
 						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
 					}
-				}else if($dl->schedIn>=$dateTimeToday) $displayArray[$numDay]['err'][] = 'noTimeInYet';
-				else if($dl->schedIn!=$date00 && $dl->timeIn==$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) $displayArray[$numDay]['err'][] = 'isAbsent';
-				else if(!isset($displayArray[$numDay]['leave']) && $dl->schedIn!=$date00) $displayArray[$numDay]['err'][] = 'isNoTimeIn';
-												
+				}else if($dl->timeIn==$date00 && $dl->schedIn>=$dateTimeToday && $dl->schedOut>=$dateTimeToday) 
+					$displayArray[$numDay]['err'][] = 'noTimeInYet';
+				else if($dl->timeIn==$date00 && $dl->schedIn!=$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) 
+					$displayArray[$numDay]['err'][] = 'isAbsent';
+				else if(!isset($displayArray[$numDay]['leave']) && $dl->schedIn!=$date00) 
+					$displayArray[$numDay]['err'][] = 'isNoTimeIn';
+				
+				//check if paid off
+				if($dl->timeIn==$date00 && $dl->timeOut==$date00 && $dl->publishTimePaid>0 && $dl->leaveID_fk==0){
+					$displayArray[$numDay]['green'][] = 'isPaidOff';
+				}
+					
+																
 				//check for clock out
 				if($dl->timeOut!=$date00){
 					$displayArray[$numDay]['timeOut'] = date('h:i a', strtotime($dl->timeOut));
@@ -421,7 +429,7 @@ class Timecard extends MY_Controller {
 			$leaveStatArr = $this->textM->constantArr('leaveStatus');
 			foreach($displayArray AS $k=>$d){
 				$want = '';
-				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED TO PAYROLL<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
+				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
 				if(isset($d['leaveID'])){
 					if(isset($d['leave'])){
 						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
@@ -453,7 +461,11 @@ class Timecard extends MY_Controller {
 				if(isset($d['green'])){
 					$want .= '<div style="color:green">';
 						foreach($d['green'] AS $g){
-							if($g=='shiftInProgress') $want .= 'SHIFT IN PROGRESS<br/>';
+							if($g=='isPaidOff'){
+								$want .= 'PAID OFF<br/>';
+								$want = str_replace('ABSENT<br/>','', $want);
+							} 
+							else if($g=='shiftInProgress') $want .= 'SHIFT IN PROGRESS<br/>';
 							else if($g=='isEarlyIn') $want .= 'EARLY IN<br/>';
 							else if($g=='isOutLate') $want .= 'OUT LATE<br/>';
 							else if($g=='isNoBreak') $want .= 'NO BREAK<br/>';
@@ -658,7 +670,8 @@ class Timecard extends MY_Controller {
 				$dtoday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
 				$strdatetoday = strtotime($dtoday);
 				
-				if($this->access->accessFullHR===true && $strdatetoday>=$strcurrrentdate)
+				//if($this->access->accessFullHR===true && $strdatetoday>=$strcurrrentdate)
+				if($this->access->accessFullHR===true)
 					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'schedules/customizebyday/'.$data['visitID'].'/'.$dtoday.'/', 'text'=>'Edit Schedule');
 				
 				if($this->user->empID==$data['visitID'] && $strdatetoday>=$canfilelessthan5days)
@@ -782,6 +795,9 @@ class Timecard extends MY_Controller {
 		$data['tpage'] = 'payslips';
 		
 		if($this->user!=false){
+/*V<<<<<<< HEAD
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
+            =======*/
 			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
 			
 			
@@ -926,10 +942,28 @@ class Timecard extends MY_Controller {
 					$updatePub['numBreak'] = $numb;
 					$updatePub['breaks'] = $br;
 					
-					if($numb>0) $message = 'Updated break to: '.trim($message, ', ');
+					if($numb>0){
+						$message = 'Updated break to: '.trim($message, ', ');
+						
+						$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', 'breaks', 'slogID="'.$_POST['slogID'].'"');
+						if(empty($prevVal)) $message .= ' from none';
+						else{
+							$message .= ' from ';
+							$pval = explode('|', $prevVal);
+							foreach($pval AS $p) $message .= date('h:i a', strtotime($p)).', ';
+							
+							$message = rtrim($message, ', ');
+						}
+					} 
 				}else{
 					$updatePub[$_POST['changetype']] = $_POST['inoutval'];
-					$message = 'Updated '.$this->textM->constantText($_POST['changetype']).' to '.$_POST['inoutval'];
+					$message = 'Updated '.$this->textM->constantText($_POST['changetype']).' to '.date('h:i a', strtotime($_POST['inoutval']));
+					
+					$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', $_POST['changetype'], 'slogID="'.$_POST['slogID'].'"');
+					if(!empty($prevVal)){
+						if($prevVal=='0000-00-00 00:00:00') $message .= ' from none';
+						else $message .= ' from '.date('h:i a', strtotime($prevVal));
+					} 
 				}
 				
 				if(!empty($updatePub)){
@@ -971,9 +1005,23 @@ class Timecard extends MY_Controller {
 				}				
 				$this->timeM->addToLogUpdate($id, $data['today'], $message);
 				
-				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), array('publishTimePaid'=>'', 'datePublished'=>'', 'publishBy'=>'', 'publishNote'=>'')); ///REMOVE PUBLISH DETAILS
+				//remove publish details
+				$removePub['publishTimePaid'] = 0;
+				$removePub['publishDeduct'] = 0;
+				$removePub['publishND'] = 0;
+				$removePub['datePublished'] = '0000-00-00 00:00:00';
+				$removePub['publishBy'] = '';
+				$removePub['publishNote'] = '';
+				
+				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), $removePub); ///REMOVE PUBLISH DETAILS
 				$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
 				exit;
+			}else if($_POST['submitType']=='doneChanging'){
+				$upA['status'] = 0;
+				$upA['updatedBy'] = $this->user->username;
+				$upA['dateUpdated'] = date('Y-m-d H:i:s');
+				$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upA);
+				$this->dbmodel->updateConcat('tcTimelogUpdates', 'updateID="'.$_POST['updateID'].'"', 'message', '<br/><i style="font-size:11px;"><u>Change status to DONE - by '.$this->user->username.'</u></i><br/>');
 			}
 			
 			$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
@@ -1018,29 +1066,34 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	
 	public function managepayroll($data){
 		$data['content'] = 'v_timecard/v_manage_payroll';
 		
-		if(isset($_POST) && !empty($_POST)){
-			if($_POST['submitType']=='updateMinWage'){
-				$this->dbmodel->updateQueryText('staffSettings', 'settingVal="'.$_POST['settingVal'].'"', 'settingName="minimumWage"');
-				$this->commonM->addMyNotif($this->user->empID, 'Updated minimum wage to Php '.$this->textM->convertNumFormat($_POST['settingVal']).'.', 5);
-			}else if($_POST['submitType']=='managepayroll'){
-				echo '<pre>';
-				print_r($_POST);
-				echo '</pre>';
-				exit;
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				if(isset($_POST) && !empty($_POST)){
+					if($_POST['submitType']=='updateMinWage'){
+						$this->dbmodel->updateQueryText('staffSettings', 'settingVal="'.$_POST['settingVal'].'"', 'settingName="minimumWage"');
+						$this->commonM->addMyNotif($this->user->empID, 'Updated minimum wage to Php '.$this->textM->convertNumFormat($_POST['settingVal']).'.', 5);
+					}else if($_POST['submitType']=='managepayroll'){
+						echo '<pre>';
+						print_r($_POST);
+						echo '</pre>';
+						exit;
+					}
+				}
+				
+				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'lname');
+				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', '1', '', 'payPeriodEnd DESC');
+				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
+				$data['dataItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*', '1', '', 'itemType');
+				$data['dataMinWage'] = $this->dbmodel->getSingleField('staffSettings', 'settingVal', 'settingName="minimumWage"');
+				
+				return $data;
 			}
 		}
 		
-		$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'staffs.active=1', 'LEFT JOIN newPositions ON posID=position', 'lname');
-		$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', '1', '', 'payPeriodEnd DESC');
-		$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
-		$data['dataItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*', '1', '', 'itemType');
-		$data['dataMinWage'] = $this->dbmodel->getSingleField('staffSettings', 'settingVal', 'settingName="minimumWage"');
-		
-		return $data;
 	}
 	
 	
@@ -1049,6 +1102,8 @@ class Timecard extends MY_Controller {
 			header('Location: '.$this->config->base_url().'timecard/managetimecard/managepayroll/');
 			exit;
 		}else{
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			
 			if($_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
 				
 			if(isset($_POST['submitType'])){
@@ -1122,6 +1177,8 @@ class Timecard extends MY_Controller {
 	public function generatepayroll(){
 		$data['content'] = 'v_timecard/v_payroll_generate';
 		
+		if($this->access->accessFullHRFinance==false) $data['access'] = false;
+		
 		if(isset($_POST['submitType'])){
 			if($_POST['submitType']=='showEmp'){
 				/* $us = '<table class="tableInfo"';
@@ -1149,6 +1206,14 @@ class Timecard extends MY_Controller {
 	public function allpayrolls(){
 		$data['content'] = 'v_timecard/v_payroll_all';
 		
+/*<<<<<<< HEAD
+		if($this->access->accessFullHRFinance==false) $data['access'] = false;
+		
+		$id = $this->uri->segment(3);
+		if(is_numeric($id)){
+			$data['dataInfo'] = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$id.'"');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', '*', 'payrollsID_fk="'.$data['dataInfo']->payrollsID.'"');
+            =======*/
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{

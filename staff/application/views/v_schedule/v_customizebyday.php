@@ -1,6 +1,6 @@
 <div>
-	<h2>Edit Custom Schedule By Day</h2><hr/>
-	<h3>
+	<h3>Edit Custom Schedule By Day <?= ((isset($staffInfo->name))?' of '.$staffInfo->name:'') ?></h3><hr/>
+	<p style="font-size:14px;">
 	<?php
 		echo 'Today\'s Schedule '.date('F d, Y', strtotime($today)).' - ';
 		if(!isset($schedToday['sched'])){
@@ -9,7 +9,7 @@
 			echo '<b>'.$schedToday['sched'].'</b>';
 		}
 	?>
-	</h3>
+	</p>
 <?php
 	if(isset($schedToday['sched']) && $schedToday['sched']=="On Leave"){
 		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view leave details.</p>';
@@ -28,7 +28,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td width="25%">Set To</td>
+			<td width="25%">Set To <a href="<?= $this->config->base_url() ?>schedules/?page=customtime" target="_blank">+ Add time</a></td>
 			<td>
 				<select class="forminput" name="selecttime" required>
 					<?= $this->textM->customTimeSelect('','Select pre-defined time') ?>

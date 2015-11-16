@@ -1,4 +1,5 @@
 <?php
+//ini_set('display_errors', 1); 
 	require 'config.php';
 	require_once('includes/labels.php');
 	date_default_timezone_set("Asia/Manila");
@@ -7,20 +8,71 @@
 	if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 		echo '<script>window.parent.location = "'.HOME_URL.'login.php";</script>';
 		exit();
-	} 
+	}
+
+	//get access level for HR and user
+	$access_level = $db->selectSingleQuery('pt_users', 'level', 'username = "'.$_SESSION['u'].'"');
+	$authorized_access_level = 1;
 	
-	$id = $_GET['id'];
-	$info = $db->selectSingleQueryArray('applicants','*','id="'.$id.'"');
+	$id = $applicant_id = $_GET['id'];
 	
-	$recProcess = $db->selectQueryArray('SELECT * FROM recruitmentProcess');
+	$info = $db->selectSingleQueryArray('applicants','*','id="'.$id.'"');	
+	
+	$recProcess = $db->selectQueryArray('SELECT * FROM recruitmentProcess');	
+	
+	
 	if($info['isNew']==0){
-		$position = $db->selectSingleQuery('positions', 'title' , 'id="'.$info['position'].'"');
+		$position_array = $db->selectSingleQueryArray('positions', 'id, title' , 'id="'.$info['position'].'"');
+		$position = $position_array['title'];
+		$positions_id = $position_array['id'];
 	}else if(!empty($info['position'])){
-		$pp = $db->selectSingleQueryArray('newPositions', 'title, org, dept, grp, subgrp, requiredTest' , 'posID="'.$info['position'].'"');
+		$pp = $db->selectSingleQueryArray('newPositions', 'title, org, dept, grp, subgrp, requiredTest, posID' , 'posID="'.$info['position'].'"');
 		$position = $pp['title'];
+		$positions_id = $pp['posID'];
 		$info += $pp;
 	}
+	
+	
+	$hiring_manager_name = $db->selectSingleQuery("jobReqData", "supervisor" , 'positionID = '.$positions_id);
+	$hiring_manager_email = $db->selectSingleQuery("staffs", 'email', 'CONCAT(fname, " ", lname) LIKE "%'.str_replace(' ', '%', $hiring_manager_name).'%"');
+	$maxSal = $db->selectSingleQuery('jobReqData', 'salary' , 'positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON maxSal=salID');
+	
+	//job offers generated
+	$gen = $db->selectQueryArray('SELECT * FROM generatedJO WHERE appID='.$id.' ORDER BY timestamp DESC');	
+	
+	$joID = $jo_id = $_GET['joID'];
+	$response = $_GET['response'];
+
+	if( ( isset($joID) AND !empty($joID) ) OR (isset($_POST['edit_jo_id']) AND !empty($_POST['edit_jo_id']) ) ){
+		$jo_id = isset($joID) ? $joID : $_POST['edit_jo_id'];
+		$jo_details = $db->selectSingleQueryArray('generatedJO', '*' , 'joID='.$jo_id);
+	}
+	
+	if( isset($response) ){
+		if( $response == 'N' ){
+			//update jo status
+            $update_array = array('status' => 2);			
+            addStatusNote($id, 'genJobOffer', 'admin', $info['position'], 'Job Offer Generated has declined by Hiring Manager');
+		} else if( $response == 'Y' ) {
+			$update_array = array('status' => 1);
+			//if approved send notification to recruitment
 			
+			//update jo status
+			
+			$from = $hiring_manager_email;
+			$to = 'careers.cebu@tatepublishing.net';
+			$body = "
+				<p>Job Offer for Job Req {$jo_reg_id} {$position}, {$info['fname']} {$info['lname']} is approved by hiring manager {$hiring_manager_name}</p>
+				<p>Go to CPH recruitment manager, download the approved generated job offer and schedule job offer with the applicant.</p>
+			";
+            sendEmail( $from, $to, 'CPH Job Offer Generated Approved by the Hiring Manager', $body, $hiring_manager_name);
+            addStatusNote($id, 'genJobOffer', 'admin', $position, $body);
+		}
+		$db->updateQuery('generatedJO', $update_array, 'joID = '.$joID);
+	}
+	
+	
+
 
 	if(isset($_GET['pos'])){
 		if($_GET['pos']=='back'){
@@ -166,61 +218,25 @@
 			if($_POST['prefix']=='Ms.') $db->updateQuery('applicants', array('gender' => 'female'), 'id='.$id);
 			else $db->updateQuery('applicants', array('gender' => 'male'), 'id='.$id);				
 				
-			ob_end_clean();
-			require_once('includes/fpdf/fpdf.php');
-			require_once('includes/fpdf/fpdi.php');
-
-			$pdf = new FPDI();
-			$pdf->AddPage();
-			$pdf->setSourceFile('includes/forms/jobOffer2015.pdf');
-			$tplIdx = $pdf->importPage(1);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-
-			$pdf->SetFont('Arial','',10);
-			$pdf->setTextColor(0, 0, 0);
-
-			$pdf->setXY(24.5, 45);
-			$pdf->Write(0, date('F d, Y'));	
-
-			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(24.5, 54);
-			$pdf->Write(0, $info['fname'].' '.$info['lname']);	
-
-			$pdf->setXY(24.5, 68);
-			$pdf->Write(0, 'Dear '.$_POST['prefix'].' '.$info['lname'].',');
-
-			$pdf->setXY(82, 92);
-			$pdf->Write(4, $_POST['position']);
-
-			$pdf->setXY(82, 100.5);
-			$pdf->Write(0, date('F d, Y',strtotime($_POST['startDate'])));
-
-			$pdf->setXY(82, 106.5);
-			$pdf->Write(0, 'Php '.number_format((int)$_POST['salary'], 2));
-
-			$pdf->setXY(82, 111);
-			$pdf->Write(4, 'Php 325.00 / month');
-			$pdf->setXY(82, 117);
-			$pdf->Write(4, 'Php 1,500.00 / month');
-			$pdf->setXY(82, 123.5);
-			$pdf->Write(4, 'Php 300.00 / month');
-			$pdf->setXY(82, 129.5);
-			$pdf->Write(4, 'Php 125.00 / month');
-			$pdf->setXY(82, 136);
-			$pdf->Write(4, 'Php 250.00 / month');
-			$pdf->setXY(82, 142);
-			$pdf->Write(4, 'Php '.number_format(((int)$_POST['salary']+'2500'),2));
-
-			$pdf->AddPage();
-			$tplIdx = $pdf->importPage(2);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-						
-			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(25, 283.5);
-			$pdf->Write(0, strtoupper($info['fname'].' '.$info['lname']));
-
-			$pdf->Output("uploads/joboffers/JobOffer".$joInsID.".pdf", "F");
-			$pdf->Output($info['lname'].$info['fname']."JobOffer.pdf", "D");
+			$from = 'careers.cebu@tatepublishing.net';
+			$to = $hiring_manager_email;
+			$applicant_name = $info['fname'].' '.$info['lname'];
+            $approve_url = HOME_URL .'editstatus.php?id='.$applicant_id.'&joID='.$joInsID.'&response';
+            $job_offer_file = 'gen_jo.php?jo_id='.$joInsID.'&method=I&appID='.$applicant_id;
+			
+			$ebody = '<p>Hi '. $hiring_manager_name .', </p>
+			<p>Job Offer to applicant '. $applicant_name .' for the position of '.$position.' has been generated.<br/>
+			You may view the job offer <a href="'.HOME_URL . $job_offer_file .'">here</a><br/>
+			If you agree with the job offer, please click the link below to approve the job offer.<br/>
+			<a href="'.$approve_url.'=Y">'.$approve_url.'=Y</a><br/>
+			Otherwise, please click the link below to deny the job offer.<br/>
+			<a href="'.$approve_url.'=N">'.$approve_url.'=N</a><br/>';			
+							
+            sendEmail( $from, $to, 'CPH Job Offer Generated for your approval', $ebody, 'Career Index Auto Email' );
+            addStatusNote($id, 'genJobOffer', 'admin', $info['position']. $ebody);
+			//end send email
+			
+			
 			
 		}else if($_POST['formSubmit']=='checklist'){
 			$uArr['pHEnrolled'] = false;
@@ -272,9 +288,43 @@
 			unlink($uploadDIR.$info[$_POST['fld']]);
 			
 			$db->updateQuery('applicants', array($_POST['fld']=>''), 'id="'.$id.'"');
-			exit;			
+						
+		} else if( isset($_POST['edit_jo']) AND isset($_POST['edit_jo_id']) ){
+			
+			//send notification to hr
+			$jo_error = array();
+			
+			$orig_jo_details = $jo_details;
+			$new_jo_details = array('offer' => str_replace(',', '', $_POST['edit_offer']), 'startDate' => $_POST['edit_startDate'] );
+			if( $new_jo_details['offer'] > $maxSal ){
+				$jo_error = array('Salary should not exceed with the maximum salary ('. $maxSal .') offered on the job requisition.');
+				$_SESSION['jo_error'] = $jo_error;
+			}
+			
+			//no error then send notification and proceed
+			if( count($jo_error) < 1 ){
+				
+				unset($_SESSION['jo_error']);
+				$_SESSION['jo_updated'] = true;
+				
+				//update jo status
+				$update_array = array('status' => 3, 'offer' => $new_jo_details['offer'], 'startDate' => $new_jo_details['startDate'] );
+				$db->updateQuery('generatedJO', $update_array, 'joID = '.$_POST['edit_jo_id']);
+				
+				$from = $hiring_manager_email;
+				$to = 'careers.cebu@tatepublishing.net';
+				$body = "
+					<p>Hiring Manager {$hiring_manager_name} has dispproved your job offer. Below updated details are approved.</p>
+					<p>Start Date: <span style='font-weight: bold; text-decoration:underline;'> {$new_jo_details['startDate']}</span></br>
+					Salary Offer: <span style='font-weight: bold; text-decoration:underline;'> {$new_jo_details['offer']}</span>
+					</p>
+					<p>If you feel that there is a problem with the above job offer, please communicate directly with hiring manager and come back here when you have come to an agreement.</p>
+					<p>Please download the approved job offer.</p>
+				";
+				sendEmail( $from, $to, 'CPH Job Offer Generated disapproved and updated', $body, $hiring_manager_name);
+				
+			} 
 		}
-		
 		
 		if(isset($_POST['formSubmit']) && $_POST['process']==4){
 			echo '<script>alert("Please input final interview schedule.");</script>';
@@ -284,6 +334,53 @@
 		exit; 
 	}
 	
+	function generateJOTable( $gen, $id ){
+		echo '
+		
+				<div style="max-width:600px; width: 400px;">
+				<h5>Generated Job Offers</h5>
+				
+				<table width="100%" cellpadding=5>					
+					<thead>
+						<th>Generated by</th>
+						<th>Offer</th>
+						<th>Start Date</th>
+						<th>Status</th>
+						<th>View</th>
+						<th>Download</th>
+					</thead>';
+				
+					$c=0;
+					foreach($gen AS $g):
+				
+						if($c==0) echo '<tr bgcolor="#ce2029" style="color:#fff; font-weight:bold;">';
+						else if($c%2==0) echo '<tr bgcolor="#dcdcdc">';
+						else echo '<tr>';
+						echo '
+								<td>'.$g['offeredBy'].' | <span style="font-size:10px;">'.$g['timestamp'].'</span></td>
+								<td>Php '.$g['offer'].'</td>
+								<td>'.date('F d, Y', strtotime($g['startDate'])).'</td>';
+								
+						switch( $g['status'] ){
+							case 0: echo '<td>waiting on approval</td>';break;
+							case 1: echo '<td>approved</td>';break;
+							case 2: echo '<td>disapproved</td>';break;
+							case 3: echo '<td>disapproved with update</td>';break;
+							
+						}
+						
+							echo '<td><a href="'.HOME_URL.'gen_jo.php?jo_id='.$g['joID'].'&method=I&appID='.$id.'" target="_blank"><img src="img/attach_file.png"></a></td>';
+							echo '<td><a href="'.HOME_URL.'gen_jo.php?jo_id='.$g['joID'].'&method=D&appID='.$id.'" target="_blank"><img src="images/view_icon.png"></a></td>';
+						
+						echo '</tr>';
+						
+						$c++;
+					endforeach;
+			
+			echo '	</table>	
+				</div>
+			';
+	}
 		
 	
 	function techTest($type, $s, $rows='3', $options=''){
@@ -359,12 +456,19 @@
 	<link rel="stylesheet" href="css/progressbar.css" type="text/css" />
 	<style type="text/css">
 		.pad5px{ padding:5px; }		
-		.gen{ display:none; }		
+		.gen{ display:none; }
+		.jo_deny {			margin-top: 15px; }
+		.jo_deny	ul { list-style: none;	}
+		.jo_deny	li { margin-bottom: 5px; display: block; }
+		.jo_deny	label { display: block; width: 50%; float: left; text-align: right; margin-right: 10px; line-height: 35px; }
+		.jo_deny	div.form_control { text-align: left; }
+		.jo_deny	span { display: block; }		
 	</style>
 	<script src="js/jquery.js"></script>
 	<!-- Date time picker -->
 	<link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css"/ >
 	<script src="js/jquery.datetimepicker.js"></script>
+	
 </head>
 <body>
 <h3>Recruitment Status of <?= ucfirst($info['fname']).' '.ucfirst($info['lname']) ?></h3>
@@ -389,8 +493,49 @@
 		</div>
 	</td></tr>	
 	<tr><td><br/></td></tr>
+	<?php if( $access_level == 2 ){ ?>
+		<tr>
+			<td align="center">
+    <?php 		
+		if( isset($joID) AND isset($response) ){			
+			generateJOTable($gen, $id);	
+			
+			if($response == 'N' AND !isset($_SESSION['jo_updated'])){ ?>
+			<div class="jo_deny">
+				<?php if( isset($_SESSION['jo_error']) ) {
+					foreach( $_SESSION['jo_error'] AS $error ){
+						echo '<p style="font-weight: bold; color: #f00;">'.nl2br($error).'</p>';
+					}
+					
+				} else if( isset($_SESSION['jo_updated']) ){
+					echo '<p style="font-weight: bold; color: #f00;">Job Offer has been updated.</p>';
+				} ?>
+				<form name="jo_deny" action="" method="post">
+				<input type="hidden" name="edit_jo_id" value="<?php echo $jo_id; ?>" />
+					<ul>
+						<li><span style="font-weight: bold;">Edit details of Job Offer:</span></li>
+						<li>
+							<label for="edit_start_date">Start date:</label> 
+							<div class="form_control"><input type="date"  name="edit_startDate" value="<?php echo isset($_POST['edit_startDate']) ? $_POST['edit_startDate'] : $jo_details['startDate']; ?>" placeholder="<?php echo isset($_POST['edit_startDate']) ? $_POST['edit_startDate'] : $jo_details['startDate']; ?>" id="edit_start_date" ></div>
+						</li>
+						<li>
+							<label for="edit_salary">Salary offer:</label> 
+							<div class="form_control">
+								<input type="text" name="edit_offer" value="<?php echo isset($_POST['edit_offer']) ? $_POST['edit_offer'] : $jo_details['offer']; ?>" placeholder="<?php echo isset($_POST['offer']) ? $_POST['edit_offer'] : $jo_details['offer']; ?>" id="edit_salary" >
+							</div>
+						</li>
+						<li><input type="submit" name="edit_jo" value="Submit" /></li>
+						<li><span style="color: red; font-style: italic">Note: Hiring Manager cannot enter salary offer that is greater than the maximum job offer indicated in the job requisition.<br/><br/>Contact <a href="mailto:careers.cebu@tatepublishing.net">Recruitment</a> for assistance.</span></li>
+					</ul>
+				</form>
+			</div>
+			<?php }	} ?>
+
+			</td>
+		</tr>
+	<?php } ?>
 	<tr><td align="center">
-	<?php if($info['process']<6 && $info['processStat']>0){ ?>
+	<?php if($info['process']<6 && $info['processStat']>0 AND $access_level == $authorized_access_level){ ?>
 		<div style="margin-bottom:10px;">
 		<?php
 			if($info['process']>0 || ($info['process']==5 && $info['agencyID']==0)) echo '<button id="rep" class="pad5px">Reprofile</button>&nbsp;&nbsp;&nbsp;';
@@ -399,7 +544,7 @@
 			if($info['process']==5 && $info['agencyID']==0) echo '&nbsp;&nbsp;&nbsp;<button id="agencyhire" class="pad5px">Hire through Agency</button>';
 		?>
 		</div>
-	<?php }else if($info['processStat']==0 && $info['processText']=='Failed Final Interview'){ echo '<button id="rep" class="pad5px">Reprofile</button>'; } ?>
+	<?php }else if($info['processStat']==0 && $info['processText']=='Failed Final Interview' AND $access_level == $authorized_access_level){ echo '<button id="rep" class="pad5px">Reprofile</button>'; } ?>
 	
 		<?php //REPROFILE DIV ?>
 		<div id="reprofile" style="display:none;">
@@ -476,7 +621,7 @@
 			</form>
 		</div>
 	<?php
-		if($info['process']==5 || $info['process']==6){
+		if($info['process']==5 || $info['process']==6 AND $access_level == $authorized_access_level){
 			$usernameTest = 1;
 			$shortFirst = 0;
 			$number = 0;
@@ -510,13 +655,13 @@
 		}
 		
 		//IF CANCELLED APPLICATION
-		if($info['process']<6 && $info['processStat']==0){ 
+		if($info['process']<6 && $info['processStat']==0 AND $access_level == $authorized_access_level){ 
 	?>
 		<div>
 			<?php if(!empty($info['processText'])){ echo '<b>Status:</b> '.$info['processText'].'</br>';} ?>
 			<b>Application has been cancelled.</b>
 		</div>
-		<?php }else if($info['process']<=6){
+		<?php }else if($info['process']<=6 AND $access_level == $authorized_access_level){
 			//THIS IS THE PROCESS
 		?>
 			<div id="processDiv" style="margin-top:20px;">
@@ -567,7 +712,7 @@
 					
 					$isTestEmpty = $tests;
 					echo '<input type="hidden" id="processTests" value="'.$tests.'"/>';
-				}else if($info['process']==4){ //FINAL INTERVIEWING STATUS
+				}else if($info['process']==4 AND $access_level == $authorized_access_level){ //FINAL INTERVIEWING STATUS
 									
 					if(!empty($info['interviewSched'])){ 
 						$intDetails = explode('|', $info['interviewSched']);
@@ -689,9 +834,9 @@
 				
 						$jo = $db->selectSingleQueryArray('jobReqData', 'salary, startDate' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON minSal=salID');
 						$joStat = $db->selectSingleQuery('processStatusData', 'testStatus' , 'appID="'.$id.'" AND type="jobOffer" AND positionID='.$info['position']);
-						$maxSal = $db->selectSingleQuery('jobReqData', 'salary' , 'status=0 AND positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON maxSal=salID');
+						
 					
-						$gen = $db->selectQueryArray('SELECT * FROM generatedJO WHERE appID='.$id.' ORDER BY timestamp DESC');
+						
 					//NORMAL JOB OFFER VIEW
 					?>
 					<div id="genjobofferdiv">
@@ -738,46 +883,18 @@
 							<tr class="gen">
 								<td><br/></td><td><input type="submit" name="formSubmit" value="<? if(count($gen)==0){ echo 'Generate'; }else{ echo 'Regenerate'; } ?>"/></td>
 							</tr>
-						<?php if(count($gen)>0){ ?>
-							<tr>
-								<td colspan=2>		
-									<h5>Generated Job Offers</h5>
-									<table width="100%" cellpadding=5>					
-										<thead>
-											<th>Generated by</th>
-											<th>Offer</th>
-											<th>Start Date</th>
-											<th>View</th>
-										</thead>
-									<?php
-										$c=0;
-										foreach($gen AS $g):
-											if($c==0) echo '<tr bgcolor="#ce2029" style="color:#fff; font-weight:bold;">';
-											else if($c%2==0) echo '<tr bgcolor="#dcdcdc">';
-											else echo '<tr>';
-											echo '
-													<td>'.$g['offeredBy'].' | <span style="font-size:10px;">'.$g['timestamp'].'</span></td>
-													<td>Php '.$g['offer'].'</td>
-													<td>'.date('F d, Y', strtotime($g['startDate'])).'</td>';
-											
-											$filename = 'uploads/joboffers/JobOffer'.$g['joID'].'.pdf';
-											if(file_exists($filename))
-												echo '<td><a href="'.HOME_URL.$filename.'" target="_blank"><img src="img/attach_file.png"></a></td>';
-											else
-												echo '<td><br/></td>';
-											
-											echo '</tr>';
-											
-											$c++;
-										endforeach;
-									?>
-									</table>							
-								</td>
-							</tr>
-						<?php } ?>						
+						<?php if(count($gen)>0){  ?>
+						<tr>
+							<td colspan=2>	
+						<?php 
+							generateJOTable( $gen, $id );
+						?>
+						</td>
+		</tr>
+						 <?php } ?>						
 							
 							<tr <?= empty($joStat) ? '': 'class="gen"'?>><td colspan=2><hr/></td></tr>	
-							<?php echo techTest('jobOffer', 1, '8', 'accepted|declined'); ?>						
+							<?php if( $access_level == $authorized_access_level ){ echo techTest('jobOffer', 1, '8', 'accepted|declined'); } ?>						
 						</table>
 						</form>
 						<?php
@@ -807,7 +924,8 @@
 								}							
 							}
 							
-						?>					
+						?>		
+<?php if( $access_level == $authorized_access_level ){	 ?>					
 						<form method="POST" action="">
 							<table width="40%">
 								<tr><td colspan=2><h4>Checklist</h4></td></tr>
@@ -834,7 +952,7 @@
 							<input type="hidden" name="appID" value="<?= $id ?>"/>
 							<input type="submit" value="Update Checklist" class="btn btn-xs btn-warning">
 						</form>
-						<? } ?>
+<? } } ?>
 					</div>	<?php //END OF genjobofferdiv ?>
 				<?php } ?>				
 				<?php
@@ -991,7 +1109,7 @@
 					}
 				}
 			?>
-			
+			<?php if( $access_level == $authorized_access_level ) { ?>
 			<form action="" method="POST" onSubmit="return validateAdvance()">	
 				<div style="margin-top:15px;" id="advanceProcessDiv">
 					<input type="hidden" name="formSubmit" value="advanceProcess"/>	
@@ -999,7 +1117,7 @@
 					<input type="submit" value='Advance to "<?= $recProcess[$info['process']+1]['processType'] ?>"' class="btn btn-primary">
 				</div>
 			</form>
-			<?php } ?>		
+			<?php } } ?>		
 	<?php } ?>
 					
 	</td></tr>	

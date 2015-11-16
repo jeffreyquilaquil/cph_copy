@@ -492,7 +492,7 @@
 			sval = $(this).val();
 			$('#sanction').val(sval);
 				
-			if(sval.contains("suspension")){
+			if(sval.indexOf("suspension") > -1){
 				$('#selectD').removeClass('hidden');	
 				for(i=1; i<=10; i++){
 					$('#date'+i).addClass('hidden');
@@ -561,9 +561,8 @@
 					}
 				}
 				
-				sval = $('#lightsanc').val();						
-				if(sval.contains("suspension")){			
-					
+				sval = $('#lightsanc').val();			
+				if(sval.indexOf("suspension") > -1){						
 					if($('#date1').val()==''){
 						validtxt += 'Date 1 is empty.\n';
 					}
