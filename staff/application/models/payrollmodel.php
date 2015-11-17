@@ -259,16 +259,15 @@ class Payrollmodel extends CI_Model {
 	public function getNightDiffTime($q){
 		$nightdiff = 0;
 		$arr = array(0,1,2,3,4,5,6,22,23);
-		/* $q = (object) array('schedIn'=>'2015-11-12 04:00:00', 
-							'schedOut'=>'2015-11-12 14:00:00',
-							'timeIn' => '2015-11-12 04:02:12', 
-							'timeOut'=>'2015-11-12 14:50:00'
-							); */
+	
+		$start = '0000-00-00 00:00:00';
+		$end = '0000-00-00 00:00:00';
+		
 		//if no schedule change
-		if($q->schedIn=='0000-00-00 00:00:00'){
+		if($q->schedIn=='0000-00-00 00:00:00' && $q->timeIn!='0000-00-00 00:00:00' && $q->timeOut!='0000-00-00 00:00:00'){
 			$start = date('Y-m-d H:00:00', strtotime($q->timeIn));
 			$end = date('Y-m-d H:00:00', strtotime($q->timeOut));			
-		}else{
+		}else if($q->timeIn!='0000-00-00 00:00:00' && $q->timeOut!='0000-00-00 00:00:00'){
 			$start = $q->timeIn;
 			$end = $q->timeOut;
 		}

@@ -45,7 +45,7 @@
 					
 					
 					echo '<tr>';
-						echo '<td><a href="'.$this->config->base_url().'timecard/timelogs/'.$d->empID_fk.'/?d='.$d->slogDate.'" target="_blank">'.$d->name.'</a></td>';
+						echo '<td><a href="'.$this->config->base_url().'timecard/'.$d->empID_fk.'/timelogs/" target="_blank">'.$d->name.'</a></td>';
 						echo '<td>'.$sched.'</td>';							
 						echo '<td>';
 							echo $timeOut;

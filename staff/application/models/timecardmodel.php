@@ -24,6 +24,17 @@ class Timecardmodel extends CI_Model {
 		return $val;
 	}
 	
+	//returns an array of empID
+	public function getTestUsers(){
+		$users = array();
+		
+		$query = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk');
+		foreach($query AS $q)
+			$users[] = $q->empID_fk;
+			
+		return $users;
+	}
+	
 	function getTodayBetweenSchedCondition($start, $end){
 		if($start==$end){
 			return '( (("'.$start.'" BETWEEN effectivestart AND effectiveend) AND effectiveend!="0000-00-00")
@@ -289,6 +300,8 @@ class Timecardmodel extends CI_Model {
 	public function getNumDetailsAttendance($dateToday, $type, $condition=''){
 		$flds = '';
 		
+		$condition .= ' AND empID_fk IN ('.implode(',', $this->timeM->getTestUsers()).')';
+		
 		$query = '';
 		if($type=='absent'){
 			$flds = ', schedIn, schedOut, timeIn, timeOut';
@@ -395,7 +408,7 @@ class Timecardmodel extends CI_Model {
 		
 		//ABSENT
 		$condition .= ' OR ';
-		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00" AND schedOut<"'.date('Y-m-d H:i:s').'")';
+		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00" AND DATE_ADD(schedOut, INTERVAL '.$this->timeM->timesetting('outLate').')<"'.date('Y-m-d H:i:s').'")';
 		
 		$condition .= ')';
 		
@@ -539,8 +552,6 @@ class Timecardmodel extends CI_Model {
 		$ins['dateUpdated'] = $ins['dateRequested'];
 		$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
 	}
-	
-	
 	
 	
 	
