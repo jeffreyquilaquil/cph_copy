@@ -290,6 +290,9 @@ class Schedules extends MY_Controller {
 								$upp['schedIn'] = $schdArr['start'];
 								$upp['schedOut'] = $schdArr['end'];
 								$upp['schedHour'] = $arr['timeHours'];
+								$upp['datePublished'] = '0000-00-00 00:00:00';
+								$upp['publishBy'] = '';
+								$upp['publishTimePaid'] = 0;
 								$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$dailyLogID), $upp);		
 							}else{
 								$schedToday = $this->timeM->getCalendarSchedule($arr['dateToday'], $arr['dateToday'], $data['empID'], true);
@@ -311,6 +314,8 @@ class Schedules extends MY_Controller {
 			$data['schedToday'] = $this->timeM->getSchedToday($data['empID'], $data['today']);
 		}
 		
+		$data['staffInfo'] = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname," ",lname) AS name', 'empID="'.$data['empID'].'"');
+		 
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	

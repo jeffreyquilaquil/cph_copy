@@ -224,7 +224,7 @@
 				</select>		
 			</td>
 		</tr>
-	<?php if($row->offenselevel<3){ ?>
+	<?php if(strpos($sanction, 'Day') !== false){ ?>
 		<tr class="yesproceed">
 			<td class="formlabel">Select number of suspension dates</td>
 			<td>
@@ -237,7 +237,7 @@
 			?>
 			</td>
 		</tr>
-	<?php }else{ ?>
+	<?php }else if($sanction=='Termination'){ ?>
 			<tr class="yesproceed">
 				<td class="formlabel">Select effective date of separation. <br/>
 				<span style="color:#aaa">(REMEMBER: Effective Date of Separation is the day after the last working day of the employee.)</span></td>
@@ -492,7 +492,7 @@
 			sval = $(this).val();
 			$('#sanction').val(sval);
 				
-			if(sval.contains("suspension")){
+			if(sval.indexOf("suspension") > -1){
 				$('#selectD').removeClass('hidden');	
 				for(i=1; i<=10; i++){
 					$('#date'+i).addClass('hidden');
@@ -521,7 +521,9 @@
 		if($('#satisfactory').val()==0){ 
 			if($('#psanction').val()=='1'){
 				slevel = $('#sancLevel').val();
-				if(slevel==1 || slevel==2){
+				sanction = 	$('#sanction').val();
+				
+				if(sanction.indexOf("Day") > -1){
 					cnt = 0;
 					$('.suspensionDates').each(function(){
 						if($(this).val() != '')
@@ -559,9 +561,8 @@
 					}
 				}
 				
-				sval = $('#lightsanc').val();						
-				if(sval.contains("suspension")){			
-					
+				sval = $('#lightsanc').val();			
+				if(sval.indexOf("suspension") > -1){						
 					if($('#date1').val()==''){
 						validtxt += 'Date 1 is empty.\n';
 					}

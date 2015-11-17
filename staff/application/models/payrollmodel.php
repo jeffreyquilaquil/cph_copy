@@ -252,24 +252,41 @@ class Payrollmodel extends CI_Model {
 		}
 	}
 	
+	/**********
+		Accepts timeIn, timeOut, schedIn, schedOut
+		Computes night differential number of hours
+	**********/
 	public function getNightDiffTime($q){
-		$nightdiff = 0;		
-				
-		if(date('Y-m-d', strtotime($q->schedIn)) == date('Y-m-d', strtotime($q->schedOut))){
-			$start = date('Y-m-d 00:15:00', strtotime($q->slogDate));
-			$end = date('Y-m-d 06:00:00', strtotime($q->slogDate));
-		}else{
-			$start = date('Y-m-d 22:15:00', strtotime($q->slogDate));
-			$end = date('Y-m-d 06:00:00', strtotime($q->slogDate.' +1 day'));
+		$nightdiff = 0;
+		$arr = array(0,1,2,3,4,5,6,22,23);
+	
+		$start = '0000-00-00 00:00:00';
+		$end = '0000-00-00 00:00:00';
+		
+		//if no schedule change
+		if($q->schedIn=='0000-00-00 00:00:00' && $q->timeIn!='0000-00-00 00:00:00' && $q->timeOut!='0000-00-00 00:00:00'){
+			$start = date('Y-m-d H:00:00', strtotime($q->timeIn));
+			$end = date('Y-m-d H:00:00', strtotime($q->timeOut));			
+		}else if($q->timeIn!='0000-00-00 00:00:00' && $q->timeOut!='0000-00-00 00:00:00'){
+			$start = $q->timeIn;
+			$end = $q->timeOut;
 		}
 		
-		while($start<$end){
-			if($start>=$q->timeIn && $start<=$q->timeOut){
+		$startLate = date('Y-m-d H:15:00', strtotime($start));	
+		//while checks if included in array, belongs to the schedule and not late
+		while($start<=$end){
+			if(in_array(date('G', strtotime($start)), $arr) && 
+				$start >= $q->schedIn && $start <= $q->schedOut &&
+				$start<date('Y-m-d H:15:00', strtotime($start))
+			){
 				$nightdiff++;
 			}
 			
-			$start = date('Y-m-d H:15:s', strtotime($start.' +1 hour'));
+			$start = date('Y-m-d H:00:00', ( strtotime($start.' +1 hour')));
 		}
+		
+		//minus night diff for the complete 1 hour
+		if($nightdiff>0) $nightdiff--;	
 		
 		///night diff minus 1 hour for 1 hour break
 		if($nightdiff>4) $nightdiff--; 
