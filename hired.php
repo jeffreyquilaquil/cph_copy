@@ -1,4 +1,6 @@
 <?php
+
+ini_set('display_errors', 1);
 require 'config.php';
 
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
@@ -6,6 +8,31 @@ if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	exit();
 } 
 
+
+//for files uploaded
+if(isset($_FILES) AND !empty($_FILES)){
+	
+	$tmp_id_filename = 'tmp_id_'.$_POST['username'];
+	$full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $_POST['username'];
+	
+	//upload signature
+	if( isset($_FILES['e_signature']) AND !empty($_FILES['e_signature']['name']) ){
+		$uploaded_file_signature = upload_file( $_FILES['e_signature'], 'signature', $full_path );
+	} 
+	if( isset($_FILES['e_photo']) AND !empty($_FILES['e_photo']['name']) ){
+		$uploaded_file_id = upload_file( $_FILES['e_photo'], $tmp_id_filename, $full_path );
+	}	
+	
+	$signature_file =  $uploaded_file_signature;
+	$tmp_id_file = $uploaded_file_id;
+
+	
+	$sig_dimension = getimagesize($signature_file);
+	
+	
+	
+}
+	
 
 if(isset($_POST) AND !empty($_POST)){
 	date_default_timezone_set("Asia/Manila");
@@ -66,6 +93,9 @@ if(isset($_POST) AND !empty($_POST)){
 		$postSuccess = 'no';
 		$postError .= '-  TIN number is not unique.<br/>';
 	}
+	
+	//upload esignature to staff data and id to be used
+	
 	
 	if($postSuccess=='yes'){
 		if($_POST['office']== 'cebu') $s = 'PH-Cebu';
@@ -190,6 +220,74 @@ if(isset($_POST) AND !empty($_POST)){
 					Thanks!
 				</body>
 				</html>";
+		
+		//once we all have our data then we can create now the template for temporary ID
+		//generate tmp ID
+		if( file_exists($uploaded_file_id) ){
+			
+			ob_end_clean();
+			require_once('includes/fpdf/fpdf.php');
+			require_once('includes/fpdf/fpdi.php');
+			$pdf = new FPDI();
+			$pdf->AddPage();
+			$pdf->setSourceFile('includes/forms/temp_id_template.pdf');
+			$tplIdx = $pdf->importPage(1);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+
+			$pdf->SetFont('Arial','',6);
+			$pdf->setTextColor(0, 0, 0);
+			
+			$pdf->setXY(42, 34);
+			$pdf->Write(0, $_POST['startdate']);
+			//hbd
+			$pdf->setXY(41, 38.5);		
+			$pdf->Write(0, $hire['bdate'] );
+			
+			$pdf->setXY(41, 42.5);		
+			$pdf->Write(0, $_POST['sss'] );
+			
+			$pdf->setXY(41, 47);		
+			$pdf->Write(0, $_POST['philhealth'] );
+			
+			$pdf->setXY(42, 51);		
+			$pdf->Write(0, $_POST['hdmf'] );
+			
+			$pdf->setXY(40, 55.5);		
+			$pdf->Write(0, $_POST['tin'] );
+			
+			$pdf->setXY(80, 34);		
+			$pdf->Write(0, $_POST['e_contact_person'] );
+			
+			$pdf->setXY(82, 38.5);		
+			$pdf->Write(0, $_POST['e_contact_address'] );
+			
+			$pdf->setXY(84, 42.5);		
+			$pdf->Write(0, $_POST['e_contact_number'] );
+			
+			$pdf->setXY(85, 47);		
+			$pdf->Write(0, $_POST['e_contact_relationship'] );
+			
+			$pdf->SetFont('Arial','B',9);
+			//$pdf->setTextColor(255, 255, 255);
+			$pdf->setTextColor(0, 0, 0);	
+			
+			$full_name = strtoupper( $hire['fname'] .' ', $hire['lname'] );
+			$pdf->setXY(67, 118);		
+			$pdf->Write(0, $full_name );
+			
+			//picture
+			$pdf->Image($tmp_id_file, 36, 96, -88, -110);
+			
+			$pdf->Image($signature_file, 70, 125);
+			
+			
+			$pdf->Output($full_path. '/' .$tmp_id_filename.'.pdf', 'F');
+			$pdf->Output($tmp_id_filename.'.pdf', 'D');
+			
+		}
+					
+				
+		
 		sendEmail( $from, $to, $subject, $body, 'Career Index Auto Email' );
 		
 		$Abody = '

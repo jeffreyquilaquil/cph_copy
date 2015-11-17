@@ -272,4 +272,17 @@ function decryptText($text){
 	return $text;
 }
 
-?>
+function upload_file( $tmp_filename, $new_filename, $location ){
+	
+	if( !file_exists( $location ) ){
+		mkdir( $location, 0755, true);
+		chmod( $location, 0777 );
+	}
+	$path = pathinfo( $tmp_filename['name'] );	
+	$new_filename = $new_filename .'.'.$path['extension'];
+	$full_filename = $location . '/' . $new_filename;
+	move_uploaded_file( $tmp_filename['tmp_name'], $full_filename );
+	return $full_filename;	
+}
+
+
