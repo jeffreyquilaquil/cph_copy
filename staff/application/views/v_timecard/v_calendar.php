@@ -1,7 +1,7 @@
 <div style="margin-top:10px;">
 <?php
 	if($this->access->accessFullHR==true){
-		echo '<button class="btnclass btngreen iframe" href="'.$this->config->base_url().'schedules/setschedule/'.$visitID.'/">+ Add Schedule</button><hr/>';
+		echo '<a href="'.$this->config->base_url().'schedules/setschedule/'.$visitID.'/" class="iframe"><button class="btnclass btngreen">+ Add Schedule</button></a><hr/>';
 	}
 		
 			

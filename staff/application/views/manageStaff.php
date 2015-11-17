@@ -99,7 +99,7 @@
 						
 						if($this->access->accessFull==true){
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/">Admin Settings</a></li>
-							<li><a class="iframe2" href="'.$this->config->base_url().'schedules/setstaffschedule/'.$row->empID.'/">Set Schedule</a></li>';
+							<li><a class="iframe2" href="'.$this->config->base_url().'schedules/setschedule/'.$row->empID.'/">Set Schedule</a></li>';
 						}
 							
 				echo 	'</ul>

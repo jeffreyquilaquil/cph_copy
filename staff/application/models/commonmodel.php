@@ -308,7 +308,7 @@ class Commonmodel extends CI_Model {
 	function customTimeArrayByCat(){
 		$timeArr = array();
 		//$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', '*', 1, '', 'timeValue');
-		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'tcCustomSchedTime.*, SUBSTRING(timeValue, 1, 8) AS str', 1);
+		$schedTimes = $this->dbmodel->getQueryResults('tcCustomSchedTime', 'tcCustomSchedTime.*, SUBSTRING(timeValue, 1, 8) AS str', 'status=1');
 		
 		foreach ($schedTimes AS $key => $row) {
 			$volume[$key]  = date('H:i:s', strtotime($row->str));

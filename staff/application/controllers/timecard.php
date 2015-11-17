@@ -39,7 +39,14 @@ class Timecard extends MY_Controller {
 	}
 		
 	public function timetest(){	
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-03');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-09');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-10');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-11');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-12');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-13');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-14');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-16');
+		$this->timeM->cntUpdateAttendanceRecord('2015-11-17');
 		//$this->timeM->publishLogs();
 		exit;
 	}
@@ -879,7 +886,11 @@ class Timecard extends MY_Controller {
 				$proudpage = $this->uri->segment(3);
 				if(empty($proudpage)) $proudpage = 'unpublishedlogs';
 				
-				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 'publishBy="" AND slogDate!="'.$data['currentDate'].'"', 'LEFT JOIN staffs ON empID=empID_fk');
+				$testUsers = $this->timeM->getTestUsers();///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
+					'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 
+					'publishBy="" AND slogDate!="'.$data['currentDate'].'" AND empID_fk IN ('.implode(',', $testUsers).')', 
+					'LEFT JOIN staffs ON empID=empID_fk');
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
 				if($proudpage=='logpendingrequest'){
@@ -901,7 +912,7 @@ class Timecard extends MY_Controller {
 		$id = $data['visitID'];
 		
 		$data['dir'] = 'uploads/timecard/timeloguploaddocs/';
-		
+			
 		if(!empty($_POST)){
 			if($_POST['submitType']=='updateReq'){				
 				$upArr['status'] = $_POST['status'];

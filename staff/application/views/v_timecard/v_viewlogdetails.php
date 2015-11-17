@@ -313,15 +313,15 @@
 		echo '<form id="formpublish" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
 		echo '<table id="tblpublishlog" class="tableInfo" style="margin:10px 0; background-color:#ffb2b2;">';
 			echo '<tr class="trlabel"><td colspan=2>REVIEW PUBLISH DETAILS</td></tr>';
-			echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' Hours</td></tr>';
+			echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' '.(($dataLog->schedHour>1)?'Hours':'Hour').'</td></tr>';
 			if($dataLog->offsetHour>0){
-				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' Hours '.((isset($offsetinvalid))?'<span class="errortext">Offset forfeited</span>':'').'</td></tr>';
+				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' '.(($dataLog->offsetHour>1)?'Hours':'Hour').' '.((isset($offsetinvalid))?'<span class="errortext">Offset forfeited</span>':'').'</td></tr>';
 				if(isset($offsetinvalid)) $deductionHour += $dataLog->offsetHour;
 			}
 				
 			if($deductionHour>0)
 				echo '<tr><td>Total Deducted Hours</td><td>'.$deductionHour.' '.(($deductionHour>1)?'Hours':'Hour').' '.((isset($isOffset))?'<span class="errortext">If leave type is offset and leave today with approved WITH pay, please publish with 0 hour </span>':'').'</td></tr>';
-			
+
 			$totalpaid = $dataLog->schedHour-$deductionHour;
 			if($totalpaid<0) $totalpaid = 0;
 			echo '<tr><td>Total Paid Hours</td><td>'.$this->textM->formfield('number', 'publishTimePaid', $totalpaid, 'forminput', '', 'required').'</td></tr>';

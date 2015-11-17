@@ -29,7 +29,7 @@
 		
 		
 		echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
-		echo '<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="20px"/></a>';
+		echo '<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
 		
 		echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
 	?>
