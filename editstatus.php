@@ -65,8 +65,10 @@
 				<p>Job Offer for Job Req {$jo_reg_id} {$position}, {$info['fname']} {$info['lname']} is approved by hiring manager {$hiring_manager_name}</p>
 				<p>Go to CPH recruitment manager, download the approved generated job offer and schedule job offer with the applicant.</p>
 			";
-            sendEmail( $from, $to, 'CPH Job Offer Generated Approved by the Hiring Manager', $body, $hiring_manager_name);
-            addStatusNote($id, 'genJobOffer', 'admin', $position, $body);
+			$subject = 'CPH Job Offer Generated Approved by the Hiring Manager';
+            sendEmail( $from, $to, $subject, $body, $hiring_manager_name);
+			addEmailStatusNote( $id, $subject, $hiring_manager_email, $body);
+            
 		}
 		$db->updateQuery('generatedJO', $update_array, 'joID = '.$joID);
 	}
@@ -231,21 +233,24 @@
 			<a href="'.$approve_url.'=Y">'.$approve_url.'=Y</a><br/>
 			Otherwise, please click the link below to deny the job offer.<br/>
 			<a href="'.$approve_url.'=N">'.$approve_url.'=N</a><br/>';			
-							
-            sendEmail( $from, $to, 'CPH Job Offer Generated for your approval', $ebody, 'Career Index Auto Email' );
-            addStatusNote($id, 'genJobOffer', 'admin', $info['position']. $ebody);
+			
+			$subject = 'CPH Job Offer Generated for your approval';
+            sendEmail( $from, $to, $subject, $ebody, 'Career Index Auto Email' );			
+            addEmailStatusNote($id, $subject, $to, $ebody);
 			//end send email
 			
 			
 			
-		}else if($_POST['formSubmit']=='checklist'){
+		}else if($_POST['formSubmit']=='checklist'){	
+		
 			$uArr['pHEnrolled'] = false;
 			$uArr['pHBDay'] = false;
 			$uArr['pHCompensation'] = false;
 			$uArr['batchID'] = false;
 			$uArr['referral'] = false;
 			$uArr['pictureTaken'] = false;
-			$uArr['biometricsEnrolled'] = false;
+			$uArr['biometricsEnrolled'] = false;	
+			
 			if(isset($_POST['pHEnrolled']) && $_POST['pHEnrolled']=='on') $uArr['pHEnrolled'] = true;
 			if(isset($_POST['pHBDay']) && $_POST['pHBDay']=='on') $uArr['pHBDay'] = true;
 			if(isset($_POST['pHCompensation']) && $_POST['pHCompensation']=='on') $uArr['pHCompensation'] = true;
@@ -321,7 +326,9 @@
 					<p>If you feel that there is a problem with the above job offer, please communicate directly with hiring manager and come back here when you have come to an agreement.</p>
 					<p>Please download the approved job offer.</p>
 				";
-				sendEmail( $from, $to, 'CPH Job Offer Generated disapproved and updated', $body, $hiring_manager_name);
+				$subject = 'CPH Job Offer Generated disapproved and updated';
+				sendEmail( $from, $to, $subject, $body, $hiring_manager_name);
+				addEmailStatusNote( $id, $subject, $hiring_manager_email, $body);
 				
 			} 
 		}
@@ -926,7 +933,7 @@
 							
 						?>		
 <?php if( $access_level == $authorized_access_level ){	 ?>					
-						<form method="POST" action="">
+						<form method="POST" action="" enctype="multipart/form-data">
 							<table width="40%">
 								<tr><td colspan=2><h4>Checklist</h4></td></tr>
 								<tr><td width="10%" valign="top"><input type="checkbox" name="pHEnrolled" id="pHEnrolled" <? if($info['pHEnrolled']){ echo 'checked'; } ?>/></td><td>Enrolled in PayrollHero<br/>
@@ -947,7 +954,10 @@
 								</td></tr>
 								<tr><td><input type="checkbox" name="biometricsEnrolled" id="biometricsEnrolled" <? if($info['biometricsEnrolled']){ echo 'checked'; } ?>/></td><td>Biometrics Enrolled</td></tr>							
 								<tr><td><input type="checkbox" name="referral" id="referral" <? if($info['referral']){ echo 'checked'; } ?>/></td><td>Employee Referral Program (<a href="http://goo.gl/BEK3q3">http://goo.gl/BEK3q3</a>)</td></tr>
+								
+								
 							</table>
+							<input type="hidden" name="potentail_username" value="<?php echo $potentialUsername; ?>" /> 
 							<input type="hidden" name="formSubmit" value="checklist"/>
 							<input type="hidden" name="appID" value="<?= $id ?>"/>
 							<input type="submit" value="Update Checklist" class="btn btn-xs btn-warning">
@@ -974,7 +984,7 @@
 						</div>
 				<?php } ?>
 					<p><button class="pad5px" onClick="window.location.href='editstatus.php?id=<?= $id ?>&pos=back&stat=5'">Back to Job Offer</button></p>
-					<form action="hired.php?id=<?= $id ?>" method="POST" onSubmit="return validateForm(<?=$info['isNew'] ?>);">
+					<form action="hired.php?id=<?= $id ?>" method="POST" onSubmit="return validateForm(<?=$info['isNew'] ?>);" enctype="multipart/form-data">
 					<table border=0 cellspacing=0 cellpadding=0 width="80%">	
 						<tr>
 							<td width="40%">Username *</td>
@@ -1003,11 +1013,11 @@
 						</tr>
 						<tr>
 							<td>Position Title</td>
-							<td><input type="text" value="<?= $info['title'] ?>" class="form-control" disabled></td>
+							<td><input type="text" value="<?= $info['title'] ?>" class="form-control" readonly></td>
 						</tr>
 						<tr>
 							<td>Start Date *</td>
-							<td><input type="text" name="startdate" id="startdate" class="form-control datepick" value="<?= date('F d, Y', strtotime($startD)); ?>" disabled></td>
+							<td><input type="text" name="startdate" id="startdate" class="form-control datepick" value="<?= date('F d, Y', strtotime($startD)); ?>" readonly ></td>
 						</tr>
 						<tr>
 							<td>Shift *</td>
@@ -1080,6 +1090,37 @@
 						<tr>
 							<td>HDMF</td>
 							<td><input type="text" name="hdmf" id="hdmf" value="<? if(isset($_POST['hdmf'])){ echo $_POST['hdmf']; } ?>" class="form-control" placeholder="0000-0000-0000"/></td>
+						</tr>
+						
+						<tr>
+							<td>Upload eSignature</td>
+							<td>
+								<input type="file" name="e_signature" id="e_signature" />
+							</td>
+						</tr>
+						<tr>
+							<td>Upload photo for temporary ID</td>
+							<td><input type="file" name="e_photo" id="e_photo" /></td> 
+						</tr>
+						<tr>
+							<td><b>Emergency Contact Person</b></td>
+							<td><br/></td>
+						</tr>
+						<tr>
+							<td>Name</td>
+							<td><input type="text" name="e_contact_person" id="e_contact_person"  class="form-control" placeholder="Name" /></td> 
+						</tr>
+						<tr>
+							<td>Address</td>
+							<td><input type="text" name="e_contact_address" id="e_contact_address" class="form-control" placeholder="Address" /></td> 
+						</tr>
+						<tr>
+							<td>Contact #</td>
+							<td><input type="number" name="e_contact_number" id="e_contact_number" class="form-control" placeholder="Contact #" /></td> 
+						</tr>
+						<tr>
+							<td>Relationship</td>
+							<td><input type="text" name="e_contact_relationship" id="e_contact_relationship" class="form-control" placeholder="Relationship" /></td> 
 						</tr>
 						<tr>
 							<td colspan=2 align="right">Fields with (*) are required fields.</td>
@@ -1241,7 +1282,7 @@
 					$("#batchID").prop('checked') == false ||
 					$("#referral").prop('checked') == false ||
 					$("#pictureTaken").prop('checked') == false ||
-					$("#biometricsEnrolled").prop('checked') == false
+					$("#biometricsEnrolled").prop('checked') == false 
 				){
 					valid = false;
 					alert('Unable to advance to the next status.  Please check checklist.');
