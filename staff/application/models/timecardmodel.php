@@ -545,7 +545,7 @@ class Timecardmodel extends CI_Model {
 	public function addToLogUpdate($empID, $logDate, $message){
 		$ins['empID_fk'] = $empID;
 		$ins['logDate'] = $logDate;
-		$ins['message'] = $message;
+		$ins['message'] = addslashes($message);
 		$ins['status'] = 0;
 		$ins['dateRequested'] = date('Y-m-d H:i:s');
 		$ins['updatedBy'] = $this->user->username;

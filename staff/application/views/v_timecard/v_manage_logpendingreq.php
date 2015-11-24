@@ -1,3 +1,5 @@
+<?php $this->load->view('includes/header_searchemployee'); ?>
+
 <h2>Manage Timecard - Timelog Pending Requests</h2>
 <hr/>
 <?php

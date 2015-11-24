@@ -1,3 +1,5 @@
+<?php $this->load->view('includes/header_searchemployee'); ?>
+
 <h2>Manage Payroll</h2>
 <hr/>
 
@@ -14,18 +16,13 @@
 <div id="silay" style="display:none; width:100%">
 	<form id="formManage" action="<?= $this->config->base_url() ?>timecard/payrollmanagement/" method="POST" style="margin:10px 0px;">
 	<?php
-		echo $this->textM->formfield('selectoption', 'type', 'generatepayslip', 'padding5px', '', '', $this->textM->constantArr('managePayOptions'));
-		echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', $this->textM->constantArr('payrollType'));
-		
-		/* echo ' <b>for the period</b> ';
-		echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
-		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required'); */
+		echo $this->textM->formfield('selectoption', 'type', '', 'padding5px', '', 'required', $this->textM->constantArr('managePayOptions'));
+		echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
 		
 		echo ' <b>for the period</b> ';
-		echo $this->textM->formfield('text', 'start', date('F d, Y', strtotime('2015-09-26')), 'datepick padding5px', '', 'required');
+		echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
 		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', date('F d, Y', strtotime('2015-10-10')), 'datepick padding5px', '', 'required');
+		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required');
 		
 		
 		echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
@@ -33,10 +30,11 @@
 		
 		echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
 	?>
-		</form>
-		<div style="padding-top:5px;">
-			<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
-		</div>
+	</form>
+	
+	<div style="padding-top:5px;">
+		<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
+	</div>
 		
 		
 </div>
@@ -65,7 +63,7 @@
 	foreach($dataStaffs AS $staff){
 		echo '<tr>';
 			echo '<td>'.$this->textM->formfield('checkbox', 'checkMe[]', $staff->empID, 'classCheckMe').'</td>';
-			echo '<td><a href="'.$this->config->base_url().'staffinfo/'.$staff->username.'/" target="_blank"><b>'.$staff->lname.', '.$staff->fname.'</b></a></td>';
+			echo '<td><a href="'.$this->config->base_url().'timecard/'.$staff->empID.'/timelogs/" target="_blank"><b>'.$staff->lname.', '.$staff->fname.'</b></a></td>';
 			echo '<td>'.$staff->title.'</td>';
 			echo '<td>'.$staff->dept.'</td>';
 		echo '</tr>';
@@ -76,11 +74,17 @@
 
 <!--------- PREVIOUS PAYROLLS ----------->
 <div id="prevpay" class="tab-content">	
+<?php
+	if(count($dataPayrolls)==0){
+		echo '<p>No payrolls generated yet.</p>';
+	}else{
+?>
 	<table class="tableInfo">
 		<tr class="trlabel">
 			<td width="20%">Period Start</td>
 			<td>Period End</td>
 			<td>Number Generated</td>
+			<td>Status</td>
 			<td width="10%"><br/></td>
 		</tr>
 	<?php
@@ -89,12 +93,15 @@
 				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodStart)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodEnd)).'</td>';
 				echo '<td>'.$pay->numGenerated.'</td>';
+				echo '<td>'.$payrollStatusArr[$pay->status].'</td>';
 				echo '<td>';
 					echo '<ul class="dropmenu" style="margin:0px;">
 							<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
-								<ul class="dropleft">
-									<li><a href="'.$this->config->base_url().'timecard/managepayrolldetail/'.$pay->payrollsID.'/">View Details</a></li>
-								</ul>
+								<ul class="dropleft">';
+								echo '<li><a href="'.$this->config->base_url().'timecard/managepayrolldetail/'.$pay->payrollsID.'/">View Details</a></li>';
+							if($pay->status==0)
+								echo '<li><a href="javascript:void(0);" onClick="removePayroll('.$pay->payrollsID.')">Remove this payroll</a></li>';						
+							echo '</ul>
 							</li>
 						</ul>';
 				echo '</td>';
@@ -102,27 +109,32 @@
 		}
 	?>
 	</table>
-<?php //} ?>
+<?php } ?>
 </div>
 
 <!--------- PAYROLL ITEMS ----------->
 <div id="items" class="tab-content">
+<?php 
+if(count($dataMainItems)==0 && count($dataAddItems)==0){
+	echo '<br/><a href="'.$this->config->base_url().'timecard/manangepaymentitem/?pageType=addItem&type=1" class="iframe"><button class="btnclass btngreen">+ Add Payroll Item</button></a>';
+}
+
+if(count($dataMainItems)>0){ ?>
 	<table class="tableInfo">
 		<tr class="trlabel">
-			<td>Item Type</td>
-			<td>Item Name</td>
-			<td>Item Default Value</td>
+			<td colspan=7>Main Items <a href="<?= $this->config->base_url().'timecard/manangepaymentitem/?pageType=addItem&type=1' ?>" class="iframe edit">+ Add Main Item</a></td>
 		</tr>
-	<?php
-		foreach($dataItems AS $item){
-			echo '<tr>';	
-				echo '<td>'.strtolower($payrollItemType[$item->itemType]).'</td>';
-				echo '<td>'.$item->itemName.'</td>';
-				echo '<td>'.$this->textM->convertNumFormat($item->itemValue).'</td>';
-			echo '</tr>';
-		}
-	?>
+		<?php echo $this->textM->displayPaymentItems($dataMainItems) ?>
 	</table>
+	<br/>
+<?php } if(count($dataAddItems)>0){ ?>
+	<table class="tableInfo">
+		<tr class="trlabel">
+			<td colspan=7>Additional Items <a href="<?= $this->config->base_url().'timecard/manangepaymentitem/?pageType=addItem&type=0' ?>" class="iframe edit">+ Add New Item</a></td>
+		</tr>
+		<?php echo $this->textM->displayPaymentItems($dataAddItems) ?>
+	</table>
+<?php } ?>
 </div>
 
 <!--------- PAYROLL SETTINGS ----------->
@@ -175,16 +187,8 @@
 		});
 		
 		$('.toolbar #formManage').submit(function(){
-			var empIDs = $('textarea[name="empIDs"]').text();
-			var cars = [];
-			$('.classCheckMe').each(function(){
-				if($(this).is(':checked')){
-					cars.push($(this).val());
-					empIDs = empIDs+$(this).val()+',';
-				}
-			});
-			
-			if(cars.length==0){
+			empIDs = checkIfSelected();
+			if(empIDs==false){
 				alert('Please select employee.');
 				return false;
 			}else{
@@ -205,6 +209,46 @@
 			}
 		});
 		
+		$('select[name="type"]').change(function(){			
+			if($(this).val()=='addpayslipitem'){
+				empIDs = checkIfSelected();
+				if(empIDs==false){
+					$(this).val('reviewattendance');
+					alert('Please select employee.');
+				}else{
+					window.parent.jQuery.colorbox({href:"<?= $this->config->base_url().'timecard/mypayrollsetting/?empIDs=' ?>"+empIDs, iframe:true, width:"990px", height:"600px"});
+					$(this).val('reviewattendance');
+				}
+			}
+		});
+		
 	});	
+	
+	function checkIfSelected(){
+		var empIDs = $('textarea[name="empIDs"]').text();
+		var cars = [];
+		$('.classCheckMe').each(function(){
+			if($(this).is(':checked')){
+				cars.push($(this).val());
+				empIDs = empIDs+$(this).val()+',';
+			}
+		});
+		
+		if(cars.length==0){
+			return false;			
+		}else{
+			return empIDs;
+		}
+	}
+	
+	function removePayroll(id){
+		if(confirm('Are you sure you want to remove this payroll?')){
+			displaypleasewait();
+			$.post('<?= $this->config->base_url().'timecard/managepayroll/' ?>', {submitType:'removePayroll', payrollID:id},
+			function(d){
+				location.reload();
+			})
+		}
+	}
 </script>
 

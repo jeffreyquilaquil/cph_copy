@@ -719,11 +719,30 @@ class Textmodel extends CI_Model {
 			/// adjustment non-taxable either add or minus added/subtracted after net pay
 		}else if($a=='managePayOptions'){
 			$arr = array('reviewattendance'=>'Review Attendance', 
-						'generatepayslip'=>'Generate Payslip'
+						'generatepayslip'=>'Generate Payslip',
+						'addpayslipitem'=>'Add Payslip Item'
 					);
-		}else if($a=='payrollType'){
-			$arr = array('semi'=>'Semi-Monthly', 
-				'monthly'=>'Monthly');
+		}else if($a=='payrollType' || $a=='payPeriod'){
+			$arr = array('once'=>'Once', 
+						'semi'=>'Semi-Monthly', 
+						'monthly'=>'Monthly',
+						'per payroll'=>'Per Payroll',);
+		}else if($a=='payCategory'){
+			$arr = array('pay', 'adjustment', 'advance', 'allowance', 'benefit', 'bonus', 'deduction', 'vacation pay');
+		}else if($a=='payAmountOptions'){
+			$arr = array('specific amount'=>'specific amount', 
+							'sssTable'=>'SSS Table', 
+							'taxTable'=>'Tax Table', 
+							'philhealthTable'=>'Philhealth Table',
+							'13thmonth'=>'13th Month',
+							'taken'=>'Regular Hours Taken',
+							'nightdiff'=>'Night Diff Hours',
+							'overtime'=>'Over Time Hours'
+						);
+		}else if($a=='payGoingTo'){
+			$arr = array('base'=>'base', 'gross'=>'gross', 'taxable'=>'taxable', 'net'=>'net');
+		}else if($a=='payrollStatusArr'){
+			$arr = array('Generated', 'Published', 'Finalized');
 		}
 		
 		return $arr;
@@ -865,6 +884,52 @@ class Textmodel extends CI_Model {
 		$hello .= '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$say->empID_fk.'/viewlogdetails/?d='.$say->slogDate.'&back=attendancedetails"><button>View log details</button></a></td>';
 		
 		return $hello;
+	}
+	
+	
+	public function displayPaymentItems($dataItems, $empID=''){
+		$bye = '';
+		if(count($dataItems)>0){
+			$catArray = $this->textM->constantArr('payCategory');
+			$arrPeriod = $this->textM->constantArr('payPeriod');
+
+			$bye .= '<tr class="trhead">
+						<td>Name</td>
+						<td>Type</td>
+						<td>Category</td>						
+						<td>Amount</td>
+						<td align="center">Period</td>
+						<td>Status</td>
+						<td><br/></td>
+					</tr>';
+			
+			foreach($dataItems AS $item){
+				$bye .= '<tr '.(($item->status==0)?'style="background-color:#ccc; color:#fff;"':'').'>';	
+					$bye .= '<td>'.$item->payName.' ('.$item->payCDto.')</td>';
+					$bye .= '<td>'.$item->payType.' '.(($item->isMain==0)?'(custom)':'').'</td>';
+					$bye .= '<td>'.$catArray[$item->payCategory].'</td>';					
+					$bye .= '<td>'.((is_numeric(str_replace(',','',$item->payAmount)))?$this->textM->convertNumFormat($item->payAmount):'computed').'</td>';
+					$bye .= '<td align="center">'.$arrPeriod[$item->payPeriod];
+							if($item->payStart!='0000-00-00'){
+								if($item->payStart==$item->payEnd) $bye .= '<br/>('.$item->payStart.')';
+								else $bye .= '<br/>('.$item->payStart.' to '.$item->payEnd.')';
+							}
+					$bye .= '</td>';
+					$bye .= '<td>'.(($item->status==0)?'Inactive':'Active').'</td>';
+					$bye .= '<td>';
+						if($this->access->accessFullHRFinance==true){
+							if(!empty($empID)){
+								$hrefV = $this->config->base_url().'timecard/'.$empID.'/manangepaymentitem/?pageType=empUpdate'.(($item->isMain==1)?'&payID='.$item->payID:'&staffPayID='.$item->payID);
+							}else $hrefV = $this->config->base_url().'timecard/manangepaymentitem/?pageType=updateItem&payID='.$item->payID;
+							
+							$bye .= '<a href="'.$hrefV.'" class="iframe"><img width="25px" src="'.$this->config->base_url().'css/images/icon-options-edit.png"></a>';
+						}
+					$bye .= '</td>';				
+				$bye .= '</tr>';
+			}
+		}
+		
+		return $bye;
 	}
 		
 }

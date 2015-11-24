@@ -66,12 +66,12 @@
 								$timeDeduct = $log->publishDeduct;
 								if($log->publishBy==''){
 									$addclass .= ' payboxunpublish';
-									if($timeDeduct==0) $timeDeduct = $log->schedHour;
+									//if($timeDeduct==0) $timeDeduct = $log->schedHour;
 								} 
 								
 								if($timePaid!=8) $addclass .= ' payboxdiff';
 							
-							echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishTimePaid]', $timePaid, 'payrollboxes'.$addclass);
+								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishTimePaid]', $timePaid, 'payrollboxes'.$addclass);
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishDeduct]', $timeDeduct, 'payrollboxes '.(($timeDeduct>0)?'payboxdeduct':''));
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishND]', $timeND, 'payrollboxes '.(($timeND>0)?'payND':''));
 								echo '<br/><a href="'.$this->config->base_url().'timecard/'.$empID.'/viewlogdetails/?d='.$d->dateToday.'" class="iframe fs11px">View details</a>';

@@ -14,14 +14,14 @@
 		echo 'Log Details for '.date('l, F d, Y', strtotime($today));
 	
 	///PUBLISHED
-		if(!empty($dataLog->publishBy))  echo '&nbsp;&nbsp;<b class="errortext">PUBLISHED</b>';
+		if(!empty($dataLog->publishBy))  echo '&nbsp;&nbsp;<b class="errortext">'.(($dataLog->status==1)?'FINALIZED':'PUBLISHED').'</b>';
 		else if($this->access->accessFullHRFinance==true && empty($dataLog->publishBy)) 
 			echo '&nbsp;&nbsp;<button id="btnpublish" class="btnclass btngreen">Publish</button>';
 	
 		echo '&nbsp;&nbsp;<a href="'.$this->config->base_url().'timecard/'.$visitID.'/?d='.$today.'" target="_blank"><button class="btnclass">Go to Timelog Page</button></a>';
-		
+				
 		///REQUEST UPDATE BUTTON
-		if($visitID==$this->user->empID)
+		if($visitID==$this->user->empID && isset($dataLog->status) && $dataLog->status==0)
 			echo '<a href="'.$this->config->base_url().'timecard/requestupdate/?d='.$today.'" class="iframe"><button class="btnclass btngreen floatright">Request Update</button></a>';
 	echo '</h3>';
 	echo '<hr/>';
@@ -29,8 +29,7 @@
 	if(isset($alerttext)){
 		echo '<p class="tacenter"><b class="errortext">'.$alerttext.'</b></p>';
 	}
-	
-		
+			
 	///SCHEDULE TODAY
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
 		if(isset($schedToday['sched'])){
@@ -42,14 +41,14 @@
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
 	}
-		
+	
 	//THIS IS INSERTED LOG ON tcStaffLogPublish
-	if(!empty($dataLog)){
+	if(!empty($dataLog)){		
 		///PUBLISH DETAILS
 		if(!empty($dataLog->publishBy)){
 			echo '<table id="tblpublishdetails" class="tableInfo" style="margin-top:10px;">';
 				echo '<tr class="trlabel"><td colspan=2>PUBLISH DETAILS';
-					if($this->access->accessFullHRFinance==true) echo '&nbsp;<button id="unpublish">Unpublish</button>';
+					if($this->access->accessFullHRFinance==true && $dataLog->status==0) echo '&nbsp;<button id="unpublish">Unpublish</button>';
 				echo '</td></tr>';
 				echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' '.(($dataLog->schedHour>1)?'Hours':'Hour').'</td></tr>';
 				if($dataLog->offsetHour>0)
@@ -57,6 +56,7 @@
 				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' '.(($dataLog->publishTimePaid>1)?'Hours':'Hour').'</b></td></tr>';
 				echo '<tr><td>Night Differential</td><td><b>'.$dataLog->publishND.' '.(($dataLog->publishND>1)?'Hours':'Hour').'</b></td></tr>';
 				if($dataLog->publishDeduct>0) echo '<tr><td>Total Deduction</td><td>'.$dataLog->publishDeduct.' '.(($dataLog->publishDeduct>1)?'Hours':'Hour').'</td></tr>';
+				if($dataLog->publishOT>0) echo '<tr><td>Overtime Hours</td><td>'.$dataLog->publishOT.' '.(($dataLog->publishOT>1)?'Hours':'Hour').'</td></tr>';
 				if(!empty($dataLog->publishNote)) echo '<tr><td>Note</td><td>'.$dataLog->publishNote.'</td></tr>';
 				echo '<tr><td>Date Published</td><td>'.date('F d, Y h:i a', strtotime($dataLog->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($dataLog->publishBy=="system")?'System':$dataLog->publishBy).'</td></tr>';
@@ -185,7 +185,7 @@
 					echo '<tr><td colspan=4>';
 						echo '<i class="fs11px">If Schedule In and Schedule Out is not the same with the <b>Schedule Today</b> above, please <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$dataLog->slogDate.'/">click here to change schedule</a>.</i>';
 					$derSched = date('h:i a', strtotime($dataLog->schedIn)).' - '.date('h:i a', strtotime($dataLog->schedOut));
-					if($derSched!=$schedToday['sched']) echo '<br/><b class="errortext">PLEASE CHANGE LOG SCHEDULE</b>';
+					if(isset($schedToday['sched']) && $derSched!=$schedToday['sched']) echo '<br/><b class="errortext">PLEASE CHANGE LOG SCHEDULE</b>';
 						
 					echo '</td></tr>';
 				}
@@ -327,6 +327,11 @@
 			echo '<tr><td>Total Paid Hours</td><td>'.$this->textM->formfield('number', 'publishTimePaid', $totalpaid, 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Night Differential Hours<br/><i class="colorgray fs11px">(10PM - 6AM minus 1 hour for break)</i></td><td>'.$this->textM->formfield('number', 'publishND', $this->payrollM->getNightDiffTime($dataLog), 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Total Deduction</td><td>'.$this->textM->formfield('number', 'publishDeduct', $deductionHour, 'forminput', '', 'required').'</td></tr>';
+			
+			//for overtime
+			if($this->access->accessFull==true)
+				echo '<tr><td>Overtime Hours</td><td>'.$this->textM->formfield('number', 'publishOT', $dataLog->publishOT, 'forminput', '', 'required').'</td></tr>';
+			
 			echo '<tr><td>Note <i class="colorgray">(Optional)</i></td><td>'.$this->textM->formfield('text', 'publishNote', '', 'forminput').'</td></tr>';			
 			echo '<tr><td><br/></td><td>';
 				echo $this->textM->formfield('hidden', 'submitType', 'publishlog');
