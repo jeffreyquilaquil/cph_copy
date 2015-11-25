@@ -379,7 +379,12 @@
 ?>
 
 <script type="text/javascript">
-	$(function(){ 
+	$(function(){
+		$('.datepick').datetimepicker({ 
+			format:'F d, Y', 
+			timepicker:false
+		});
+		
 		$('#fileToUpload').change(function(){
 			$('#formUpload').submit();
 		});	

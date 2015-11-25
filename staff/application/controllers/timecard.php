@@ -699,27 +699,35 @@ class Timecard extends MY_Controller {
 				
 				if(isset($yoyo['sched']) && $yoyo['sched']!='On Leave'){
 					//if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
-						$sched .= '<div class="daysbox dayEditable '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
+						$sched .= '<div class="daysbox dayEditable ';							
+							if(isset($yoyo['custom'])) $sched .= 'daycustomsched';
+							else if(isset($yoyo['suspend'])) $sched .= 'daysuspend';
+							else $sched .= 'daysched';							
+						$sched .= '" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
 					/* }else{
 						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
 					} */
 				}
-								
-				if(isset($yoyo['leave'])){
-					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';
-				}
 				
-				if(isset($yoyo['pendingleave'])){
-					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$yoyo['pendingleave'].'</div></a>';
-				}
-				
-				if(isset($yoyo['offset'])){
-					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
-				}
-				
-				if(isset($yoyo['pendingoffset'])){
-					$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$yoyo['pendingoffset'].'</div></a>';
-				}				
+				if(isset($yoyo['suspend'])){
+					$sched .= '<a href="'.$this->config->base_url().'detailsNTE/'.$yoyo['suspend'].'/" class="iframe tanone"><div class="daysbox dayonleave">SUSPENDED</div></a>';
+				}else{
+					if(isset($yoyo['leave'])){
+						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';
+					}
+					
+					if(isset($yoyo['pendingleave'])){
+						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$yoyo['pendingleave'].'</div></a>';
+					}
+					
+					if(isset($yoyo['offset'])){
+						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
+					}
+					
+					if(isset($yoyo['pendingoffset'])){
+						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$yoyo['pendingoffset'].'</div></a>';
+					}
+				}			
 								
 				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd && $yoyo['schedDate']>=$dateStart)
 					$data['dayArr'][$k] = $sched;	

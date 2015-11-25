@@ -5,6 +5,8 @@
 		echo 'Today\'s Schedule '.date('F d, Y', strtotime($today)).' - ';
 		if(!isset($schedToday['sched'])){
 			echo '<b>none</b>';
+		}else if(isset($schedToday['suspend'])){
+			echo '<b>Serving Suspension</b>';
 		}else{
 			echo '<b>'.$schedToday['sched'].'</b>';
 		}
@@ -13,6 +15,8 @@
 <?php
 	if(isset($schedToday['sched']) && $schedToday['sched']=="On Leave"){
 		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view leave details.</p>';
+	}else if(isset($schedToday['suspend'])){
+		echo '<p class="errortext">Click <a href="'.$this->config->base_url().'detailsNTE/'.$schedToday['suspend'].'/">here</a> to view suspension details.</p>';
 	}else{
 		if(isset($schedToday['leaveID'])){
 			echo '<p class="errortext">On Leave'.((isset($schedToday['leave']))?' ('.isset($schedToday['leave']).')':'').'. Click <a href="'.$this->config->base_url().'staffleaves/'.$schedToday['leaveID'].'/">here</a> to view details.</p>';

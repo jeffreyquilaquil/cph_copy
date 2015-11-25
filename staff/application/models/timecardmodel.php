@@ -216,8 +216,19 @@ class Timecardmodel extends CI_Model {
 				}
 			}
 		}
+				
+		//CHECK SUSPENSION
+		$querySuspend = $this->dbmodel->getQueryResults('staffNTE', 'nteID, suspensiondates', 'status=0 AND empID_fk="'.$empID.'" AND (suspensiondates LIKE "%'.date('Y-m', strtotime($dateStart)).'%" OR suspensiondates LIKE "%'.date('Y-m', strtotime($dateEnd)).'%")');
+		foreach($querySuspend AS $qs){
+			$suspend = explode('|', $qs->suspensiondates);
+			foreach($suspend AS $s){
+				if($s>=$dateStart && $s<=$dateEnd){
+					$dayArr[date('j', strtotime($s))]['suspend'] = $qs->nteID;
+				}
+			}
+		}
 		
-		foreach($dayArr AS $k=>$day){
+		foreach($dayArr AS $k=>$day){			
 			if(isset($day['schedDate']) && ($day['schedDate']<$dateStart || $day['schedDate']>$dateEnd)){
 				unset($dayArr[$k]);
 			}else if(isset($day['leave']) && isset($day['sched'])){
@@ -246,6 +257,9 @@ class Timecardmodel extends CI_Model {
 					}									
 				} 
 			}
+			
+			if(isset($dayArr[$k]['suspend']) && isset($dayArr[$k]['schedHour']))
+				$dayArr[$k]['schedHour'] = 0;
 		}
 		
 		return $dayArr;	
@@ -488,7 +502,7 @@ class Timecardmodel extends CI_Model {
 				if($sArr['sched']=='On Leave' && isset($sArr['leave'])) $schedArr = $this->timeM->getSchedArr($today, $sArr['leave']);
 				else $schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
 					
-				if(isset($schedArr['start']) && isset($schedArr['end'])){
+				if(isset($schedArr['start']) && isset($schedArr['end']) && !isset($schedArr['suspend'])){
 					$insArr['schedIn'] = $schedArr['start'];
 					$insArr['schedOut'] = $schedArr['end'];
 					$insArr['schedHour'] = $sArr['schedHour'];
