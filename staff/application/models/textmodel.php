@@ -734,7 +734,6 @@ class Textmodel extends CI_Model {
 							'sssTable'=>'SSS Table', 
 							'taxTable'=>'Tax Table', 
 							'philhealthTable'=>'Philhealth Table',
-							'13thmonth'=>'13th Month',
 							'taken'=>'Regular Hours Taken',
 							'nightdiff'=>'Night Diff Hours',
 							'overtime'=>'Over Time Hours'
