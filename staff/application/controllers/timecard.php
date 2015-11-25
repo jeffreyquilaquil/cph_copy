@@ -878,7 +878,7 @@ class Timecard extends MY_Controller {
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){
-			if($this->access->accessFullHR==false){
+			if($this->access->accessFullHRFinance==false){
 				$data['access'] = false;
 			}else{
 				$proudpage = $this->uri->segment(3);

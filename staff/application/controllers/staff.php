@@ -2482,7 +2482,7 @@ class Staff extends MY_Controller {
 			$segment3 = $this->uri->segment(3);
 							
 			$data['sent'] = false;
-			if(!empty($_POST)){
+			if(!empty($_POST)){				
 				$fromName = $_POST['fromName'];
 				$from = $_POST['from'];
 				$to = ltrim($_POST['to'],',');
@@ -2536,6 +2536,10 @@ class Staff extends MY_Controller {
 					$data['to'] = 'hr.cebu@tatepublishing.net';
 					$data['subject'] = 'Follow up on Signed Coaching Form of Coach ID #'.$segment3;	
 					$data['message'] = 'Hi HR, please upload signed coaching form so I can proceed evaluating employee\'s performance.';
+				}else if($segment2=='payslipinquiry'){
+					$data['to'] = 'accounting.cebu@tatepublishing.net';
+					$data['subject'] = 'Inquiry for Payslip ID #'.$segment3;	
+					$data['message'] = 'Hi Accounting,<br/><br/><i>Please refer to payslip link <a href="'.$this->config->base_url().'timecard/'.$this->uri->segment(4).'/payslipdetail/'.$segment3.'/">'.$this->config->base_url().'timecard/'.$this->uri->segment(4).'/payslipdetail/'.$segment3.'/</a></i><br/><br/>';
 				}else if($segment2!=''){
 					$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
 					$data['to'] = $data['row']->email;

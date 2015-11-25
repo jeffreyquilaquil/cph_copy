@@ -25,7 +25,8 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	echo '<ul id="leftMenu" style="margin:0px;">';
 		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/unpublishedlogs/" class="'.(($proudpage=='unpublishedlogs')?'current':'').'">Unpublished Logs ('.count($dataUnpublished).')</a></li>';
 		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/logpendingrequest/" class="'.(($proudpage=='logpendingrequest')?'current':'').'">Timelog Pending Requests ('.count($timelogRequests).')</a></li>';
-		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/managepayroll/" class="'.(($proudpage=='managepayroll')?'current':'').'">Manage Payroll</a></li>';
+		if($this->access->accessFullFinance==true)
+			echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/managepayroll/" class="'.(($proudpage=='managepayroll')?'current':'').'">Manage Payroll</a></li>';
 	echo '</ul>';
 }else if($this->user!=false && count($row)>0){
 	$fname = '';

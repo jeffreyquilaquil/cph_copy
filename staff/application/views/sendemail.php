@@ -23,7 +23,7 @@
 			</select>
 		</td>
 	</tr>-->
-<form action="" method="POST" onSubmit="return validateform()">
+<form action="" method="POST" onSubmit="return validateform();">
 	<tr <?= (($this->access->accessHR==false)?'class="hidden"':'')?>>
 		<td class="weightbold">From<br/><a id="sendfromHR" class="fs11px cpointer">[Click here to send from HR]</a></td>
 		<td>
@@ -91,6 +91,7 @@ function validateform(){
 		alert(validtxt);
 		return false;
 	}else{
+		displaypleasewait();
 		return true;
 	}
 }

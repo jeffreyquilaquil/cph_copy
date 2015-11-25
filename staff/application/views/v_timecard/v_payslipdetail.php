@@ -4,7 +4,13 @@
 <?php
 	echo '<h3>Payroll Info';
 		if($this->access->accessFullHRFinance==true && $payInfo->status<2) echo '&nbsp;&nbsp;<button onClick="regenerate()">Regenerate Payslip</button>';
-	echo '</h3><hr/>';
+	echo '</h3>';
+	echo '<hr/>';
+	
+	if($this->access->accessFullFinance==false && $visitID==$this->user->empID)
+		echo '<b><a href="'.$this->config->base_url().'sendEmail/payslipinquiry/'.$payInfo->payslipID.'/'.$payInfo->empID.'/" class="iframe colorgreen">If you  have questions, click here to send email to accounting.</a></b> <hr/>';
+	
+	
 
 	if(count($payInfo)==0){
 		echo 'No payslip record.';
@@ -16,7 +22,6 @@
 			$detailArr[$d->payType][] = $d;
 		}
 ?>
-
 <table class="tableInfo">
 	<tr class="trlabel"><td colspan=2>Payroll</td></tr>
 	<tr>
