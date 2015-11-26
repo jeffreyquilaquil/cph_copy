@@ -265,11 +265,11 @@ class Payrollmodel extends CI_Model {
 			$taxstatus = $this->payrollM->getTaxStatus($info->taxstatus);	
 
 			if($info->payType=='monthly'){
-				$payStart = date('Y-26-d', strtotime($info->payPeriodStart.' -1 month'));
-				$payEnd = date('Y-10-d', strtotime($info->payPeriodStart));
-				$prevpayslipID = $this->dbmodel->getSingleField('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payslipID', 'empID_fk="'.$info->empID.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="monthly" AND status=1');
-				if(!empty($prevpayslipID)){
-					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails', 'payValue', 'payItemID_fk=4 AND payslipID_fk="'.$prevpayslipID.'"');
+				$payStart = date('Y-m-26', strtotime($info->payPeriodStart.' -1 month'));
+				$payEnd = date('Y-m-10', strtotime($info->payPeriodStart));
+				$prevpayslipID = $this->dbmodel->getSingleField('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payslipID', 'empID_fk="'.$info->empID.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="semi" AND status!=3');
+				if(!empty($prevpayslipID)){ //payItemID_fk #6 = income tax
+					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails', 'payValue', 'payItemID_fk=6 AND payslipID_fk="'.$prevpayslipID.'"');
 				}
 			}
 			$tax = $this->payrollM->computeTax($info->payType, $taxableIncome, $taxstatus, $prevTax);

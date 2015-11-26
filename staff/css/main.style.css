@@ -136,6 +136,7 @@ ul.menu li{
 	display: inline;
 	position:relative;
 	background: transparent;
+	z-index: 999;
 }
 
 ul.menu li a{

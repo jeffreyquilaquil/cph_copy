@@ -154,8 +154,8 @@
 	function regenerate(){
 		displaypleasewait();
 		$.post('<?= $this->config->base_url().'timecard/regeneratepayslip/'.$payslipID.'/' ?>',{}, 
-		function(){
-			location.reload();
+		function(d){ alert(d);
+			//location.reload();
 		});
 	}
 </script>

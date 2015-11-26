@@ -1,4 +1,9 @@
-<?php $this->load->view('includes/header_searchemployee'); ?>
+<?php
+	$this->load->view('includes/header_searchemployee');
+	
+	if(!isset($_GET['show'])) $show = 'active';
+	else $show = $_GET['show'];
+?>
 
 <h2>Manage Payroll</h2>
 <hr/>
@@ -10,9 +15,19 @@
 	<li class="tab-link" data-tab="settings">Payroll Settings</li>
 </ul>
 
-<div id="manage" class="tab-content current">	
+<div id="manage" class="tab-content current positionrelative">	
 <br/>
 
+<div style="position:absolute; left:140px; z-index:10;">
+	<b style="color:#333333">of</b>&nbsp;&nbsp;
+	<select id="selectShow" class="padding5px">
+		<option value="all" <?= (($show=='all')?'selected="selected"':'') ?>>All employees</option>
+		<option value="active" <?= (($show=='active')?'selected="selected"':'') ?>>Active employees</option>
+		<option value="pending" <?= (($show=='pending')?'selected="selected"':'') ?>>Pending separation</option>
+		<option value="suspended" <?= (($show=='suspended')?'selected="selected"':'') ?>>Suspended employees</option>
+		<option value="separated" <?= (($show=='separated')?'selected="selected"':'') ?>>Separated employees</option>
+	</select>
+</div>
 <div id="silay" style="display:none; width:100%">
 	<form id="formManage" action="<?= $this->config->base_url() ?>timecard/payrollmanagement/" method="POST" style="margin:10px 0px;">
 	<?php
@@ -220,6 +235,11 @@ if(count($dataMainItems)>0){ ?>
 					$(this).val('reviewattendance');
 				}
 			}
+		});
+		
+		$('#selectShow').change(function(){
+			displaypleasewait();
+			window.location.href="<?= $this->config->base_url().'timecard/managetimecard/managepayroll/?show=' ?>"+$(this).val();
 		});
 		
 	});	

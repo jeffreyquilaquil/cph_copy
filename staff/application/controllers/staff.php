@@ -6,6 +6,7 @@ class Staff extends MY_Controller {
 		parent::__construct();
 		
 		$this->load->model('Staffmodel', 'staffM');		
+		$this->load->model('Schedulemodel', 'schedM');		
 	}
 
 		
@@ -451,7 +452,10 @@ class Staff extends MY_Controller {
 												
 								if(isset($_POST['bdate']) && $_POST['bdate']!='') $_POST['bdate'] = date('Y-m-d', strtotime($_POST['bdate']));
 								if(isset($_POST['startDate']) && $_POST['startDate']!='') $_POST['startDate'] = date('Y-m-d', strtotime($_POST['startDate']));
-								if(isset($_POST['endDate']) && $_POST['endDate']!='') $_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
+								if(isset($_POST['endDate']) && $_POST['endDate']!=''){
+									$_POST['endDate'] = date('Y-m-d', strtotime($_POST['endDate']));
+									$this->schedM->endSchedule($empID, $_POST['endDate']); ///end schedule for payroll
+								}
 								if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
 								if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
 								
@@ -717,8 +721,7 @@ class Staff extends MY_Controller {
 					//send separation notice email if access end date or end date is set					
 					if($_POST['fieldN']=='endDate' || $_POST['fieldN']=='accessEndDate'){
 						$this->emailM->emailSeparationNotice($_POST['empID']);							
-					}
-							
+					}							
 
 					//cancel coaching if effective separation date is set on or before today. Add note CANCELLED DUE TO TERMINATION
 					if($_POST['fieldN']=='endDate' && $_POST['fieldV']<=date('Y-m-d')){
@@ -729,6 +732,11 @@ class Staff extends MY_Controller {
 							}
 						}						
 					}
+					
+					//this is for timecard and scheduling
+					if($_POST['fieldN']=='endDate' && !empty($_POST['fieldV']) && $_POST['fieldV']!="0000-00-00")
+						$this->schedM->endSchedule($_POST['empID'], $_POST['endDate']); ///end schedule for payroll
+					
 					exit;
 				}else if($_POST['submitType']=='addnote'){								
 					$this->dbmodel->updateQuery('staffUpdated', array('updateID'=>$_POST['updateID']), array('notes'=>'['.date('Y-m-d H:i:s').'] '.$this->user->username.': <i>'.$_POST['notes'].'</i>'));

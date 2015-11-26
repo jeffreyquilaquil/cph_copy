@@ -1102,7 +1102,27 @@ class Timecard extends MY_Controller {
 					}
 				}
 				
-				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'empID IN ('.implode(',', $this->timeM->getTestUsers()).')', 'LEFT JOIN newPositions ON posID=position', 'lname');
+				
+				$condition = '';
+				if(!isset($_GET['show']) || $_GET['show']=='active') $condition = ' AND staffs.active=1';
+				else{
+					$show = $_GET['show'];
+					if($show=='pending') $condition = ' AND endDate>="'.$data['currentDate'].'"';
+					else if($show=='suspended'){
+						$empArr = array();
+						$querNTE = $this->dbmodel->getQueryResults('staffNTE', 'empID_fk', 'status=0 AND suspensiondates LIKE "%'.$data['currentDate'].'%"');
+						if(count($querNTE) > 0){
+							foreach($querNTE AS $o)
+								$empArr[] = $o->empID_fk;
+						}
+						
+						if(count($empArr)>0) $condition = ' AND empID IN ('.implode(',', $empArr).')';
+						else $condition = ' AND empID=0';						
+					}
+					else if($show=='separated') $condition = ' AND staffs.active=0';
+				}
+				
+				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'empID IN ('.implode(',', $this->timeM->getTestUsers()).') '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
 				$data['payrollStatusArr'] = $this->textM->constantArr('payrollStatusArr');
 				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3', '', 'payPeriodEnd DESC');
 				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');

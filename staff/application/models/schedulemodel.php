@@ -73,5 +73,11 @@ class Schedulemodel extends CI_Model {
 		return $sched;
 	}
 	
+	//automatically assign end date of schedule when setting end date to employee
+	public function endSchedule($empID, $endDate){		
+		$this->dbmodel->updateQueryText('tcStaffSchedules', 'effectiveend="'.$endDate.'"', 'empID_fk="'.$empID.'" AND effectivestart<="'.$endDate.'" AND effectiveend="0000-00-00"'); //update staff schedules
+		$this->dbmodel->updateQueryText('tcStaffScheduleByDates', 'status=0', 'empID_fk="'.$empID.'" AND dateToday>"'.$endDate.'"'); //update custom schedules
+	}
+	
 }
 ?>
