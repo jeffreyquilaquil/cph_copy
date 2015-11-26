@@ -38,7 +38,7 @@ class Payrollmodel extends CI_Model {
 			
 			///compute for taxable income and tax then INSERT TAX values
 			$taxableIncome = $this->payrollM->getTaxableIncome($payslipID);
-			$tax = $this->payrollM->getTax($payslipID, $taxableIncome);
+			$tax = $this->payrollM->getTax($payslipID, $taxableIncome, $info['payType'], $empInfo->taxstatus);
 			$this->payrollM->insertPayEachDetail($payslipID, $this->dbmodel->getSingleField('tcPayslipItems', 'payID', 'payAmount="taxTable"'), $tax); ////inserting income tax 
 					
 			////UPDATING RECORDS and COMPUTING FOR NET
@@ -250,48 +250,49 @@ class Payrollmodel extends CI_Model {
 	}
 	
 	
-	public function getTax($payslipID, $taxableIncome){		
+	/*****
+		Accepts, payslipID, amount of taxable income, payType[monthly, semi]
+	*****/
+	public function getTax($payslipID, $taxableIncome, $payType, $taxstatus){		
 		$tax = 0;
 		$prevTax = 0;
+		$taxableIncome = str_replace(',', '', $taxableIncome);
 		
-		$info = $this->dbmodel->getSingleInfo('tcPayslips', 'empID, totalTaxable, taxstatus, monthlyRate, basePay, earning, payPeriodStart, payPeriodEnd, payType, payrollsID', 'payslipID="'.$payslipID.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
-		
-		//check if there is customize amount for tax
-		$taxValue = $this->dbmodel->getSingleField('tcPayslipItemStaffs LEFT JOIN tcPayslipItems ON payID=payID_fk', 'tcPayslipItemStaffs.payAmount', 'empID_fk="'.$info->empID.'" AND tcPayslipItems.payAmount="taxTable"');
-		if($taxValue!=''){
-			$tax = $taxValue;
-		}else{
-			$taxableIncome = $this->payrollM->getTaxableIncome($payslipID);
-			$taxstatus = $this->payrollM->getTaxStatus($info->taxstatus);	
-
-			if($info->payType=='monthly'){
+		if($payType=='monthly'){
+			$info = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, empID_fk, payPeriodStart, payPeriodEnd, payType', 'payslipID="'.$payslipID.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+			if(count($info)>0){
 				$payStart = date('Y-m-26', strtotime($info->payPeriodStart.' -1 month'));
 				$payEnd = date('Y-m-10', strtotime($info->payPeriodStart));
-				$prevpayslipID = $this->dbmodel->getSingleField('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payslipID', 'empID_fk="'.$info->empID.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="semi" AND status!=3');
-				if(!empty($prevpayslipID)){ //payItemID_fk #6 = income tax
-					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails', 'payValue', 'payItemID_fk=6 AND payslipID_fk="'.$prevpayslipID.'"');
+				
+				$prevInfo = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, totalTaxable', 
+							'empID_fk="'.$info->empID_fk.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="semi" AND status!=3', 
+							'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+				
+				if(!empty($prevInfo)){ //get previous tax
+					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payValue', 'payslipID_fk="'.$prevInfo->payslipID.'" AND payAmount="taxTable"');
+					$taxableIncome += str_replace(',', '', $prevInfo->totalTaxable);
 				}
-			}
-			$tax = $this->payrollM->computeTax($info->payType, $taxableIncome, $taxstatus, $prevTax);
+			}			
 		}
+				
+		$tax = $this->payrollM->computeTax($payType, $taxableIncome, $taxstatus); 
+		$tax -= $prevTax; ///minus tax for previous tax paid
 		
-		return $tax;
+		return $tax;	
 	}
 	
 	/*****
 		$taxableIncome = base Pay minus deductions
 		$taxType = monthly or semi
-		$status = Single or Married and dependents
-		$prevTax - previous tax (this is usual for monthly type) - required if monthly type
+		$status = passed a number from taxstatus on staffs table
 		
 		monthly is from 11-25
 		semi is from 26-10
 	*****/
-	public function computeTax($taxType, $taxableIncome, $status, $prevTax=0){
+	public function computeTax($taxType, $taxableIncome, $status){
 		$tax = 0;
 		$taxableIncome = str_replace(',','',$taxableIncome);
-		
-		if($taxType=='monthly') $taxableIncome += $prevTax; ///if monthly add previous taxable income		
+		$status = $this->payrollM->getTaxStatus($status);	
 		
 		$info = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="'.$taxType.'" AND status="'.$status.'" AND minRange<="'.$taxableIncome.'" AND maxRange>"'.$taxableIncome.'"');
 		
@@ -299,11 +300,6 @@ class Payrollmodel extends CI_Model {
 			$perc = (int)$info->excessPercent / 100; 
 			$tax = ($taxableIncome - $info->minRange) * $perc; ///(taxable income - tax bracket) x tax %
 			$tax = $tax + $info->baseTax; ////add tax base
-			
-			if($taxType=='monthly'){ ///get tax from mid-month and deduct
-				$prevTax = $this->computeTax('semi', $prevTax, $status);
-				$tax = $tax - $prevTax;
-			}
 		}
 		
 		return round($tax, 2);
