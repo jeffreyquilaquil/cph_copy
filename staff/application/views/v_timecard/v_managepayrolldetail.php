@@ -29,13 +29,30 @@
 	}
 ?>
 </div>
-
-<b>Pay Date: </b><?= date('F d, Y', strtotime($info->payDate)) ?><br/>
-<b>Pay Type: </b><?= (($info->payType=='semi')?'Semi-Monthly':'Monthly') ?><br/>
-<b>Number Generated: </b><?= $info->numGenerated ?><br/>
-<b>Total Gross: </b>Php <?= number_format($totalGross,2) ?><br/>
-<b>Total Deduction: </b>Php <?= number_format($totalDeduction,2) ?><br/>
-<b>Total NET: </b>Php <?= number_format($totalNet,2) ?><br/>
+<div style="width:70%">
+	<table class="tableInfo tacenter">
+		<tr class="trhead">
+			<td>Pay Date</td>
+			<td>Pay Type</td>
+			<td>Number Generated</td>
+		</tr>
+		<tr>
+			<td><?= date('F d, Y', strtotime($info->payDate)) ?></td>
+			<td><?= (($info->payType=='semi')?'Semi-Monthly':'Monthly') ?></td>
+			<td><?= $info->numGenerated ?></td>
+		</tr>
+		<tr class="trhead">
+			<td>Total Gross</td>
+			<td>Total Deduction</td>
+			<td>Total NET</td>
+		</tr>
+		<tr>
+			<td>Php <?= number_format($totalGross,2) ?></td>
+			<td>Php <?= number_format($totalDeduction,2) ?></td>
+			<td style="border:2px solid red;"><b>Php <?= number_format($totalNet,2) ?></b></td>
+		</tr>
+	</table>
+</div>
 <hr/>
 
 <table id="dtable" class="dTable display stripe hover">
