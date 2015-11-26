@@ -8,7 +8,7 @@ class Payrollmodel extends CI_Model {
 	
 	
 	/******
-		$info is an array of empID (separated with comma), dateStart, dateEnd, payrollsID, payType
+		$info is an array of empIDs (separated with comma), dateStart, dateEnd, payrollsID, payType
 		
 		First, insert to tcPayslips
 		Then, insert to tcPayslipDetails
@@ -20,7 +20,7 @@ class Payrollmodel extends CI_Model {
 			$monthlyRate = $this->textM->decryptText($empInfo->sal);
 								
 			///INSERT TO tcPayslips			
-			$payslipID = $this->dbmodel->getSingleField('tcPayslips', 'payslipID', 'payrollsID_fk="'.$info['payrollsID'].'" AND empID_fk="'.$emp.'"');
+			$payslipID = $this->dbmodel->getSingleField('tcPayslips', 'payslipID', 'payrollsID_fk="'.$info['payrollsID'].'" AND empID_fk="'.$emp.'" AND pstatus=1');
 			if(empty($payslipID)){
 				$payIns['empID_fk'] = $emp;
 				$payIns['payrollsID_fk'] = $info['payrollsID'];
@@ -74,7 +74,7 @@ class Payrollmodel extends CI_Model {
 			$this->dbmodel->updateQuery('tcPayslips', array('payslipID'=>$payslipID), $down);
 			
 			//number generated
-			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'"');
+			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'" AND pstatus=1');
 			$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"', 'payrollsID="'.$info['payrollsID'].'"');
 		}
 	}

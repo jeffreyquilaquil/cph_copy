@@ -812,7 +812,7 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
 			else $condition = '';
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'"'.$condition, 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1 '.$condition, 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -1255,7 +1255,7 @@ class Timecard extends MY_Controller {
 				if(is_numeric($id)){
 					$data['dataInfo'] = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$id.'"');
 					$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, earning, net, CONCAT(lname,", ",fname) AS name', 
-							'payrollsID_fk="'.$data['dataInfo']->payrollsID.'"',
+							'payrollsID_fk="'.$data['dataInfo']->payrollsID.'" AND pstatus=1',
 							'LEFT JOIN staffs ON empID=empID_fk');
 				}
 			}			
@@ -1490,7 +1490,7 @@ class Timecard extends MY_Controller {
 			if(!empty($_POST)){
 				if($_POST['submitType']=='changestatus'){
 					if($_POST['status']==1){ ///publish payroll, send email to each staffs then change status
-						$queryStaffs = $this->dbmodel->getQueryResults('tcPayslips', 'empID, fname, email', 'payrollsID_fk="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+						$queryStaffs = $this->dbmodel->getQueryResults('tcPayslips', 'empID, fname, email', 'payrollsID_fk="'.$id.'" AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk');
 						if(count($queryStaffs)>0){
 							$period = date('F d, Y', strtotime($data['info']->payPeriodStart)).' - '.date('F d, Y', strtotime($data['info']->payPeriodEnd));
 							foreach($queryStaffs AS $s){
@@ -1511,10 +1511,23 @@ class Timecard extends MY_Controller {
 					
 					$this->dbmodel->updateQueryText('tcPayrolls', 'status="'.$_POST['status'].'"', 'payrollsID="'.$id.'"');
 					exit;
+				}else if($_POST['submitType']=='action'){
+					if($_POST['selectAction']=='regeneratepay'){
+						$infoArr = array();			
+						$infoArr = (array)$this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd, payType');	
+						$infoArr['empIDs'] = $_POST['empIDs'];
+						$this->payrollM->generatepayroll($infoArr);
+					}else if($_POST['selectAction']=='deletepay'){						
+						$this->dbmodel->updateQueryText('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'pstatus=0', 'payrollsID="'.$_POST['payrollsID'].'" AND pstatus=1 AND empID_fk IN ('.trim($_POST['empIDs'],',').')');
+						
+						//number generated
+						$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$_POST['payrollsID'].'" AND pstatus=1');
+						$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"', 'payrollsID="'.$_POST['payrollsID'].'"');
+					}
 				}				
 			}	
 			
-			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id, 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
+			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id.' AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 			$data['totalGross'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(earning)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalDeduction'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(deduction)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');

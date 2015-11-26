@@ -50,8 +50,6 @@
 	<div style="padding-top:5px;">
 		<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
 	</div>
-		
-		
 </div>
 
 <div style="display:none">
@@ -66,7 +64,7 @@
 </div>
 
 <table id="dtable" class="dTable display stripe hover">
-<thead>
+	<thead>
 	<tr bgcolor="#fff">
 		<th></th>
 		<th>Name</th>

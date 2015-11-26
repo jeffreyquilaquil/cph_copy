@@ -13,8 +13,20 @@
 		echo '<option value="2" '.(($info->status==2)?'selected="selected"':'').'>'.(($info->status==2)?'Finalized':'Finalize').'</option>';
 	echo '</select>';
 	
-	if($info->status<2)
-		echo '<button onClick="regeneratePayroll('.$info->payrollsID.');">Regenerate Payroll</button>';
+	if($info->status<2){
+		echo '<form action="" method="POST" onSubmit="return validateAction();">';
+			echo '<select name="selectAction" class="padding5px">';
+				echo '<option value="">Select action</option>';
+				echo '<option value="regeneratepay">Regenerate Payslips</option>';
+				echo '<option value="deletepay">Delete Payslips</option>';
+			echo '</select>';
+			echo $this->textM->formfield('submit', '', 'Go', 'btnclass btnred');
+			
+			echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
+			echo $this->textM->formfield('hidden', 'payrollsID', $info->payrollsID, 'hidden');			
+			echo $this->textM->formfield('hidden', 'submitType', 'action'); 
+		echo '</form>';
+	}
 ?>
 </div>
 
@@ -25,9 +37,11 @@
 <b>Total Deduction: </b>Php <?= number_format($totalDeduction,2) ?><br/>
 <b>Total NET: </b>Php <?= number_format($totalNet,2) ?><br/>
 <hr/>
-<table class="datatable display stripe hover">
+
+<table id="dtable" class="dTable display stripe hover">
 	<thead>
 	<tr style="text-align:left;">
+		<th width="10px"><br/></th>
 		<th>Name</th>
 		<th>Gross Pay</th>
 		<th>Deductions</th>
@@ -38,7 +52,11 @@
 <?php
 	foreach($dataPayroll AS $pay){
 		echo '<tr>';
-			echo '<td><a href="'.$this->config->base_url().'timecard/'.$pay->empID_fk.'/payslips/">'.$pay->name.'</a></td>';
+		echo '<td><input type="checkbox" class="classCheckMe" value="'.$pay->empID_fk.'"/></td>';
+			echo '<td>';
+				
+				echo '<a href="'.$this->config->base_url().'timecard/'.$pay->empID_fk.'/payslips/">'.$pay->name.'</a>';
+			echo '</td>';
 			echo '<td>'.number_format($pay->earning,2).'</td>';
 			echo '<td>'.number_format($pay->deduction,2).'</td>';
 			echo '<td>'.number_format($pay->net,2).'</td>';
@@ -53,6 +71,22 @@
 </table>
 
 <script type="text/javascript">
+	$(function(){
+		var oTable = $('.dTable').dataTable({
+						"dom": '<"toolbar">l<"searchbox" f>tip'
+					});
+		$("div.toolbar").html('<div style="margin-top:8px; padding-right:5px;"><a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a></div>');
+		$("div.toolbar").css('float', 'left');
+		
+		$('.toolbar #selectAll').click(function(){
+			$('.classCheckMe').prop('checked', true);
+		});
+		
+		$('.toolbar #deselectAll').click(function(){
+			$('.classCheckMe').prop('checked', false);
+		});
+	});
+	
 	function changeStatus(t){
 		if(confirm('Are you sure you want to change the payroll status?')){
 			displaypleasewait();
@@ -63,11 +97,50 @@
 			
 		}else $(t).val('<?= $info->status ?>');
 	}
+		
+	function checkIfSelected(){
+		var empIDs = $('textarea[name="empIDs"]').text();
+		var cars = [];
+		$('.classCheckMe').each(function(){
+			if($(this).is(':checked')){
+				cars.push($(this).val());
+				empIDs = empIDs+$(this).val()+',';
+			}
+		});
+		
+		if(cars.length==0){
+			return false;			
+		}else{
+			return empIDs;
+		}
+	}
 	
-	function regeneratePayroll(id){
-		displaypleasewait();
-		$.post('<?= $this->config->base_url().'timecard/regeneratepayroll/' ?>'+id+'/',{},function(){
-			location.reload();
-		})
+	function validateAction(){
+		darna = true;
+		selected = $('select[name="selectAction"]').val();
+		if(selected==''){
+			alert('Please choose action.')
+			darna = false;
+		}else{
+			isSelected = checkIfSelected();
+			if(isSelected==false){
+				alert('Please select employee.');
+				darna = false;
+			}else{
+				if(selected=='deletepay'){
+					if(!confirm('Are you sure you want to delete these payslips?')){
+						darna = false;
+						$('select[name="selectAction"]').val('');
+					} 					
+				}
+			
+				if(darna==true){
+					$('textarea[name="empIDs"]').text(isSelected);
+					displaypleasewait();
+				}
+			}
+		}
+		
+		return darna;
 	}
 </script>
