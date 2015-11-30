@@ -265,16 +265,16 @@ class Payrollmodel extends CI_Model {
 				$payEnd = date('Y-m-10', strtotime($info->payPeriodStart));
 				
 				$prevInfo = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, totalTaxable', 
-							'empID_fk="'.$info->empID_fk.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="semi" AND status!=3', 
+							'empID_fk="'.$info->empID_fk.'" AND payPeriodStart="'.$payStart.'" AND payPeriodEnd="'.$payEnd.'" AND payType="semi" AND status!=3 AND pstatus=1', 
 							'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
-				
+										
 				if(!empty($prevInfo)){ //get previous tax
 					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payValue', 'payslipID_fk="'.$prevInfo->payslipID.'" AND payAmount="taxTable"');
 					$taxableIncome += str_replace(',', '', $prevInfo->totalTaxable);
-				}
+				}else $payType = 'semi';
 			}			
 		}
-				
+		
 		$tax = $this->payrollM->computeTax($payType, $taxableIncome, $taxstatus); 
 		$tax -= $prevTax; ///minus tax for previous tax paid
 		
@@ -302,7 +302,8 @@ class Payrollmodel extends CI_Model {
 			$tax = $tax + $info->baseTax; ////add tax base
 		}
 		
-		return round($tax, 2);
+		//return round($tax, 2);
+		return $tax;
 	}
 	
 	/***

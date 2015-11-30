@@ -257,9 +257,9 @@
 		echo $this->staffM->displayInfo('cdetails', 'allowance', $this->textM->convertNumFormat($row->allowance), true, 'Ex. 2,500.00');	
 		
 		if($this->access->accessFullHRFinance==true || $current=='myinfo'){
-			echo $this->staffM->displayInfo('cdetails', 'taxstatus', $row->taxstatus, true);	
-			echo $this->staffM->displayInfo('cdetails', 'bankAccnt', $row->bankAccnt, true);	
-			echo $this->staffM->displayInfo('cdetails', 'hmoNumber', $row->hmoNumber, true);
+			echo $this->staffM->displayInfo('cdetails', 'taxstatus', (($row->taxstatus!=0)?$row->taxstatus:''), true);	
+			echo $this->staffM->displayInfo('cdetails', 'bankAccnt', (($row->bankAccnt!=0)?$row->bankAccnt:''), true);	
+			echo $this->staffM->displayInfo('cdetails', 'hmoNumber', (($row->hmoNumber!=0)?$row->hmoNumber:''), true);
 		}
 		echo '<tr class="cdetailslast hidden">
 				<td colspan=2 align="right">

@@ -570,7 +570,6 @@ class Textmodel extends CI_Model {
 				);
 		}else if($a=='taxstatus'){
 			$arr = array(
-					0 => '',
 					1 => 'Single with No Dependents (S)',
 					2 => 'Single with 1 Qualified Dependent (S1)',
 					3 => 'Single with 2 Qualified Dependents (S2)',
