@@ -619,8 +619,7 @@ class Textmodel extends CI_Model {
 				'0' => 'Regular',
 				'1' => 'Regular PHL Holiday',
 				'2' => 'Special PHL Holiday',
-				'3' => 'US Holiday',
-				'4' => 'Others'
+				'3' => 'US Holiday'
 			);
 		}else if($a=='hrOptionStatus'){
 			$arr = array(
