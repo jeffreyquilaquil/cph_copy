@@ -1124,7 +1124,7 @@ class Timecard extends MY_Controller {
 				
 				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'empID IN ('.implode(',', $this->timeM->getTestUsers()).') '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
 				$data['payrollStatusArr'] = $this->textM->constantArr('payrollStatusArr');
-				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3', '', 'payPeriodEnd DESC');
+				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3 AND numGenerated>0', '', 'payPeriodEnd DESC');
 				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
 				
 				$data['dataMainItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain', 'mainItem=1', '', 'payCategory, payName');				
