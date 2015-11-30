@@ -71,14 +71,16 @@
 	</tr>
 	<?php
 		foreach($dataPay AS $d){
-			echo '<tr>';
-				echo '<td>'.$payCatArr[$d->payCategory].'</td>';
-				echo '<td>'.$d->payName.'</td>';
-				echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').'</td>';
-				echo '<td>';
-					echo (($d->payType=="debit")?'-':'').$this->textM->convertNumFormat($d->payValue);
-				echo '</td>';
-			echo '<tr>';
+			if($d->payValue>0){
+				echo '<tr>';
+					echo '<td>'.$payCatArr[$d->payCategory].'</td>';
+					echo '<td>'.$d->payName.'</td>';
+					echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').'</td>';
+					echo '<td>';
+						echo (($d->payType=="debit")?'-':'').$this->textM->convertNumFormat($d->payValue);
+					echo '</td>';
+				echo '<tr>';
+			}
 		}
 	?>
 </table>
