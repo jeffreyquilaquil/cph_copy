@@ -616,11 +616,11 @@ class Textmodel extends CI_Model {
 			);
 		}else if($a=='holidayTypes'){
 			$arr = array(
-				'' => 'Ordinary',
-				'0' => 'Regular',
+				'0' => 'Ordinary',
 				'1' => 'Regular PHL Holiday',
 				'2' => 'Special PHL Holiday',
-				'3' => 'US Holiday'
+				'3' => 'US Holiday',
+				'4' => 'Regular Holiday'
 			);
 		}else if($a=='hrOptionStatus'){
 			$arr = array(
