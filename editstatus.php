@@ -33,7 +33,7 @@
 	}
 	
 	
-	$hiring_manager_name = $db->selectSingleQuery("jobReqData", "supervisor" , 'positionID = '.$positions_id);
+	$hiring_manager_name = $db->selectSingleQuery("jobReqData", "supervisor" , 'positionID = '.$positions_id.' ORDER BY reqID DESC');
 	$hiring_manager_email = $db->selectSingleQuery("staffs", 'email', 'CONCAT(fname, " ", lname) LIKE "%'.str_replace(' ', '%', $hiring_manager_name).'%"');
 	$maxSal = $db->selectSingleQuery('jobReqData', 'salary' , 'positionID="'.$info['position'].'" ORDER BY startDate', 'LEFT JOIN salaryRange ON maxSal=salID');
 	
