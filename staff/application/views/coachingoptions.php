@@ -290,7 +290,7 @@ if(count($row)==0){
 				<td>
 				<?php
 					if(isset($opt[1])){ echo $opt[1]; }
-					else if($row->status==0) echo '<input type="checkbox" id="cfprinted"/> Tick checkbox if done printing form';
+					else echo '<input type="checkbox" id="cfprinted"/> Tick checkbox if done printing form';
 				?>
 				</td>				
 			</tr>
