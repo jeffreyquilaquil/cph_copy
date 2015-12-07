@@ -300,7 +300,7 @@ if(count($row)==0){
 				<td>
 				<?php
 					if(isset($opt[2])){ echo $opt[2]; }
-					else if($row->status==0) echo '<form action="" method="POST" id="uploadCFForm" enctype="multipart/form-data"><input type="file" name="cffile" id="uploadCF" value="Upload Signed Form"/><input type="hidden" name="submitType" value="uploadCF"/></form>';
+					else echo '<form action="" method="POST" id="uploadCFForm" enctype="multipart/form-data"><input type="file" name="cffile" id="uploadCF" value="Upload Signed Form"/><input type="hidden" name="submitType" value="uploadCF"/></form>';
 				?>
 				</td>	
 			</tr>
