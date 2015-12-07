@@ -975,8 +975,8 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			
 			if($('#status').val()!=$('#oldstatus').val() && $('#hrremarks').val()==''){
 				validtxt += '- Remarks should not be empty when changing approve status.\n';
-			}		
-			if($('#remaining').val()<0){
+			}	
+			if($('#remaining').val()<0 && $('#leaveCreditsUsed').val()<0){
 				validtxt += '- Total leave credits is below 0.';
 			}
 		}
