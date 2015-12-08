@@ -35,9 +35,12 @@
 		echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
 		
 		echo ' <b>for the period</b> ';
-		echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
+		/* echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
 		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required');
+		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required'); */
+		echo $this->textM->formfield('text', 'start', 'September 26, 2015', 'datepick padding5px', '', 'required');
+		echo ' <b>to</b> ';
+		echo $this->textM->formfield('text', 'end', 'October 11, 2015', 'datepick padding5px', '', 'required');
 		
 		
 		echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');

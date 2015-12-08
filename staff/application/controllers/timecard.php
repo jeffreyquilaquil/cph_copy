@@ -1004,6 +1004,7 @@ class Timecard extends MY_Controller {
 				$pubArr['publishTimePaid'] = $_POST['publishTimePaid'];
 				$pubArr['publishND'] = $_POST['publishND'];
 				
+				if(isset($_POST['publishHO'])) $pubArr['publishHO'] = $_POST['publishHO'];
 				if(isset($_POST['publishOT'])) $pubArr['publishOT'] = $_POST['publishOT'];
 				
 				$pubArr['publishDeduct'] = $_POST['publishDeduct'];
@@ -1051,7 +1052,8 @@ class Timecard extends MY_Controller {
 		$data['dataLog'] = $this->dbmodel->getSingleInfo('tcStaffLogPublish', '*', 'empID_fk="'.$id.'" AND slogDate="'.$data['today'].'"');
 		$data['dataBiometrics'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
-							
+		
+		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
@@ -1101,8 +1103,7 @@ class Timecard extends MY_Controller {
 						exit;
 					}
 				}
-				
-				
+				 				
 				$condition = '';
 				if(!isset($_GET['show']) || $_GET['show']=='active') $condition = ' AND staffs.active=1';
 				else{
@@ -1127,8 +1128,8 @@ class Timecard extends MY_Controller {
 				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3 AND numGenerated>0', '', 'payPeriodEnd DESC');
 				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
 				
-				$data['dataMainItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain', 'mainItem=1', '', 'payCategory, payName');				
-				$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain', 'mainItem=0', '', 'payCategory, payName');				
+				$data['dataMainItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=1', '', 'payCategory, payName');				
+				$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=0', '', 'payCategory, payName');				
 				$data['dataMinWage'] = $this->dbmodel->getSingleField('staffSettings', 'settingVal', 'settingName="minimumWage"');
 				
 				return $data;
@@ -1142,23 +1143,23 @@ class Timecard extends MY_Controller {
 		if(empty($_POST)){
 			header('Location: '.$this->config->base_url().'timecard/managetimecard/managepayroll/');
 			exit;
-		}else{
+		}else{			
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			
 			if($_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
 				
 			if(isset($_POST['submitType'])){
-				if($_POST['submitType']=='save' || $_POST['submitType']=='saveandgenerate'){
-					foreach($_POST['holidayType'] AS $day=>$d){
-						$this->dbmodel->updateQueryText('tcAttendance', 'holidayType="'.$d.'"', 'dateToday="'.$day.'"');
-					}
-										
+				if($_POST['submitType']=='save' || $_POST['submitType']=='saveandgenerate'){				
 					foreach($_POST['log'] AS $id=>$log)
 						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $log);
 					
 					if($_POST['submitType']=='saveandgenerate'){						
 						$_POST['submitType'] = 'generatepayslip';
 					}
+				}else if($_POST['submitType'] == 'changeHoliday'){
+					$this->dbmodel->updateQueryText('tcAttendance', 'holidayType="'.$_POST['holidayType'].'"', 'dateToday="'.$_POST['dtoday'].'"');
+					if($_POST['holidayType']==0)
+						$this->dbmodel->updateQueryText('tcStaffLogPublish', 'publishHO=""', 'slogDate="'.$_POST['dtoday'].'" OR slogDate="'.date('Y-m-d', strtotime($_POST['dtoday'].' -1 day')).'"');
 				}
 
 				if($_POST['submitType'] == 'generatepayslip'){
@@ -1195,13 +1196,14 @@ class Timecard extends MY_Controller {
 			$data['empIDs'] = rtrim($_POST['empIDs'], ',');
 			
 			$data['dataAttendance'] = array();	
-			$dataEmps = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname, ", ",fname) AS name', 'empID IN ('.$data['empIDs'].')', '', 'lname');
+			$dataEmps = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname, ", ",fname) AS name, staffHolidaySched', 'empID IN ('.$data['empIDs'].')', '', 'lname');
 			foreach($dataEmps AS $emp){
 				$data['dataAttendance'][$emp->empID]['name'] = $emp->name;
+				$data['dataAttendance'][$emp->empID]['staffHolidaySched'] = $emp->staffHolidaySched;
 			}
 			
 			$dataLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-				'slogID, slogDate, empID_fk, schedHour, timeIn, timeOut, publishTimePaid, publishND, publishDeduct, publishBy', 
+				'slogID, slogDate, empID_fk, schedHour, timeIn, timeOut, schedIn, schedOut, publishTimePaid, publishND, publishHO, publishDeduct, publishBy, status', 
 				'slogDate BETWEEN "'.$data['start'].'" AND "'.$data['end'].'" AND empID_fk IN ('.$data['empIDs'].')');	
 				
 			foreach($dataLogs AS $d){
@@ -1328,7 +1330,7 @@ class Timecard extends MY_Controller {
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			$data['pageType'] = ((isset($_GET['pageType']))?$_GET['pageType']:'addItem');
 						
-			if(isset($_POST['submitType'])){
+			if(isset($_POST['submitType'])){				
 				////submitType == addItem, updateItem, empAddItem
 				$arrPages = array("addItem", "updateItem", "empAddItem");
 				if(!in_array($_POST['submitType'], $arrPages)) exit;
@@ -1336,6 +1338,7 @@ class Timecard extends MY_Controller {
 				$upArr = $_POST;
 				
 				if($upArr['payAmount']=='specific amount') $upArr['payAmount'] = $upArr['inputPayAmount'];
+				if($upArr['payAmount']=='hourly') $upArr['payAmount'] = $upArr['payAmountHourly'];
 				if(!empty($upArr['payStart'])) $upArr['payStart'] = date('Y-m-d', strtotime($upArr['payStart']));
 				if(!empty($upArr['payEnd'])) $upArr['payEnd'] = date('Y-m-d', strtotime($upArr['payEnd']));
 				if($upArr['payPeriod']=='once' && !empty($upArr['payStartOnce'])){
@@ -1346,6 +1349,7 @@ class Timecard extends MY_Controller {
 				unset($upArr['submitType']);
 				unset($upArr['payID']);
 				unset($upArr['inputPayAmount']);
+				unset($upArr['payAmountHourly']);
 				unset($upArr['payStartOnce']);
 											
 				if($_POST['submitType']=='addItem'){					
@@ -1363,8 +1367,6 @@ class Timecard extends MY_Controller {
 						$upArr['empID_fk'] = $data['visitID'];
 						$upArr['payID_fk'] = $_POST['payID'];							
 						$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $upArr);
-					
-						//header('Location: '.$this->config->base_url().'timecard/'.$data['visitID'].'/manangepaymentitem/?pageType=empUpdate&staffPayID='.$insID);
 						header('Location: '.$this->config->base_url().'timecard/'.$data['visitID'].'/mypayrollsetting/');
 						exit;
 					}
@@ -1456,23 +1458,27 @@ class Timecard extends MY_Controller {
 			
 			if($this->access->accessFullHRFinance==false && $data['payInfo']!=$this->user->empID && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
 				$data['access'] = false;
-			}
-			
+			}			
 			
 			$data['payslipID'] = $payID;			
 			$data['payCatArr'] = $this->textM->constantArr('payCategory');
 			$data['holidayArr'] = $this->textM->constantArr('holidayTypes');
+			$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain', 'mainItem=0', '', 'payCategory, payName');	
 			
-			if(count($data['payInfo'])>0){				
-				$data['dataPay'] = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payValue, payType, payName, payCategory, numHR', 'payslipID_fk="'.$payID.'"',
-					'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payType');
+			if(count($data['payInfo'])>0){
+				$data['dataPay'] = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$payID.'" AND payValue!="0.00"',
+					'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
 				
-				$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
-				$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-					'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishOT, publishBy', 
-					'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
-					'', 
-					'slogDate');
+				if(!isset($data['access']) && isset($_GET['show']) && $_GET['show']=='pdf'){
+					$this->payrollM->pdfPayslip($empID, $payID);
+				}else{
+					$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
+					$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
+						'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishOT, publishHO, publishBy', 
+						'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
+						'', 
+						'slogDate');
+				}
 			}
 		}
 		

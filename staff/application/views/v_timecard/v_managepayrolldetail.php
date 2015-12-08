@@ -80,7 +80,7 @@
 			echo '<td align="right">
 					<a href="'.$this->config->base_url().'timecard/'.$pay->empID_fk.'/payslipdetail/'.$pay->payslipID.'/" target="_blank"><img src="'.$this->config->base_url().'css/images/icon-options-edit.png" width="20px"/></a>
 					&nbsp;&nbsp;&nbsp;
-					<a href="'.$this->config->base_url().'timecard/'.$pay->empID_fk.'/payslipdetail/'.$pay->payslipID.'/" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="20px"/></a>				
+					<a href="'.$this->config->base_url().'timecard/'.$pay->empID_fk.'/payslipdetail/'.$pay->payslipID.'/?show=pdf" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="20px"/></a>				
 				</td>';
 		echo '</tr>';		
 	}

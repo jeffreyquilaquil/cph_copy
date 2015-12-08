@@ -2,7 +2,7 @@
 	$date00 = '0000-00-00 00:00:00';
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
-	
+		
 	$paidHour = ((isset($dataLog->schedHour))?$dataLog->schedHour:0);
 	$deductionHour = 0;		
 	
@@ -29,6 +29,19 @@
 	if(isset($alerttext)){
 		echo '<p class="tacenter"><b class="errortext">'.$alerttext.'</b></p>';
 	}
+	
+	///check if holiday today
+	$isHoliday = $this->payrollM->isHoliday($today);
+	$holidayDate = $today;
+	$arrHolidayType = $this->textM->constantArr('holidayTypes');
+	if($isHoliday!=false){
+		echo '<b class="errortext">'.strtoupper($arrHolidayType[$isHoliday]).' TODAY</b><br/>';
+	}else{
+		$holidayDate = date('Y-m-d', strtotime($today.' +1 day'));
+		$isHoliday = $this->payrollM->isHoliday($holidayDate);
+		echo '<b class="errortext">'.strtoupper($arrHolidayType[$isHoliday]).' TOMORROW</b><br/>';
+	}
+		
 			
 	///SCHEDULE TODAY
 	if(isset($schedToday['sched']) || isset($schedToday['offset'])){
@@ -42,6 +55,7 @@
 		echo '<b>Schedule Today:</b> NONE ';
 	}
 	
+		
 	//THIS IS INSERTED LOG ON tcStaffLogPublish
 	if(!empty($dataLog)){		
 		///PUBLISH DETAILS
@@ -56,7 +70,8 @@
 				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' '.(($dataLog->publishTimePaid>1)?'Hours':'Hour').'</b></td></tr>';
 				echo '<tr><td>Night Differential</td><td><b>'.$dataLog->publishND.' '.(($dataLog->publishND>1)?'Hours':'Hour').'</b></td></tr>';
 				if($dataLog->publishDeduct>0) echo '<tr><td>Total Deduction</td><td>'.$dataLog->publishDeduct.' '.(($dataLog->publishDeduct>1)?'Hours':'Hour').'</td></tr>';
-				if($dataLog->publishOT>0) echo '<tr><td>Overtime Hours</td><td>'.$dataLog->publishOT.' '.(($dataLog->publishOT>1)?'Hours':'Hour').'</td></tr>';
+				if($dataLog->publishOT>0) echo '<tr><td>Overtime Hours</td><td>'.$dataLog->publishOT.' '.(($dataLog->publishOT>1)?'Hours':'Hour').'</td></tr>';				
+				if($isHoliday==true && $dataLog->publishHO!='') echo '<tr><td>Holiday Hours</td><td>'.$dataLog->publishHO.' '.(($dataLog->publishHO>1)?'Hours':'Hour').'</td></tr>';				
 				if(!empty($dataLog->publishNote)) echo '<tr><td>Note</td><td>'.$dataLog->publishNote.'</td></tr>';
 				echo '<tr><td>Date Published</td><td>'.date('F d, Y h:i a', strtotime($dataLog->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($dataLog->publishBy=="system")?'System':$dataLog->publishBy).'</td></tr>';
@@ -327,6 +342,16 @@
 			echo '<tr><td>Total Paid Hours</td><td>'.$this->textM->formfield('number', 'publishTimePaid', $totalpaid, 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Night Differential Hours<br/><i class="colorgray fs11px">(10PM - 6AM minus 1 hour for break)</i></td><td>'.$this->textM->formfield('number', 'publishND', $this->payrollM->getNightDiffTime($dataLog), 'forminput', '', 'required').'</td></tr>';
 			echo '<tr><td>Total Deduction</td><td>'.$this->textM->formfield('number', 'publishDeduct', $deductionHour, 'forminput', '', 'required').'</td></tr>';
+			
+			if($isHoliday!=false){
+				$showHoliday = true;
+				if($isHoliday!=4 && $isHoliday!=0){
+					if($staffHoliday==1 && $isHoliday!=3) $showHoliday = false;
+					else if($staffHoliday==0 && $isHoliday==3) $showHoliday = false;
+				}
+				if($showHoliday==true)
+					echo '<tr><td>Holiday Hours</td><td>'.$this->textM->formfield('number', 'publishHO', $this->payrollM->getHolidayHours($holidayDate, $dataLog), 'forminput', '', 'required').'</td></tr>';
+			}
 			
 			//for overtime
 			if($this->access->accessFull==true)

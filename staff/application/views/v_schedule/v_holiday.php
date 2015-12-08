@@ -69,7 +69,7 @@
 	</tr>
 	<tr>
 		<td>Premium Pay (%)</td>
-		<td><?= $this->textM->formfield('number', 'holidayPremium', '100', 'forminput', '', 'min="0" max="100" step="5"'); ?></td>
+		<td><?= $this->textM->formfield('number', 'holidayPremium', '0', 'forminput', '', 'min="0" max="100" step="5"'); ?></td>
 	</tr>
 	<tr>
 		<td><br/></td>
@@ -105,6 +105,13 @@
 				$("#holidaySched").val(1);
 			else
 				$("#holidaySched").val(0);
+		});
+		
+		$('#holidayType').change(function(){
+			tiil = $(this).val();
+			if(tiil==0) $('input[name="holidayPremium"]').val(0);
+			else if(tiil==2) $('input[name="holidayPremium"]').val(30);
+			else $('input[name="holidayPremium"]').val(100);
 		});
 	});	
 	

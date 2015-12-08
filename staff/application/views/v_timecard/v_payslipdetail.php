@@ -52,22 +52,32 @@
 		<td>Net Pay</td>
 		<td><b><?= $this->textM->convertNumFormat($payInfo->net) ?></b></td>
 	</tr>
+	<tr>
+		<td>View Payslip</td>
+		<td><a href="<?= $this->config->base_url().'timecard/'.$payInfo->empID.'/payslipdetail/'.$payInfo->payslipID.'/?show=pdf' ?>" target="_blank"><img src="<?= $this->config->base_url() ?>css/images/pdf-icon.png" width="20px"></a></td>
+	</tr>
 </table>
 
 <br/>
 <table class="tableInfo">
-	<tr class="trlabel"><td colspan=4>Payroll Items</td></tr>
+	<tr class="trlabel"><td colspan=4>Payroll Items
+		<a id="aAddItem" class="edit" href="javascript:void(0);">+ Add Item</a>
+	<?php
+		$addItems = array();
+		foreach($dataAddItems AS $add){
+			$addItems[$add->payID] = $add->payName;
+		}
+		$addItems['other'] = 'Other. Not on the list.';
+		
+		echo $this->textM->formfield('selectoption', 'addPayItem', '', 'floatright hidden', 'Please select an item', '', $addItems);
+		echo '<a href="" id="addItemLink" class="iframe hidden">add item</a>';
+	?>
+	</td></tr>
 	<tr class="trhead">
 		<td>Type</td>
 		<td>Name</td>
 		<td>Hours</td>
 		<td>Amount</td>
-	</tr>
-	<tr>
-		<td>pay</td>
-		<td>Base Pay</td>
-		<td>-</td>
-		<td><?= $this->textM->convertNumFormat($payInfo->basePay) ?></td>
 	</tr>
 	<?php
 		foreach($dataPay AS $d){
@@ -75,7 +85,7 @@
 				echo '<tr>';
 					echo '<td>'.$payCatArr[$d->payCategory].'</td>';
 					echo '<td>'.$d->payName.'</td>';
-					echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').'</td>';
+					echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').' '.(($d->payAmount=='basePay' && $d->numHR>0)?'days':'').'</td>';
 					echo '<td>';
 						echo (($d->payType=="debit")?'-':'').$this->textM->convertNumFormat($d->payValue);
 					echo '</td>';
@@ -87,13 +97,14 @@
 
 <br/>
 <table class="tableInfo tacenter">
-	<tr class="trlabel taleft"><td colspan=7>Hours Worked</td></tr>
+	<tr class="trlabel taleft"><td colspan=8>Hours Worked</td></tr>
 	<tr class="trhead">
 		<td align="left" width="15%">Date</td>
 		<td>Worked Hours</td>
 		<td>Taken Hours</td>
 		<td>ND</td>
 		<td>OT</td>
+		<td>HP</td>
 		<td>Type</td>
 		<td width="30px"><br/></td>
 	</tr>
@@ -102,6 +113,7 @@
 	$takenHR = 0;
 	$ndHR = 0;	
 	$otHR = 0;	
+	$hoHR = 0;	
 	$unpublished = false;
 	$workArr = array();
 	foreach($dataWorked AS $w){
@@ -123,6 +135,7 @@
 				echo '<td>'.(($w->publishDeduct==0)?'-':number_format($w->publishDeduct, 1)).'</td>';				
 				echo '<td>'.(($w->publishND==0)?'-':number_format($w->publishND, 1)).'</td>';
 				echo '<td>'.(($w->publishOT==0)?'-':number_format($w->publishOT, 1)).'</td>';
+				echo '<td>'.(($w->publishHO==0)?'-':number_format($w->publishHO, 1)).'</td>';
 				echo '<td>'.$holidayArr[$d->holidayType].'</td>';
 				echo '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$w->empID_fk.'/viewlogdetails/?d='.$d->dateToday.'" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon2.png" width="25px"/></a></td>';				
 				
@@ -130,8 +143,9 @@
 				$takenHR += $w->publishDeduct;
 				$ndHR += $w->publishND;
 				$otHR += $w->publishOT;
+				$hoHR += $w->publishHO;
 			}else{
-				echo '<td><br/></td><td><br/></td><td><br/></td><td><br/></td><td><br/></td><td><br/></td>';
+				echo '<td colspan=7><br/></td>';
 			}
 		echo '</tr>';
 	}
@@ -141,6 +155,7 @@
 		echo '<td>'.number_format($takenHR, 1).'</td>';		
 		echo '<td>'.number_format($ndHR, 1).'</td>';
 		echo '<td>'.number_format($otHR, 1).'</td>';
+		echo '<td>'.number_format($hoHR, 1).'</td>';
 		echo '<td><br/></td>';
 		echo '<td><br/></td>';
 	echo '</tr>';
@@ -153,6 +168,29 @@
 ?>
 
 <script type="text/javascript">
+	$(function(){
+		$('#aAddItem').click(function(){
+			$(this).addClass('hidden');
+			$('select[name="addPayItem"]').removeClass('hidden');
+		});
+		
+		$('select[name="addPayItem"]').change(function(){
+			if($(this).val()!=''){
+				if($(this).val()=='other')
+					hrefLink = "<?= $this->config->base_url().'timecard/manangepaymentitem/?pageType=addItem&type=0' ?>";
+				else
+					hrefLink = "<?= $this->config->base_url().'timecard/'.$visitID.'/manangepaymentitem/?pageType=empUpdate&add=yes&once='.$payInfo->payPeriodEnd.'&payID=' ?>"+$(this).val();
+				
+				$('#addItemLink').attr('href', hrefLink);
+				$('#addItemLink').trigger('click');
+				
+				$('select[name="addPayItem"]').val('');
+				$('select[name="addPayItem"]').addClass('hidden');
+				$('#aAddItem').removeClass('hidden');
+			}
+		});	
+	});
+	
 	function regenerate(){
 		displaypleasewait();
 		$.post('<?= $this->config->base_url().'timecard/regeneratepayslip/'.$payslipID.'/' ?>',{}, 

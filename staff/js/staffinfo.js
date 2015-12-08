@@ -190,7 +190,7 @@ $(function () {
 				submitType:'jdetails',
 				empID:EMPID,
 				office:$('#office').val(),
-				holidaySched:$('#holidaySched').val(),
+				staffHolidaySched:$('#staffHolidaySched').val(),
 				shift:$('#shift').val(),
 				shiftSched:$('#shiftSched').val(),
 				startDate:$('#startDate').val(),

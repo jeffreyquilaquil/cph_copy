@@ -45,7 +45,10 @@ class Schedules extends MY_Controller {
 					$insArr = $_POST;
 					$insArr['addInfo'] = $this->user->empID.'--'.strtotime(date('Y-m-d H:i:s')).'|';
 					
-					$note = 'You added time holiday schedule '.$_POST['holidayName'].'.';				
+					$note = 'You added time holiday schedule '.$_POST['holidayName'].'.';	
+					
+					//update holiday type of tcAttendance if it exist
+					$this->dbmodel->updateQueryText('tcAttendance', 'holidayType="'.$_POST['holidayType'].'"', 'dateToday="'.date('Y-').date('m-d', strtotime($_POST['holidayDate'])).'"');
 				}else if($_POST['submitType']=='updateHoliday'){
 					$tbl = 'staffHolidays';
 					$where = array('holidayID'=>$_POST['holidayID']);
@@ -54,7 +57,10 @@ class Schedules extends MY_Controller {
 					$upArr = $_POST;
 					
 					$addUp = 'addInfo';					
-					$note = 'You updated time holiday schedule '.$_POST['holidayName'].'.';						
+					$note = 'You updated time holiday schedule '.$_POST['holidayName'].'.';	
+
+					//update holiday type of tcAttendance if it exist
+					$this->dbmodel->updateQueryText('tcAttendance', 'holidayType="'.$_POST['holidayType'].'"', 'dateToday="'.date('Y-').date('m-d', strtotime($_POST['holidayDate'])).'"');
 				}else if($_POST['submitType']=='deleteTime'){
 					$tbl = 'tcCustomSchedTime';
 					$where = array('timeID'=>$_POST['id']);

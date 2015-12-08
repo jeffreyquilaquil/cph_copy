@@ -1,7 +1,10 @@
+<?php
+	
+?>
 <button class="floatright btnclass" onClick="location.href='<?= $this->config->base_url() ?>timecard/managetimecard/managepayroll/'"><< Back to Manage Payroll</button>
 <h2><?= $managePayOptionsArr[$type] ?></h2>
 <hr/>
-<form id="formattendance" action="" method="POST" onSubmit="displaypleasewait();">
+
 <b>Payroll Type: </b><?php
 	$paytype = $this->textM->constantArr('payrollType');
 	echo $paytype[$computationtype].'<br/><br/>';
@@ -24,36 +27,64 @@
 				
 					echo '<div style="width:130px;">';
 						echo date('D', strtotime($d->dateToday)).'<br/>'.date('d M', strtotime($d->dateToday)).'<br/>';
-						echo $this->textM->formfield('selectoption', 'holidayType['.$d->dateToday.']', $d->holidayType, '', '', 'style="padding:3px; width:120px;"', $this->textM->constantArr('holidayTypes'));
+						echo $this->textM->formfield('selectoption', 'holidayType['.$d->dateToday.']', $d->holidayType, 'payrollSelectReviewDate', '', 'onChange="holidayChange(\''.$d->dateToday.'\', this)"', $this->textM->constantArr('holidayTypes'));
 					echo '</div>';
 				echo '</td>';
 			}
 		?>
 		</tr>
+		
 		<tr>
-			<td><br/></td>
+			<td>
+		<?php //other info
+			echo '<form id="formdates" action="" method="POST" onSubmit="displaypleasewait();">';
+				echo $this->textM->formfield('hidden', 'submitType', 'changeHoliday');
+				echo $this->textM->formfield('hidden', 'holidayType', '0');
+				echo $this->textM->formfield('hidden', 'dtoday', '');
+				
+				echo $this->textM->formfield('hidden', 'computationtype', $computationtype);
+				echo $this->textM->formfield('hidden', 'type', $_POST['type']);
+				echo $this->textM->formfield('hidden', 'start', $_POST['start']);
+				echo $this->textM->formfield('hidden', 'end', $_POST['end']);
+				echo $this->textM->formfield('hidden', 'empIDs', $_POST['empIDs']);	 
+			echo '</form>';
+		?>
+			<br/></td>
 		<?php
+		$onHolidayArr = array(); //this is to check if holiday
 			foreach($dataDates AS $d){
+				
 				$wday = date('D', strtotime($d->dateToday));
 				if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
 				else echo '<td>';
 					
-				echo '<b>HW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ND</b></td>';
+				echo '<b>';
+					echo 'HW&nbsp;&nbsp;|&nbsp;&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;ND';
+					
+					$isNextDayHoliday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday.' +1 day')));
+					if($d->holidayType>0 || $isNextDayHoliday!=false){
+						echo '&nbsp;&nbsp;|&nbsp;&nbsp;<span class="errortext">HO</span>';
+						$onHolidayArr[$d->dateToday] = $d->holidayType;
+					}
+				echo '</b></td>';
 			}
 		?>
 		</tr>
 	<?php
+	echo '<form id="formattendance" action="" method="POST" onSubmit="displaypleasewait();">';
+	///staffHolidaySched 0-PHL and 1 for US
+	
 		foreach($dataAttendance AS $empID=>$att){
 			echo '<tr>';
 				echo '<td align="left">';
 					echo $this->textM->formfield('checkbox', 'empIDs[]', $empID, 'classCheckMe').'&nbsp;';
 					echo '<a href="'.$this->config->base_url().'timecard/'.$empID.'/timelogs/" class="tanone"><b>'.$att['name'].'</b></a>';				
 				echo '</td>';
-				foreach($dataDates AS $d){
+								
+				foreach($dataDates AS $d){					
 					$wday = date('D', strtotime($d->dateToday));
 					if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
-					else echo '<td>';
-					
+					else echo '<td>';					
 							$addclass = '';
 							$timePaid = 0;
 							$timeND = 0;
@@ -70,13 +101,34 @@
 								} 
 								
 								if($timePaid!=8) $addclass .= ' payboxdiff';
+								
+								$stat = '';
+								if($log->status==1) $stat = 'disabled';
 							
-								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishTimePaid]', $timePaid, 'payrollboxes'.$addclass);
-								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishDeduct]', $timeDeduct, 'payrollboxes '.(($timeDeduct>0)?'payboxdeduct':''));
-								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishND]', $timeND, 'payrollboxes '.(($timeND>0)?'payND':''));
+								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishTimePaid]', $timePaid, 'payrollboxes'.$addclass, '', $stat);
+								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishDeduct]', $timeDeduct, 'payrollboxes '.(($timeDeduct>0)?'payboxdeduct':''), '', $stat);
+								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishND]', $timeND, 'payrollboxes '.(($timeND>0)?'payND':''), '', $stat);
+								
+								$isNextDayHoliday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday.' +1 day')));
+								if(isset($onHolidayArr[$d->dateToday]) || $isNextDayHoliday!=false){	
+									$holidayDate = $d->dateToday;
+									if($isNextDayHoliday!=false) $holidayDate = date('Y-m-d', strtotime($d->dateToday.' +1 day'));
+								
+									$isDisabled = false;
+									if($onHolidayArr[$holidayDate]!=4){
+										if($att['staffHolidaySched']==1 && $onHolidayArr[$holidayDate]!=3) $isDisabled = true;
+										else if($att['staffHolidaySched']==0 && $onHolidayArr[$holidayDate]==3) $isDisabled = true;
+									}
+									
+									if($isDisabled==true) $timeHO = 0;
+									else $timeHO = (($log->publishHO=='')?$this->payrollM->getHolidayHours($holidayDate, $log):$log->publishHO);
+									
+									echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishHO]', $timeHO, 'payrollboxes '.(($isDisabled==false)?'payHO':''), '', (($isDisabled==true)?'disabled':'').' '.$stat);
+								}
+									
+								
 								echo '<br/><a href="'.$this->config->base_url().'timecard/'.$empID.'/viewlogdetails/?d='.$d->dateToday.'" class="iframe fs11px">View details</a>';
-							}
-							
+							}						
 							
 					echo '</td>';
 				}
@@ -92,6 +144,7 @@
 	echo $this->textM->formfield('button', '', 'Save and Generate Payroll', 'btnclass', '', 'id="btnsaveandgenerate"');
 	
 	//other info
+	echo $this->textM->formfield('hidden', 'computationtype', $computationtype);
 	echo $this->textM->formfield('hidden', 'type', $_POST['type']);
 	echo $this->textM->formfield('hidden', 'start', $_POST['start']);
 	echo $this->textM->formfield('hidden', 'end', $_POST['end']);
@@ -104,9 +157,11 @@
 	<span class="fs11px colorgray">
 		<b>HW</b> - Hours Worked, 
 		<b>D</b> - Deduction, 
-		<b>ND</b> - Night Differential, 
+		<b>ND</b> - Night Differential,
+		<b>HO</b> - Holiday Hours,<br/>
 		<b>Red Box</b> - With Deduction, 
 		<b>Orange Box</b> - Not yet published
+		<b>Light Green Box</b> - For holidays, disabled if not applicable
 	</span>
 </div>
 
@@ -152,6 +207,15 @@
 			$('.classCheckMe').prop('checked', false);
 		});
 	});
+	
+	function holidayChange(dtoday, t){		
+		if(confirm('Are you sure you want to change the day type?')){
+			displaypleasewait();
+			$('input[name="holidayType"]').val($(t).val());
+			$('input[name="dtoday"]').val(dtoday);
+			$('#formdates').submit();
+		}else $(t).val(0);
+	}
 </script>
 
 

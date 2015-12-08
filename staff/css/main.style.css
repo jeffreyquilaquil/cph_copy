@@ -555,11 +555,13 @@ ul.tabs2 li.current{
 .orgchart a:hover{ text-decoration:underline; }
 
 
-.payrollboxes{ width:30px; padding:3px; text-align:center; }
+.payrollboxes{ width:20px; text-align:center; }
 .payboxdiff{ background-color:#ffb2b2; }
 .payboxdeduct{ background-color:#ff3c3c; }
 .payboxunpublish{ background-color:orange; }
 .payND{ color:blue; }
+.payHO{ background-color:#deffdc; }
+.payrollSelectReviewDate{ font-size:11px; width:125px; padding:3px; }
 
 .bordergrayleftright{
 	border-left:1px solid #ccc;

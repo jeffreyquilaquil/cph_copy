@@ -25,12 +25,9 @@ class Payrollmodel extends CI_Model {
 				$payIns['empID_fk'] = $emp;
 				$payIns['payrollsID_fk'] = $info['payrollsID'];
 				$payIns['monthlyRate'] = str_replace(',', '', $monthlyRate);
-				$payIns['basePay'] = str_replace(',', '', ($payIns['monthlyRate']/2));
 				$payslipID = $this->dbmodel->insertQuery('tcPayslips', $payIns);
-				$down['basePay'] = $payIns['basePay'];
 			}else{
 				$down['monthlyRate'] = str_replace(',', '', $monthlyRate);
-				$down['basePay'] = str_replace(',', '', ($down['monthlyRate']/2));
 			}
 			
 			////INSERT Payslip details
@@ -44,13 +41,12 @@ class Payrollmodel extends CI_Model {
 			////UPDATING RECORDS and COMPUTING FOR NET
 			$down['totalTaxable'] = $taxableIncome;
 			
-			$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType, payCDto, payCategory', 'payslipID_fk="'.$payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');		
+			$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType, payCDto, payCategory, payAmount', 'payslipID_fk="'.$payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');		
 			if(count($queryItems)>0){ 
 				$catArr = $this->textM->constantArr('payCategory');
-				$down['net'] = $down['basePay'];
+				$down['net'] = 0;
 				
 				$groupPerCat = array();	
-				$groupPerCat[0] = $down['basePay'];
 				foreach($queryItems AS $q){
 					if($q->payType=='credit'){
 						$down['net'] += $q->payValue;
@@ -60,6 +56,9 @@ class Payrollmodel extends CI_Model {
 						$groupPerCat[$q->payCategory] = ((isset($groupPerCat[$q->payCategory]))?$groupPerCat[$q->payCategory]-$q->payValue:-$q->payValue);
 					}				
 					
+					//this is for the base pay
+					if($q->payAmount=='basePay')
+						$down['basePay'] = $q->payValue;
 				}
 				
 				$down['earning'] = 0;
@@ -119,25 +118,48 @@ class Payrollmodel extends CI_Model {
 		$this->dbmodel->updateQueryText('tcPayslipDetails', 'payValue=0, numHR=0', 'payslipID_fk='.$payslipID);
 		
 		$itemArr = $this->payrollM->getPaymentItemsForPayroll($info);
+		
 		///INSERT PAYSLIP DETAILS except tax because it is computed last
 		foreach($itemArr AS $item){
 			$hr = 0;
 			$payValue = 0;
 			$happen = true;
 			
-			if($item->payAmount=='nightdiff' || $item->payAmount=='taken' || $item->payAmount=='overtime'){
+			$hourArr = array('nightdiff', 'taken', 'overtime', 'specialHoliday', 'regularHoliday');			
+			if(in_array($item->payAmount, $hourArr) || $item->prevAmount=='hourly'){
 				$hourlyRate = $this->payrollM->getDailyHourlyRate($info->monthlyRate, 'hourly');
 				
-				if($item->payAmount=='nightdiff'){
+				if($item->prevAmount=='hourly'){
+					$hr = $item->payAmount;
+					$payValue = $hourlyRate*$hr;
+					if($item->payPercent!=0) $payValue = ($payValue * $item->payPercent)/100;
+				}else if($item->payAmount=='nightdiff'){
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'publishND');
 					$payValue = ($hourlyRate*$hr) * 0.10;
 				}else if($item->payAmount=='overtime'){ ///overtime hours is 30%
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'publishOT');
 					$payValue = ($hourlyRate*$hr) * 0.30;
+				}else if($item->payAmount=='specialHoliday'){
+					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'special');
+					$payValue = ($hourlyRate*$hr) * 0.30;
+				}else if($item->payAmount=='regularHoliday'){
+					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'regular');
+					$payValue = ($hourlyRate*$hr);
 				}else{
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd);
 					$payValue = $hourlyRate*$hr;
 				}
+			}else if($item->prevAmount=='basePay'){
+				$hr = 0;
+				$dailyRate = $this->payrollM->getDailyHourlyRate($info->monthlyRate, 'daily');
+				
+				$startDate = $this->dbmodel->getSingleField('staffs', 'startDate', 'empID="'.$info->empID_fk.'"');
+				if($startDate>=$info->payPeriodStart && $startDate<=$info->payPeriodEnd){
+					$hr = $this->payrollM->getNumHoursExWeekend($startDate, $info->payPeriodEnd);
+					$payValue = $dailyRate*$hr;
+				}else{
+					$payValue = str_replace(',', '', ($info->monthlyRate/2));
+				}				
 			}else if($item->payAmount=='philhealthTable'){
 				$payValue = $this->dbmodel->getSingleField('philhealthTable', 'employeeShare', 'minRange<="'.$info->monthlyRate.'" AND maxRange>= "'.$info->monthlyRate.'"');
 			}else if($item->payAmount=='sssTable'){
@@ -204,7 +226,18 @@ class Payrollmodel extends CI_Model {
 		$type = 'publishDeduct or publishND';
 	*****/
 	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct'){
-		$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish', 'SUM('.$type.') AS hours', 'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
+		if($type=='special' || $type=='regular'){
+			if($type=='special'){
+				$cond = 'AND (holidayType=2 OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))=2))';
+			}else{
+				$cond = 'AND (holidayType IN (1,3,4) OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN (1,3,4)))';
+			}
+			
+			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate', 'SUM(publishHO) AS hours', 
+			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" '.$cond);
+		}else{
+			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish', 'SUM('.$type.') AS hours', 'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
+		}
 		
 		if(empty($hourDeduction)) return 0;
 		else return $hourDeduction;
@@ -235,18 +268,16 @@ class Payrollmodel extends CI_Model {
 		If Monthly
 			Total earnings minus (Philhealth and absences)
 	******/
-	public function getTaxableIncome($payslipID){		
-		$basePay = 0;
+	public function getTaxableIncome($payslipID){
 		$taxable = 0;
-		$info = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payItemID_fk, payValue, payType, basePay, payCDto', 'payslipID_fk="'.$payslipID.'" AND (payCDto = "taxable" OR payCDto="base") AND tcPayslipItems.payAmount!="taxTable"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk LEFT JOIN tcPayslips ON payslipID= payslipID_fk');
+		$info = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payItemID_fk, payValue, payType, payCDto', 'payslipID_fk="'.$payslipID.'" AND (payCDto = "taxable" OR payCDto="base") AND tcPayslipItems.payAmount!="taxTable"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk LEFT JOIN tcPayslips ON payslipID= payslipID_fk');
 		
 		foreach($info AS $in){
-			$basePay = $in->basePay;
 			if($in->payType=='debit') $taxable -= $in->payValue;
 			else $taxable += $in->payValue;
 		}
 		
-		return $basePay + $taxable;		
+		return $taxable;		
 	}
 	
 	
@@ -381,23 +412,253 @@ class Payrollmodel extends CI_Model {
 	/******
 		$activeOnly=1 show only active items
 	******/
-	public function getPaymentItems($empID, $activeOnly=0){
-		$condition = '';
-		if($activeOnly==1) $condition = ' AND s.status=1';
+	public function getPaymentItems($empID, $activeOnly=0, $condition=''){
+		if($activeOnly==1) $condition .= ' AND s.status=1';
 		
-		$sql= 'SELECT payID, payID AS payID_fk, payName, payType, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+		$sql= 'SELECT payID, payID AS payID_fk, payName, payType, s.payPercent, s.payAmount AS prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 					FROM tcPayslipItems AS s
 					WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.') '.$condition.'
 					UNION
-					SELECT payStaffID AS payID, payID_fk, payName, payType, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
+					SELECT payStaffID AS payID, payID_fk, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
 					FROM tcPayslipItemStaffs AS s
 					LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$condition.' 
-					ORDER BY status DESC, isMain DESC, payStart, payPeriod, payCategory, payName';
+					ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
 		$query = $this->dbmodel->dbQuery($sql);
 			
 		return $query->result(); 
 	}
 	
+	public function getHolidayHours($holidayDate, $current){
+		$hr = 0;		
+		$holidayStart = date('Y-m-d 00:00:00', strtotime($holidayDate));
+		$holidayEnd = date('Y-m-d 24:00:00', strtotime($holidayDate));
+		
+		if($current->timeIn<=date('Y-m-d H:i:s', strtotime($current->schedIn.' +15 mins'))) $timeInShould = $current->schedIn;
+		else $timeInShould = date('Y-m-d H:00:00', strtotime($current->timeIn.' +1 hour'));
+		
+		if($current->timeOut>=date('Y-m-d H:i:s', strtotime($current->schedOut.' -15 mins'))) $timeOutShould = $current->schedOut;
+		else $timeOutShould = date('Y-m-d H:00:00', strtotime($current->timeOut.' +1 hour'));
+						
+		for($t=$timeInShould; $t<$timeOutShould; ){
+			if($t>=$holidayStart && $t<=$holidayEnd)
+				$hr++;
+			
+			$t = date('Y-m-d H:00:00', strtotime($t.' +1 hour'));
+		}
+		
+		if($hr>4) $hr--; //minus 1 hour for break
+		
+		return $hr;
+	}
+	
+	public function isHoliday($date){
+		$holiday = false;
+		
+		$holidayType = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
+		if(!empty($holidayType) && $holidayType>0) $holiday=$holidayType;
+		
+		return $holiday;
+	}
+	
+	public function pdfPayslip($empID, $payslipID){
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+
+		$pdf = new FPDI();
+		$pdf->AddPage();		
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'pdfpayslip.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','',9);
+		$pdf->setTextColor(0, 0, 0);
+		
+		$payInfo = $this->dbmodel->getSingleInfo('tcPayslips', 
+				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, advance, benefit, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, title, tcPayrolls.status, staffHolidaySched, levelName', 
+				'payslipID="'.$payslipID.'" AND empID_fk="'.$empID.'"', 
+				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=orgLevel_fk');
+	
+		if(!empty($payInfo)){
+			$catArr = $this->textM->constantArr('payCategory');
+			$dataPay = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$payslipID.'" AND payValue!="0.00"',
+					'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
+			
+			$dataSum = $this->dbmodel->getSingleInfo('tcPayslips', 'SUM(earning) AS earning, SUM(deduction) AS deduction, SUM(allowance) AS allowance, SUM(adjustment) AS adjustment, SUM(bonus) AS bonus, SUM(advance) AS advance, SUM(benefit) AS benefit, SUM(net) AS net', 'empID_fk="'.$empID.'" AND pstatus=1 AND status<3 AND YEAR(payPeriodEnd)="'.date('Y').'"',
+			'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+											
+			$pdf->setXY(20, 46);
+			$pdf->Write(0,$payInfo->idNum); //employee no
+			$pdf->setXY(38, 44);
+			$pdf->MultiCell(80, 4, $payInfo->lname.', '.$payInfo->fname,0,'C',false); //employee name
+			$pdf->setXY(117, 44);
+			$pdf->MultiCell(57, 4, date('M d, Y', strtotime($payInfo->payPeriodStart)).' to '.date('M d, Y', strtotime($payInfo->payPeriodEnd)),0,'C',false);  //period
+			$pdf->setXY(177, 46);
+			$pdf->Write(0,date('M d, Y', strtotime($payInfo->payDate))); //pay date
+			
+			$pdf->SetFont('Arial','',7);
+			$pdf->setXY(15, 53);
+			$pdf->Write(0,$payInfo->levelName.' ('.(($payInfo->staffHolidaySched==0)?'PHL':'US').' Holiday Schedule) - '.$payInfo->title); //info between
+			
+			$earDisplay = "Monthly Rate: ".$payInfo->monthlyRate."\n";
+			$earDisplay .= "Daily Rate: ".$this->payrollM->getDailyHourlyRate($payInfo->monthlyRate, 'daily')."\n";
+			
+			/////$arr = array('pay', 'adjustment', 'advance', 'allowance', 'benefit', 'bonus', 'deduction', 'vacation pay');
+			
+			$hourRate = $this->payrollM->getDailyHourlyRate($payInfo->monthlyRate, 'hourly');
+			$rateDisplay = "\n\n\n";
+			$hourDisplay = "\n\n\n";
+			$amountDisplay = "\n\n\n";
+			
+			$otherArr = array();
+			foreach($dataPay AS $pay){
+				$otherArr[$pay->payCategory][] = $pay;
+			}
+			
+			foreach($otherArr AS $o=>$other){
+				if($o!=6){ //not equal to dedution
+					$ear = '';
+					$hr = '';
+					$rate = '';
+					$pay = '';
+					foreach($other AS $o2){
+						$ear .= $o2->payName."\n";
+						$pay .= (($o2->payType=="debit")?'-':'').$this->textM->convertNumFormat($o2->payValue)."\n";
+											
+						if($o2->numHR>0){
+							$rate .= (($o2->payType=="debit")?'-':'').$hourRate;
+							if($o2->payAmount=='basePay') $hr .= $o2->numHR.' days';
+							else $hr .= $o2->numHR.' h';
+						}else if($o2->payAmount=='basePay'){
+							$rate .= $hourRate;
+							$hr .= '-';
+						}
+						$hr .= "\n";
+						$rate .= "\n";
+					}
+					
+					if(!empty($ear)){
+						$earDisplay .= "\n".strtoupper($catArr[$o])."\n".$ear;
+						$rateDisplay .= "\n".$rate."\n";
+						$hourDisplay .= "\n".$hr."\n";
+						$amountDisplay .= "\n".$pay."\n";
+					}
+				}									
+			}
+									
+			$pdf->setXY(12, 68);
+			$pdf->MultiCell(50, 4, $earDisplay,0,'L',false);  //earnings
+			$pdf->setXY(61, 68);
+			$pdf->MultiCell(18, 4, $rateDisplay,0,'R',false);  //hourly rate
+			$pdf->setXY(79, 68);
+			$pdf->MultiCell(18, 4, $hourDisplay,0,'R',false);  //Hours
+			$pdf->setXY(98, 68);
+			$pdf->MultiCell(18, 4, $amountDisplay,0,'R',false);  //Amounts
+			
+			
+			//THIS IS FOR THE DEDUCTIONS
+			$deduct = "";
+			$curr = "";
+			$ytd = "";
+			
+			$deductArr = array();
+			foreach($otherArr[6] AS $nobya){
+				$deductArr[$nobya->payID] = $nobya;
+			}
+			
+			$deductItems = $this->payrollM->getPaymentItems($empID, 1, ' AND payCategory=6');		
+			
+			foreach($deductItems AS $ded){
+				$deduct .= $ded->payName."\n";
+				if(isset($deductArr[$ded->payID])) $curr .= $this->textM->convertNumFormat($deductArr[$ded->payID]->payValue)."\n";
+				else $curr .= "-\n";
+								
+				$ytdAmount = $this->payrollM->getTotalDeduction($empID, $ded->payID);
+				$ytd .= $this->textM->convertNumFormat($ytdAmount)."\n";
+			}
+			
+			$pdf->setXY(117, 68);
+			$pdf->MultiCell(50, 4, $deduct,0,'L',false);  //deductions
+			$pdf->setXY(167.5, 68);
+			$pdf->MultiCell(18, 4, $curr,0,'R',false);  //curr amounts
+			$pdf->setXY(188, 68);
+			$pdf->MultiCell(18, 4, $ytd,0,'R',false);  //YTD amounts
+						
+			$pdf->SetFont('Arial','',8);
+			$detailsArr = array('earning'=>'EARNINGS', 'allowance'=>'ALLOWANCES', 'adjustment'=>'ADJUSTMENTS', 'bonus'=>'BONUSES', 'advance'=>'ADVANCES', 'benefit'=>'BENEFITS', 'deduction'=>'DEDUCTIONS');
+			$deName = "";
+			$deAmount = "";
+			$deYTD = "";
+			foreach($detailsArr AS $d=>$k){
+				if($payInfo->$d!="0.00"){
+					$deName .= $k."\n";
+					$deAmount .= $this->textM->convertNumFormat($payInfo->$d)."\n";
+					if(isset($dataSum->$d)) $deYTD .= $this->textM->convertNumFormat($dataSum->$d)."\n";
+				}
+			}
+			$deName .= "- - - - - - - - - - - - - - - - - - - - -\nNET PAY";
+			$deAmount .= "- - - - - - - - - - -\n".$this->textM->convertNumFormat($payInfo->net);
+			$deYTD .= "- - - - - - - - - - -\n".$this->textM->convertNumFormat($dataSum->net);
+						
+			$pdf->setXY(13, 190);
+			$pdf->MultiCell(50, 4, $deName,0,'L',false);  //deductions
+			
+			$pdf->setXY(65, 190);
+			$pdf->MultiCell(25, 4, $deAmount,0,'R',false);  //curr amounts
+			$pdf->setXY(90, 190);
+			$pdf->MultiCell(25, 4, $deYTD,0,'R',false);  //ytd amounts
+						
+			$pdf->SetFont('Arial','',12);
+			$pdf->setXY(132, 203);
+			$pdf->MultiCell(62, 10, 'PHP*****'.$this->textM->convertNumFormat($payInfo->net),0,'C',false); //NET
+			
+			$pdf->SetFont('Arial','',9);
+			$pdf->setXY(39, 238);
+			$pdf->Write(0,$payInfo->idNum); //employee no		
+			$pdf->setXY(28, 242);
+			$pdf->Write(0,date('F d, Y', strtotime($payInfo->payDate))); //payable on
+			$pdf->setXY(10, 255);
+			$pdf->Write(0,$payInfo->lname.', '.$payInfo->fname); //to the order of
+			$pdf->setXY(160, 243);
+			$pdf->MultiCell(45, 10, 'PHP*****'.$this->textM->convertNumFormat($payInfo->net),0,'C',false); //NET
+		}
+				
+		
+		$pdf->Output('pdfpdf', 'I');
+		
+	}
+	
+	public function getNumHoursExWeekend($dateStart, $dateEnd){
+		$hours = 0;
+		
+		$dd = $dateStart;
+		while($dd<=$dateEnd){
+			$today = date('l', strtotime($dd));
+			if($today!='Saturday' && $today!='Sunday'){
+				$hours++;
+			}			
+			
+			$dd = date('Y-m-d', strtotime($dd.' +1 day'));
+		}
+		
+		return $hours;
+	}
+	
+	public function getTotalDeduction($empID, $itemID){
+		$val = 0;
+		$myItemInfo = $this->payrollM->getPaymentItems($empID, 1, ' AND payID='.$itemID);
+		if(isset($myItemInfo[0])){
+			$myItemInfo = $myItemInfo[0];
+			
+			$condition = '';
+			if($myItemInfo=='0000-00-00') $condition .= ' AND YEAR(payPeriodEnd)="'.date('Y').'"';
+			
+			$val = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk LEFT JOIN tcPayslips ON payslipID=payslipID_fk LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 
+				'SUM(payValue)', 
+				'tcPayslips.empID_fk="'.$empID.'" AND payItemID_fk="'.$itemID.'" AND tcPayrolls.status!=3 AND tcPayslips.pstatus=1 AND tcPayslipItems.status=1'.$condition);
+		}
+		
+		return $val;
+	}
 	
 }
 ?>

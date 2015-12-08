@@ -568,7 +568,6 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	
-	
 }
 ?>
 	

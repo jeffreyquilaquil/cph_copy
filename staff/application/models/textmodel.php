@@ -729,13 +729,17 @@ class Textmodel extends CI_Model {
 		}else if($a=='payCategory'){
 			$arr = array('pay', 'adjustment', 'advance', 'allowance', 'benefit', 'bonus', 'deduction', 'vacation pay');
 		}else if($a=='payAmountOptions'){
-			$arr = array('specific amount'=>'specific amount', 
+			$arr = array('specific amount'=>'specific amount',
+							'basePay'=>'Base Pay', 
+							'hourly'=>'Hourly Rate', 
 							'sssTable'=>'SSS Table', 
 							'taxTable'=>'Tax Table', 
 							'philhealthTable'=>'Philhealth Table',
 							'taken'=>'Regular Hours Taken',
-							'nightdiff'=>'Night Diff Hours',
-							'overtime'=>'Over Time Hours'
+							'nightdiff'=>'Night Diff (10%)',
+							'overtime'=>'Over Time (30%)',
+							'specialHoliday'=>'Special Holiday (30%)',
+							'regularHoliday'=>'Regular Holiday (100%)'
 						);
 		}else if($a=='payGoingTo'){
 			$arr = array('base'=>'base', 'gross'=>'gross', 'taxable'=>'taxable', 'net'=>'net');
@@ -900,13 +904,17 @@ class Textmodel extends CI_Model {
 						<td>Status</td>
 						<td><br/></td>
 					</tr>';
-			
+								
 			foreach($dataItems AS $item){
 				$bye .= '<tr '.(($item->status==0)?'style="background-color:#ccc; color:#fff;"':'').'>';	
 					$bye .= '<td>'.$item->payName.' ('.$item->payCDto.')</td>';
 					$bye .= '<td>'.$item->payType.' '.(($item->isMain==0)?'(custom)':'').'</td>';
 					$bye .= '<td>'.$catArray[$item->payCategory].'</td>';					
-					$bye .= '<td>'.((is_numeric(str_replace(',','',$item->payAmount)))?$this->textM->convertNumFormat($item->payAmount):'computed').'</td>';
+					$bye .= '<td>';
+						if($item->prevAmount=='hourly') $bye .= $item->payAmount.' hours';
+						else if(is_numeric(str_replace(',','',$item->payAmount))) $bye .= $this->textM->convertNumFormat($item->payAmount);
+						else $bye .= 'computed';
+					$bye .= '</td>';
 					$bye .= '<td align="center">'.$arrPeriod[$item->payPeriod];
 							if($item->payStart!='0000-00-00'){
 								if($item->payStart==$item->payEnd) $bye .= '<br/>('.$item->payStart.')';

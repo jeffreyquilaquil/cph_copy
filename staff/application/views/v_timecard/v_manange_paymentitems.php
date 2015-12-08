@@ -40,7 +40,7 @@
 			
 	$amountOptions = $this->textM->constantArr('payAmountOptions');
 	foreach($amountOptions AS $k=>$am)
-		$arrPayAmountOptions[$k] = ((!empty($k!='specific amount'))?'computed base on ':'').$am;
+		$arrPayAmountOptions[$k] = (($k!='specific amount')?'computed base on ':'').$am;
 						
 	echo '<form id="formUpdate" action="" method="POST" onSubmit="displaypleasewait();">';
 	echo '<table class="tableInfo">';			
@@ -90,6 +90,15 @@
 			echo '<td>';
 				echo $this->textM->formfield('selectoption', 'payAmount', ((is_numeric(str_replace(',','',$dataItemInfo->payAmount)))?'specific amount':$dataItemInfo->payAmount), 'forminput', 'Please select option', 'required disabled', $arrPayAmountOptions);
 				echo '<div id="divPayAmount" class="'.((is_numeric(str_replace(',','',$dataItemInfo->payAmount)))?'':'hidden').'" style="margin-top:5px;">Php '.$this->textM->formfield('text', 'inputPayAmount', $this->textM->convertNumFormat($dataItemInfo->payAmount), 'forminput', '', 'required disabled style="width:90%"').'</div>';
+			
+				echo '<div id="divPayPercent" class="'.(($dataItemInfo->payAmount!='hourly')?'hidden':'').'" style="margin-top:5px;">';
+					if($pageType=='addItem' || $pageType=='updateItem') echo $this->textM->formfield('number', 'payPercent', ((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:'0'), 'forminput', '', 'disabled style="width:100px"').' %';
+					else echo 'number of hours x '.((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:0). '%';
+					
+				echo '</div>';
+				if($pageType=='addItem' || $pageType=='updateItem'){
+					
+				}				
 			echo '</td>';
 		echo '</tr>';
 		
@@ -99,7 +108,11 @@
 				echo $this->textM->formfield('selectoption', 'payPeriod', $dataItemInfo->payPeriod, 'forminput', 'Please select option', 'required disabled', $arrPeriod);
 				
 				echo '<div id="divOnce" '.(($dataItemInfo->payPeriod=='once')?'':'class="hidden"').'>';
-						echo ' On '.$this->textM->formfield('text', 'payStartOnce', (($dataItemInfo->payStart!='0000-00-00')?date('F d, Y', strtotime($dataItemInfo->payStart)):''), 'forminput datepick', '', 'disabled style="width:90%; margin-top:5px;" '.(($dataItemInfo->payPeriod=='once' && $pageType=='empUpdate')?'required':''));
+						$payOnce = '';
+						if(isset($_GET['once'])) $payOnce = date('F d, Y', strtotime($_GET['once']));
+						if(!empty($dataItemInfo->payStart) && $dataItemInfo->payStart!='0000-00-00') $payOnce = date('F d, Y', strtotime($dataItemInfo->payStart));
+				
+						echo ' On '.$this->textM->formfield('text', 'payStartOnce', $payOnce, 'forminput datepick', '', 'disabled style="width:90%; margin-top:5px;" '.(($dataItemInfo->payPeriod=='once' && $pageType=='empUpdate')?'required':''));
 				echo '</div>';
 												
 				echo '<div id="divNotOnce" '.(($dataItemInfo->payPeriod!='once' && $dataItemInfo->payStart!='0000-00-00' && $dataItemInfo->payEnd!='0000-00-00')?'':'class="hidden"').' style="padding-top:5px;">';
@@ -110,6 +123,13 @@
 				
 			echo '</td>';
 		echo '</tr>';
+		
+		if($pageType=='empUpdate' && $dataItemInfo->payAmount=='hourly'){
+			echo '<tr>';
+				echo '<td>Number of Hours</td>';
+				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', 'placeholder', 'addition').'</td>';
+			echo '</tr>';
+		}
 		
 		if($pageType!='addItem' && !isset($_GET['add'])){
 			echo '<tr>';
@@ -162,8 +182,11 @@
 <script type="text/javascript">
 	$(function(){
 		$('select[name="payAmount"]').change(function(){
+			$('#divPayAmount').addClass('hidden');
+			$('#divPayPercent').addClass('hidden');
+			
 			if($(this).val()=='specific amount') $('#divPayAmount').removeClass('hidden');
-			else $('#divPayAmount').addClass('hidden');
+			else if($(this).val()=='hourly') $('#divPayPercent').removeClass('hidden');
 		});
 		
 		$('select[name="payPeriod"]').change(function(){
