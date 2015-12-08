@@ -118,7 +118,7 @@ class Payrollmodel extends CI_Model {
 		$this->dbmodel->updateQueryText('tcPayslipDetails', 'payValue=0, numHR=0', 'payslipID_fk='.$payslipID);
 		
 		$itemArr = $this->payrollM->getPaymentItemsForPayroll($info);
-		
+				
 		///INSERT PAYSLIP DETAILS except tax because it is computed last
 		foreach($itemArr AS $item){
 			$hr = 0;
@@ -287,11 +287,21 @@ class Payrollmodel extends CI_Model {
 	public function getTax($payslipID, $taxableIncome, $payType, $taxstatus){		
 		$tax = 0;
 		$prevTax = 0;
+		$compute = true;
 		$taxableIncome = str_replace(',', '', $taxableIncome);
 		
-		if($payType=='monthly'){
-			$info = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, empID_fk, payPeriodStart, payPeriodEnd, payType', 'payslipID="'.$payslipID.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
-			if(count($info)>0){
+		$info = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, empID_fk, payPeriodStart, payPeriodEnd, payType', 'payslipID="'.$payslipID.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+		
+		if(count($info)>0){
+			$taxMe = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.payAmount, tcPayslipItemStaffs.status', 'tcPayslipItems.payAmount="taxTable" AND empID_fk="'.$info->empID_fk.'"', 'LEFT JOIN tcPayslipItems ON payID=payID_fk');
+			if(count($taxMe)>0){
+				if($taxMe->status==0 || $taxMe->payAmount!='taxTable'){
+					$compute = false;
+					if($taxMe->payAmount!='taxTable') $tax = $taxMe->payAmount;
+				}
+			}
+			
+			if($payType=='monthly' && $compute==true){
 				$payStart = date('Y-m-26', strtotime($info->payPeriodStart.' -1 month'));
 				$payEnd = date('Y-m-10', strtotime($info->payPeriodStart));
 				
@@ -302,12 +312,14 @@ class Payrollmodel extends CI_Model {
 				if(!empty($prevInfo)){ //get previous tax
 					$prevTax = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payValue', 'payslipID_fk="'.$prevInfo->payslipID.'" AND payAmount="taxTable"');
 					$taxableIncome += str_replace(',', '', $prevInfo->totalTaxable);
-				}else $payType = 'semi';
-			}			
+				}else $payType = 'semi';		
+			}
 		}
 		
-		$tax = $this->payrollM->computeTax($payType, $taxableIncome, $taxstatus); 
-		$tax -= $prevTax; ///minus tax for previous tax paid
+		if($compute==true){
+			$tax = $this->payrollM->computeTax($payType, $taxableIncome, $taxstatus); 
+			$tax -= $prevTax; ///minus tax for previous tax paid
+		}
 		
 		return $tax;	
 	}
@@ -424,7 +436,7 @@ class Payrollmodel extends CI_Model {
 					LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$condition.' 
 					ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
 		$query = $this->dbmodel->dbQuery($sql);
-			
+					
 		return $query->result(); 
 	}
 	
