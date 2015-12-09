@@ -99,6 +99,7 @@
 		<tr class="trlabel">
 			<td width="20%">Period Start</td>
 			<td>Period End</td>
+			<td>Pay Type</td>
 			<td>Number Generated</td>
 			<td>Status</td>
 			<td width="10%"><br/></td>
@@ -108,6 +109,7 @@
 			echo '<tr>';
 				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodStart)).'</td>';
 				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodEnd)).'</td>';
+				echo '<td>'.(($pay->payType=='semi')?'Semi-Monthly':'Monthly').'</td>';
 				echo '<td>'.$pay->numGenerated.'</td>';
 				echo '<td>'.$payrollStatusArr[$pay->status].'</td>';
 				echo '<td>';
