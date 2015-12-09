@@ -695,7 +695,7 @@ class Payrollmodel extends CI_Model {
 		}else{
 			while($d<=$dateafter){
 				$arr[] = array(
-					'start' => date('Y-m-10', strtotime($d)),
+					'start' => date('Y-m-11', strtotime($d)),
 					'end' => date('Y-m-25', strtotime($d))
 				);
 				$d = date('Y-m-d', strtotime($d.' +1 month'));
