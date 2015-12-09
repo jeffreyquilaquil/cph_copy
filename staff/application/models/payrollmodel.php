@@ -471,13 +471,13 @@ class Payrollmodel extends CI_Model {
 		
 		return $holiday;
 	}
-	
-	public function pdfPayslip($empID, $payslipID){
+		
+	public function pdfPayslip($empID, $payslipID){		
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
-
-		$pdf = new FPDI();
-		$pdf->AddPage();		
+		$pdf = new FPDI();	
+		
+		$pdf->AddPage();	
 		$pdf->setSourceFile(PDFTEMPLATES_DIR.'pdfpayslip.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
@@ -486,7 +486,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setTextColor(0, 0, 0);
 		
 		$payInfo = $this->dbmodel->getSingleInfo('tcPayslips', 
-				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, advance, benefit, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, title, tcPayrolls.status, staffHolidaySched, levelName', 
+				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, advance, benefit, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, bdate, startDate, title, tcPayrolls.status, staffHolidaySched, levelName', 
 				'payslipID="'.$payslipID.'" AND empID_fk="'.$empID.'"', 
 				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=orgLevel_fk');
 	
@@ -633,10 +633,8 @@ class Payrollmodel extends CI_Model {
 			$pdf->setXY(160, 243);
 			$pdf->MultiCell(45, 10, 'PHP*****'.$this->textM->convertNumFormat($payInfo->net),0,'C',false); //NET
 		}
-				
 		
-		$pdf->Output('pdfpdf', 'I');
-		
+		$pdf->Output('pdfpdf.pdf', 'I');
 	}
 	
 	public function getNumHoursExWeekend($dateStart, $dateEnd){

@@ -1452,7 +1452,7 @@ class Timecard extends MY_Controller {
 			if($empID==$this->user->empID) unset($data['column']);
 						
 			$data['payInfo'] = $this->dbmodel->getSingleInfo('tcPayslips', 
-				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, title, tcPayrolls.status', 
+				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, bdate, title, tcPayrolls.status', 
 				'payslipID="'.$payID.'" AND empID_fk="'.$empID.'"', 
 				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 			
@@ -1471,6 +1471,7 @@ class Timecard extends MY_Controller {
 				
 				if(!isset($data['access']) && isset($_GET['show']) && $_GET['show']=='pdf'){
 					$this->payrollM->pdfPayslip($empID, $payID);
+					exit;					
 				}else{
 					$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
 					$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
