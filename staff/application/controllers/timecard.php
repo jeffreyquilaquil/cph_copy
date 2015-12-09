@@ -1168,8 +1168,8 @@ class Timecard extends MY_Controller {
 					$genpayArr['dateStart'] =  date('Y-m-d', strtotime($_POST['start']));
 					$genpayArr['dateEnd'] =  date('Y-m-d', strtotime($_POST['end']));
 					
-					$payrollInfo = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payType', 'payPeriodStart="'.$genpayArr['dateStart'].'" AND payPeriodEnd="'.$genpayArr['dateEnd'].'" AND status=1');
-					
+					$payrollInfo = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payType', 'payPeriodStart="'.$genpayArr['dateStart'].'" AND payPeriodEnd="'.$genpayArr['dateEnd'].'" AND status!=3');
+										
 					if(count($payrollInfo)>0){
 						$genpayArr['payrollsID'] = $payrollInfo->payrollsID;
 						$genpayArr['payType'] = $payrollInfo->payType;

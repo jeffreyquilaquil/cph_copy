@@ -74,7 +74,7 @@ class Payrollmodel extends CI_Model {
 			
 			//number generated
 			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'" AND pstatus=1');
-			$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"', 'payrollsID="'.$info['payrollsID'].'"');
+			$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'", status=0', 'payrollsID="'.$info['payrollsID'].'"');
 		}
 	}
 	
