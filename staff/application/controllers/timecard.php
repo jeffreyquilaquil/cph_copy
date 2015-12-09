@@ -1466,9 +1466,9 @@ class Timecard extends MY_Controller {
 			if($empID==$this->user->empID) unset($data['column']);
 						
 			$data['payInfo'] = $this->dbmodel->getSingleInfo('tcPayslips', 
-				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, bdate, title, tcPayrolls.status', 
+				'payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, fname, lname, idNum, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched', 
 				'payslipID="'.$payID.'" AND empID_fk="'.$empID.'"', 
-				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=orgLevel_fk');
 			
 			if($this->access->accessFullHRFinance==false && $data['payInfo']!=$this->user->empID && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
 				$data['access'] = false;

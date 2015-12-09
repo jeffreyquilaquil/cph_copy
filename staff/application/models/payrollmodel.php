@@ -153,9 +153,12 @@ class Payrollmodel extends CI_Model {
 				$hr = 0;
 				$dailyRate = $this->payrollM->getDailyHourlyRate($info->monthlyRate, 'daily');
 				
-				$startDate = $this->dbmodel->getSingleField('staffs', 'startDate', 'empID="'.$info->empID_fk.'"');
-				if($startDate>=$info->payPeriodStart && $startDate<=$info->payPeriodEnd){
-					$hr = $this->payrollM->getNumHoursExWeekend($startDate, $info->payPeriodEnd);
+				$sDates = $this->dbmodel->getSingleInfo('staffs', 'startDate, endDate', 'empID="'.$info->empID_fk.'"');
+				if($sDates->startDate>=$info->payPeriodStart && $sDates->startDate<=$info->payPeriodEnd){
+					$hr = $this->payrollM->getNumHoursExWeekend($sDates->startDate, $info->payPeriodEnd);
+					$payValue = $dailyRate*$hr;
+				}else if($sDates->endDate!="0000-00-00" && $sDates->endDate>=$info->payPeriodStart && $sDates->endDate<=$info->payPeriodEnd){
+					$hr = $this->payrollM->getNumHoursExWeekend($info->payPeriodStart, $sDates->endDate);
 					$payValue = $dailyRate*$hr;
 				}else{
 					$payValue = str_replace(',', '', ($info->monthlyRate/2));

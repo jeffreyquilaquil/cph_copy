@@ -29,6 +29,14 @@
 		<td><?= $payInfo->lname.', '.$payInfo->fname ?></td>
 	</tr>
 	<tr>
+		<td>Title</td>
+		<td><?= $payInfo->title.' ('.(($payInfo->staffHolidaySched==0)?'PHL':'US').' Holiday Schedule) - '.$payInfo->levelName ?></td>
+	</tr>
+	<tr>
+		<td>Start Date</td>
+		<td><?= date('F d, Y', strtotime($payInfo->startDate)) ?></td>
+	</tr>
+	<tr>
 		<td width="20%">Period</td>
 		<td><?= date('F d, Y', strtotime($payInfo->payPeriodStart)).' - '.date('F d, Y', strtotime($payInfo->payPeriodEnd)).' <b>('.(($payInfo->payType=='semi')?'Semi-Monthly':'Monthly').')</b>' ?></td>
 	</tr>
