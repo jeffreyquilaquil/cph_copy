@@ -232,7 +232,7 @@
 				if($row->offenselevel==1) $ndates = 4;
 				else $ndates = 10;
 				for($i=1; $i<=$ndates; $i++){
-					echo '<input type="text" class="datepick forminput suspensionDates" name="sdates[]" placeholder="Date '.$i.'"/>';
+					echo '<input type="text" class="datepickSuspend forminput suspensionDates" name="sdates[]" placeholder="Date '.$i.'"/>';
 				}
 			?>
 			</td>
@@ -277,7 +277,7 @@
 			<td>
 			<?php
 				for($k=1; $k<=$numoptions; $k++){
-					echo '<input type="text" id="date'.$k.'" class="datepick forminput" name="sdates[]" placeholder="Date '.$k.'"/>';
+					echo '<input type="text" id="date'.$k.'" class="datepickSuspend forminput" name="sdates[]" placeholder="Date '.$k.'"/>';
 				}
 			?>
 			</td>
@@ -380,9 +380,22 @@
 
 <script type="text/javascript">
 	$(function(){
-		$('.datepick').datetimepicker({ 
+		$('.datepickSuspend').datetimepicker({ 
 			format:'F d, Y', 
+			minDate: 0,
 			timepicker:false
+		});
+		
+		$('.datepickSuspend').blur(function(){
+			selectdDate = $(this).val();
+			if(selectdDate!=''){
+				d = new Date(selectdDate);
+				dayOfWeek = d.getDay();
+				if(dayOfWeek<2 || dayOfWeek>4){
+					alert('Invalid suspension dates. Select dates on Tuesdays, Wednesdays and Thursdays.');
+					$(this).val('');
+				}
+			}
 		});
 		
 		$('#fileToUpload').change(function(){
