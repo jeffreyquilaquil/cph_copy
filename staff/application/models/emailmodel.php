@@ -5,6 +5,7 @@ class Emailmodel extends CI_Model {
     function __construct() {
         // Call the Model constructor
         parent::__construct();	
+		$this->load->model('timecardmodel', 'timeM');
     }
 	
 	function sendEmail( $from, $to, $subject, $body, $fromName='', $CC='', $BCC='' ){
@@ -287,6 +288,21 @@ class Emailmodel extends CI_Model {
 		$to = 'dayshift.cebu@tatepublishing.net,nightshift.cebu@tatepublishing.net';
 		$cc = 'leaders.cebu@tatepublishing.net';
 		
+		///THIS IS FOR TEST
+		if($this->config->item('timeCardTest')==true){
+			$to = '';
+			$cc = 'hr.cebu@tatepublishing.net,accounting.cebu@tatepublishing.net';
+			$testUsersID = $this->timeM->getTestUsers();
+			$emails = $this->dbmodel->getQueryResults('staffs', 'email', 'empID IN ('.implode(',', $testUsersID).')');
+			
+			if(count($emails)>0){
+				foreach($emails AS $e)
+					$to .= $e->email.',';
+				
+				$to = rtrim($to, ',');
+			}
+		}
+		
 		$body = '<p>Hi All,</p>';
 		$body .= '<p>Please be reminded to double-check your time card logs on "<a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>" > "<a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a>"</a> page in CareerPH. Any status that does not equal to "Published to Payroll (Number of Hours)" from <b>'.$period.'</b> may lead to deductions. So even if you have already passed your forms through careerph.tatepublishing.net, please follow up with us until ALL your time logs show "Published to Payroll (Number of Hours)".</p>';
 		$body .= '<p>If you have dates where your attendance is not published to payroll, please send message to HR by clicking "Request Update" on the date options or email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> AND CC:<a href="mailto:accounting.cebu@tatepublishing.net">accounting.cebu@tatepublishing.net</a> on or before <b>'.$deadline.'</b> to ensure that you do not have any payroll discrepancies for the upcoming pay day.</p>';
@@ -294,8 +310,8 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
-		//$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
-		$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH' );
+		$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
+		//$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH' );
 	}
 	
 	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){
@@ -330,7 +346,8 @@ class Emailmodel extends CI_Model {
 				$body .= '<p>&nbsp;</p>';
 				$body .= '<p>Thanks!<br/>CareerPH</p>';
 				
-				$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+				$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+				//$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 			}else{ //sending messages to staffs
 				foreach($empArr AS $emp){
 					$to = $emp['email'];
@@ -350,7 +367,8 @@ class Emailmodel extends CI_Model {
 					$body .= '<p>&nbsp;</p>';
 					$body .= '<p>Thanks!<br/>CareerPH</p>';
 					
-					$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+					$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
+					//$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to, $body, 'CareerPH', '', 'ludivina.marinas@tatepublishing.net'); //SEND EMAIL
 				}
 			}		
 		}

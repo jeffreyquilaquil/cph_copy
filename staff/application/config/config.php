@@ -26,6 +26,7 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['demnCryptIV']	= 'TaTe';
 	$config['devmode'] = false;
 	$config['showProfiler'] = false;
+	$config['timeCardTest'] = true;
 }else{
 	$config['base_url']	= 'http://129.3.252.99/staff/';
 	$config['career_url']	= 'http://129.3.252.99';
@@ -35,6 +36,7 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['demnCryptIV']	= 'TaTe';
 	$config['devmode'] = true; //change to false if you want to use live database
 	$config['showProfiler'] = false;
+	$config['timeCardTest'] = true;
 }
 
 /*

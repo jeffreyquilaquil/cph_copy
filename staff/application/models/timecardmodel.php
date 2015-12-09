@@ -314,7 +314,8 @@ class Timecardmodel extends CI_Model {
 	public function getNumDetailsAttendance($dateToday, $type, $condition=''){
 		$flds = '';
 		
-		$condition .= ' AND empID_fk IN ('.implode(',', $this->timeM->getTestUsers()).')';
+		if($this->config->item('timeCardTest')==true)
+			$condition .= ' AND empID_fk IN ('.implode(',', $this->timeM->getTestUsers()).')';
 		
 		$query = '';
 		if($type=='absent'){

@@ -892,10 +892,17 @@ class Timecard extends MY_Controller {
 				$proudpage = $this->uri->segment(3);
 				if(empty($proudpage)) $proudpage = 'unpublishedlogs';
 				
-				$testUsers = $this->timeM->getTestUsers();///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
+				
+				
+				$condUsers = '';
+				if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
+					$testUsers = $this->timeM->getTestUsers();
+					$condUsers = ' AND empID_fk IN ('.implode(',', $testUsers).')';
+				}
+				
 				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
 					'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 
-					'publishBy="" AND slogDate!="'.$data['currentDate'].'" AND empID_fk IN ('.implode(',', $testUsers).')', 
+					'publishBy="" AND slogDate!="'.$data['currentDate'].'"'.$condUsers, 
 					'LEFT JOIN staffs ON empID=empID_fk');
 				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				
@@ -1123,7 +1130,10 @@ class Timecard extends MY_Controller {
 					else if($show=='separated') $condition = ' AND staffs.active=0';
 				}
 				
-				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'empID IN ('.implode(',', $this->timeM->getTestUsers()).') '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
+				if($this->config->item('timeCardTest')==true){
+					$condition .= ' AND empID IN ('.implode(',', $this->timeM->getTestUsers()).') ';
+				}
+				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
 				$data['payrollStatusArr'] = $this->textM->constantArr('payrollStatusArr');
 				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3 AND numGenerated>0', '', 'payPeriodEnd DESC');
 				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
