@@ -647,7 +647,7 @@ class Payrollmodel extends CI_Model {
 			$pdf->MultiCell(45, 10, 'PHP*****'.$this->textM->convertNumFormat($payInfo->net),0,'C',false); //NET
 		}
 		
-		$pdf->Output('pdfpdf.pdf', 'I');
+		$pdf->Output('payslip.pdf', 'I');
 	}
 	
 	public function getNumHoursExWeekend($dateStart, $dateEnd){

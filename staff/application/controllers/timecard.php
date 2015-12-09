@@ -1483,9 +1483,26 @@ class Timecard extends MY_Controller {
 				$data['dataPay'] = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$payID.'" AND payValue!="0.00"',
 					'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
 				
-				if(!isset($data['access']) && isset($_GET['show']) && $_GET['show']=='pdf'){
-					$this->payrollM->pdfPayslip($empID, $payID);
-					exit;					
+				if(!isset($data['access']) && isset($_GET['show'])){
+					$bdate = date('ymd', strtotime($data['payInfo']->bdate));
+					if($_GET['show']=='pdf'){
+						echo '<script>';
+							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
+							echo 'if(pass=="'.$bdate.'"){
+								window.location.href="'.$this->config->base_url().'timecard/'.$empID.'/payslipdetail/'.$payID.'/?show='.$this->textM->encryptText($bdate).'";
+							}else{ alert("Failed to load document. Invalid password.");
+								window.location.href="'.$this->config->base_url().'timecard/";
+							}';
+						echo '</script>';
+						exit;
+					}else{
+						if($bdate==$this->textM->decryptText($_GET['show'])){
+							$this->payrollM->pdfPayslip($empID, $payID);
+							exit;
+						}else{
+							$data['access'] = false;
+						}
+					}									
 				}else{
 					$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
 					$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
