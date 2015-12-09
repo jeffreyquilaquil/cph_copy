@@ -127,7 +127,7 @@
 		if($pageType=='empUpdate' && $dataItemInfo->payAmount=='hourly'){
 			echo '<tr>';
 				echo '<td>Number of Hours</td>';
-				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', 'placeholder', 'addition').'</td>';
+				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', '', 'style="border:2px solid #660808;"').'</td>';
 			echo '</tr>';
 		}
 		
