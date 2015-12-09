@@ -362,7 +362,7 @@ class Schedules extends MY_Controller {
 				}else if($_POST['submitType']=='setSched'){
 					$arya = unserialize (trim($_POST['schedArr'])); 
 					$adate = date('Y-m-d H:i:s');
-					
+										
 					//loop check if dateExist update if exist else insert
 					foreach($arya AS $k=>$a){
 						foreach($a AS $a2){	
@@ -382,6 +382,25 @@ class Schedules extends MY_Controller {
 								$newarr['empID_fk'] = $a2['id'];
 								$this->dbmodel->insertQuery('tcStaffScheduleByDates', $newarr);
 							}
+							
+							//CHECK IF ALREADY INSERTED IN tcStaffLogPublish UPDATE DETAILS IF EXISTS
+							if($k<=date('Y-m-d')){
+								$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$k.'" AND empID_fk="'.$a2['id'].'"');
+								if(!empty($dailyLogID)){
+									$schedArr = $this->timeM->getSchedArr($k, $newarr['timeText']);
+									$upp['schedIn'] = $schedArr['start'];
+									$upp['schedOut'] = $schedArr['end'];
+									$upp['schedHour'] = ((isset($newarr['timeHours']))?$newarr['timeHours']:0);
+									$upp['datePublished'] = '0000-00-00 00:00:00';
+									$upp['publishBy'] = '';
+									$upp['publishTimePaid'] = 0;
+									$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$dailyLogID), $upp);		
+								}else{
+									$schedToday = $this->timeM->getCalendarSchedule($arr['dateToday'], $arr['dateToday'], $data['empID'], true);
+									$this->timeM->insertToDailyLogs($data['empID'], $arr['dateToday'], $schedToday);
+								}
+								$this->timeM->cntUpdateAttendanceRecord($k);
+							}							
 						}
 					}
 					

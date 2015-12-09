@@ -28,7 +28,7 @@ class Timecardmodel extends CI_Model {
 	public function getTestUsers(){
 		$users = array();
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk');
+		$query = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk', 'effectiveend="0000-00-00"');
 		foreach($query AS $q)
 			$users[] = $q->empID_fk;
 			
@@ -427,7 +427,7 @@ class Timecardmodel extends CI_Model {
 		
 		$condition .= ')';
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk', $condition); //include leave status for approve with pay and not an offset set status=4 if offset
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk, staffHolidaySched', $condition, 'LEFT JOIN staffs ON empID=empID_fk'); //include leave status for approve with pay and not an offset set status=4 if offset
 					
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
@@ -457,9 +457,21 @@ class Timecardmodel extends CI_Model {
 						
 						$upArr['publishND'] = $this->payrollM->getNightDiffTime($q);
 					}
-				}
+				}				
 												
-				if(isset($upArr['publishTimePaid'])){
+				if(isset($upArr['publishTimePaid'])){					
+					//CHECK FOR HOLIDAY
+					$holiday = $this->payrollM->isHoliday($q->slogDate);
+					if($holiday!=false){
+						$showHoliday = true;
+						if($holiday['type']!=4 && $holiday['type']!=0){
+							if($q->staffHolidaySched==1 && $holiday['type']!=3) $showHoliday = false;
+							else if($q->staffHolidaySched==0 && $holiday['type']==3) $showHoliday = false;
+						}
+						if($showHoliday==true)
+							$upArr['publishHO'] = $this->payrollM->getHolidayHours($holiday['date'], $q);
+					}					
+					
 					$upArr['datePublished'] = $dateToday;
 					$upArr['publishBy'] = 'system';					
 					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$q->slogID), $upArr);

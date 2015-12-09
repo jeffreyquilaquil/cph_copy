@@ -440,6 +440,9 @@ class Payrollmodel extends CI_Model {
 		return $query->result(); 
 	}
 	
+	/****
+		$current should have (timeIn,schedIn,timeOut,schedOut)
+	****/
 	public function getHolidayHours($holidayDate, $current){
 		$hr = 0;		
 		$holidayStart = date('Y-m-d 00:00:00', strtotime($holidayDate));
@@ -467,7 +470,17 @@ class Payrollmodel extends CI_Model {
 		$holiday = false;
 		
 		$holidayType = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
-		if(!empty($holidayType) && $holidayType>0) $holiday=$holidayType;
+		if(!empty($holidayType) && $holidayType>0){
+			$holiday['date'] = $date;
+			$holiday['type'] = $holidayType;
+		}else{
+			$date = date('Y-m-d', strtotime($date.' +1 day'));
+			$holidayType2 = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
+			if(!empty($holidayType2) && $holidayType2>0){
+				$holiday['date'] = $date;
+				$holiday['type'] = $holidayType2;
+			}
+		}		
 		
 		return $holiday;
 	}

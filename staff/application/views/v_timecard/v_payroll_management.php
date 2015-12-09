@@ -49,9 +49,7 @@
 		?>
 			<br/></td>
 		<?php
-		$onHolidayArr = array(); //this is to check if holiday
-			foreach($dataDates AS $d){
-				
+			foreach($dataDates AS $d){				
 				$wday = date('D', strtotime($d->dateToday));
 				if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
 				else echo '<td>';
@@ -59,10 +57,9 @@
 				echo '<b>';
 					echo 'HW&nbsp;&nbsp;|&nbsp;&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;ND';
 					
-					$isNextDayHoliday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday.' +1 day')));
-					if($d->holidayType>0 || $isNextDayHoliday!=false){
+					$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday)));
+					if($d->holidayType>0 || $holiday!=false){
 						echo '&nbsp;&nbsp;|&nbsp;&nbsp;<span class="errortext">HO</span>';
-						$onHolidayArr[$d->dateToday] = $d->holidayType;
 					}
 				echo '</b></td>';
 			}
@@ -107,15 +104,14 @@
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishDeduct]', $timeDeduct, 'payrollboxes '.(($timeDeduct>0)?'payboxdeduct':''), '', $stat);
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishND]', $timeND, 'payrollboxes '.(($timeND>0)?'payND':''), '', $stat);
 								
-								$isNextDayHoliday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday.' +1 day')));
-								if(isset($onHolidayArr[$d->dateToday]) || $isNextDayHoliday!=false){	
-									$holidayDate = $d->dateToday;
-									if($isNextDayHoliday!=false) $holidayDate = date('Y-m-d', strtotime($d->dateToday.' +1 day'));
+								$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday)));
+								if($holiday!=false){	
+									$holidayDate = $holiday['date'];
 								
 									$isDisabled = false;
-									if($onHolidayArr[$holidayDate]!=4){
-										if($att['staffHolidaySched']==1 && $onHolidayArr[$holidayDate]!=3) $isDisabled = true;
-										else if($att['staffHolidaySched']==0 && $onHolidayArr[$holidayDate]==3) $isDisabled = true;
+									if($holiday['type']!=4){
+										if($att['staffHolidaySched']==1 && $holiday['type']!=3) $isDisabled = true;
+										else if($att['staffHolidaySched']==0 && $holiday['type']==3) $isDisabled = true;
 									}
 									
 									if($isDisabled==true) $timeHO = 0;
@@ -157,9 +153,9 @@
 		<b>D</b> - Deduction, 
 		<b>ND</b> - Night Differential,
 		<b>HO</b> - Holiday Hours,<br/>
-		<b>Red Box</b> - With Deduction, 
-		<b>Orange Box</b> - Not yet published
-		<b>Light Green Box</b> - For holidays, disabled if not applicable
+		<b style="color:red;">Red Box</b> - With Deduction, 
+		<b style="color:orange;">Orange Box</b> - Not yet published
+		<b style="color:green;">Light Green Box</b> - For holidays, disabled if not applicable
 	</span>
 </div>
 

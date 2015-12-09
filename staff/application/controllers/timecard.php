@@ -1153,10 +1153,10 @@ class Timecard extends MY_Controller {
 		if(empty($_POST)){
 			header('Location: '.$this->config->base_url().'timecard/managetimecard/managepayroll/');
 			exit;
-		}else{			
+		}else{
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
-						
-			if($_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
+			
+			if(isset($_POST['type']) && $_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
 			
 			if(isset($_POST['periodDate'])){
 				list($_POST['start'], $_POST['end']) = explode('|', $_POST['periodDate']);
