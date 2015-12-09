@@ -49,7 +49,10 @@
 
 <script type="text/javascript">
 	function validateForm(){
-		if($('#startdate').val() > $('#enddate').val()){
+		var d1 = new Date($('#startdate').val());
+		var d2 = new Date($('#enddate').val());
+		
+		if(d1 > d2){
 			alert('Invalid. End date is before start date.')
 			return false;
 		}else{
