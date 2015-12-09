@@ -1352,7 +1352,7 @@ class Timecard extends MY_Controller {
 				$upArr = $_POST;
 				
 				if($upArr['payAmount']=='specific amount') $upArr['payAmount'] = $upArr['inputPayAmount'];
-				if($upArr['payAmount']=='hourly') $upArr['payAmount'] = $upArr['payAmountHourly'];
+				if($upArr['payAmount']=='hourly' && isset($upArr['payAmountHourly'])) $upArr['payAmount'] = $upArr['payAmountHourly'];
 				if(!empty($upArr['payStart'])) $upArr['payStart'] = date('Y-m-d', strtotime($upArr['payStart']));
 				if(!empty($upArr['payEnd'])) $upArr['payEnd'] = date('Y-m-d', strtotime($upArr['payEnd']));
 				if($upArr['payPeriod']=='once' && !empty($upArr['payStartOnce'])){
