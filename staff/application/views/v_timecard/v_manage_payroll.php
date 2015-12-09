@@ -35,9 +35,26 @@
 		echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
 		
 		echo ' <b>for the period</b> ';
-		echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
+		
+		///FOR SEMI
+		$semiArr = $this->payrollM->getMonthlyPeriod('semi');
+		echo '<select id="semiSelect" class="padding5px" name="periodDate">';
+			foreach($semiArr AS $k=>$semi){
+				echo '<option value="'.$semi['start'].'|'.$semi['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($semi['start'])).' - '.date('M d, Y', strtotime($semi['end'])).'</option>';
+			}
+		echo '</select>';
+		
+		///FOR MONTHLY
+		$monthlyArr = $this->payrollM->getMonthlyPeriod('monthly');
+		echo '<select id="monthlySelect" class="padding5px hidden">';
+			foreach($monthlyArr AS $k=>$monthly){
+				echo '<option value="'.$monthly['start'].'|'.$monthly['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($monthly['start'])).' - '.date('M d, Y', strtotime($monthly['end'])).'</option>';
+			}
+		echo '</select>';
+				
+		/* echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
 		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required');
+		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required'); */
 		/* echo $this->textM->formfield('text', 'start', 'September 26, 2015', 'datepick padding5px', '', 'required');
 		echo ' <b>to</b> ';
 		echo $this->textM->formfield('text', 'end', 'October 11, 2015', 'datepick padding5px', '', 'required'); */
@@ -218,12 +235,17 @@ if(count($dataMainItems)>0){ ?>
 		
 		
 		$('select[name="computationtype"]').change(function(){
+			$('.toolbar #semiSelect').removeAttr('name');
+			$('.toolbar #monthlySelect').removeAttr('name');
+			
 			if($(this).val()=='monthly'){
-				$('input[name="start"]').val('<?= date('F 11, Y') ?>');
-				$('input[name="end"]').val('<?= date('F 25, Y') ?>');
+				$('.toolbar #semiSelect').addClass('hidden');
+				$('.toolbar #monthlySelect').removeClass('hidden');
+				$('.toolbar #monthlySelect').attr('name', 'periodDate');
 			}else{
-				$('input[name="start"]').val('<?= date('F 26, Y', strtotime('-1 month')) ?>');
-				$('input[name="end"]').val('<?= date('F 10, Y') ?>');
+				$('.toolbar #semiSelect').removeClass('hidden');
+				$('.toolbar #monthlySelect').addClass('hidden');
+				$('.toolbar #semiSelect').attr('name', 'periodDate');
 			}
 		});
 		

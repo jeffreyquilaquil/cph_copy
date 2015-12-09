@@ -1,13 +1,11 @@
-<?php
-	
-?>
 <button class="floatright btnclass" onClick="location.href='<?= $this->config->base_url() ?>timecard/managetimecard/managepayroll/'"><< Back to Manage Payroll</button>
 <h2><?= $managePayOptionsArr[$type] ?></h2>
 <hr/>
 
 <b>Payroll Type: </b><?php
 	$paytype = $this->textM->constantArr('payrollType');
-	echo $paytype[$computationtype].'<br/><br/>';
+	echo $paytype[$computationtype].'<br/>';
+	echo 'From '.date('F d, Y', strtotime($start)).' to '.date('F d, Y', strtotime($end)).'<br/><br/>';
 	echo $this->textM->formfield('hidden', 'computationtype', $computationtype);
 ?>
 

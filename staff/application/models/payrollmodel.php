@@ -670,6 +670,41 @@ class Payrollmodel extends CI_Model {
 		return $val;
 	}
 	
+	/******
+		Semi-Monthly is from 26th day of previous month to 10th day of current month
+		Monthly is from 11th to 25th day of current month
+			$type = 'semi' or 'monthly'			
+			returns dates for previous and after 4 months
+	******/
+	public function getMonthlyPeriod($type){
+		$arr = array();
+		$dateToday = date('Y-m-d');
+		
+		$dateprev = date('Y-m-d', strtotime($dateToday.' -3 months'));
+		$dateafter = date('Y-m-d', strtotime($dateToday.' +3 months'));
+		
+		$d=$dateprev;
+		if($type=='semi'){			
+			while($d<=$dateafter){
+				$arr[] = array(
+					'start' => date('Y-m-26', strtotime($d.' -1 month')),
+					'end' => date('Y-m-10', strtotime($d))
+				);
+				$d = date('Y-m-d', strtotime($d.' +1 month'));
+			}
+		}else{
+			while($d<=$dateafter){
+				$arr[] = array(
+					'start' => date('Y-m-10', strtotime($d)),
+					'end' => date('Y-m-25', strtotime($d))
+				);
+				$d = date('Y-m-d', strtotime($d.' +1 month'));
+			}
+		}
+		
+		return $arr;
+	}
+	
 }
 ?>
 	

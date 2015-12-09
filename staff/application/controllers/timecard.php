@@ -1145,8 +1145,12 @@ class Timecard extends MY_Controller {
 			exit;
 		}else{			
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
-			
+						
 			if($_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
+			
+			if(isset($_POST['periodDate'])){
+				list($_POST['start'], $_POST['end']) = explode('|', $_POST['periodDate']);
+			}
 				
 			if(isset($_POST['submitType'])){
 				if($_POST['submitType']=='save' || $_POST['submitType']=='saveandgenerate'){				
