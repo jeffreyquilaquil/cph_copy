@@ -1528,8 +1528,10 @@ class Timecard extends MY_Controller {
 						$this->dbmodel->updateQueryText('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'pstatus=0', 'payrollsID="'.$_POST['payrollsID'].'" AND pstatus=1 AND empID_fk IN ('.trim($_POST['empIDs'],',').')');
 						
 						//number generated
+						$upq = '';
 						$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$_POST['payrollsID'].'" AND pstatus=1');
-						$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"', 'payrollsID="'.$_POST['payrollsID'].'"');
+						if($cntGenerated==0) $upq = ', status=3';
+						$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"'.$upq, 'payrollsID="'.$_POST['payrollsID'].'"');
 					}
 				}				
 			}	
