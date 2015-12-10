@@ -497,8 +497,8 @@ class Timecardmodel extends CI_Model {
 		if($mins>=15 && $mins<=60) $hr = 1;
 		else if($mins>=61 && $mins<=120) $hr = 2;
 		else if($mins>=121 && $mins<=180) $hr = 3;
-		else if($mins>=181 && $mins<=240) $hr = 4;
-		else if($mins>=241) $hr = 8; //1 day work day
+		else if($mins>=181 && $mins<=300) $hr = 4;
+		else if($mins>=301) $hr = 8; //1 day work day
 			
 		return $hr;
 	}
