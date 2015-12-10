@@ -130,7 +130,7 @@
 		echo '</tr>';
 		
 		if($pageType=='empUpdate' && ($dataItemInfo->payAmount=='hourly' || (isset($dataItemInfo->prevAmount) && $dataItemInfo->prevAmount=='hourly'))){
-			echo '<tr>';
+			echo '<tr id="trNumHours">';
 				echo '<td>Number of Hours</td>';
 				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', '', 'step="any" style="border:2px solid #660808;"').'</td>';
 			echo '</tr>';
@@ -189,9 +189,13 @@
 		$('select[name="payAmount"]').change(function(){
 			$('#divPayAmount').addClass('hidden');
 			$('#divPayPercent').addClass('hidden');
+			$('#trNumHours').addClass('hidden');
 			
 			if($(this).val()=='specific amount') $('#divPayAmount').removeClass('hidden');
-			else if($(this).val()=='hourly') $('#divPayPercent').removeClass('hidden');
+			else if($(this).val()=='hourly'){
+				$('#divPayPercent').removeClass('hidden');
+				$('#trNumHours').removeClass('hidden');
+			} 
 		});
 		
 		$('select[name="payPeriod"]').change(function(){
