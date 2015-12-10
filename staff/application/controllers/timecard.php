@@ -1107,6 +1107,7 @@ class Timecard extends MY_Controller {
 						$this->commonM->addMyNotif($this->user->empID, 'Updated minimum wage to Php '.$this->textM->convertNumFormat($_POST['settingVal']).'.', 5);
 					}else if($_POST['submitType']=='removePayroll'){
 						$this->dbmodel->updateQueryText('tcPayrolls', 'status=3', 'payrollsID='.$_POST['payrollID']);
+						$this->payrollM->staffLogStatus($_POST['payrollID']);
 						exit;
 					}
 				}
@@ -1535,17 +1536,10 @@ class Timecard extends MY_Controller {
 								$this->emailM->sendPublishPayrollEmail($period, $s->email, $s->fname);
 							}
 						}
-					}else if($_POST['status']==2){ //finalized payroll, change status of tcStaffLogPublish so that the Request Update is no longer available
-						///updating status to 1
-						$this->dbmodel->dbQuery('UPDATE `tcStaffLogPublish` 
-										LEFT JOIN tcPayslips ON tcPayslips.empID_fk=tcStaffLogPublish.empID_fk
-										LEFT JOIN tcPayrolls ON tcPayslips.payrollsID_fk=payrollsID
-										SET tcStaffLogPublish.status=1, 
-											datePublished=CASE WHEN publishBy="" THEN "'.date('Y-m-d H:i:s').'" ELSE datePublished END,
-											publishBy=CASE WHEN publishBy="" THEN "system" ELSE publishBy END,
-											publishNote=CASE WHEN publishBy="" THEN "Published due to finalized payroll" ELSE publishNote END
-										WHERE slogDate BETWEEN payPeriodStart AND payPeriodEnd AND payrollsID='.$id);
 					}
+					
+					if($_POST['status']==2) $this->payrollM->staffLogStatus($id, 'final');
+					else $this->payrollM->staffLogStatus($id);
 					
 					$this->dbmodel->updateQueryText('tcPayrolls', 'status="'.$_POST['status'].'"', 'payrollsID="'.$id.'"');
 					exit;
@@ -1555,13 +1549,16 @@ class Timecard extends MY_Controller {
 						$infoArr = (array)$this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd, payType');	
 						$infoArr['empIDs'] = $_POST['empIDs'];
 						$this->payrollM->generatepayroll($infoArr);
-					}else if($_POST['selectAction']=='deletepay'){						
+					}else if($_POST['selectAction']=='deletepay'){					
 						$this->dbmodel->updateQueryText('tcPayslips LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'pstatus=0', 'payrollsID="'.$_POST['payrollsID'].'" AND pstatus=1 AND empID_fk IN ('.trim($_POST['empIDs'],',').')');
 						
 						//number generated
 						$upq = '';
 						$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$_POST['payrollsID'].'" AND pstatus=1');
-						if($cntGenerated==0) $upq = ', status=3';
+						if($cntGenerated==0){
+							$upq = ', status=3';
+							$this->payrollM->staffLogStatus($_POST['payrollsID']);
+						} 
 						$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'"'.$upq, 'payrollsID="'.$_POST['payrollsID'].'"');
 					}
 				}				

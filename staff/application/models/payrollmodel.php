@@ -75,6 +75,7 @@ class Payrollmodel extends CI_Model {
 			//number generated
 			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'" AND pstatus=1');
 			$this->dbmodel->updateQueryText('tcPayrolls', 'numGenerated="'.$cntGenerated.'", status=0', 'payrollsID="'.$info['payrollsID'].'"');
+			$this->payrollM->staffLogStatus($info['payrollsID']);
 		}
 	}
 	
@@ -719,6 +720,22 @@ class Payrollmodel extends CI_Model {
 		}
 		
 		return $arr;
+	}
+	
+	/****
+		Updating tcStaffLogPublish status
+	****/
+	public function staffLogStatus($payrollID, $status=''){
+		if($status=='final'){
+			$condition = 'tcStaffLogPublish.status=1,publishBy=CASE WHEN publishBy="" THEN "system" ELSE publishBy END
+						,publishNote=CASE WHEN publishBy="" THEN "Published due to finalized payroll" ELSE publishNote END';
+		}else $condition = 'tcStaffLogPublish.status=0';
+		
+		$this->dbmodel->dbQuery('UPDATE `tcStaffLogPublish` 
+									LEFT JOIN tcPayslips ON tcPayslips.empID_fk=tcStaffLogPublish.empID_fk
+									LEFT JOIN tcPayrolls ON tcPayslips.payrollsID_fk=payrollsID
+									SET '.$condition.'
+									WHERE slogDate BETWEEN payPeriodStart AND payPeriodEnd AND payrollsID='.$payrollID);
 	}
 	
 }
