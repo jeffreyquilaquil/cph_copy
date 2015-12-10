@@ -11,7 +11,7 @@
 		<div style="width:88%; padding-left:10px;">
 			<h3>Set Schedule to:</h3>
 				<hr/>
-				<form action="" method="POST">
+				<form action="" method="POST" onSubmit="displaypleasewait();">
 				<?php
 					$selval = '<option value=""></option>';
 					foreach($timeArr AS $t){

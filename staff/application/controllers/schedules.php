@@ -396,8 +396,8 @@ class Schedules extends MY_Controller {
 									$upp['publishTimePaid'] = 0;
 									$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$dailyLogID), $upp);		
 								}else{
-									$schedToday = $this->timeM->getCalendarSchedule($arr['dateToday'], $arr['dateToday'], $data['empID'], true);
-									$this->timeM->insertToDailyLogs($data['empID'], $arr['dateToday'], $schedToday);
+									$schedToday = $this->timeM->getCalendarSchedule($k, $k, $a2['id'], true);
+									$this->timeM->insertToDailyLogs($a2['id'], $k, $schedToday);
 								}
 								$this->timeM->cntUpdateAttendanceRecord($k);
 							}							
