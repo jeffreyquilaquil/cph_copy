@@ -1419,7 +1419,7 @@ class Timecard extends MY_Controller {
 				$data['dataItemInfo'] = (object) $data['dataItemInfo'];	
 			}else{
 				if(isset($_GET['staffPayID'])){
-					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.*, payName, payType, payCDto, payCategory, 	mainItem', 'payStaffID="'.$_GET['staffPayID'].'"', 'LEFT JOIN tcPayslipItems ON payID=payID_fk');
+					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.*, payName, payType, payCDto, payCategory, 	mainItem, tcPayslipItems.payAmount AS prevAmount', 'payStaffID="'.$_GET['staffPayID'].'"', 'LEFT JOIN tcPayslipItems ON payID=payID_fk');
 				}else{
 					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="'.$_GET['payID'].'"');	
 				}				

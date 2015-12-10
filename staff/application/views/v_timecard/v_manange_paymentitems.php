@@ -88,10 +88,15 @@
 		echo '<tr>';
 			echo '<td>Item Amount</td>';
 			echo '<td>';
-				echo $this->textM->formfield('selectoption', 'payAmount', ((is_numeric(str_replace(',','',$dataItemInfo->payAmount)))?'specific amount':$dataItemInfo->payAmount), 'forminput', 'Please select option', 'required disabled', $arrPayAmountOptions);
-				echo '<div id="divPayAmount" class="'.((is_numeric(str_replace(',','',$dataItemInfo->payAmount)))?'':'hidden').'" style="margin-top:5px;">Php '.$this->textM->formfield('text', 'inputPayAmount', $this->textM->convertNumFormat($dataItemInfo->payAmount), 'forminput', '', 'required disabled style="width:90%"').'</div>';
+				$selectedVal = '';
+				if(isset($dataItemInfo->prevAmount) && $dataItemInfo->prevAmount=='hourly') $selectedVal = $dataItemInfo->prevAmount;
+				else if(is_numeric(str_replace(',','',$dataItemInfo->payAmount))) $selectedVal = 'specific amount';
+				else $selectedVal = $dataItemInfo->payAmount;
 			
-				echo '<div id="divPayPercent" class="'.(($dataItemInfo->payAmount!='hourly')?'hidden':'').'" style="margin-top:5px;">';
+				echo $this->textM->formfield('selectoption', 'payAmount', $selectedVal, 'forminput', 'Please select option', 'required disabled', $arrPayAmountOptions);
+				echo '<div id="divPayAmount" class="'.(($selectedVal=='specific amount')?'':'hidden').'" style="margin-top:5px;">Php '.$this->textM->formfield('text', 'inputPayAmount', $this->textM->convertNumFormat($dataItemInfo->payAmount), 'forminput', '', 'required disabled style="width:90%"').'</div>';
+			
+				echo '<div id="divPayPercent" class="'.(($selectedVal!='hourly')?'hidden':'').'" style="margin-top:5px;">';
 					if($pageType=='addItem' || $pageType=='updateItem') echo $this->textM->formfield('number', 'payPercent', ((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:'0'), 'forminput', '', 'disabled style="width:100px"').' %';
 					else echo 'number of hours x '.((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:0). '%';
 					
@@ -124,10 +129,10 @@
 			echo '</td>';
 		echo '</tr>';
 		
-		if($pageType=='empUpdate' && $dataItemInfo->payAmount=='hourly'){
+		if($pageType=='empUpdate' && ($dataItemInfo->payAmount=='hourly' || (isset($dataItemInfo->prevAmount) && $dataItemInfo->prevAmount=='hourly'))){
 			echo '<tr>';
 				echo '<td>Number of Hours</td>';
-				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', '', 'style="border:2px solid #660808;"').'</td>';
+				echo '<td>'.$this->textM->formfield('number', 'payAmountHourly', '0', 'forminput', '', 'step="any" style="border:2px solid #660808;"').'</td>';
 			echo '</tr>';
 		}
 		
