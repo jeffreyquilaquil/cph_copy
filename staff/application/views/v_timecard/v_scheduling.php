@@ -3,6 +3,7 @@
 	<select class="padding5px" id="actionselect">
 		<option value=""></option>
 		<option value="customizedSched">Customize Schedules</option>
+		<option value="removeSched">Remove Schedules</option>
 	</select>
 	<textarea class="hidden" id="forcustomizedsched"></textarea>
 </div>
@@ -67,11 +68,9 @@
 				$(this).val('');
 				alert('Please select staff to schedule.');
 			}else{
-				v = $(this).val();
-				if(v=='customizedSched'){
-					$(this).val('');	
-					$.colorbox({iframe:true, width:"990px", height:"600px", href:"<?= $this->config->base_url() ?>schedules/customizebystaffs/" });
-				}
+				selectedV = $(this).val();
+				$(this).val('');	
+				$.colorbox({iframe:true, width:"990px", height:"600px", href:"<?= $this->config->base_url() ?>schedules/customizebystaffs/?type="+selectedV });
 			}
 		});
 	});

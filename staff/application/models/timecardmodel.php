@@ -146,7 +146,7 @@ class Timecardmodel extends CI_Model {
 				$dayArr[$d]['schedDate'] = $yeye->dateToday;	
 				$dayArr[$d]['custom'] = true;	
 				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
-			}else unset($dayArr[$d]);		
+			}else if($yeye->status==0) unset($dayArr[$d]);		
 		}
 		
 		

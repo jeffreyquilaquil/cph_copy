@@ -404,11 +404,53 @@ class Schedules extends MY_Controller {
 						}
 					}
 					
-					echo '<script>alert("Schedules has been set."); parent.$.fn.colorbox.close(); parent.location.reload(); </script>';
+					echo '<script>alert("Schedules have been set."); parent.$.fn.colorbox.close(); parent.location.reload(); </script>';
+					exit;
+				}else if($_POST['submitType']=='removeSched'){
+					$dateToday = date('Y-m-d');
+					$marjune = unserialize (trim($_POST['schedArr'])); 									
+					foreach($marjune AS $dateF=>$abel){
+						foreach($abel AS $no){
+							if(isset($no['sched'])){
+								$dateId = $this->dbmodel->getSingleField('tcStaffScheduleByDates', 'dateID', 'empID_fk="'.$no['id'].'" AND dateToday="'.$dateF.'"');
+								if(!empty($dateId)){
+									$this->dbmodel->updateQueryText('tcStaffScheduleByDates', 'status=0', 'dateID="'.$dateId.'"');
+								}else{
+									$insArr['dateToday'] = $dateF;
+									$insArr['empID_fk'] = $no['id'];									
+									$insArr['timeText'] = $no['sched'];									
+									$insArr['assignBy'] = $this->user->empID;									
+									$insArr['assignDate'] = date('Y-m-d H:i:s');									
+									$insArr['status'] = 0;									
+									$insArr['updateData'] = 'Removed schedule';									
+									$this->dbmodel->insertQuery('tcStaffScheduleByDates', $insArr);
+								}
+								
+								////if updating schedule before today
+								if($dateF<=$dateToday){
+									$upArr['schedIn'] = '0000-00-00 00:00:00';
+									$upArr['schedOut'] = '0000-00-00 00:00:00';
+									$upArr['schedHour'] = 0;
+									$upArr['publishND'] = 0;
+									$upArr['publishTimePaid'] = 0;
+									$upArr['publishDeduct'] = 0;
+									$upArr['publishOT'] = 0;
+									$upArr['publishHO'] = 0;
+									$upArr['datePublished'] = 0;
+									$upArr['publishNote'] = 0;
+									$upArr['publishBy'] = 0;
+									$upArr['status'] = 0;
+									$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$dateF, 'empID_fk'=>$no['id']), $upArr);						
+								}
+							}
+						}
+					}
+					
+					echo '<script>alert("Schedules have been removed."); parent.$.fn.colorbox.close(); parent.location.reload(); </script>';
 					exit;
 				}
 			}
-
+			$data['pageType'] = ((!isset($_GET['type']))?'customizedSched':$_GET['type']);
 			$data['timeArr'] = $this->commonM->customTimeArrayByCat();
 		}
 		
