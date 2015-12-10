@@ -11,13 +11,13 @@
 		<tr class="trhead tacenter">
 			<td>Names</td>
 		<?php
-			echo '<td width="9%">SUNDAY<br/>'.$sunday.'</td>';
-			echo '<td width="9%">MONDAY<br/>'.$monday.'</td>';
-			echo '<td width="9%">TUESDAY<br/>'.$tuesday.'</td>';
-			echo '<td width="9%">WEDNESDAY<br/>'.$wednesday.'</td>';
-			echo '<td width="9%">THURSDAY<br/>'.$thursday.'</td>';
-			echo '<td width="9%">FRIDAY<br/>'.$friday.'</td>';
-			echo '<td width="9%">SATURDAY<br/>'.$saturday.'</td>';
+			echo '<td width="9%">SUNDAY<br/>'.date('d M', strtotime($sunday)).'</td>';
+			echo '<td width="9%">MONDAY<br/>'.date('d M', strtotime($monday)).'</td>';
+			echo '<td width="9%">TUESDAY<br/>'.date('d M', strtotime($tuesday)).'</td>';
+			echo '<td width="9%">WEDNESDAY<br/>'.date('d M', strtotime($wednesday)).'</td>';
+			echo '<td width="9%">THURSDAY<br/>'.date('d M', strtotime($thursday)).'</td>';
+			echo '<td width="9%">FRIDAY<br/>'.date('d M', strtotime($friday)).'</td>';
+			echo '<td width="9%">SATURDAY<br/>'.date('d M', strtotime($saturday)).'</td>';
 		?>
 			<td>
 				<button onClick="window.location.href='<?= $_SERVER['REDIRECT_URL'].'?startweek='.$prev ?>'"><< Prev</button><br/>
