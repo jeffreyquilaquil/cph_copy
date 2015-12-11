@@ -1281,7 +1281,7 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function addpaymentitems(){
+	/* public function addpaymentitems(){
 		$data['content'] = 'v_timecard/v_manange_ addpaymentitems';
 		
 		if($this->user!=false){
@@ -1331,7 +1331,7 @@ class Timecard extends MY_Controller {
 		}		
 		
 		$this->load->view('includes/templatecolorbox', $data);
-	}
+	} */
 	
 	public function manangepaymentitem($data){
 		$data['content'] = 'v_timecard/v_manange_paymentitems';
@@ -1351,21 +1351,24 @@ class Timecard extends MY_Controller {
 				if(!in_array($_POST['submitType'], $arrPages)) exit;
 				
 				$upArr = $_POST;
-				
+								
 				if($upArr['payAmount']=='specific amount') $upArr['payAmount'] = $upArr['inputPayAmount'];
 				if($upArr['payAmount']=='hourly' && isset($upArr['payAmountHourly'])) $upArr['payAmount'] = $upArr['payAmountHourly'];
 				if(!empty($upArr['payStart'])) $upArr['payStart'] = date('Y-m-d', strtotime($upArr['payStart']));
 				if(!empty($upArr['payEnd'])) $upArr['payEnd'] = date('Y-m-d', strtotime($upArr['payEnd']));
+				if($upArr['payAmount']=='regularHoliday') $upArr['payPercent'] = $upArr['selectPayPercent'];
+				if($upArr['payAmount']=='specialHoliday') $upArr['payPercent'] = 2;
 				if($upArr['payPeriod']=='once' && !empty($upArr['payStartOnce'])){
 					$upArr['payStart'] = date('Y-m-d', strtotime($upArr['payStartOnce']));
 					$upArr['payEnd'] = $upArr['payStart'];
-				}
+				}				
 				
 				unset($upArr['submitType']);
 				unset($upArr['payID']);
 				unset($upArr['inputPayAmount']);
 				unset($upArr['payAmountHourly']);
 				unset($upArr['payStartOnce']);
+				unset($upArr['selectPayPercent']);
 											
 				if($_POST['submitType']=='addItem'){					
 					$payID = $this->dbmodel->insertQuery('tcPayslipItems', $upArr);

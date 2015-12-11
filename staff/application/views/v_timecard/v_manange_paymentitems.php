@@ -94,16 +94,19 @@
 				else $selectedVal = $dataItemInfo->payAmount;
 			
 				echo $this->textM->formfield('selectoption', 'payAmount', $selectedVal, 'forminput', 'Please select option', 'required disabled', $arrPayAmountOptions);
-				echo '<div id="divPayAmount" class="'.(($selectedVal=='specific amount')?'':'hidden').'" style="margin-top:5px;">Php '.$this->textM->formfield('text', 'inputPayAmount', $this->textM->convertNumFormat($dataItemInfo->payAmount), 'forminput', '', 'required disabled style="width:90%"').'</div>';
+				echo '<div id="divPayAmount" class="'.(($selectedVal=='specific amount')?'':'hidden').'" style="margin-top:5px;">Php '.$this->textM->formfield('text', 'inputPayAmount', $this->textM->convertNumFormat($dataItemInfo->payAmount), 'forminput', '', 'required disabled style="width:100px"').'</div>';
 			
 				echo '<div id="divPayPercent" class="'.(($selectedVal!='hourly')?'hidden':'').'" style="margin-top:5px;">';
 					if($pageType=='addItem' || $pageType=='updateItem') echo $this->textM->formfield('number', 'payPercent', ((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:'0'), 'forminput', '', 'disabled style="width:100px"').' %';
-					else echo 'number of hours x '.((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:0). '%';
+					else echo 'number of hours x '.((!empty($dataItemInfo->payPercent))?$dataItemInfo->payPercent:0). '%';					
+				echo '</div>';
+				
+				///for Regular Holiday
+				echo '<div id="regPayPercent" class="'.(($selectedVal!='regularHoliday')?'hidden':'').'" style="margin-top:5px;">';
+					echo 'for '.$this->textM->formfield('selectoption', 'selectPayPercent', $dataItemInfo->payPercent, 'forminput', '', 'disabled style="width:180px"', array('4'=>'All Staffs', '1'=>'PHL Holiday Schedules', '3'=>'US Holiday Schedules'));
 					
 				echo '</div>';
-				if($pageType=='addItem' || $pageType=='updateItem'){
 					
-				}				
 			echo '</td>';
 		echo '</tr>';
 		
@@ -189,13 +192,16 @@
 		$('select[name="payAmount"]').change(function(){
 			$('#divPayAmount').addClass('hidden');
 			$('#divPayPercent').addClass('hidden');
+			$('#regPayPercent').addClass('hidden');
 			$('#trNumHours').addClass('hidden');
 			
 			if($(this).val()=='specific amount') $('#divPayAmount').removeClass('hidden');
 			else if($(this).val()=='hourly'){
 				$('#divPayPercent').removeClass('hidden');
 				$('#trNumHours').removeClass('hidden');
-			} 
+			}else if($(this).val()=='regularHoliday'){
+				$('#regPayPercent').removeClass('hidden');
+			}
 		});
 		
 		$('select[name="payPeriod"]').change(function(){

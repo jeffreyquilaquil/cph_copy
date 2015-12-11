@@ -174,7 +174,7 @@ ul.menu li.current a, ul.menu li a:hover, ul#leftMenu li a:hover{
 ul.dropdown{
 	position: absolute;
     top: 22px;
-    width: 182px;
+    width: 190px;
 	left:-40px;
 }
 

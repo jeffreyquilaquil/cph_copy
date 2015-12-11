@@ -32,9 +32,7 @@
 			<li <?php if($content=='index'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>">Homepage</a></li>
 			<li <?php if($current=='myinfo'){ echo 'class="current"'; } ?>>
 				<a href="<?= $this->config->base_url() ?>myinfo/">My HR Info</a>
-			</li>
-			<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
-			
+			</li>			
 		<?php
 			echo '<li '.(($content=='myattendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>';
 			
@@ -87,7 +85,7 @@
 					$eval90th = $this->commonM->countResults('eval90th');
 					
 					if($this->access->accessFullHR==true){												
-						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Info Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
+						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Manage Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Manage CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE '.(($pendingCOENum>0)?'<b>['.$pendingCOENum.']</b>':'').'</a></li>';						
 					}
@@ -95,12 +93,7 @@
 					echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Manage Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';
 					echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 					echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
-					echo '<li '.(($content=='others')?'class="current"':'').'><a class="iframe" href="'.$this->config->base_url().'others/">Other Pages</a></li>';
-					
-					if($this->access->accessFullHRFinance==true || $this->user->level>0){
-						echo '<li '.(($content=='organizationalchart')?'class="current"':'').'><a href="'.$this->config->base_url().'organizationalchart/">Organizational Chart</a></li>';
-					}
-					
+										
 					if($this->access->accessFullHR){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
@@ -121,6 +114,19 @@
 				echo '</li>';
 			}
 		?>		
+		
+			<li><a href="#">Miscellaneous</a>
+				<ul class="dropdown">
+					<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
+					<li <?= (($content=='organizationalchart')?'class="current"':'') ?>><a href="<?= $this->config->base_url().'organizationalchart/' ?>">Organizational Chart</a></li>
+			<?php
+				if($this->access->accessFullHRFinance==true || $this->user->level>0){
+					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';
+					echo '<li><a href="'.$this->config->base_url().'addnewposition/" class="iframe">Add New Position</a></li>';
+				}
+			?>
+				</ul>
+			</li>
 		</ul>
 		
 	</div>	

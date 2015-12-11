@@ -42,7 +42,7 @@ class Payrollmodel extends CI_Model {
 			$down['totalTaxable'] = $taxableIncome;
 			
 			$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType, payCDto, payCategory, payAmount', 'payslipID_fk="'.$payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');		
-			if(count($queryItems)>0){ 
+			if(count($queryItems)>0){
 				$catArr = $this->textM->constantArr('payCategory');
 				$down['net'] = 0;
 				
@@ -140,12 +140,9 @@ class Payrollmodel extends CI_Model {
 				}else if($item->payAmount=='overtime'){ ///overtime hours is 30%
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'publishOT');
 					$payValue = ($hourlyRate*$hr) * 0.30;
-				}else if($item->payAmount=='specialHoliday'){
-					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'special');
+				}else if($item->payAmount=='regularHoliday' || $item->payAmount=='specialHoliday'){
+					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, $item->payPercent);
 					$payValue = ($hourlyRate*$hr) * 0.30;
-				}else if($item->payAmount=='regularHoliday'){
-					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'regular');
-					$payValue = ($hourlyRate*$hr);
 				}else{
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd);
 					$payValue = $hourlyRate*$hr;
@@ -230,14 +227,12 @@ class Payrollmodel extends CI_Model {
 		$type = 'publishDeduct or publishND';
 	*****/
 	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct'){
-		if($type=='special' || $type=='regular'){
-			if($type=='special'){
-				$cond = 'AND (holidayType=2 OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))=2))';
-			}else{
-				$cond = 'AND (holidayType IN (1,3,4) OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN (1,3,4)))';
-			}
+		if(is_numeric($type)){ //this is for the holiday
+			$cond = ' AND (holidayType='.$type.' OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))='.$type.'))';
+			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			else if($type==3) $cond .= ' AND staffHolidaySched=1';
 			
-			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate', 'SUM(publishHO) AS hours', 
+			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHO) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" '.$cond);
 		}else{
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish', 'SUM('.$type.') AS hours', 'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
