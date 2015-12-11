@@ -291,7 +291,7 @@ class Timecard extends MY_Controller {
 	public function cronEmailUnpublishedLogs(){
 		$page = $this->uri->segment(3);
 			
-		if(date('d')==6){ //check if day today is 11th of the month
+		if(date('d')==11){ //check if day today is 11th of the month
 			$dateStart = date('Y-m-26', strtotime('-1 month'));
 			$dateEnd = date('Y-m-10');
 		}else{ //if today is 26th of the month
@@ -299,7 +299,7 @@ class Timecard extends MY_Controller {
 			$dateEnd = date('Y-m-25');
 		}
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, email, fname, lname', 'publishBy="" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'slogDate');
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, email, fname, lname', 'publishBy="" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'slogDate');		
 		if(count($query)>0){
 			if($page=='hr') $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, 'HR');
 			else $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query);
