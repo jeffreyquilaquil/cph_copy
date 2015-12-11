@@ -1,6 +1,6 @@
 <div id="left-wrapper">
 <center>
-<?php
+<?php	
 if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	if(isset($_GET['page'])) $page = $_GET['page'];
 	else $page = 'customtime';
@@ -21,14 +21,16 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		}
 	</script>
 <?php
-}else if(isset($tpage) && $tpage=='managetimecard'){ //MANAGE TIMECARD LEFT CONTENT
+}else if(isset($tpage) && $tpage=='managepayroll'){ //MANAGE TIMECARD LEFT CONTENT
 	echo '<ul id="leftMenu" style="margin:0px;">';
-		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/unpublishedlogs/" class="'.(($proudpage=='unpublishedlogs')?'current':'').'">Unpublished Logs ('.count($dataUnpublished).')</a></li>';
-		echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/logpendingrequest/" class="'.(($proudpage=='logpendingrequest')?'current':'').'">Timelog Pending Requests ('.count($timelogRequests).')</a></li>';
-		if($this->access->accessFullFinance==true)
-			echo '<li><a href="'.$this->config->base_url().'timecard/managetimecard/managepayroll/" class="'.(($proudpage=='managepayroll')?'current':'').'">Manage Payroll</a></li>';
+		if($this->access->accessFullFinance==true){
+			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/" class="'.(($pagepayroll=='managepayroll')?'current':'').'">Manage Payrolls</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/previouspayroll/" class="'.(($pagepayroll=='previouspayroll')?'current':'').'">Previous Payrolls</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollitems/" class="'.(($pagepayroll=='payrollitems')?'current':'').'">Payroll Items</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollsettings/" class="'.(($pagepayroll=='payrollsettings')?'current':'').'">Payroll Settings</a></li>';
+		}			
 	echo '</ul>';
-}else if($this->user!=false && count($row)>0){
+}else if($this->user!=false && isset($row) && count($row)>0){
 	$fname = '';
 
 	if($content=='index'){

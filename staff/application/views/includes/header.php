@@ -53,8 +53,17 @@
 						echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';	 */
 					if($this->access->accessFullHRFinance==true)
 						echo '<li '.(($content=='sched_schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Schedules Settings</a></li>';
+					
+					if($this->access->accessFullHR==true){
+						$unpublished = $this->commonM->countResults('unpublishedLogs');
+						$logRequest = $this->commonM->countResults('timelogRequests');
+						
+						echo '<li '.(($segment2=='unpublishedlogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/unpublishedlogs/">Unpublished Logs <b>'.(($unpublished>0)?'['.$unpublished.']':'').'</b></a></li>';
+						echo '<li '.(($segment2=='logpendingrequest')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/logpendingrequest/">Log Pending Requests <b>'.(($logRequest>0)?'['.$logRequest.']':'').'</b></a></li>';
+					}
+					
 					if($this->access->accessFullFinance==true)
-						echo '<li '.(($segment2=='managetimecard')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managetimecard/">Manage Timecard & Payroll</a></li>';
+						echo '<li '.(($segment2=='managepayroll')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managepayroll/">Manage Payroll</a></li>';
 					
 				echo '</ul>';
 			

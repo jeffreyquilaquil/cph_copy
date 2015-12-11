@@ -292,7 +292,7 @@ class Emailmodel extends CI_Model {
 		if($this->config->item('timeCardTest')==true){
 			$to = '';
 			$cc = 'hr.cebu@tatepublishing.net,accounting.cebu@tatepublishing.net';
-			$testUsersID = $this->timeM->getTestUsers();
+			$testUsersID = $this->commonM->getTestUsers();
 			$emails = $this->dbmodel->getQueryResults('staffs', 'email', 'empID IN ('.implode(',', $testUsersID).')');
 			
 			if(count($emails)>0){

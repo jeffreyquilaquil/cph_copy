@@ -1,6 +1,6 @@
 <?php $this->load->view('includes/header_searchemployee'); ?>
 
-<h2>Manage Timecard - Timelog Pending Requests</h2>
+<h2>Timelog Pending Requests <?= ((count($timelogRequests)>0)?'('.count($timelogRequests).')':'') ?></h2>
 <hr/>
 <?php
 	if(count($timelogRequests)==0){

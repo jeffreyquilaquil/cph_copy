@@ -200,6 +200,18 @@ class Commonmodel extends CI_Model {
 			}			
 		}else if($type=='eval90th'){			
 			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
+		}else if($type=='unpublishedLogs'){
+			$condUsers = '';
+			if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
+				$testUsers = $this->commonM->getTestUsers();
+				$condUsers = ' AND empID_fk IN ('.implode(',', $testUsers).')';
+			}			
+			$cnt = $this->dbmodel->getSingleField('tcStaffLogPublish', 
+					'COUNT(slogID)', 
+					'publishBy="" AND slogDate!="'.date('Y-m-d').'"'.$condUsers, 
+					'LEFT JOIN staffs ON empID=empID_fk');
+		}else if($type=='timelogRequests'){							
+			$cnt = $this->dbmodel->getSingleField('tcTimelogUpdates', 'count(logDate)', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $cnt;
@@ -325,6 +337,17 @@ class Commonmodel extends CI_Model {
 		endforeach;
 		
 		return $timeArr;
+	}
+	
+	//returns an array of empID
+	public function getTestUsers(){
+		$users = array();
+		
+		$query = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk', 'effectiveend="0000-00-00"');
+		foreach($query AS $q)
+			$users[] = $q->empID_fk;
+			
+		return $users;
 	}
 	
 }

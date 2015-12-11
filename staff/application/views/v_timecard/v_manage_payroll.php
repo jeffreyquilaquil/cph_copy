@@ -5,108 +5,93 @@
 	else $show = $_GET['show'];
 ?>
 
-<h2>Manage Payroll</h2>
+<h2><?= $pagePayTitle ?></h2>
 <hr/>
 
-<ul class="tabs">
-	<li class="tab-link current" data-tab="manage">Manage</li>
-	<li class="tab-link" data-tab="prevpay">Previous Payrolls</li>
-	<li class="tab-link" data-tab="items">Payroll Items</li>
-	<li class="tab-link" data-tab="settings">Payroll Settings</li>
-</ul>
+<?php if($pagepayroll=='managepayroll'){ ?>
+<div id="manage" class="positionrelative"><br/>
+	<div style="position:absolute; left:140px; z-index:10;">
+		<b style="color:#333333">of</b>&nbsp;&nbsp;
+		<select id="selectShow" class="padding5px">
+			<option value="all" <?= (($show=='all')?'selected="selected"':'') ?>>All employees</option>
+			<option value="active" <?= (($show=='active')?'selected="selected"':'') ?>>Active employees</option>
+			<option value="pending" <?= (($show=='pending')?'selected="selected"':'') ?>>Pending separation</option>
+			<option value="suspended" <?= (($show=='suspended')?'selected="selected"':'') ?>>Suspended employees</option>
+			<option value="separated" <?= (($show=='separated')?'selected="selected"':'') ?>>Separated employees</option>
+		</select>
+	</div>
+	<div id="silay" style="display:none; width:100%">
+		<form id="formManage" action="<?= $this->config->base_url() ?>timecard/payrollmanagement/" method="POST" style="margin:10px 0px;">
+		<?php
+			echo $this->textM->formfield('selectoption', 'type', '', 'padding5px', '', 'required', $this->textM->constantArr('managePayOptions'));
+			echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
+			
+			echo ' <b>for the period</b> ';
+			
+			///FOR SEMI
+			$semiArr = $this->payrollM->getMonthlyPeriod('semi');
+			echo '<select id="semiSelect" class="padding5px" name="periodDate">';
+				foreach($semiArr AS $k=>$semi){
+					echo '<option value="'.$semi['start'].'|'.$semi['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($semi['start'])).' - '.date('M d, Y', strtotime($semi['end'])).'</option>';
+				}
+			echo '</select>';
+			
+			///FOR MONTHLY
+			$monthlyArr = $this->payrollM->getMonthlyPeriod('monthly');
+			echo '<select id="monthlySelect" class="padding5px hidden">';
+				foreach($monthlyArr AS $k=>$monthly){
+					echo '<option value="'.$monthly['start'].'|'.$monthly['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($monthly['start'])).' - '.date('M d, Y', strtotime($monthly['end'])).'</option>';
+				}
+			echo '</select>';		
+			
+			echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
+			echo '<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
+			
+			echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
+		?>
+		</form>
+		
+		<div style="padding-top:5px;">
+			<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
+		</div>
+	</div>
 
-<div id="manage" class="tab-content current positionrelative">	
-<br/>
+	<div style="display:none">
+		<div id="inline_content" class="colorblack">
+			<h3>Payroll Info</h3>
+			<hr/>
+			<ul>
+				<li><i>Semi-Monthly</i> is from <b>26th</b> day of previous month to <b>10th</b> day of current month</li>
+				<li><i>Monthly</i> is from <b>11th</b> to <b>25th</b> day of current month</li>
+			</ul>		
+		</div>
+	</div>
 
-<div style="position:absolute; left:140px; z-index:10;">
-	<b style="color:#333333">of</b>&nbsp;&nbsp;
-	<select id="selectShow" class="padding5px">
-		<option value="all" <?= (($show=='all')?'selected="selected"':'') ?>>All employees</option>
-		<option value="active" <?= (($show=='active')?'selected="selected"':'') ?>>Active employees</option>
-		<option value="pending" <?= (($show=='pending')?'selected="selected"':'') ?>>Pending separation</option>
-		<option value="suspended" <?= (($show=='suspended')?'selected="selected"':'') ?>>Suspended employees</option>
-		<option value="separated" <?= (($show=='separated')?'selected="selected"':'') ?>>Separated employees</option>
-	</select>
-</div>
-<div id="silay" style="display:none; width:100%">
-	<form id="formManage" action="<?= $this->config->base_url() ?>timecard/payrollmanagement/" method="POST" style="margin:10px 0px;">
+	<table id="dtable" class="dTable display stripe hover">
+		<thead>
+		<tr bgcolor="#fff">
+			<th></th>
+			<th>Name</th>
+			<th>Title</th>
+			<th>Department</th>
+		</tr>
+		</thead>
 	<?php
-		echo $this->textM->formfield('selectoption', 'type', '', 'padding5px', '', 'required', $this->textM->constantArr('managePayOptions'));
-		echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
-		
-		echo ' <b>for the period</b> ';
-		
-		///FOR SEMI
-		$semiArr = $this->payrollM->getMonthlyPeriod('semi');
-		echo '<select id="semiSelect" class="padding5px" name="periodDate">';
-			foreach($semiArr AS $k=>$semi){
-				echo '<option value="'.$semi['start'].'|'.$semi['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($semi['start'])).' - '.date('M d, Y', strtotime($semi['end'])).'</option>';
-			}
-		echo '</select>';
-		
-		///FOR MONTHLY
-		$monthlyArr = $this->payrollM->getMonthlyPeriod('monthly');
-		echo '<select id="monthlySelect" class="padding5px hidden">';
-			foreach($monthlyArr AS $k=>$monthly){
-				echo '<option value="'.$monthly['start'].'|'.$monthly['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($monthly['start'])).' - '.date('M d, Y', strtotime($monthly['end'])).'</option>';
-			}
-		echo '</select>';
-				
-		/* echo $this->textM->formfield('text', 'start', date('F 26, Y', strtotime('-1 month')), 'datepick padding5px', '', 'required');
-		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', date('F 11, Y'), 'datepick padding5px', '', 'required'); */
-		/* echo $this->textM->formfield('text', 'start', 'September 26, 2015', 'datepick padding5px', '', 'required');
-		echo ' <b>to</b> ';
-		echo $this->textM->formfield('text', 'end', 'October 11, 2015', 'datepick padding5px', '', 'required'); */
-		
-		
-		echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
-		echo '<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
-		
-		echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
+		foreach($dataStaffs AS $staff){
+			echo '<tr>';
+				echo '<td>'.$this->textM->formfield('checkbox', 'checkMe[]', $staff->empID, 'classCheckMe').'</td>';
+				echo '<td><a href="'.$this->config->base_url().'timecard/'.$staff->empID.'/timelogs/" target="_blank"><b>'.$staff->lname.', '.$staff->fname.'</b></a></td>';
+				echo '<td>'.$staff->title.'</td>';
+				echo '<td>'.$staff->dept.'</td>';
+			echo '</tr>';
+		}
 	?>
-	</form>
-	
-	<div style="padding-top:5px;">
-		<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
-	</div>
+	</table>
 </div>
-
-<div style="display:none">
-	<div id="inline_content" class="colorblack">
-		<h3>Payroll Info</h3>
-		<hr/>
-		<ul>
-			<li><i>Semi-Monthly</i> is from <b>26th</b> day of previous month to <b>10th</b> day of current month</li>
-			<li><i>Monthly</i> is from <b>11th</b> to <b>25th</b> day of current month</li>
-		</ul>		
-	</div>
-</div>
-
-<table id="dtable" class="dTable display stripe hover">
-	<thead>
-	<tr bgcolor="#fff">
-		<th></th>
-		<th>Name</th>
-		<th>Title</th>
-		<th>Department</th>
-	</tr>
-	</thead>
-<?php
-	foreach($dataStaffs AS $staff){
-		echo '<tr>';
-			echo '<td>'.$this->textM->formfield('checkbox', 'checkMe[]', $staff->empID, 'classCheckMe').'</td>';
-			echo '<td><a href="'.$this->config->base_url().'timecard/'.$staff->empID.'/timelogs/" target="_blank"><b>'.$staff->lname.', '.$staff->fname.'</b></a></td>';
-			echo '<td>'.$staff->title.'</td>';
-			echo '<td>'.$staff->dept.'</td>';
-		echo '</tr>';
-	}
-?>
-</table>
-</div>
-
+<?php } ?>
 <!--------- PREVIOUS PAYROLLS ----------->
-<div id="prevpay" class="tab-content">	
+<?php if($pagepayroll=='previouspayroll'){ ?>
+<div id="prevpay">	
 <?php
 	if(count($dataPayrolls)==0){
 		echo '<p>No payrolls generated yet.</p>';
@@ -146,9 +131,11 @@
 	</table>
 <?php } ?>
 </div>
+<?php } ?>
 
 <!--------- PAYROLL ITEMS ----------->
-<div id="items" class="tab-content">
+<?php if($pagepayroll=='payrollitems'){ ?>
+<div id="items">
 <?php 
 if(count($dataMainItems)==0 && count($dataAddItems)==0){
 	echo '<br/><a href="'.$this->config->base_url().'timecard/manangepaymentitem/?pageType=addItem&type=1" class="iframe"><button class="btnclass btngreen">+ Add Payroll Item</button></a>';
@@ -171,9 +158,11 @@ if(count($dataMainItems)>0){ ?>
 	</table>
 <?php } ?>
 </div>
+<?php } ?>
 
 <!--------- PAYROLL SETTINGS ----------->
-<div id="settings" class="tab-content">
+<?php if($pagepayroll=='payrollsettings'){ ?>
+<div id="settings">
 <table class="tableInfo">
 	<tr>
 		<td width="25%">Cebu Minimum Wage</td>
@@ -191,6 +180,7 @@ if(count($dataMainItems)>0){ ?>
 	</tr>
 </table>
 </div>
+<?php } ?>
 
 <script type="text/javascript">
 	$(function(){		
@@ -264,7 +254,7 @@ if(count($dataMainItems)>0){ ?>
 		
 		$('#selectShow').change(function(){
 			displaypleasewait();
-			window.location.href="<?= $this->config->base_url().'timecard/managetimecard/managepayroll/?show=' ?>"+$(this).val();
+			window.location.href="<?= $this->config->base_url().'timecard/managepayroll/?show=' ?>"+$(this).val();
 		});
 		
 	});	

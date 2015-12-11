@@ -23,18 +23,7 @@ class Timecardmodel extends CI_Model {
 		
 		return $val;
 	}
-	
-	//returns an array of empID
-	public function getTestUsers(){
-		$users = array();
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffSchedules', 'DISTINCT empID_fk', 'effectiveend="0000-00-00"');
-		foreach($query AS $q)
-			$users[] = $q->empID_fk;
-			
-		return $users;
-	}
-	
 	function getTodayBetweenSchedCondition($start, $end){
 		if($start==$end){
 			return '( (("'.$start.'" BETWEEN effectivestart AND effectiveend) AND effectiveend!="0000-00-00")
@@ -315,7 +304,7 @@ class Timecardmodel extends CI_Model {
 		$flds = '';
 		
 		if($this->config->item('timeCardTest')==true)
-			$condition .= ' AND empID_fk IN ('.implode(',', $this->timeM->getTestUsers()).')';
+			$condition .= ' AND empID_fk IN ('.implode(',', $this->commonM->getTestUsers()).')';
 		
 		$query = '';
 		if($type=='absent'){

@@ -1,4 +1,4 @@
-<button class="floatright btnclass" onClick="location.href='<?= $this->config->base_url() ?>timecard/managetimecard/managepayroll/'"><< Back to Manage Payroll</button>
+<button class="floatright btnclass" onClick="location.href='<?= $this->config->base_url() ?>timecard/managepayroll/'"><< Back to Manage Payroll</button>
 <h2><?= $managePayOptionsArr[$type] ?></h2>
 <hr/>
 

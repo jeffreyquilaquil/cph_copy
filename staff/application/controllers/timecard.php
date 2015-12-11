@@ -819,7 +819,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function payrolls($data){
-		header('Location:'.$this->config->base_url().'timecard/managetimecard/managepayroll/');
+		header('Location:'.$this->config->base_url().'timecard/managepayroll/');
 		exit;
 		/* $data['content'] = 'v_timecard/v_payrolls';		
 		$data['tpage'] = 'payrolls';
@@ -879,46 +879,7 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	public function managetimecard($data){
-		$data['content'] = 'v_timecard/v_manage_unpublishedlogs';	
-		$data['tpage'] = 'managetimecard';
-		$data['column'] = 'withLeft';
-		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
-		
-		if($this->user!=false){
-			if($this->access->accessFullHRFinance==false){
-				$data['access'] = false;
-			}else{
-				$proudpage = $this->uri->segment(3);
-				if(empty($proudpage)) $proudpage = 'unpublishedlogs';
-				
-				
-				
-				$condUsers = '';
-				if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
-					$testUsers = $this->timeM->getTestUsers();
-					$condUsers = ' AND empID_fk IN ('.implode(',', $testUsers).')';
-				}
-				
-				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-					'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 
-					'publishBy="" AND slogDate!="'.$data['currentDate'].'"'.$condUsers, 
-					'LEFT JOIN staffs ON empID=empID_fk');
-				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
-				
-				if($proudpage=='logpendingrequest'){
-					$data['content'] = 'v_timecard/v_manage_logpendingreq';					
-				}else if($proudpage=='managepayroll'){ ///MANAGE PAYROLL PAGE
-					$data = $this->managepayroll($data);
-				}
-				
-
-				$data['proudpage'] = $proudpage;
-			}
-		}
-		
-		$this->load->view('includes/template', $data);
-	}
+	
 	
 	public function viewlogdetails($data){
 		$data['content'] = 'v_timecard/v_viewlogdetails';
@@ -1097,7 +1058,10 @@ class Timecard extends MY_Controller {
 	
 	public function managepayroll($data){
 		$data['content'] = 'v_timecard/v_manage_payroll';
-		
+		$data['tpage'] = 'managepayroll';
+		$data['column'] = 'withLeft';
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
+	
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
@@ -1111,48 +1075,61 @@ class Timecard extends MY_Controller {
 						exit;
 					}
 				}
-				 				
-				$condition = '';
-				if(!isset($_GET['show']) || $_GET['show']=='active') $condition = ' AND staffs.active=1';
-				else{
-					$show = $_GET['show'];
-					if($show=='pending') $condition = ' AND endDate>="'.$data['currentDate'].'"';
-					else if($show=='suspended'){
-						$empArr = array();
-						$querNTE = $this->dbmodel->getQueryResults('staffNTE', 'empID_fk', 'status=0 AND suspensiondates LIKE "%'.$data['currentDate'].'%"');
-						if(count($querNTE) > 0){
-							foreach($querNTE AS $o)
-								$empArr[] = $o->empID_fk;
+				
+				$data['pagepayroll'] = $this->uri->segment(3);
+				if(empty($data['pagepayroll'])){
+					$data['pagepayroll'] = 'managepayroll';
+					$data['pagePayTitle'] = 'Manage Payroll';
+					
+					$condition = '';
+					if(!isset($_GET['show']) || $_GET['show']=='active') $condition = ' AND staffs.active=1';
+					else{
+						$show = $_GET['show'];
+						if($show=='pending') $condition = ' AND endDate>="'.$data['currentDate'].'"';
+						else if($show=='suspended'){
+							$empArr = array();
+							$querNTE = $this->dbmodel->getQueryResults('staffNTE', 'empID_fk', 'status=0 AND suspensiondates LIKE "%'.$data['currentDate'].'%"');
+							if(count($querNTE) > 0){
+								foreach($querNTE AS $o)
+									$empArr[] = $o->empID_fk;
+							}
+							
+							if(count($empArr)>0) $condition = ' AND empID IN ('.implode(',', $empArr).')';
+							else $condition = ' AND empID=0';						
 						}
-						
-						if(count($empArr)>0) $condition = ' AND empID IN ('.implode(',', $empArr).')';
-						else $condition = ' AND empID=0';						
+						else if($show=='separated') $condition = ' AND staffs.active=0';
 					}
-					else if($show=='separated') $condition = ' AND staffs.active=0';
+					
+					if($this->config->item('timeCardTest')==true){
+						$condition .= ' AND empID IN ('.implode(',', $this->commonM->getTestUsers()).') ';
+					}
+					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');					
+				}else if($data['pagepayroll']=='previouspayroll'){
+					$data['pagePayTitle'] = 'Previous Payroll';
+					
+					$data['payrollStatusArr'] = $this->textM->constantArr('payrollStatusArr');
+					$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3 AND numGenerated>0', '', 'payPeriodEnd DESC');
+				}else if($data['pagepayroll']=='payrollitems'){
+					$data['pagePayTitle'] = 'Payroll Items';
+					
+					$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
+					$data['dataMainItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=1', '', 'payCategory, payName');				
+					$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=0', '', 'payCategory, payName');	
+				}else if($data['pagepayroll']=='payrollsettings'){
+					$data['pagePayTitle'] = 'Payroll Settings';
+					
+					$data['dataMinWage'] = $this->dbmodel->getSingleField('staffSettings', 'settingVal', 'settingName="minimumWage"');
 				}
-				
-				if($this->config->item('timeCardTest')==true){
-					$condition .= ' AND empID IN ('.implode(',', $this->timeM->getTestUsers()).') ';
-				}
-				$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
-				$data['payrollStatusArr'] = $this->textM->constantArr('payrollStatusArr');
-				$data['dataPayrolls'] = $this->dbmodel->getQueryResults('tcPayrolls', '*', 'status!=3 AND numGenerated>0', '', 'payPeriodEnd DESC');
-				$data['payrollItemType'] = $this->textM->constantArr('payrollItemType');
-				
-				$data['dataMainItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=1', '', 'payCategory, payName');				
-				$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*, 1 AS isMain, payAmount AS prevAmount', 'mainItem=0', '', 'payCategory, payName');				
-				$data['dataMinWage'] = $this->dbmodel->getSingleField('staffSettings', 'settingVal', 'settingName="minimumWage"');
-				
-				return $data;
 			}
 		}
 		
+		$this->load->view('includes/template', $data);		
 	}
 	
 	
 	public function payrollmanagement(){
 		if(empty($_POST)){
-			header('Location: '.$this->config->base_url().'timecard/managetimecard/managepayroll/');
+			header('Location: '.$this->config->base_url().'timecard/managepayroll/');
 			exit;
 		}else{
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
@@ -1607,6 +1584,46 @@ class Timecard extends MY_Controller {
 				$this->payrollM->generatepayroll($genArr);
 			}			
 		}
+	}
+		
+	
+	public function unpublishedlogs($data){
+		$data['content'] = 'v_timecard/v_manage_unpublishedlogs';	
+		unset($data['timecardpage']);
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false){
+				$data['access'] = false;
+			}else{				
+				$condUsers = '';
+				if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
+					$testUsers = $this->commonM->getTestUsers();
+					$condUsers = ' AND empID_fk IN ('.implode(',', $testUsers).')';
+				}
+				
+				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
+					'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 
+					'publishBy="" AND slogDate!="'.$data['currentDate'].'"'.$condUsers, 
+					'LEFT JOIN staffs ON empID=empID_fk');
+			}
+		}
+		
+		$this->load->view('includes/template', $data);
+	}
+	
+	public function logpendingrequest($data){
+		$data['content'] = 'v_timecard/v_manage_logpendingreq';
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false){
+				$data['access'] = false;
+			}else{
+				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+			}
+		}
+		
+		$this->load->view('includes/template', $data);
 	}
 		
 }

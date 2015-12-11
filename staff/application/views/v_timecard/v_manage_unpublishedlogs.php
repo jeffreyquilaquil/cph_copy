@@ -1,6 +1,6 @@
 <?php $this->load->view('includes/header_searchemployee'); ?>
 
-<h2>Manage Timecard - Unpublished Logs</h2>
+<h2>Unpublished Logs <?= ((count($dataUnpublished)>0)?'('.count($dataUnpublished).')':'') ?></h2>
 <hr/>
 <?php
 	if(count($dataUnpublished)==0){
