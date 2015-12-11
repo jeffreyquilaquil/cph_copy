@@ -1,4 +1,8 @@
 <?php
+	$editAccess = false;
+	if($this->access->accessFull==true) $editAccess = true;
+	else if($this->access->accessHRFinance==true && $this->user->empID!=$visitID) $editAccess = true;
+		
 	$date00 = '0000-00-00 00:00:00';
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
@@ -15,7 +19,7 @@
 	
 	///PUBLISHED
 		if(!empty($dataLog->publishBy))  echo '&nbsp;&nbsp;<b class="errortext">'.(($dataLog->status==1)?'FINALIZED':'PUBLISHED').'</b>';
-		else if($this->access->accessFullHRFinance==true && empty($dataLog->publishBy)) 
+		else if($editAccess==true && empty($dataLog->publishBy)) 
 			echo '&nbsp;&nbsp;<button id="btnpublish" class="btnclass btngreen">Publish</button>';
 	
 		echo '&nbsp;&nbsp;<a href="'.$this->config->base_url().'timecard/'.$visitID.'/?d='.$today.'" target="_blank"><button class="btnclass">Go to Timelog Page</button></a>';
@@ -24,6 +28,9 @@
 		if($visitID==$this->user->empID && isset($dataLog->status) && $dataLog->status==0)
 			echo '<a href="'.$this->config->base_url().'timecard/requestupdate/?d='.$today.'" class="iframe"><button class="btnclass btngreen floatright">Request Update</button></a>';
 	echo '</h3>';
+	
+	if($this->access->accessHRFinance==true && $editAccess==false) echo '<i><b class="errortext">Note:</b> You cannot edit your own logs.</i>';
+	
 	echo '<hr/>';
 	
 	if(isset($alerttext)){
@@ -62,7 +69,7 @@
 		if(!empty($dataLog->publishBy)){
 			echo '<table id="tblpublishdetails" class="tableInfo" style="margin-top:10px;">';
 				echo '<tr class="trlabel"><td colspan=2>PUBLISH DETAILS';
-					if($this->access->accessFullHRFinance==true && $dataLog->status==0) echo '&nbsp;<button id="unpublish">Unpublish</button>';
+					if($editAccess==true && $dataLog->status==0) echo '&nbsp;<button id="unpublish">Unpublish</button>';
 				echo '</td></tr>';
 				echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' '.(($dataLog->schedHour>1)?'Hours':'Hour').'</td></tr>';
 				if($dataLog->offsetHour>0)
@@ -127,7 +134,7 @@
 		
 		
 		////THIS IS FOR RESOLVING LOG OR SCHEDULE
-		if($this->access->accessFullHRFinance==true){
+		if($editAccess==true){
 			echo '<form class="formresolve hidden" action="" method="POST" onSubmit="displaypleasewait();">';
 			echo '<table id="tblresolvelog" class="tableInfo" style="margin-top:10px; background-color:#ffb2b2;">';
 				echo '<tr class="trlabel"><td colspan=2>RESOLVE LOG AND SCHEDULE</td></tr>';
@@ -193,10 +200,10 @@
 			echo '<table id="tblinsertedlog" class="tableInfo" style="margin-top:10px;">';
 				///INSERTED LOGS RECORD
 				echo '<tr class="trlabel"><td colspan=4>INSERTED LOG TODAY ';
-					if($this->access->accessFullHRFinance==true && empty($dataLog->publishBy)) echo '<button id="btnresolvelog">Resolve Logs</button>';
+					if($editAccess==true && empty($dataLog->publishBy)) echo '<button id="btnresolvelog">Resolve Logs</button>';
 				echo '</td></tr>';
 				
-				if($this->access->accessFullHRFinance==true && empty($dataLog->publishBy)){
+				if($editAccess==true && empty($dataLog->publishBy)){
 					echo '<tr><td colspan=4>';
 						echo '<i class="fs11px">If Schedule In and Schedule Out is not the same with the <b>Schedule Today</b> above, please <a href="'.$this->config->base_url().'schedules/customizebyday/'.$visitID.'/'.$dataLog->slogDate.'/">click here to change schedule</a>.</i>';
 					$derSched = date('h:i a', strtotime($dataLog->schedIn)).' - '.date('h:i a', strtotime($dataLog->schedOut));
@@ -415,7 +422,7 @@
 				echo '</td>';
 				echo '<td>';
 					if($u->status==1){
-						if($this->access->accessFullHRFinance==true){
+						if($editAccess==true){
 							echo $this->textM->formfield('select', 'status', '<option value="1">Pending</option><option value="0">Resolve</option><option value="2">Done</option>', 'forminput', '', 'onChange="showUpdate('.$u->updateID.', this)"');
 						}else{
 							echo 'Pending';
@@ -430,7 +437,7 @@
 		}
 		echo '</table>';
 		
-		if($showHistory==true && $this->access->accessFullHRFinance==true){
+		if($showHistory==true && $editAccess==true){
 			echo '<script>';
 				echo '$(function(){
 					$("#auphistory").trigger("click");

@@ -49,6 +49,7 @@ class MY_Controller extends CI_Controller {
 		$access->accessFullHR = false;
 		$access->accessFullFinance = false;
 		$access->accessFullHRFinance = false;
+		$access->accessHRFinance = false;
 		
 		if($this->user!=false){
 			$access->myaccess = explode(',',$this->user->access);
@@ -58,7 +59,8 @@ class MY_Controller extends CI_Controller {
 			if(in_array('exec', $access->myaccess)) $access->accessExec = true;
 			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
 			if(count(array_intersect($access->myaccess,array('full','finance')))>0) $access->accessFullFinance = true;
-			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;	
+			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;
+			if(count(array_intersect($access->myaccess,array('hr','finance')))>0) $access->accessHRFinance = true;
 		}
 		
 		return $access;
