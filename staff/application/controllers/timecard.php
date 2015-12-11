@@ -1063,7 +1063,7 @@ class Timecard extends MY_Controller {
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 	
 		if($this->user!=false){
-			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			if($this->access->accessFullFinance==false) $data['access'] = false;
 			else{
 				if(isset($_POST) && !empty($_POST)){
 					if($_POST['submitType']=='updateMinWage'){

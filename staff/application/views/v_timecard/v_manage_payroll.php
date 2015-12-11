@@ -214,7 +214,7 @@ if(count($dataMainItems)>0){ ?>
 		$('.toolbar #formManage').submit(function(){
 			empIDs = checkIfSelected();
 			if(empIDs==false){
-				alert('Please select employee.');
+				alert('Please select employee first.');
 				return false;
 			}else{
 				$('textarea[name="empIDs"]').text(empIDs);
