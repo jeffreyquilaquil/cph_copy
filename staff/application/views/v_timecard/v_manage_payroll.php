@@ -74,6 +74,7 @@
 			<th>Name</th>
 			<th>Title</th>
 			<th>Department</th>
+			<th><br/></th>
 		</tr>
 		</thead>
 	<?php
@@ -83,6 +84,16 @@
 				echo '<td><a href="'.$this->config->base_url().'timecard/'.$staff->empID.'/timelogs/" target="_blank"><b>'.$staff->lname.', '.$staff->fname.'</b></a></td>';
 				echo '<td>'.$staff->title.'</td>';
 				echo '<td>'.$staff->dept.'</td>';
+				echo '<td>';
+					echo '<ul class="dropmenu">';
+						echo '<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>';
+							echo '<ul class="dropleft">';
+								echo '<li><a href="'.$this->config->base_url().'timecard/generatelastpay/?empIDs='.$staff->empID.'" class="iframe">Generate Last Pay</a></li>';
+								echo '<li><a href="'.$this->config->base_url().'timecard/generate13thmonth/?empIDs='.$staff->empID.'" class="iframe">Generate 13th Month</a></li>';
+							echo '</ul>';
+						echo '</li>';
+					echo '</ul>';
+				echo '</td>';
 			echo '</tr>';
 		}
 	?>
@@ -239,14 +250,20 @@ if(count($dataMainItems)>0){ ?>
 			}
 		});
 		
-		$('select[name="type"]').change(function(){			
-			if($(this).val()=='addpayslipitem'){
+		$('select[name="type"]').change(function(){	
+			var myval = $(this).val();
+			if(myval=='addpayslipitem' || myval=='generate13thmonth'){
 				empIDs = checkIfSelected();
 				if(empIDs==false){
 					$(this).val('reviewattendance');
-					alert('Please select employee.');
+					alert('Please select employee first.');
 				}else{
-					window.parent.jQuery.colorbox({href:"<?= $this->config->base_url().'timecard/mypayrollsetting/?empIDs=' ?>"+empIDs, iframe:true, width:"990px", height:"600px"});
+					if(myval=='generate13thmonth')
+						myhref = "<?= $this->config->base_url().'timecard/generate13thmonth/?empIDs=' ?>"+empIDs;
+					else
+						myhref = "<?= $this->config->base_url().'timecard/mypayrollsetting/?empIDs=' ?>"+empIDs;
+					
+					window.parent.jQuery.colorbox({href:myhref, iframe:true, width:"990px", height:"600px"});
 					$(this).val('reviewattendance');
 				}
 			}

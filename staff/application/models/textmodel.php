@@ -387,7 +387,7 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_mname') $txt = 'Middle Name';
 		else if($t=='txt_suffix') $txt = 'Name Suffix';
 		else if($t=='txt_username') $txt = 'Username';
-		else if($t=='txt_email') $txt = 'Username';
+		else if($t=='txt_email') $txt = 'Email';
 		else if($t=='txt_username') $txt = 'Company E-mail';
 		else if($t=='txt_pemail') $txt = 'Personal E-mail';
 		else if($t=='txt_address' || $t=='txt_address1') $txt = 'Address';
@@ -719,7 +719,8 @@ class Textmodel extends CI_Model {
 		}else if($a=='managePayOptions'){
 			$arr = array('reviewattendance'=>'Review Attendance', 
 						'generatepayslip'=>'Generate Payslip',
-						'addpayslipitem'=>'Add Payslip Item'
+						'addpayslipitem'=>'Add Payslip Item',
+						'generate13thmonth'=>'Generate 13th Month'
 					);
 		}else if($a=='payrollType' || $a=='payPeriod'){
 			$arr = array('once'=>'Once', 

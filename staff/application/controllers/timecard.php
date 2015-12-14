@@ -836,9 +836,10 @@ class Timecard extends MY_Controller {
 	public function reports($data){		
 		$data['content'] = 'v_timecard/v_reports';		
 		$data['tpage'] = 'reports';
+		$data['column'] = 'withLeft';
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){	
-			//$this->checkAccessPage($data['tpage']);
 			
 			
 		}
@@ -1466,7 +1467,7 @@ class Timecard extends MY_Controller {
 				
 				if(!isset($data['access']) && isset($_GET['show'])){
 					$bdate = date('ymd', strtotime($data['payInfo']->bdate));
-					if($_GET['show']=='pdf'){
+					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
 						echo '<script>';
 							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
 							echo 'if(pass=="'.$bdate.'"){
@@ -1477,7 +1478,7 @@ class Timecard extends MY_Controller {
 						echo '</script>';
 						exit;
 					}else{
-						if($bdate==$this->textM->decryptText($_GET['show'])){
+						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 							$this->payrollM->pdfPayslip($empID, $payID);
 							exit;
 						}else{
@@ -1624,6 +1625,114 @@ class Timecard extends MY_Controller {
 		}
 		
 		$this->load->view('includes/template', $data);
+	}
+	
+	public function generatelastpay(){
+		$data['content'] = 'v_timecard/v_generatelastpay';
+		
+		if($this->user!=false){
+			if($this->access->accessFullFinance==false) $data['access'] = false;
+			else{
+				$empIDs = $_GET['empIDs']; ///from URL separated with comma
+				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate, endDate', 'empID IN ('.rtrim($empIDs, ',').')');			
+			}
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function generate13thmonth(){
+		$data['content'] = 'v_timecard/v_generate13thmonth';
+		
+		if($this->user!=false){
+			if($this->access->accessFullFinance==false) $data['access'] = false;
+			else{
+				$empIDs = $_GET['empIDs']; ///from URL separated with comma
+				if(!empty($_POST)){
+					if($_POST['submitType']=='regenerate'){
+						$mInfo = $this->dbmodel->getSingleInfo('tc13thMonth', 'periodFrom, periodTo, includeEndMonth', 'tcmonthID="'.$_POST['monthID'].'"');
+						$dateFrom = $mInfo->periodFrom;
+						$dateTo = $mInfo->periodTo;
+						$_POST['includeEndMonth'] = $mInfo->includeEndMonth;
+					}else{
+						$dateFrom = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
+						$dateTo = date('Y-m-d', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
+					}
+					
+					if($dateFrom>$dateTo){
+						$data['errorText'] = 'Invalid Inputs. Please try again.';
+					}else{
+						$data['generated'] = $this->payrollM->generate13thmonth($dateFrom, $dateTo, $empIDs, $_POST['includeEndMonth']);
+						if($_POST['submitType']=='generate'){							
+							echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manage13thmonth/";</script>';
+						}
+						exit;
+					}
+				}
+				
+				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate', 'empID IN ('.rtrim($empIDs, ',').')');
+				if(isset($_GET['tcmonthID'])){
+					$data['genInfo'] = $this->dbmodel->getSingleInfo('tc13thMonth', 'periodFrom, periodTo', 'tcmonthID="'.$_GET['tcmonthID'].'"');
+				}
+			}
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function manage13thmonth(){
+		$data['content'] = 'v_timecard/v_manage13thmonth';
+		$data['tpage'] = 'managepayroll';
+		$data['column'] = 'withLeft';
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+			}
+		}
+		
+		$this->load->view('includes/template', $data);
+	}
+	
+	public function detail13thmonth($data){
+		$data['content'] = 'v_timecard/v_13thmonthdetail';
+		
+		if($this->user!=false){
+			$id = $this->uri->segment(3);
+			$data['dataInfo'] = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, fname, lname, idNum, title, bdate', 'tcmonthID="'.$id.'"', 
+				'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+			if(count($data['dataInfo'])==0) $data['access'] = false;
+			else{
+				$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo, $data['dataInfo']->includeEndMonth);
+				
+				///THIS IS FOR THE PDF
+				if(isset($_GET['show'])){
+					$bdate = date('ymd', strtotime($data['dataInfo']->bdate));
+					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+						echo '<script>';
+							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
+							echo 'if(pass=="'.$bdate.'"){
+								window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'";
+							}else{ alert("Failed to load document. Invalid password.");
+								window.location.href="'.$this->config->base_url().'timecard/";
+							}';
+						echo '</script>';
+						exit;
+					}else{
+						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+							$this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']);
+							exit;
+						}else{
+							$data['access'] = false;
+						}
+					}									
+				}
+			}
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 		
 }

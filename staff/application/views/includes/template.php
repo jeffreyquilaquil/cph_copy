@@ -6,6 +6,7 @@
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
 	<link rel="shortcut icon" href="<?= $this->config->item('career_url') ?>/img/favicon.ico" type="image/x-icon">
+	
 <?php
 	//CSS
 	echo '<link href="'.$this->config->base_url().'css/jquery.dataTables.css" rel="stylesheet" type="text/css" />';
@@ -17,7 +18,7 @@
 		echo '<link href="'.$this->config->base_url().'css/templatefull.style.css" rel="stylesheet" type="text/css" />';
 	
 	//SCRIPTS
-	echo '<script src="'.$this->config->base_url().'js/jquery.js" type="text/javascript"></script>';	
+	echo '<script src="'.$this->config->base_url().'js/jquery.js" type="text/javascript"></script>';
 ?>	
 	<script type="text/javascript">
 		BASEURL = '<?= $this->config->base_url() ?>';
@@ -86,7 +87,8 @@
 
 
 //LOAD ADDITIONAL SCRIPTS
-echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.js" type="text/javascript"></script>';
+//echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.js" type="text/javascript"></script>';
+echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.min.js" type="text/javascript"></script>';
 echo '<script src="'.$this->config->base_url().'js/jquery.datetimepicker.js" type="text/javascript"></script>';
 echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="text/javascript"></script>';
 ?>

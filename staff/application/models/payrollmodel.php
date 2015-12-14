@@ -733,6 +733,155 @@ class Payrollmodel extends CI_Model {
 									WHERE slogDate BETWEEN payPeriodStart AND payPeriodEnd AND payrollsID='.$payrollID);
 	}
 	
+	public function generate13thmonth($periodFrom, $periodTo, $empIDs, $includeEndMonth=0){
+		$dataEmp = explode(',', rtrim($empIDs, ','));
+		$gID = array();
+		
+		foreach($dataEmp AS $emp){
+			$queryPay = $this->payrollM->query13thMonth($emp, $periodFrom, $periodTo, $includeEndMonth);
+			if(!empty($queryPay)){
+				$pay = 0;
+				$deduction = 0;				
+				foreach($queryPay AS $ask){
+					if(!empty($ask)){
+						$pay += $ask->basePay;
+						$deduction += (($ask->deduction!=NULL)?$ask->deduction:0);	
+					}
+				}
+				
+				$insArr['totalBasic'] = $pay;
+				$insArr['totalDeduction'] = $deduction;
+				$insArr['totalAmount'] = ($pay-$deduction)/12;
+				$insArr['dateGenerated'] = date('Y-m-d H:i:s');
+								
+				///check if already exist update if exists else insert
+				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND periodFrom="'.$periodFrom.'" AND periodTo="'.$periodTo.'"');
+				if(!empty($monthID)){
+					$gID[] = $monthID;
+					$this->dbmodel->updateQuery('tc13thMonth', array('tcmonthID'=>$monthID), $insArr);
+				}else{
+					$insArr['empID_fk'] = $emp;
+					$insArr['periodFrom'] = $periodFrom;
+					$insArr['periodTo'] = $periodTo;
+					$gID[] = $this->dbmodel->insertQuery('tc13thMonth', $insArr);
+				}
+			}
+		}
+		
+		return $gID;
+	}
+	
+	public function query13thMonth($empID, $periodFrom, $periodTo, $includeEndMonth=0){
+		$arrayMonths = array();
+		
+		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, fname, lname, startDate, endDate, sal', 'empID="'.$empID.'"');
+		if(count($info)>0){
+			$basePay = ($this->textM->decryptText($info->sal))/2;
+			
+			$dates = array();
+			$payArr = array();
+			$pfrom = $periodFrom;
+			while($pfrom<=$periodTo){
+				$dates[] = date('Y-m-15', strtotime($pfrom));
+				$dates[] = date('Y-m-t', strtotime($pfrom));
+				$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
+			}			
+			
+			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
+								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
+								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
+								
+			foreach($query AS $q){
+				$computepay = ($q->basePay-$q->deduction) / 12;
+				$q->pay = round($computepay,4);
+				$payArr[$q->payDate] = $q;
+			}
+			
+			$lastMonth = '';
+			foreach($dates AS $d){
+				if(isset($payArr[$d])){
+					$arrayMonths[$d] = $payArr[$d];
+					$lastMonth = $d;
+				}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
+					$arrayMonths[$d] = (object) array('empID_fk' => $empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+				}else $arrayMonths[$d] = '';
+			}
+		}
+							
+		return $arrayMonths;
+	}
+	
+	
+	public function pdf13thMonth($dataInfo, $dataMonth){
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+		$pdf = new FPDI();	
+		
+		$pdf->AddPage();	
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'13thmonth.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','',10);
+		$pdf->setTextColor(0, 0, 0);
+		
+		$pdf->setXY(20, 46);
+		$pdf->Write(0, $dataInfo->idNum); //employee id number
+		$pdf->setXY(38, 44);
+		$pdf->MultiCell(80, 4, $dataInfo->lname.', '.$dataInfo->fname,0,'C',false);  //employee name
+		$pdf->setXY(117.5, 44);
+		$pdf->MultiCell(57, 4, date('M', strtotime($dataInfo->periodFrom)).' - '.date('M Y', strtotime($dataInfo->periodTo)),0,'C',false);  //period
+		
+		
+		$payDates = '';
+		$basePay = '';
+		$deduction = '';
+		$pay = '';
+		
+		foreach($dataMonth AS $dates=>$me){
+			$payDates .= date('d-M-Y', strtotime($dates))."\n";
+			if(!empty($me)){				
+				$basePay .= $this->textM->convertNumFormat($me->basePay)."\n";
+				$deduction .= $this->textM->convertNumFormat($me->deduction)."\n";
+				$pay .= $this->textM->convertNumFormat($me->pay)."\n";
+			}else{				
+				$basePay .= "0.00\n";
+				$deduction .= "0.00\n";
+				$pay .= "0.00\n";
+			}
+		}
+		
+		$pdf->setXY(11, 68);
+		$pdf->MultiCell(48, 5.5, $payDates,0,'C',false); 
+		$pdf->setXY(60.5, 68);
+		$pdf->MultiCell(48, 5.5, $basePay,0,'C',false); 
+		$pdf->setXY(109, 68);
+		$pdf->MultiCell(48, 5.5, $deduction,0,'C',false);
+		$pdf->setXY(158, 68);
+		$pdf->MultiCell(48, 5.5, $pay,0,'C',false); 
+		
+		//TOTAL
+		$pdf->setXY(60, 215);
+		$pdf->MultiCell(48, 4, 'PHP '.$this->textM->convertNumFormat($dataInfo->totalBasic),0,'C',false);  //total basic pay
+		$pdf->setXY(109, 215);
+		$pdf->MultiCell(48, 4, 'PHP '.$this->textM->convertNumFormat($dataInfo->totalDeduction),0,'C',false);  //total deductions
+		$pdf->SetFont('Arial','',11);
+		$pdf->setXY(158, 215);
+		$pdf->MultiCell(48, 4, 'PHP '.$this->textM->convertNumFormat($dataInfo->totalAmount),0,'C',false);  //total pay
+		
+		$pdf->SetFont('Arial','',10);
+		$pdf->setXY(40, 239);
+		$pdf->Write(0, $dataInfo->idNum); //employee id number
+		$pdf->setXY(10, 256);
+		$pdf->Write(0, $dataInfo->lname.', '.$dataInfo->fname); //employee name
+		
+		$pdf->SetFont('Arial','',11);
+		$pdf->setXY(158.5, 249);
+		$pdf->MultiCell(48, 4, 'PHP*****'.$this->textM->convertNumFormat($dataInfo->totalAmount),0,'C',false);  //13th month pay
+				
+		
+		$pdf->Output('payslip.pdf', 'I');		
+	}
 }
 ?>
 	

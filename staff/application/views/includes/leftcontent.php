@@ -24,10 +24,13 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 }else if(isset($tpage) && $tpage=='managepayroll'){ //MANAGE TIMECARD LEFT CONTENT
 	echo '<ul id="leftMenu" style="margin:0px;">';
 		if($this->access->accessFullFinance==true){
+			if(!isset($pagepayroll)) $pagepayroll = $this->uri->segment(2);
+			
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/" class="'.(($pagepayroll=='managepayroll')?'current':'').'">Manage Payrolls</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/previouspayroll/" class="'.(($pagepayroll=='previouspayroll')?'current':'').'">Previous Payrolls</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollitems/" class="'.(($pagepayroll=='payrollitems')?'current':'').'">Payroll Items</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollsettings/" class="'.(($pagepayroll=='payrollsettings')?'current':'').'">Payroll Settings</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pagepayroll=='manage13thmonth')?'current':'').'">Manage 13th Month</a></li>';
 		}			
 	echo '</ul>';
 }else if($this->user!=false && isset($row) && count($row)>0){

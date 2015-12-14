@@ -62,8 +62,11 @@
 						echo '<li '.(($segment2=='logpendingrequest')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/logpendingrequest/">Log Pending Requests <b>'.(($logRequest>0)?'['.$logRequest.']':'').'</b></a></li>';
 					}
 					
-					if($this->access->accessFullFinance==true)
+					if($this->access->accessFullFinance==true){
 						echo '<li '.(($segment2=='managepayroll')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managepayroll/">Manage Payroll</a></li>';
+						//echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';
+					}
+						
 					
 				echo '</ul>';
 			
