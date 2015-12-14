@@ -119,7 +119,7 @@ class Payrollmodel extends CI_Model {
 		$this->dbmodel->updateQueryText('tcPayslipDetails', 'payValue=0, numHR=0', 'payslipID_fk='.$payslipID);
 		
 		$itemArr = $this->payrollM->getPaymentItemsForPayroll($info);
-				
+						
 		///INSERT PAYSLIP DETAILS except tax because it is computed last
 		foreach($itemArr AS $item){
 			$hr = 0;
@@ -142,7 +142,8 @@ class Payrollmodel extends CI_Model {
 					$payValue = ($hourlyRate*$hr) * 0.30;
 				}else if($item->payAmount=='regularHoliday' || $item->payAmount=='specialHoliday'){
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, $item->payPercent);
-					$payValue = ($hourlyRate*$hr) * 0.30;
+					if($item->payAmount=='specialHoliday') $payValue = ($hourlyRate*$hr) * 0.30;
+					else $payValue = ($hourlyRate*$hr);
 				}else{
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd);
 					$payValue = $hourlyRate*$hr;
@@ -334,7 +335,7 @@ class Payrollmodel extends CI_Model {
 	public function computeTax($taxType, $taxableIncome, $status){
 		$tax = 0;
 		$taxableIncome = str_replace(',','',$taxableIncome);
-		$status = $this->payrollM->getTaxStatus($status);	
+		$status = ((!empty($status))?$this->payrollM->getTaxStatus($status):'');
 		
 		$info = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="'.$taxType.'" AND status="'.$status.'" AND minRange<="'.$taxableIncome.'" AND maxRange>"'.$taxableIncome.'"');
 		
@@ -771,21 +772,25 @@ class Payrollmodel extends CI_Model {
 		return $gID;
 	}
 	
+	public function getArrayPeriodDates($periodFrom, $periodTo){
+		$dates = array();
+		$payArr = array();
+		$pfrom = $periodFrom;
+		while($pfrom<=$periodTo){
+			$dates[] = date('Y-m-15', strtotime($pfrom));
+			$dates[] = date('Y-m-t', strtotime($pfrom));
+			$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
+		}	
+	
+		return $dates;
+	}
+	
 	public function query13thMonth($empID, $periodFrom, $periodTo, $includeEndMonth=0){
 		$arrayMonths = array();
 		
 		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, fname, lname, startDate, endDate, sal', 'empID="'.$empID.'"');
 		if(count($info)>0){
 			$basePay = ($this->textM->decryptText($info->sal))/2;
-			
-			$dates = array();
-			$payArr = array();
-			$pfrom = $periodFrom;
-			while($pfrom<=$periodTo){
-				$dates[] = date('Y-m-15', strtotime($pfrom));
-				$dates[] = date('Y-m-t', strtotime($pfrom));
-				$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
-			}			
 			
 			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
 								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
@@ -798,16 +803,17 @@ class Payrollmodel extends CI_Model {
 			}
 			
 			$lastMonth = '';
+			$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);
 			foreach($dates AS $d){
 				if(isset($payArr[$d])){
 					$arrayMonths[$d] = $payArr[$d];
 					$lastMonth = $d;
 				}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
-					$arrayMonths[$d] = (object) array('empID_fk' => $empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+					$arrayMonths[$d] = (object) array('empID_fk'=>$empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
 				}else $arrayMonths[$d] = '';
 			}
 		}
-							
+		
 		return $arrayMonths;
 	}
 	
@@ -882,6 +888,48 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->Output('payslip.pdf', 'I');		
 	}
+	
+	
+	public function computeYearlyTaxDue($empID, $incomeTax){
+		$tax = 0;
+		$incomeTax = str_replace(',', '', $incomeTax);
+		
+		$dependents = $this->dbmodel->getSingleField('staffs', 'dependents', 'empID="'.$empID.'"');		
+		if($dependents>4) $dependents=4;		
+		$tax = $incomeTax - (50000) - ($dependents*25000); ///income tax minus personal exemption(50K) and minus (dependents x 25K)		
+		
+		$taxTable = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND minRange<="'.$tax.'" AND maxRange>"'.$tax.'"');
+		$tax = $tax - $taxTable->minRange; //minus tax bracket
+		$tax = $tax * ($taxTable->excessPercent/100); //excess percentage
+		$tax = $tax + $taxTable->baseTax; //add base tax		
+		
+		return $tax;		
+	}
+	
+	
+	public function getPeriodComputation($empID, $periodFrom, $periodTo){
+		$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);		
+		$salary = $this->dbmodel->getSingleField('staffs', 'sal', 'empID="'.$empID.'"');
+		$salary = ($this->textM->decryptText($salary))/2;
+		
+		$info = $this->dbmodel->getQueryResults('tcPayslips', 'payDate, basePay, totalTaxable, earning, deduction, net', 
+			'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND status!=3 AND pstatus=1', 
+			'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+					
+		$dateArr = array();
+		foreach($info AS $in){
+			$dateArr[$in->payDate] = $in;
+		}		
+		
+			
+		echo '<pre>';
+		print_r($dateArr);
+		print_r($dates);
+		echo '</pre>';
+		exit;
+		
+	}
+	
 }
 ?>
 	
