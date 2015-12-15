@@ -1,4 +1,5 @@
 <?php
+ini_set('display_errors', 1);
 require 'config.php';
 
 if(!isset($_GET['no']) && $_GET['no']!='head'){
@@ -10,6 +11,13 @@ if(!isset($_GET['no']) && $_GET['no']!='head'){
 $cancel = 0;
 if(isset($_GET['c']) && $_GET['c']=='yes'){
 	$cancel = 1;
+}
+
+//job requisition is on pool
+if( isset($_GET['p']) AND $_GET['p'] == 'yes'){
+ $db->updateQuery('jobReqData', array('status' => 3, 'pooledBy' => $_SESSION['u'], 'datePooled' => 'NOW()'), 'jobReqID = '. $_GET['id']);
+ echo 'Job Requisition has been pooled.';
+ exit();
 }
 
 if(isset($_POST['cancelJR']) && $_POST['cancelJR']=='yes' && $_POST['cancelRemarks'] != ''){
@@ -168,7 +176,7 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 					?>
 					<tr>
 						<td width=50%>Open</td>
-						<td width=50% align="center"><?php echo $open; if($open>0 && ($_SESSION['u']==$info['requestor'] || is_admin())){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a><?php } ?></b></td>
+						<td width=50% align="center"><?php echo $open;  if($open>0 && ($_SESSION['u']==$info['requestor'] || is_admin())){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a> | <a href="/req-info.php?id=<?= $_GET['id'] ?>&p=yes&no=head" onclick="return confirmPool()" style="color:red;">Pool</a><?php } ?></b></td>
 					</tr>
 					<tr>
 						<td>Closed</td>
@@ -190,6 +198,9 @@ function confirmDelete() {
     return confirm('Are you sure you want to cancel open job requisition?')
 }
 
+function confirmPool) {
+    return confirm('Are you sure you want to pool the job requisition?')
+}
 function checkCancel(){ 
 	if(document.getElementById('cancelRemarks').value==''){
 		alert('Please input reason.');

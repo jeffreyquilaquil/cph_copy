@@ -31,6 +31,15 @@ foreach($openJobs AS $o){
 }
 $openJobsText = implode(',', $hahe);
 
+$pooledJobs = $db->selectQueryArray('SELECT reqID, positionID FROM jobReqData WHERE status=3');
+$hehe = array();
+foreach( $pooledJobs as $p ){
+    $hehe[] = $p['positionID'];
+}
+$pooledJobsText = implode(', ', $hehe);
+
+
+
 $appOpenJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, applicants.date_created, title, processText, processStat 
 		FROM applicants 
 		LEFT JOIN recruitmentProcess ON processID=process 
@@ -44,6 +53,14 @@ $appNoJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lna
 		LEFT JOIN recruitmentProcess ON processID=process 
 		WHERE processStat=1 AND isNew = 1 AND position NOT IN ('.$openJobsText.')
 		ORDER BY applicants.date_created DESC');
+
+$pooledJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat 
+		FROM applicants 
+		LEFT JOIN newPositions ON posID=position 
+		LEFT JOIN recruitmentProcess ON processID=process 
+		WHERE position IN ('.$pooledJobsText.')
+        ORDER BY applicants.date_created DESC');
+
 		
 $petrifiedQ = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=0 AND processText IN ("Failed IQ Test", "Failed Typing Test", "Failed Written Comprehension Test", "Failed HR Interview") GROUP BY applicants.id ORDER BY applicants.date_created DESC');
 $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', lname) AS name, email, mnumber, applicants.date_created, isNew, process, processType, processText, processStat, IF(isNew = 0, (SELECT title FROM positions WHERE position=positions.id LIMIT 1), (SELECT title FROM newPositions WHERE position=posID LIMIT 1)) as title", "1 ORDER BY date_created DESC", "LEFT JOIN recruitmentProcess ON processID=process");
@@ -65,7 +82,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 		}
 	?>
 	<fieldset>
-		<legend>Recruitment Manager</legend>
+        <legend>Recruitment Manager</legend>
 	</fieldset>
 	
 	<div style="display:none;">
@@ -80,10 +97,11 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 	</div>
 	
 	
-	<button style="float:right; margin:8px 120px 0 0;" class="iframeSmall" href="#prodpreview">Send Email</button>
+	<button  style="float: right; position: relative; top: 0; z-index: 1;" class="iframeSmall" href="#prodpreview">Send Email</button>
 	<ul class="tabs">
 		<li class="tab-link current" data-tab="tab-1">Applicants with Open Job Requisitions (<?= count($appOpenJobReq) ?>)</li>
 		<li class="tab-link" data-tab="tab-2">Applicants with No Open Job Requisitions (<?= count($appNoJobReq) ?>)</li>
+		<li class="tab-link" data-tab="tab-5">Pooling (<?= count($pooledJobReq) ?>)</li>
 		<li class="tab-link" data-tab="tab-3">Petrified (<?= count($petrifiedQ) ?>)</li>
 		<li class="tab-link" data-tab="tab-4">All Applicants (<?= count($infoQuery) ?>)</li>
 	</ul>
@@ -270,6 +288,55 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 		?>		
 		</tbody>
 	</table>
+	</div>
+	<div id="tab-5" class="tab-content">
+		<?php
+		if( count($pooledJobReq) > 0 ){
+		?>
+		*Applicants below applied for the job requisition that are in pool.
+		<table class="applicants" cellpadding=5 cellspacing=5 width="100%">
+			<thead style="border-bottom:1px solid #000;">
+			<tr>
+				<th>ID</th>
+				<th>Applicant's Name</th>
+				<th>Email</th>
+				<th>Contact Number</th>
+				<th>Position Applied</th>
+				<th>Date Applied</th>
+				<th>Recruitment Status</th>
+				<th></br></th>
+			</tr>
+			</thead>
+			<tbody>
+			<?php
+				$app=0;
+				foreach($pooledJobReq AS $a){
+					if($app%2==0) echo '<tr bgcolor="#dcdcdc">';
+					else echo '<tr>';
+					$txt = '';
+					echo '<td>'.$a['id'].'</td>';
+					if(!empty($a['processText'])) $txt = '<span style="color:red;">('.$a['processText'].')</span>';
+					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
+							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
+							<td>'.$a['mnumber'].'</td>
+							<td>'.$a['title'].'</td>
+							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
+							<td>'.$a['processType'].' '.$txt.'</td>';
+							
+						if($a['processStat']==0)
+							echo '<td><br/></td>';
+						else
+							echo '<td><a class="iframe" href="editstatus.php?id='.$a['id'].'"><img src="images/edit_icon.png"/></a></td>';
+						
+					echo '</tr>';
+					$app++;
+				}
+			?>			
+			</tbody>
+		</table>
+		<?php }else{
+				echo 'No applicants with no matching open job requisitons.';
+			} ?>
 	</div>
 </div>
 <script type="text/javascript">
