@@ -112,8 +112,8 @@
 		<td>Taken Hours</td>
 		<td>ND</td>
 		<td>OT</td>
-		<td>HP</td>
-		<td>HPND</td>
+		<td>HO</td>
+		<td>HOND</td>
 		<td>Type</td>
 		<td width="30px"><br/></td>
 	</tr>
@@ -176,7 +176,7 @@
 </table>
 <?php
 	if($unpublished === true) echo '<i>Pink background is unpublished</i>';
-	echo '<p><b>Legend:</b><br/><b>ND</b> - Night Differential, <b>OT</b> - Overtime Hours, <b>HP</b> - Holiday Hours, <b>HPND</b> - Holiday Night Diff Hours</p>';
+	echo '<p><b>Legend:</b><br/><b>ND</b> - Night Differential, <b>OT</b> - Overtime Hours, <b>HO</b> - Holiday Hours, <b>HOND</b> - Holiday Night Diff Hours</p>';
 
 }
 ?>
