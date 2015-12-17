@@ -2770,6 +2770,7 @@ class Staff extends MY_Controller {
 				exit;
 			}else if($_POST['submitType']=='addposition'){
 				unset($_POST['submitType']);
+				$_POST['desc'] = addslashes($_POST['desc']);
 				$_POST['user'] = $this->user->username;
 				$_POST['date_created'] = date('Y-m-d H:i:s');
 				$this->dbmodel->insertQuery('newPositions', $_POST);
@@ -2777,6 +2778,7 @@ class Staff extends MY_Controller {
 				$data['added'] = $_POST['title'];
 			}else if($_POST['submitType']=='editposition'){
 				unset($_POST['submitType']);
+				$_POST['desc'] = addslashes($_POST['desc']);
 				$this->dbmodel->updateQuery('newPositions', array('posID'=>$pID), $_POST);				
 				$this->dbmodel->updateConcat('newPositions', 'posID="'.$pID.'"', 'editData', $this->user->username.'|'.date('Y-m-d H:i:s').'-^_^-');
 				

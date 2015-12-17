@@ -213,6 +213,7 @@ if(isset($added)){
 			return false;
 		}else{
 			$('input[type=submit]').attr('disabled','disabled');
+			displaypleasewait();
 			return true;
 		}	
 	}
