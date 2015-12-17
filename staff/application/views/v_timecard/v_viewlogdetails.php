@@ -77,8 +77,11 @@
 				echo '<tr><td>Total Time Paid</td><td><b>'.$dataLog->publishTimePaid.' '.(($dataLog->publishTimePaid>1)?'Hours':'Hour').'</b></td></tr>';
 				echo '<tr><td>Night Differential</td><td><b>'.$dataLog->publishND.' '.(($dataLog->publishND>1)?'Hours':'Hour').'</b></td></tr>';
 				if($dataLog->publishDeduct>0) echo '<tr><td>Total Deduction</td><td>'.$dataLog->publishDeduct.' '.(($dataLog->publishDeduct>1)?'Hours':'Hour').'</td></tr>';
-				if($dataLog->publishOT>0) echo '<tr><td>Overtime Hours</td><td>'.$dataLog->publishOT.' '.(($dataLog->publishOT>1)?'Hours':'Hour').'</td></tr>';				
-				if($holiday!=false && $dataLog->publishHO!='') echo '<tr><td>Holiday Hours</td><td>'.$dataLog->publishHO.' '.(($dataLog->publishHO>1)?'Hours':'Hour').'</td></tr>';				
+				if($dataLog->publishOT>0) echo '<tr><td>Overtime Hours</td><td>'.$dataLog->publishOT.' '.(($dataLog->publishOT>1)?'Hours':'Hour').'</td></tr>';	
+				if($holiday!=false){
+					if($dataLog->publishHO!='') echo '<tr><td>Holiday Hours</td><td>'.$dataLog->publishHO.' '.(($dataLog->publishHO>1)?'Hours':'Hour').'</td></tr>';
+					if($dataLog->publishHOND!='') echo '<tr><td>Night Diff Holiday Hours</td><td>'.$dataLog->publishHOND.' '.(($dataLog->publishHOND>1)?'Hours':'Hour').'</td></tr>';
+				}		
 				if(!empty($dataLog->publishNote)) echo '<tr><td>Note</td><td>'.$dataLog->publishNote.'</td></tr>';
 				echo '<tr><td>Date Published</td><td>'.date('F d, Y h:i a', strtotime($dataLog->datePublished)).'</td></tr>';
 				echo '<tr><td>Published By</td><td>'.(($dataLog->publishBy=="system")?'System':$dataLog->publishBy).'</td></tr>';
@@ -356,8 +359,10 @@
 					if($staffHoliday==1 && $holidayType!=3) $showHoliday = false;
 					else if($staffHoliday==0 && $holidayType==3) $showHoliday = false;
 				}
-				if($showHoliday==true)
+				if($showHoliday==true){
 					echo '<tr><td>Holiday Hours</td><td>'.$this->textM->formfield('number', 'publishHO', $this->payrollM->getHolidayHours($holidayDate, $dataLog), 'forminput', '', 'required').'</td></tr>';
+					echo '<tr><td>Night Diff Holiday Hours</td><td>'.$this->textM->formfield('number', 'publishHOND', $this->payrollM->getNightDiffTime($dataLog, $holidayDate), 'forminput', '', 'required').'</td></tr>';
+				}
 			}
 			
 			//for overtime
@@ -493,6 +498,21 @@
 					else if(sss=='schedOut') $('input[name="inoutval"]').val('<?= date('Y-m-d H:00:00', strtotime($changeTimeOut)) ?>');
 				}
 					
+			}
+		});
+		
+		$('#tblpublishlog input[class="forminput"]').each(function(){
+			if($(this).val()=='' || $(this).val()==0){
+				$(this).css('background-color', '#ccc');
+			}
+		});
+		
+		$('#tblpublishlog input[class="forminput"]').blur(function(){
+			if($(this).val()!='' && $(this).val()!=0){
+				$(this).css('background-color', '#fff');
+			}else{
+				$(this).val(0);
+				$(this).css('background-color', '#ccc');
 			}
 		});
 		

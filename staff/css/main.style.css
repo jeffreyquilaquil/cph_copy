@@ -87,6 +87,7 @@ a:hover{ color:red; }
 .floatright{ float:right; }
 .fs11px { font-size:11px; }
 .bggray { background-color:#bbb; }
+.bgddd { background-color:#ddd; }
 .leaveMatNote{ border:1px solid #ccc; padding:10px; font-size:11px; }
 .leaveMatNote hr{ border:1px solid #ddd; }
 .displayinlineblock{ display:inline-block; width:100%; }
@@ -567,5 +568,7 @@ ul.tabs2 li.current{
 	border-left:1px solid #ccc;
 	border-right:1px solid #ccc;
 }
+
+.trcompute{ font-weight:bold; }
 
  

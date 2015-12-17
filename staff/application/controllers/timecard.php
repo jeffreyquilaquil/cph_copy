@@ -6,6 +6,13 @@ class Timecard extends MY_Controller {
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
 		$this->load->model('payrollmodel', 'payrollM');
+		
+		/* $q['timeIn'] = '2015-11-30 20:17:00';
+		$q['timeOut'] = '2015-12-01 06:12:00';
+		$q['schedIn'] = '2015-11-30 21:00:00';
+		$q['schedOut'] = '2015-12-01 06:00:00';
+		echo $this->payrollM->getNightDiffTime((object)$q, '2015-11-30');
+		exit; */
 	}
 		
 	public function _remap($method){
@@ -812,7 +819,7 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
 			else $condition = '';
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1 '.$condition, 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'dategenerated DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1 '.$condition, 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -974,6 +981,7 @@ class Timecard extends MY_Controller {
 				$pubArr['publishND'] = $_POST['publishND'];
 				
 				if(isset($_POST['publishHO'])) $pubArr['publishHO'] = $_POST['publishHO'];
+				if(isset($_POST['publishHOND'])) $pubArr['publishHOND'] = $_POST['publishHOND'];
 				if(isset($_POST['publishOT'])) $pubArr['publishOT'] = $_POST['publishOT'];
 				
 				$pubArr['publishDeduct'] = $_POST['publishDeduct'];
@@ -1152,7 +1160,7 @@ class Timecard extends MY_Controller {
 				}else if($_POST['submitType'] == 'changeHoliday'){
 					$this->dbmodel->updateQueryText('tcAttendance', 'holidayType="'.$_POST['holidayType'].'"', 'dateToday="'.$_POST['dtoday'].'"');
 					if($_POST['holidayType']==0)
-						$this->dbmodel->updateQueryText('tcStaffLogPublish', 'publishHO=""', 'slogDate="'.$_POST['dtoday'].'" OR slogDate="'.date('Y-m-d', strtotime($_POST['dtoday'].' -1 day')).'"');
+						$this->dbmodel->updateQueryText('tcStaffLogPublish', 'publishHO="", publishHOND=""', 'slogDate="'.$_POST['dtoday'].'" OR slogDate="'.date('Y-m-d', strtotime($_POST['dtoday'].' -1 day')).'"');
 				}
 
 				if($_POST['submitType'] == 'generatepayslip'){
@@ -1196,15 +1204,22 @@ class Timecard extends MY_Controller {
 			}
 			
 			$dataLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-				'slogID, slogDate, empID_fk, schedHour, timeIn, timeOut, schedIn, schedOut, publishTimePaid, publishND, publishHO, publishDeduct, publishBy, status', 
+				'slogID, slogDate, empID_fk, schedHour, timeIn, timeOut, schedIn, schedOut, publishTimePaid, publishND, publishHO, publishHOND, publishDeduct, publishBy, status', 
 				'slogDate BETWEEN "'.$data['start'].'" AND "'.$data['end'].'" AND empID_fk IN ('.$data['empIDs'].')');	
-				
+			
 			foreach($dataLogs AS $d){
 				$data['dataAttendance'][$d->empID_fk]['dates'][$d->slogDate] = $d;
 			}
 			
-			$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['start'].'" AND "'.$data['end'].'"', '', 'dateToday');
-			
+			$data['dataDates'] = array();
+			for($d=$data['start']; $d<=$data['end']; ){
+				$data['dataDates'][$d] = '';
+				$d = date('Y-m-d', strtotime($d.' +1 day'));
+			}					
+			$dataDates = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['start'].'" AND "'.$data['end'].'"', '', 'dateToday');
+			foreach($dataDates AS $d){
+				$data['dataDates'][$d->dateToday] = $d;
+			}			
 			
 			$this->load->view('includes/template', $data);
 		}		
@@ -1486,12 +1501,22 @@ class Timecard extends MY_Controller {
 						}
 					}									
 				}else{
-					$data['dataDates'] = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
+					$data['dataDates'] = array();
+					for($d=$data['payInfo']->payPeriodStart; $d<=$data['payInfo']->payPeriodEnd; ){
+						$data['dataDates'][$d] = '';
+						$d = date('Y-m-d', strtotime($d.' +1 day'));
+					}					
+					$dataDates = $this->dbmodel->getQueryResults('tcAttendance', 'attendanceID, dateToday, holidayType', 'dateToday BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', '', 'dateToday');
+					
 					$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
-						'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishOT, publishHO, publishBy', 
+						'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishOT, publishHO, publishHOND, publishBy', 
 						'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
 						'', 
 						'slogDate');
+					
+					foreach($dataDates AS $d){
+						$data['dataDates'][$d->dateToday] = $d;
+					}
 				}
 			}
 		}
@@ -1627,14 +1652,69 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 	
-	public function generatelastpay(){
-		$data['content'] = 'v_timecard/v_generatelastpay';
+	public function computelastpay(){
+		$data['content'] = 'v_timecard/v_computelastpay';
 		
 		if($this->user!=false){
 			if($this->access->accessFullFinance==false) $data['access'] = false;
 			else{
-				$empIDs = $_GET['empIDs']; ///from URL separated with comma
-				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate, endDate', 'empID IN ('.rtrim($empIDs, ',').')');			
+				if(!empty($_POST['submitType'])){
+					if($_POST['submitType']=='submitPeriod'){						
+						header('Location:'.$this->config->base_url().'timecard/computelastpay/?empID='.$_GET['empID'].'&periodFrom='.$_POST['periodFromYear'].'-01-01'.'&periodTo='.date('Y-m-t', strtotime($_POST['periodToYear'].'-'.$_POST['periodToMonth'].'-01')));
+						exit;
+					}else if($_POST['submitType']=='getTaxBracket'){
+						$info = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$_POST['netTax'].'" BETWEEN minRange AND maxRange');
+						if(count($info)>0){
+							echo $info->excessPercent.'|'.$info->baseTax.'|'.$info->minRange;
+						}
+						exit;
+					}else if($_POST['submitType']=='removePayslip'){
+						$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
+						exit;
+					}else if($_POST['submitType']=='savecomputation'){ //saving computation
+						unset($_POST['submitType']);						
+						foreach($_POST AS $k=>$p){
+							$_POST[$k] = str_replace(',','',$p);
+						}
+						
+						$_POST['generatedBy'] = $this->user->username;
+						$_POST['dateGenerated'] = date('Y-m-d H:i:s');
+						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
+						echo $lastpayID;
+						exit;
+					}
+				}
+				
+				$data['pageType'] = 'showperiod';
+				if(isset($_GET['payID'])){
+					$data['pageType'] = 'showpay';
+					$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
+					if(count($data['payInfo'])==0) $data['access'] = false;
+					else{
+						$empID = $data['payInfo']->empID_fk;
+						$data['periodFrom'] = $data['payInfo']->dateFrom;
+						$data['periodTo'] = $data['payInfo']->dateTo;
+						$data['dataBracket'] = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$data['payInfo']->taxNetTaxable.'" BETWEEN minRange AND maxRange');
+					}					
+				}else if(isset($_GET['empID'])){
+					$empID = $_GET['empID'];
+				}				
+				
+				$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+				if(count($data['staffInfo'])==0) $data['access'] = false;
+				
+				if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
+					$data['pageType'] = 'hideperiod';
+					$data['periodFrom'] = $_GET['periodFrom'];
+					$data['periodTo'] = $_GET['periodTo'];
+				}
+				
+				if(isset($data['periodFrom']) && isset($data['periodTo'])){				
+					$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
+					$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
+						'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
+						'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+				}
 			}
 		}
 		
@@ -1642,7 +1722,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function generate13thmonth(){
-		$data['content'] = 'v_timecard/v_generate13thmonth';
+		$data['content'] = 'v_timecard/v_13thmonthgenerate';
 		
 		if($this->user!=false){
 			if($this->access->accessFullFinance==false) $data['access'] = false;
@@ -1681,7 +1761,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function manage13thmonth(){
-		$data['content'] = 'v_timecard/v_manage13thmonth';
+		$data['content'] = 'v_timecard/v_13thmonthmanage';
 		$data['tpage'] = 'managepayroll';
 		$data['column'] = 'withLeft';
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show

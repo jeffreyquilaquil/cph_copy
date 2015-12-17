@@ -18,15 +18,16 @@
 		<tr class="trlabel">
 			<td><div style="width:200px;">Day Type:</div></td>
 		<?php
-			foreach($dataDates AS $d){
-				$wday = date('D', strtotime($d->dateToday));
+			foreach($dataDates AS $k=>$d){
+				$wday = date('D', strtotime($k));
 				if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#000">';
-				else echo '<td>';				
-				
+				else echo '<td>';	
 					echo '<div style="width:130px;">';
-						echo date('D', strtotime($d->dateToday)).'<br/>'.date('d M', strtotime($d->dateToday)).'<br/>';
-						echo $this->textM->formfield('selectoption', 'holidayType['.$d->dateToday.']', $d->holidayType, 'payrollSelectReviewDate', '', 'onChange="holidayChange(\''.$d->dateToday.'\', this)"', $this->textM->constantArr('holidayTypes'));
-					echo '</div>';
+						echo date('D', strtotime($k)).'<br/>'.date('d M', strtotime($k)).'<br/>';
+						if(!empty($d)){
+							echo $this->textM->formfield('selectoption', 'holidayType['.$k.']', $d->holidayType, 'payrollSelectReviewDate', '', 'onChange="holidayChange(\''.$k.'\', this)"', $this->textM->constantArr('holidayTypes'));
+						}
+					echo '</div>';					
 				echo '</td>';
 			}
 		?>
@@ -49,19 +50,23 @@
 		?>
 			<br/></td>
 		<?php
-			foreach($dataDates AS $d){				
-				$wday = date('D', strtotime($d->dateToday));
-				if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
+			foreach($dataDates AS $k=>$d){				
+				$wday = date('D', strtotime($k));
+				if(empty($d) || $wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
 				else echo '<td>';
-					
-				echo '<b>';
-					echo 'HW&nbsp;&nbsp;|&nbsp;&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;ND';
-					
-					$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday)));
-					if($d->holidayType>0 || $holiday!=false){
-						echo '&nbsp;&nbsp;|&nbsp;&nbsp;<span class="errortext">HO</span>';
-					}
-				echo '</b></td>';
+				
+				if(!empty($d)){
+					echo '<b>';
+						echo 'HW&nbsp;&nbsp;|&nbsp;&nbsp;D&nbsp;&nbsp;|&nbsp;&nbsp;ND';
+						
+						$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($k)));
+						if($d->holidayType>0 || $holiday!=false){
+							echo '&nbsp;&nbsp;|&nbsp;&nbsp;<span class="errortext">HO</span>';
+							echo '&nbsp;&nbsp;|&nbsp;&nbsp;<span class="errortext">HN</span>';
+						}
+					echo '</b>';	
+				}
+				echo '</td>';
 			}
 		?>
 		</tr>
@@ -76,16 +81,16 @@
 					echo '<a href="'.$this->config->base_url().'timecard/'.$empID.'/timelogs/" class="tanone"><b>'.$att['name'].'</b></a>';				
 				echo '</td>';
 								
-				foreach($dataDates AS $d){					
-					$wday = date('D', strtotime($d->dateToday));
-					if($wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
+				foreach($dataDates AS $k=>$d){					
+					$wday = date('D', strtotime($k));
+					if(empty($d) || $wday=='Sat' || $wday=='Sun') echo '<td bgcolor="#aaa">';
 					else echo '<td>';					
 							$addclass = '';
 							$timePaid = 0;
 							$timeND = 0;
 							$timeDeduct = 0;
-							if(isset($att['dates'][$d->dateToday])){
-								$log = $att['dates'][$d->dateToday];
+							if(isset($att['dates'][$k])){
+								$log = $att['dates'][$k];
 								
 								$timePaid = $log->publishTimePaid;
 								$timeND = $log->publishND;
@@ -104,7 +109,7 @@
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishDeduct]', $timeDeduct, 'payrollboxes '.(($timeDeduct>0)?'payboxdeduct':''), '', $stat);
 								echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishND]', $timeND, 'payrollboxes '.(($timeND>0)?'payND':''), '', $stat);
 								
-								$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($d->dateToday)));
+								$holiday = $this->payrollM->isHoliday(date('Y-m-d', strtotime($k)));
 								if($holiday!=false){	
 									$holidayDate = $holiday['date'];
 								
@@ -114,14 +119,20 @@
 										else if($att['staffHolidaySched']==0 && $holiday['type']==3) $isDisabled = true;
 									}
 									
-									if($isDisabled==true) $timeHO = 0;
-									else $timeHO = (($log->publishHO=='')?$this->payrollM->getHolidayHours($holidayDate, $log):$log->publishHO);
+									if($isDisabled==true){
+										$timeHO = 0;
+										$timeHOND = 0;
+									}else{
+										$timeHO = (($log->publishHO=='')?$this->payrollM->getHolidayHours($holidayDate, $log):$log->publishHO);
+										$timeHOND = (($log->publishHOND=='')?$this->payrollM->getNightDiffTime($log, $holidayDate):$log->publishHOND);
+									}
 									
 									echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishHO]', $timeHO, 'payrollboxes '.(($isDisabled==false)?'payHO':''), '', (($isDisabled==true)?'disabled':'').' '.$stat);
+									echo $this->textM->formfield('text', 'log['.$log->slogID.'][publishHOND]', $timeHOND, 'payrollboxes '.(($isDisabled==false)?'payHO':''), '', (($isDisabled==true)?'disabled':'').' '.$stat);
 								}
 									
 								
-								echo '<br/><a href="'.$this->config->base_url().'timecard/'.$empID.'/viewlogdetails/?d='.$d->dateToday.'" class="iframe fs11px">View details</a>';
+								echo '<br/><a href="'.$this->config->base_url().'timecard/'.$empID.'/viewlogdetails/?d='.$k.'" class="iframe fs11px">View details</a>';
 							}						
 							
 					echo '</td>';
@@ -152,7 +163,8 @@
 		<b>HW</b> - Hours Worked, 
 		<b>D</b> - Deduction, 
 		<b>ND</b> - Night Differential,
-		<b>HO</b> - Holiday Hours,<br/>
+		<b>HO</b> - Holiday Hours,
+		<b>HN</b> - Holiday Night Diff Hours,<br/>
 		<b style="color:red;">Red Box</b> - With Deduction, 
 		<b style="color:orange;">Orange Box</b> - Not yet published
 		<b style="color:green;">Light Green Box</b> - For holidays, disabled if not applicable

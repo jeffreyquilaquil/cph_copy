@@ -105,7 +105,7 @@
 
 <br/>
 <table class="tableInfo tacenter">
-	<tr class="trlabel taleft"><td colspan=8>Hours Worked</td></tr>
+	<tr class="trlabel taleft"><td colspan=9>Hours Worked</td></tr>
 	<tr class="trhead">
 		<td align="left" width="15%">Date</td>
 		<td>Worked Hours</td>
@@ -113,6 +113,7 @@
 		<td>ND</td>
 		<td>OT</td>
 		<td>HP</td>
+		<td>HPND</td>
 		<td>Type</td>
 		<td width="30px"><br/></td>
 	</tr>
@@ -122,38 +123,41 @@
 	$ndHR = 0;	
 	$otHR = 0;	
 	$hoHR = 0;	
+	$hondHR = 0;	
 	$unpublished = false;
 	$workArr = array();
 	foreach($dataWorked AS $w){
 		$workArr[$w->slogDate] = $w;
 	}
 	
-	foreach($dataDates AS $d){
+	foreach($dataDates AS $k=>$d){
 		$w = '';
-		if(isset($workArr[$d->dateToday])) $w = $workArr[$d->dateToday];
+		if(isset($workArr[$k])) $w = $workArr[$k];
 		
 		if(isset($w->publishBy) && empty($w->publishBy)){
 			echo '<tr style="background-color:#ffb2b2">';
 			$unpublished = true;			
 		}else echo '<tr>';
 		
-			echo '<td align="left">'.$d->dateToday.'</td>';
-			if(!empty($w)){				
+			echo '<td align="left">'.date('d-M-Y', strtotime($k)).'</td>';
+			if(!empty($w) && !empty($d)){				
 				echo '<td>'.(($w->publishTimePaid==0)?'-':number_format($w->publishTimePaid, 1)).'</td>';
 				echo '<td>'.(($w->publishDeduct==0)?'-':number_format($w->publishDeduct, 1)).'</td>';				
 				echo '<td>'.(($w->publishND==0)?'-':number_format($w->publishND, 1)).'</td>';
 				echo '<td>'.(($w->publishOT==0)?'-':number_format($w->publishOT, 1)).'</td>';
 				echo '<td>'.(($w->publishHO==0)?'-':number_format($w->publishHO, 1)).'</td>';
+				echo '<td>'.(($w->publishHOND==0)?'-':number_format($w->publishHOND, 1)).'</td>';
 				echo '<td>'.$holidayArr[$d->holidayType].'</td>';
-				echo '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$w->empID_fk.'/viewlogdetails/?d='.$d->dateToday.'" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon2.png" width="25px"/></a></td>';				
+				echo '<td align="right"><a href="'.$this->config->base_url().'timecard/'.$w->empID_fk.'/viewlogdetails/?d='.$k.'" class="iframe"><img src="'.$this->config->base_url().'css/images/view-icon2.png" width="25px"/></a></td>';				
 				
 				$workHR += $w->publishTimePaid;
 				$takenHR += $w->publishDeduct;
 				$ndHR += $w->publishND;
 				$otHR += $w->publishOT;
 				$hoHR += $w->publishHO;
+				$hondHR += $w->publishHOND;
 			}else{
-				echo '<td colspan=7><br/></td>';
+				echo '<td colspan=8><br/></td>';
 			}
 		echo '</tr>';
 	}
@@ -164,6 +168,7 @@
 		echo '<td>'.number_format($ndHR, 1).'</td>';
 		echo '<td>'.number_format($otHR, 1).'</td>';
 		echo '<td>'.number_format($hoHR, 1).'</td>';
+		echo '<td>'.number_format($hondHR, 1).'</td>';
 		echo '<td><br/></td>';
 		echo '<td><br/></td>';
 	echo '</tr>';
@@ -171,6 +176,7 @@
 </table>
 <?php
 	if($unpublished === true) echo '<i>Pink background is unpublished</i>';
+	echo '<p><b>Legend:</b><br/><b>ND</b> - Night Differential, <b>OT</b> - Overtime Hours, <b>HP</b> - Holiday Hours, <b>HPND</b> - Holiday Night Diff Hours</p>';
 
 }
 ?>

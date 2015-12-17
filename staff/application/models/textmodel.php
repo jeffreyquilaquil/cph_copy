@@ -726,7 +726,7 @@ class Textmodel extends CI_Model {
 			$arr = array('once'=>'Once', 
 						'semi'=>'Semi-Monthly', 
 						'monthly'=>'Monthly',
-						'per payroll'=>'Per Payroll',);
+						'per payroll'=>'Per Payroll');
 		}else if($a=='payCategory'){
 			$arr = array('pay', 'adjustment', 'advance', 'allowance', 'benefit', 'bonus', 'deduction', 'vacation pay');
 		}else if($a=='payAmountOptions'){
@@ -737,8 +737,10 @@ class Textmodel extends CI_Model {
 							'taxTable'=>'Tax Table', 
 							'philhealthTable'=>'Philhealth Table',
 							'taken'=>'Regular Hours Taken',
-							'nightdiff'=>'Night Diff (10%)',
 							'overtime'=>'Over Time (30%)',
+							'nightdiff'=>'Night Diff (10%)',							
+							'NDspecial'=>'Night Diff (10%) x Special Holiday (30%)',
+							'NDregular'=>'Night Diff (10%) x Regular Holiday (100%)',
 							'specialHoliday'=>'Special Holiday (30%)',
 							'regularHoliday'=>'Regular Holiday (100%)'
 						);

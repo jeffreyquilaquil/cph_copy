@@ -126,7 +126,7 @@ class Payrollmodel extends CI_Model {
 			$payValue = 0;
 			$happen = true;
 			
-			$hourArr = array('nightdiff', 'taken', 'overtime', 'specialHoliday', 'regularHoliday');			
+			$hourArr = array('nightdiff', 'taken', 'overtime', 'specialHoliday', 'regularHoliday', 'NDspecial', 'NDregular');			
 			if(in_array($item->payAmount, $hourArr) || $item->prevAmount=='hourly'){
 				$hourlyRate = $this->payrollM->getDailyHourlyRate($info->monthlyRate, 'hourly');
 				
@@ -141,9 +141,13 @@ class Payrollmodel extends CI_Model {
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, 'publishOT');
 					$payValue = ($hourlyRate*$hr) * 0.30;
 				}else if($item->payAmount=='regularHoliday' || $item->payAmount=='specialHoliday'){
-					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, $item->payPercent);
+					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, $item->payPercent, 'publishHO');
 					if($item->payAmount=='specialHoliday') $payValue = ($hourlyRate*$hr) * 0.30;
-					else $payValue = ($hourlyRate*$hr);
+					else $payValue = $hourlyRate*$hr;
+				}else if($item->payAmount=='NDspecial' || $item->payAmount=='NDregular'){
+					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd, $item->payAmount, 'publishHOND');
+					$payValue = ($hourlyRate*$hr) * 0.10; ///night diff 10%
+					if($item->payAmount=='NDspecial') $payValue = $payValue * 0.30;
 				}else{
 					$hr = $this->payrollM->getNumHours($info->empID_fk, $info->payPeriodStart, $info->payPeriodEnd);
 					$payValue = $hourlyRate*$hr;
@@ -227,7 +231,7 @@ class Payrollmodel extends CI_Model {
 	/*****
 		$type = 'publishDeduct or publishND';
 	*****/
-	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct'){
+	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct', $publishType=''){
 		if(is_numeric($type)){ //this is for the holiday
 			$cond = ' AND (holidayType='.$type.' OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))='.$type.'))';
 			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
@@ -235,6 +239,16 @@ class Payrollmodel extends CI_Model {
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHO) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" '.$cond);
+		}else if($type=='NDspecial' || $type=='NDregular'){
+			if($type=='NDspecial') $holidayType = '2';
+			else $holidayType = '1,3,4';
+			
+			$cond = ' AND (holidayType IN ('.$holidayType.') OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN ('.$holidayType.')))';
+			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			
+			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHOND) AS hours', 
+			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHOND!="" '.$cond);
 		}else{
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish', 'SUM('.$type.') AS hours', 'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"');
 		}
@@ -367,7 +381,7 @@ class Payrollmodel extends CI_Model {
 		Accepts timeIn, timeOut, schedIn, schedOut
 		Computes night differential number of hours
 	**********/
-	public function getNightDiffTime($q){
+	public function getNightDiffTime($q, $holidayDate=''){
 		$nightdiff = 0;
 		$arr = array(0,1,2,3,4,5,6,22,23);
 	
@@ -379,13 +393,18 @@ class Payrollmodel extends CI_Model {
 			$start = date('Y-m-d H:00:00', strtotime($q->timeIn));
 			$end = date('Y-m-d H:00:00', strtotime($q->timeOut));			
 		}else if($q->timeIn!='0000-00-00 00:00:00' && $q->timeOut!='0000-00-00 00:00:00'){
-			$start = $q->timeIn;
-			$end = $q->timeOut;
+			if(!empty($holidayDate)){
+				$start = date('Y-m-d 00:00:00', strtotime($holidayDate));
+				$end = date('Y-m-d 00:00:00', strtotime($holidayDate.' +1 day'));
+			}else{
+				$start = $q->timeIn;
+				$end = $q->timeOut;
+			}
 		}
 		
 		$startLate = date('Y-m-d H:15:00', strtotime($start));	
 		//while checks if included in array, belongs to the schedule and not late
-		while($start<=$end){
+		while($start<=$end){			
 			if(in_array(date('G', strtotime($start)), $arr) && 
 				$start >= $q->schedIn && $start <= $q->schedOut &&
 				$start<date('Y-m-d H:15:00', strtotime($start))
@@ -409,16 +428,19 @@ class Payrollmodel extends CI_Model {
 		$staffTaxStatus = is form table staffs taxstatus field
 		Tax Statuses on tax table
 			- Zero, SorM, SorM1, SorM2, SorM3, SorM4
+			//stat is empty or num
 	****/
-	public function getTaxStatus($staffTaxStatus){
+	public function getTaxStatus($staffTaxStatus, $stat=''){
 		$stat = 'Zero';
-		if($staffTaxStatus==1 || $staffTaxStatus==6) $stat = 'SorM';
-		else if($staffTaxStatus==2 || $staffTaxStatus==7) $stat = 'SorM1';
-		else if($staffTaxStatus==3 || $staffTaxStatus==8) $stat = 'SorM2';
-		else if($staffTaxStatus==4 || $staffTaxStatus==9) $stat = 'SorM3';
-		else if($staffTaxStatus==5 || $staffTaxStatus==10) $stat = 'SorM4';		
-			
-		return $stat;
+		$num = 0;
+		if($staffTaxStatus==1 || $staffTaxStatus==6){ $stat = 'SorM'; }
+		else if($staffTaxStatus==2 || $staffTaxStatus==7){ $stat = 'SorM1'; $num=1; }
+		else if($staffTaxStatus==3 || $staffTaxStatus==8){ $stat = 'SorM2'; $num=1; }
+		else if($staffTaxStatus==4 || $staffTaxStatus==9){ $stat = 'SorM3'; $num=1; }
+		else if($staffTaxStatus==5 || $staffTaxStatus==10){ $stat = 'SorM4'; $num=1;}	
+		
+		if($stat=='num') return $num;
+		else return $stat;
 	}	
 
 	/******

@@ -435,7 +435,8 @@ class Schedules extends MY_Controller {
 									$upArr['publishTimePaid'] = 0;
 									$upArr['publishDeduct'] = 0;
 									$upArr['publishOT'] = 0;
-									$upArr['publishHO'] = 0;
+									$upArr['publishHO'] = '';
+									$upArr['publishHOND'] = '';
 									$upArr['datePublished'] = 0;
 									$upArr['publishNote'] = 0;
 									$upArr['publishBy'] = 0;

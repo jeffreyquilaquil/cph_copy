@@ -45,7 +45,7 @@
 			echo '</select>';		
 			
 			echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
-			echo '<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
+			echo '&nbsp;&nbsp;<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
 			
 			echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
 		?>
@@ -88,7 +88,7 @@
 					echo '<ul class="dropmenu">';
 						echo '<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>';
 							echo '<ul class="dropleft">';
-								echo '<li><a href="'.$this->config->base_url().'timecard/generatelastpay/?empIDs='.$staff->empID.'" class="iframe">Generate Last Pay</a></li>';
+								echo '<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$staff->empID.'" class="iframe">Compute Last Pay</a></li>';
 								echo '<li><a href="'.$this->config->base_url().'timecard/generate13thmonth/?empIDs='.$staff->empID.'" class="iframe">Generate 13th Month</a></li>';
 							echo '</ul>';
 						echo '</li>';
@@ -113,17 +113,19 @@
 			<td width="20%">Period Start</td>
 			<td>Period End</td>
 			<td>Pay Type</td>
-			<td>Number Generated</td>
+			<td>Pay Date</td>
+			<td align="center">Number Generated</td>
 			<td>Status</td>
 			<td width="10%"><br/></td>
 		</tr>
 	<?php
 		foreach($dataPayrolls AS $pay){
 			echo '<tr>';
-				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodStart)).'</td>';
-				echo '<td>'.date('F d, Y', strtotime($pay->payPeriodEnd)).'</td>';
+				echo '<td>'.date('d-M-Y', strtotime($pay->payPeriodStart)).'</td>';
+				echo '<td>'.date('d-M-Y', strtotime($pay->payPeriodEnd)).'</td>';
 				echo '<td>'.(($pay->payType=='semi')?'Semi-Monthly':'Monthly').'</td>';
-				echo '<td>'.$pay->numGenerated.'</td>';
+				echo '<td>'.date('d-M-Y', strtotime($pay->payDate)).'</td>';
+				echo '<td align="center">'.$pay->numGenerated.'</td>';
 				echo '<td>'.$payrollStatusArr[$pay->status].'</td>';
 				echo '<td>';
 					echo '<ul class="dropmenu" style="margin:0px;">
