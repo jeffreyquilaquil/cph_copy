@@ -65,7 +65,7 @@ if(isset($_GET['desc']) && $_GET['desc']=='yes'){
 	echo '<button onClick="location.href=\'/editpositions.php?posID='.$_GET['posID'].'\'" class="btn-xs btn-primary">Edit '.ucwords($pos['title']).' Details</button><hr/>';
 	echo '<p><b>Description of '.$pos['title'].':</b></p>';
 	if($pos['desc']=='') echo '<p>None.</p>';
-	else echo nl2br($pos['desc']);
+	else echo nl2br(stripslashes($pos['desc']));
 	
 	echo '<hr/><p><b>Required Skills of '.$pos['title'].':</b></p><hr/>';
 	if($pos['requiredSkills']==''){
@@ -225,7 +225,7 @@ if(isset($_GET['desc']) && $_GET['desc']=='yes'){
 	</tr>
 	<tr>
 		<td>Description</td>
-		<td><textarea name="desc" class="form-control" rows="8"><?= $pos['desc'] ?></textarea></td>
+		<td><textarea name="desc" class="form-control" rows="8"><?= stripslashes($pos['desc']) ?></textarea></td>
 	</tr>
 	<tr bgcolor="#dcdcdc">
 		<td>Required Skills</td>
