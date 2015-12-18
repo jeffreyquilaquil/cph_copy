@@ -136,7 +136,7 @@
 			echo '<td>'.$this->textM->convertNumFormat($totalNet).'</td>';
 		echo '</tr>';
 
-		echo '<tr class="trtaxIncome hidden">';
+		echo '<tr class="trtaxIncome">';
 			echo '<td colspan=8><i class="errortext">*** Click net pay if you want to remove generated payslip.</i></td>';
 		echo '</tr>';
 		echo '</table>';
@@ -180,7 +180,7 @@
 				echo '<td>';
 					
 					$dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');
-					if($dependents) echo '0';
+					if($dependents=='') echo '0';
 					else{
 						echo '-'.$this->textM->convertNumFormat($dependents*25000);
 						echo '&nbsp;&nbsp;&nbsp;('.$dependents.' x 25,000)';

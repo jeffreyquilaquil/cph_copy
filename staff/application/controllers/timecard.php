@@ -6,13 +6,6 @@ class Timecard extends MY_Controller {
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
 		$this->load->model('payrollmodel', 'payrollM');
-		
-		/* $q['timeIn'] = '2015-11-30 20:17:00';
-		$q['timeOut'] = '2015-12-01 06:12:00';
-		$q['schedIn'] = '2015-11-30 21:00:00';
-		$q['schedOut'] = '2015-12-01 06:00:00';
-		echo $this->payrollM->getNightDiffTime((object)$q, '2015-11-30');
-		exit; */
 	}
 		
 	public function _remap($method){
@@ -1176,7 +1169,7 @@ class Timecard extends MY_Controller {
 						$genpayArr['payType'] = $payrollInfo->payType;
 					}else{
 						$genpayArr['payType'] = $_POST['computationtype'];
-						if($genpayArr['payType']=='semi') $genpayArr['payDate'] = date('Y-m-15', strtotime($genpayArr['dateStart']));
+						if($genpayArr['payType']=='semi') $genpayArr['payDate'] = date('Y-m-15', strtotime($genpayArr['dateEnd']));
 						else  $genpayArr['payDate'] = date('Y-m-t', strtotime($genpayArr['dateEnd']));
 						$genpayArr['payrollsID'] = $this->dbmodel->insertQuery('tcPayrolls', array('payPeriodStart'=>$genpayArr['dateStart'], 'payPeriodEnd'=>$genpayArr['dateEnd'], 'payType'=>$_POST['computationtype'], 'payDate'=>$genpayArr['payDate']));							
 					}
@@ -1679,12 +1672,18 @@ class Timecard extends MY_Controller {
 						
 						$_POST['generatedBy'] = $this->user->username;
 						$_POST['dateGenerated'] = date('Y-m-d H:i:s');
-						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
+						$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
+						if(!empty($lastpayID)){
+							$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
+						}else{
+							$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
+						}
+						
 						echo $lastpayID;
 						exit;
 					}
 				}
-				
+								
 				$data['pageType'] = 'showperiod';
 				if(isset($_GET['payID'])){
 					$data['pageType'] = 'showpay';
@@ -1700,7 +1699,7 @@ class Timecard extends MY_Controller {
 					$empID = $_GET['empID'];
 				}				
 				
-				$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+				$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
 				if(count($data['staffInfo'])==0) $data['access'] = false;
 				
 				if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
@@ -1709,16 +1708,52 @@ class Timecard extends MY_Controller {
 					$data['periodTo'] = $_GET['periodTo'];
 				}
 				
-				if(isset($data['periodFrom']) && isset($data['periodTo'])){				
+				if(isset($data['periodFrom']) && isset($data['periodTo'])){			
 					$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
 					$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
-						'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
-						'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+					'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
+					'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+				}
+				
+				///THIS IS FOR THE PDF
+				if(isset($_GET['show'])){
+					$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
+					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+						echo '<script>';
+							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
+							echo 'if(pass=="'.$bdate.'"){
+								window.location.href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$_GET['payID'].'&show='.$this->textM->encryptText($bdate).'";
+							}else{ alert("Failed to load document. Invalid password.");
+								window.location.href="'.$this->config->base_url().'timecard/";
+							}';
+						echo '</script>';
+						exit;
+					}else{
+						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+							$this->payrollM->pdfLastPay($data);
+							exit;
+						}else{
+							$data['access'] = false;
+						}
+					}									
 				}
 			}
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function managelastpay(){
+		$data['content'] = 'v_timecard/v_managelastpay';
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', '1', 'LEFT JOIN staffs ON empID=empID_fk');				
+			}
+		}
+		
+		$this->load->view('includes/template', $data);
 	}
 	
 	public function generate13thmonth(){

@@ -430,16 +430,16 @@ class Payrollmodel extends CI_Model {
 			- Zero, SorM, SorM1, SorM2, SorM3, SorM4
 			//stat is empty or num
 	****/
-	public function getTaxStatus($staffTaxStatus, $stat=''){
+	public function getTaxStatus($staffTaxStatus, $statType=''){
 		$stat = 'Zero';
 		$num = 0;
-		if($staffTaxStatus==1 || $staffTaxStatus==6){ $stat = 'SorM'; }
+		if($staffTaxStatus==1 || $staffTaxStatus==6){ $stat = 'SorM'; $num=0; }
 		else if($staffTaxStatus==2 || $staffTaxStatus==7){ $stat = 'SorM1'; $num=1; }
-		else if($staffTaxStatus==3 || $staffTaxStatus==8){ $stat = 'SorM2'; $num=1; }
-		else if($staffTaxStatus==4 || $staffTaxStatus==9){ $stat = 'SorM3'; $num=1; }
-		else if($staffTaxStatus==5 || $staffTaxStatus==10){ $stat = 'SorM4'; $num=1;}	
+		else if($staffTaxStatus==3 || $staffTaxStatus==8){ $stat = 'SorM2'; $num=2; }
+		else if($staffTaxStatus==4 || $staffTaxStatus==9){ $stat = 'SorM3'; $num=3; }
+		else if($staffTaxStatus==5 || $staffTaxStatus==10){ $stat = 'SorM4'; $num=4;}	
 		
-		if($stat=='num') return $num;
+		if($statType=='num') return $num;
 		else return $stat;
 	}	
 
@@ -754,6 +754,15 @@ class Payrollmodel extends CI_Model {
 									LEFT JOIN tcPayrolls ON tcPayslips.payrollsID_fk=payrollsID
 									SET '.$condition.'
 									WHERE slogDate BETWEEN payPeriodStart AND payPeriodEnd AND payrollsID='.$payrollID);
+									
+		$queryDates = $this->dbmodel->getSingleInfo('tcPayrolls', 'payPeriodStart, payPeriodEnd', 'payrollsID="'.$payrollID.'"');
+		if(!empty($queryDates)){
+			$dateStart = $queryDates->payPeriodStart;
+			while($dateStart<=$queryDates->payPeriodEnd){
+				$this->timeM->cntUpdateAttendanceRecord($dateStart);
+				$dateStart = date('Y-m-d', strtotime($dateStart.' +1 day'));
+			}
+		}
 	}
 	
 	public function generate13thmonth($periodFrom, $periodTo, $empIDs, $includeEndMonth=0){
@@ -950,6 +959,174 @@ class Payrollmodel extends CI_Model {
 		echo '</pre>';
 		exit;
 		
+	}
+	
+	public function pdfLastPay($data){
+		$payInfo = $data['payInfo'];
+		$periodFrom = $data['periodFrom'];
+		$periodTo = $data['periodTo'];
+		$dataBracket = $data['dataBracket'];
+		$staffInfo = $data['staffInfo'];
+		$dateArr = $data['dateArr'];
+		$dataMonth = $data['dataMonth'];
+		
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+		$pdf = new FPDI();	
+		
+		$pdf->AddPage();	
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'lastpay.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+				
+		$pdf->SetFont('Arial','',10);
+		$pdf->setTextColor(0, 0, 0);
+		
+		$pdf->setXY(20, 46);
+		$pdf->Write(0, $staffInfo->idNum); //employee id number
+		$pdf->setXY(38, 44);
+		$pdf->MultiCell(80, 4, $staffInfo->lname.', '.$staffInfo->fname,0,'C',false);  //employee name
+		$pdf->setXY(117.5, 44);
+		$pdf->MultiCell(44, 4, date('F d, Y', strtotime($staffInfo->startDate)),0,'C',false);  //start date
+		$pdf->setXY(162, 44);
+		$pdf->MultiCell(44, 4, (($staffInfo->endDate!='0000-00-00')?date('F d, Y', strtotime($staffInfo->endDate)):'Not yet determined'),0,'C',false);  //end date
+		
+		$payDate = '';
+		$gross = '';
+		$basicSal = '';
+		$attendance = '';
+		$taxIncome = '';
+		$taxWithheld = '';
+		$month13 = '';
+		$netPay = '';
+		
+		$totalIncome = 0;
+		$totalSalary = 0;
+		$totalDeduction = 0;
+		$totalTaxable = 0;
+		$totalTaxWithheld = 0;
+		$total13th = 0;
+		$totalNet = 0;
+		$personalExemption = 50000;	
+		
+		$payArr = array();
+		foreach($dataMonth AS $m){
+			$payArr[$m->payDate] = $m;
+		}
+		
+		foreach($dateArr AS $date){
+			$payDate .= date('d-M-Y', strtotime($date))."\n";
+			
+			if(isset($payArr[$date])){
+				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
+				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
+				$attendance .= (($payArr[$date]->deductions>0)?'-':'').$this->textM->convertNumFormat($payArr[$date]->deductions)."\n";
+				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
+				$taxWithheld .= $this->textM->convertNumFormat($payArr[$date]->incomeTax)."\n";
+				
+				//13th month computation = (basepay-deduction)/12
+				$month13c = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+				$month13 .= $this->textM->convertNumFormat($month13c)."\n";
+				$netPay .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
+									
+				$totalIncome += $payArr[$date]->earning;
+				$totalSalary += $payArr[$date]->basePay;
+				$totalDeduction += $payArr[$date]->deductions;
+				$totalTaxable += $payArr[$date]->totalTaxable;					
+				$totalTaxWithheld += $payArr[$date]->incomeTax;					
+				$total13th += $month13;					
+				$totalNet += $payArr[$date]->net;						
+			}else{
+				$gross .= "0.00\n";
+				$basicSal .= "0.00\n";
+				$attendance .= "0.00\n";
+				$taxIncome .= "0.00\n";
+				$taxWithheld .= "0.00\n";
+				$month13 .= "0.00\n";
+				$netPay .= "0.00\n";
+			}
+		}
+		
+		$dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');
+		if($dependents=='') $dependents = 0;
+		else $personalExemption += ($dependents*25000);
+		
+		$pdf->SetFont('Arial','',8);
+		$pdf->setXY(11, 72);
+		$pdf->MultiCell(24.5, 4.1, $payDate,0,'C',false);  //Payslip Date
+		$pdf->setXY(35, 72);
+		$pdf->MultiCell(24.5, 4.1, $gross,0,'C',false);  //Gross Income
+		$pdf->setXY(60, 72);
+		$pdf->MultiCell(24.5, 4.1, $basicSal,0,'C',false);  //Basic Salary
+		$pdf->setXY(85, 72);
+		$pdf->MultiCell(24.5, 4.1, $attendance,0,'C',false);  //Attendance Deduction
+		$pdf->setXY(108, 72);
+		$pdf->MultiCell(24.5, 4.1, $taxIncome,0,'C',false);  //Taxable Income
+		$pdf->setXY(133, 72);
+		$pdf->MultiCell(24.5, 4.1, $taxWithheld,0,'C',false);  //Tax Withheld
+		$pdf->setXY(158, 72);
+		$pdf->MultiCell(24.5, 4.1, $month13,0,'C',false);  //13th Month Pay
+		$pdf->setXY(183, 72);
+		$pdf->MultiCell(24, 4.1, $netPay,0,'C',false);  //NET Pay
+		
+		$pdf->SetFont('Arial','B',7);
+		$pdf->setXY(35, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalIncome),0,'C',false);
+		$pdf->setXY(60, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalSalary),0,'C',false);
+		$pdf->setXY(85, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalDeduction),0,'C',false);
+		$pdf->setXY(108, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalTaxable),0,'C',false);
+		$pdf->setXY(133, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalTaxWithheld),0,'C',false);
+		$pdf->setXY(158, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($total13th),0,'C',false);
+		$pdf->setXY(183, 171);
+		$pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalNet),0,'C',false);
+		
+		$leftTaxDue = "Taxable Compensation from Previous Employer\n";
+		$leftTaxDue .= "Current Taxable Income\n";
+		$leftTaxDue .= "Total Taxable Income\n";
+		$leftTaxDue .= "LESS-EXEMPTION\n";
+		$leftTaxDue .= "Personal Exemption\n";
+		$leftTaxDue .= "Dependents\n";
+		$leftTaxDue .= "NET Taxable Income\n";
+		$leftTaxDue .= "Tax Bracket\n";
+		$leftTaxDue .= "Excess of Tax Base\n";
+		$leftTaxDue .= "Multiply By\n";
+		$leftTaxDue .= "Percentage of Excess\n";
+		$leftTaxDue .= "Add Basic Tax\n";
+		
+		if(count($dataBracket)>0){
+			$taxBracket = $dataBracket->minRange;
+			$excessTax = $payInfo->taxNetTaxable-$dataBracket->minRange;
+			$percenta = $dataBracket->excessPercent/100;
+			$excessPer = $excessTax * $percenta;
+			$baseTax = $dataBracket->baseTax;
+		}
+		
+		$rightTaxDue = $this->textM->convertNumFormat($payInfo->taxFromPrevious)."\n";
+		$rightTaxDue .= $this->textM->convertNumFormat($payInfo->taxFromCurrent)."\n";
+		$rightTaxDue .= $this->textM->convertNumFormat($payInfo->taxFromPrevious + $payInfo->taxFromCurrent)."\n\n";
+		$rightTaxDue .= $this->textM->convertNumFormat($personalExemption)."\n";
+		$rightTaxDue .= $dependents."\n";
+		$rightTaxDue .= $this->textM->convertNumFormat($payInfo->taxNetTaxable)."\n";
+		$rightTaxDue .= ((isset($taxBracket))?$this->textM->convertNumFormat($taxBracket):'0.00')."\n";
+		$rightTaxDue .= ((isset($excessTax))?'-'.$this->textM->convertNumFormat($excessTax):'0.00')."\n";
+		$rightTaxDue .= ((isset($percenta))?$this->textM->convertNumFormat($percenta):'0.00')."\n";
+		$rightTaxDue .= ((isset($excessPer))?$this->textM->convertNumFormat($excessPer):'0.00')."\n";
+		$rightTaxDue .= ((isset($baseTax))?$this->textM->convertNumFormat($baseTax):'0.00')."\n";
+		
+		$pdf->SetFont('Arial','',7);
+		$pdf->setXY(15, 186);
+		$pdf->MultiCell(60, 3.6, $leftTaxDue,0,'L',false);
+		$pdf->setXY(75, 186);
+		$pdf->MultiCell(60, 3.6, $rightTaxDue,0,'L',false);
+			
+		
+		
+		$pdf->Output('lastpay.pdf', 'I');		
 	}
 	
 }
