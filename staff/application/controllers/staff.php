@@ -6,7 +6,7 @@ class Staff extends MY_Controller {
 		parent::__construct();
 		
 		$this->load->model('Staffmodel', 'staffM');		
-		$this->load->model('Schedulemodel', 'schedM');		
+		$this->load->model('Schedulemodel', 'schedM');
 	}
 
 		
@@ -3663,8 +3663,54 @@ class Staff extends MY_Controller {
 			$details = $this->dbmodel->getSingleInfo('staffReportViolation', 'staffReportViolation.*, idNum, supervisor, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS supervisorName', 'reportID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 			
 			$this->staffM->pdfincidentreport($details);
-		}
+		}	
+	}
+	
+	public function previouspayslips(){
+		$empID = $this->uri->segment(2);		
 		
+		$data['content'] = 'previouspayslips';
+		if($this->user!=false){
+			if(!empty($_POST)){
+				if($_POST['submitType']=='uploadPay' && !empty($_FILES['pfile'])){
+					$username = $this->dbmodel->getSingleField('staffs', 'username', 'empID="'.$empID.'"');
+					$cntend = count($_FILES['pfile']['name']);
+					
+					$notUploaded = '';
+					for($x=0; $x<$cntend; $x++){
+						if($_FILES['pfile']['name'][$x]!=''){
+							$extn = array_reverse(explode('.', $_FILES['pfile']['name'][$x]));
+							$paydate = str_replace($username.'-', '', $_FILES['pfile']['name'][$x]);
+							$paydate = str_replace('.'.$extn[0], '', $paydate);
+												
+							if(date('Y-m-d', strtotime($paydate)) == $paydate){
+								$fname = $this->textM->getRandText(15).''.strtotime(date('Y-m-d H:i:s')).'.'.$extn[0];							
+								move_uploaded_file($_FILES['pfile']['tmp_name'][$x], UPLOADS.'/prevPayslips/'.$fname);
+																
+								$insArr['empID_fk'] = $empID;
+								$insArr['paydate'] = $paydate;
+								$insArr['filename'] = $fname;
+								$insArr['dateUploaded'] = date('Y-m-d H:i:s');
+								$this->dbmodel->insertQuery('staffPrevPayslips', $insArr);
+							}else{
+								$notUploaded .= $_FILES['pfile']['name'][$x].'<br/>';
+							}
+						}
+					}
+					
+					$data['notUploaded'] = $notUploaded;
+				}
+			}
+			
+			if($this->access->accessFullHRFinance==false && $empID!=$this->user->empID) $data['access'] = false;
+			else{
+				$data['staffInfo'] = $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, title', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
+				if(count($data['staffInfo'])==0) $data['access'] = false;
+				
+				$data['dataPayslips'] = $this->dbmodel->getQueryResults('staffPrevPayslips', '*', 'empID_fk="'.$empID.'"', '', 'paydate DESC');
+			}
+		}
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 }

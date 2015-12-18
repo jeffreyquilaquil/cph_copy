@@ -16,46 +16,7 @@
 		}
 		echo '<br/>';
 		//echo '<h2 style="float:left;">'..(($row->active==0)?'<span class="errortext"><b>[Not Active]</b></span>':'').'</h2>';
-		
-		
-		function trDisplay2($label, $text, $field, $editable, $vals='', $placeholder=''){
-			if($editable){				
-				echo '<tr bgcolor="#ccc"><td width="30%">'.$label.'</td>';
-				if(is_array($vals)){
-					echo '<td>';
-					echo '<select name="'.$field.'" id="'.$field.'" class="forminput"><option value=""></option>';
-						foreach($vals AS $k=>$v){
-							if($k==$text)
-								echo '<option value="'.$k.'" selected>'.$v.'</option>';
-							else
-								echo '<option value="'.$k.'">'.$v.'</option>';
-						}
-					echo '</select>';
-					echo '</td>';
-				}else{
-					$datepick = array('bdate', 'startDate', 'endDate', 'accessEndDate', 'regDate');
-					if(in_array($field,$datepick)) $class = 'datepick';
-					else $class='';
-					echo '<td><input type="text" name="'.$field.'" id="'.$field.'" value="'.$text.'" placeholder="'.$placeholder.'" class="forminput '.$class.'"/></td>';
-				}
-				echo '</tr>';
-						
-			}else{
-				if($field == 'email' || $field == 'pemail') $text = '<a href="mailto:'.$text.'">'.$text.'</a>';
-				echo '<tr>
-						<td width="20%">'.$label.'</td>
-						<td>'.$text.'</td>
-					</tr>';
-			}
-		}
-		function trDisplay4($td1, $td2, $td3, $td4){
-			echo '<tr>
-					<td>'.$td1.'</td>
-					<td>'.$td2.'</td>
-					<td>'.$td3.'</td>
-					<td>'.$td4.'</td>
-				</tr>';
-		}	
+			
 	if($this->access->accessHR==true || $this->user->level>0){
 		echo '<button style="position:absolute; right:175px; padding:5px; cursor:pointer;" onClick="window.parent.jQuery.colorbox({href:\''.$this->config->base_url().'sendemail/'.$row->empID.'/\', iframe:true, width:\'990px\', height:\'600px\'});">Send Email to this Staff</button>';
 	} 
@@ -765,13 +726,19 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 		endforeach; */
 	?>
 	</table>
-<?php } ?>	
-
+<?php } 
 	
-	<table class="tableInfo">
-		<?php //echo '<tr class="trlabel"><td colspan=4>Attendance Logs</td></tr>' ?>
+	if($this->access->accessFullHRFinance==true || $current=='myinfo'){
+?>
+	<table class="tableInfo" id="disPrevPay">
+		<tr class="trlabel">
+			<td>
+				Previous Payslips
+				<a href="<?= $this->config->base_url().'previouspayslips/'.$row->empID.'/' ?>" class="edit iframe"><?= (($this->access->accessFullHRFinance==true)?'Upload/':'') ?>View Files</a>
+			</td>
+		</tr>		
 	</table>
-
+<?php } ?>
 	</div><? //end of tab-1 ?>
 <!----------------------- END OF TAB 1 ----------------------->		
 <!----------------------- START OF TAB 2 NOTES ----------------------->		

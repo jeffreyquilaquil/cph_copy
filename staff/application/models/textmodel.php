@@ -940,6 +940,21 @@ class Textmodel extends CI_Model {
 		
 		return $bye;
 	}
+	
+	
+	function getRandText($num){
+		$chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+		$charNum = strlen($chars)-1;
+		$txt = "";
+		for ($i = 0; $i < $num; $i++) {
+			$txt .= $chars[mt_rand(0, $charNum)];
+		}
+		
+		return $txt;
+	}
+	
+	
+	
 		
 }
 
