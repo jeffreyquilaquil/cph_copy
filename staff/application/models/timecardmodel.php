@@ -390,6 +390,21 @@ class Timecardmodel extends CI_Model {
 		}
 	}
 	
+	public function cntUpdateFinalizeAttendance($today){
+		$attLog = $this->dbmodel->getSingleInfo('tcAttendance', '*', 'dateToday="'.$today.'"');
+						
+		if(count($attLog)>0){
+			$upArr = array();	
+			$cntPublished = count($this->timeM->getNumDetailsAttendance($today, 'published'));
+			$cntUnPublished = count($this->timeM->getNumDetailsAttendance($today, 'unpublished'));
+			
+			if($attLog->published!=$cntPublished) $upArr['published'] = $cntPublished;
+			if($attLog->unpublished!=$cntUnPublished) $upArr['unpublished'] = $cntUnPublished;
+						
+			if(count($upArr)>0) $this->dbmodel->updateQuery('tcAttendance', array('attendanceID'=>$attLog->attendanceID), $upArr);		
+		}
+	}
+	
 	/********
 		If records no discrepancies, insert to update table
 	********/

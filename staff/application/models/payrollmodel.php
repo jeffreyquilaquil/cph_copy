@@ -759,7 +759,7 @@ class Payrollmodel extends CI_Model {
 		if(!empty($queryDates)){
 			$dateStart = $queryDates->payPeriodStart;
 			while($dateStart<=$queryDates->payPeriodEnd){
-				$this->timeM->cntUpdateAttendanceRecord($dateStart);
+				$this->timeM->cntUpdateFinalizeAttendance($dateStart);
 				$dateStart = date('Y-m-d', strtotime($dateStart.' +1 day'));
 			}
 		}
