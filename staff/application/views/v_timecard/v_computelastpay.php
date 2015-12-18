@@ -329,7 +329,7 @@
 			echo '</tr>';
 			echo '<tr class="trLastPay">';
 				echo '<td>Deductions</td>';
-				echo '<td class="cls_totalDeductions">'.((isset($payInfo->deductTotal))?$this->textM->convertNumFormat($payInfo->deductTotal):'0.00').'</td>';
+				echo '<td class="cls_totalDeductions">'.((isset($payInfo->deductTotal))?'-'.$this->textM->convertNumFormat($payInfo->deductTotal):'0.00').'</td>';
 			echo '</tr>';			
 			echo '<tr class="weightbold trLastPay" style="background-color:#bbb; font-size:16px;">';
 				echo '<td>NET LAST PAY</td>';

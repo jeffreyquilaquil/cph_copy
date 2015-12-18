@@ -1476,15 +1476,18 @@ class Timecard extends MY_Controller {
 				if(!isset($data['access']) && isset($_GET['show'])){
 					$bdate = date('ymd', strtotime($data['payInfo']->bdate));
 					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+						$acc = true;
 						echo '<script>';
 							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
 							echo 'if(pass=="'.$bdate.'"){
 								window.location.href="'.$this->config->base_url().'timecard/'.$empID.'/payslipdetail/'.$payID.'/?show='.$this->textM->encryptText($bdate).'";
-							}else{ alert("Failed to load document. Invalid password.");
-								window.location.href="'.$this->config->base_url().'timecard/";
-							}';
+							}else{ 
+								alert("Failed to load document. Invalid password.");';
+								$acc = false;
+							echo '}';
 						echo '</script>';
-						exit;
+						if($acc==false) $data['access'] = false;
+						else exit;						
 					}else{
 						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 							$this->payrollM->pdfPayslip($empID, $payID);
@@ -1649,94 +1652,95 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_computelastpay';
 		
 		if($this->user!=false){
-			if($this->access->accessFullFinance==false) $data['access'] = false;
-			else{
-				if(!empty($_POST['submitType'])){
-					if($_POST['submitType']=='submitPeriod'){						
-						header('Location:'.$this->config->base_url().'timecard/computelastpay/?empID='.$_GET['empID'].'&periodFrom='.$_POST['periodFromYear'].'-01-01'.'&periodTo='.date('Y-m-t', strtotime($_POST['periodToYear'].'-'.$_POST['periodToMonth'].'-01')));
-						exit;
-					}else if($_POST['submitType']=='getTaxBracket'){
-						$info = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$_POST['netTax'].'" BETWEEN minRange AND maxRange');
-						if(count($info)>0){
-							echo $info->excessPercent.'|'.$info->baseTax.'|'.$info->minRange;
-						}
-						exit;
-					}else if($_POST['submitType']=='removePayslip'){
-						$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
-						exit;
-					}else if($_POST['submitType']=='savecomputation'){ //saving computation
-						unset($_POST['submitType']);						
-						foreach($_POST AS $k=>$p){
-							$_POST[$k] = str_replace(',','',$p);
-						}
-						
-						$_POST['generatedBy'] = $this->user->username;
-						$_POST['dateGenerated'] = date('Y-m-d H:i:s');
-						$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
-						if(!empty($lastpayID)){
-							$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
-						}else{
-							$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
-						}
-						
-						echo $lastpayID;
-						exit;
+			if(!empty($_POST['submitType'])){
+				if($_POST['submitType']=='submitPeriod'){						
+					header('Location:'.$this->config->base_url().'timecard/computelastpay/?empID='.$_GET['empID'].'&periodFrom='.$_POST['periodFromYear'].'-01-01'.'&periodTo='.date('Y-m-t', strtotime($_POST['periodToYear'].'-'.$_POST['periodToMonth'].'-01')));
+					exit;
+				}else if($_POST['submitType']=='getTaxBracket'){
+					$info = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$_POST['netTax'].'" BETWEEN minRange AND maxRange');
+					if(count($info)>0){
+						echo $info->excessPercent.'|'.$info->baseTax.'|'.$info->minRange;
 					}
+					exit;
+				}else if($_POST['submitType']=='removePayslip'){
+					$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
+					exit;
+				}else if($_POST['submitType']=='savecomputation'){ //saving computation
+					unset($_POST['submitType']);						
+					foreach($_POST AS $k=>$p){
+						$_POST[$k] = str_replace(',','',$p);
+					}
+					
+					$_POST['generatedBy'] = $this->user->username;
+					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
+					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
+					if(!empty($lastpayID)){
+						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
+					}else{
+						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
+					}
+					
+					echo $lastpayID;
+					exit;
 				}
-								
-				$data['pageType'] = 'showperiod';
-				if(isset($_GET['payID'])){
-					$data['pageType'] = 'showpay';
-					$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
-					if(count($data['payInfo'])==0) $data['access'] = false;
-					else{
-						$empID = $data['payInfo']->empID_fk;
-						$data['periodFrom'] = $data['payInfo']->dateFrom;
-						$data['periodTo'] = $data['payInfo']->dateTo;
-						$data['dataBracket'] = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$data['payInfo']->taxNetTaxable.'" BETWEEN minRange AND maxRange');
-					}					
-				}else if(isset($_GET['empID'])){
-					$empID = $_GET['empID'];
-				}				
-				
-				$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
-				if(count($data['staffInfo'])==0) $data['access'] = false;
-				
-				if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
-					$data['pageType'] = 'hideperiod';
-					$data['periodFrom'] = $_GET['periodFrom'];
-					$data['periodTo'] = $_GET['periodTo'];
-				}
-				
-				if(isset($data['periodFrom']) && isset($data['periodTo'])){			
-					$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
-					$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
-					'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
-					'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
-				}
-				
-				///THIS IS FOR THE PDF
-				if(isset($_GET['show'])){
-					$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
-					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
-						echo '<script>';
-							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
-							echo 'if(pass=="'.$bdate.'"){
-								window.location.href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$_GET['payID'].'&show='.$this->textM->encryptText($bdate).'";
-							}else{ alert("Failed to load document. Invalid password.");
-								window.location.href="'.$this->config->base_url().'timecard/";
-							}';
-						echo '</script>';
+			}
+							
+			$data['pageType'] = 'showperiod';
+			if(isset($_GET['payID'])){
+				$data['pageType'] = 'showpay';
+				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
+				if(count($data['payInfo'])==0) $data['access'] = false;
+				else{
+					$empID = $data['payInfo']->empID_fk;
+					$data['periodFrom'] = $data['payInfo']->dateFrom;
+					$data['periodTo'] = $data['payInfo']->dateTo;
+					$data['dataBracket'] = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$data['payInfo']->taxNetTaxable.'" BETWEEN minRange AND maxRange');
+				}					
+			}else if(isset($_GET['empID'])){
+				$empID = $_GET['empID'];
+			}				
+			
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+			if(count($data['staffInfo'])==0) $data['access'] = false;
+			
+			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
+				$data['pageType'] = 'hideperiod';
+				$data['periodFrom'] = $_GET['periodFrom'];
+				$data['periodTo'] = $_GET['periodTo'];
+			}
+			
+			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
+				$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
+				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
+				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
+				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+			}
+							
+			///THIS IS FOR THE PDF
+			if(isset($_GET['show'])){
+				$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
+				if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+					$acc = true;
+					echo '<script>';
+						echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
+						echo 'if(pass=="'.$bdate.'"){
+							window.location.href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$_GET['payID'].'&show='.$this->textM->encryptText($bdate).'";
+						}else{ 
+							alert("Failed to load document. Invalid password.");';
+							$acc = false;
+						echo '}';
+					echo '</script>';
+					
+					if($acc==false) $data['access'] = false;
+					else exit;
+				}else{
+					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+						$this->payrollM->pdfLastPay($data);
 						exit;
 					}else{
-						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
-							$this->payrollM->pdfLastPay($data);
-							exit;
-						}else{
-							$data['access'] = false;
-						}
-					}									
-				}
+						$data['access'] = false;
+					}
+				}									
 			}
 		}
 		
@@ -1826,15 +1830,18 @@ class Timecard extends MY_Controller {
 				if(isset($_GET['show'])){
 					$bdate = date('ymd', strtotime($data['dataInfo']->bdate));
 					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+						$acc = true;
 						echo '<script>';
 							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
 							echo 'if(pass=="'.$bdate.'"){
 								window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'";
-							}else{ alert("Failed to load document. Invalid password.");
-								window.location.href="'.$this->config->base_url().'timecard/";
-							}';
+							}else{ 
+								alert("Failed to load document. Invalid password.");';
+								$acc = false;
+							echo '}';
 						echo '</script>';
-						exit;
+						if($acc==false) $data['access'] = false;
+						else exit;
 					}else{
 						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 							$this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']);
