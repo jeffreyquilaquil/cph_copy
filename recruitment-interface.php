@@ -7,10 +7,12 @@ require "includes/header.php";
 	$infoQuery = $db->selectQueryArray('SELECT jobReqData.*, org, dept, grp, subgrp, title, (SELECT count(*) FROM jobReqData AS j WHERE status=1 AND j.jobReqID= jobReqData.jobReqID) AS numHired FROM jobReqData	LEFT JOIN newPositions ON posID = positionID WHERE status = 0 ORDER BY dateSubmitted DESC');
 	$closedReq = $db->selectQueryArray('SELECT jobReqID, dateSubmitted, requestor, org, dept, grp, subgrp, title, closedBy, dateClosed, appID, CONCAT(fname," ",lname) AS name FROM jobReqData LEFT JOIN newPositions ON positionID = posID LEFT JOIN applicants ON id=appID WHERE jobReqData.status = 1');
 	$canceledReq = $db->selectQueryArray('SELECT jobReqID, dateSubmitted, requestor, org, dept, grp, subgrp, title, closedBy, dateClosed, cancelRemarks FROM jobReqData LEFT JOIN newPositions ON positionID = posID WHERE jobReqData.status = 2');
+	$pooledQuery = $db->selectQueryArray('SELECT jobReqID, dateSubmitted, requestor, org, dept, grp, subgrp, title, closedBy, dateClosed, cancelRemarks, pooledBy, datePooled FROM jobReqData LEFT JOIN newPositions ON positionID = posID WHERE jobReqData.status = 3');
 		
 ?>
 	<ul class="tabs">
 		<li class="tab-link current" data-tab="tab-1">Job Requisitions (<?= count($infoQuery) ?>)</li>
+		<li class="tab-link" data-tab="tab-4">Pooled Requisitions (<?= count($pooledQuery) ?>)</li>
 		<li class="tab-link" data-tab="tab-2">Closed Job Requisitions (<?= count($closedReq) ?>)</li>
 		<li class="tab-link" data-tab="tab-3">Cancelled Job Requisitions (<?= count($canceledReq) ?>)</li>
 	</ul>
@@ -150,6 +152,55 @@ require "includes/header.php";
 		<?php }else{
 				echo 'No cancelled requisitions.';
 			} ?>
+	</div>
+<div id="tab-4" class="tab-content">
+		<?php			
+			if( count($pooledQuery) > 0 ){
+		?>
+		<table cellpadding=5 cellspacing=5 width="100%">
+			<thead style="border-bottom:1px solid #000;">
+			<tr>
+				<th>Job Requisition ID</th>
+				<th>Date request submitted</th>
+				<th>Requestor</th>
+				<th>Organization</th>
+				<th>Department</th>
+				<th>Group</th>
+				<th>Subgroup</th>
+				<th>Name of Position</th>
+				<th>Pooled By</th>
+				<th>Date pooled</th>
+				<th>Hired Emp</th>
+			</tr>
+			</thead>
+			<tbody>
+			<?php
+				$ccnt=0;
+				foreach($pooledQuery AS $c){
+					if($ccnt%2==0) echo '<tr bgcolor="#dcdcdc">';
+					else echo '<tr>';	
+					echo '<td><a class="iframe" href="'.HOME_URL.'req-info.php?id='.$c['jobReqID'].'&no=head">'.$c['jobReqID'].'<a></td>
+							<td>'.date('m/d/Y h:s', strtotime($c['dateSubmitted'])).'</td>
+							<td>'.$c['requestor'].'</td>
+							<td>'.$c['org'].'</td>
+							<td>'.$c['dept'].'</td>
+							<td>'.$c['grp'].'</td>
+							<td>'.$c['subgrp'].'</td>
+							<td>'.$c['title'].'</td>
+							<td>'.$c['pooledBy'].'</td>
+							<td>';
+							echo ( $c['datePooled'] != '0000-00-00 00:00:00' ) ? date('Y-m-d', strtotime($c['datePooled'])) : '0000-00-00';
+							echo '</td>';
+							echo '<td><a href="'.HOME_URL.'view_info.php?id='.$c['appID'].'" target="_blank">'.$c['name'].'</a></td>
+						</tr>';
+					$ccnt++;
+				}
+			?>			
+			</tbody>
+		</table>
+		<?php }else{
+			echo 'No closed requisitions.';
+		} ?>
 	</div>	
 </div>
 <script type="text/javascript">
