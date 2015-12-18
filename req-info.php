@@ -1,5 +1,5 @@
 <?php
-ini_set('display_errors', 1);
+//ini_set('display_errors', 1);
 require 'config.php';
 
 if(!isset($_GET['no']) && $_GET['no']!='head'){
@@ -19,6 +19,12 @@ if( isset($_GET['p']) AND $_GET['p'] == 'yes'){
  echo 'Job Requisition has been pooled.';
  exit();
 }
+//cancel job requistion pool
+if( isset($_GET['p']) AND $_GET['p'] == 'no'){
+ $db->updateQuery('jobReqData', array('status' => 0, 'pooledBy' => '', 'datePooled' => '0000-00-00 00:00:00'), 'jobReqID = '. $_GET['id']);
+ echo 'Job Requisition has been open.';
+ exit();
+}
 
 if(isset($_POST['cancelJR']) && $_POST['cancelJR']=='yes' && $_POST['cancelRemarks'] != ''){
 	$db->updateQuery('jobReqData', array('status'=> 2, 'cancelRemarks' => $_POST['cancelRemarks'], 'closedBy'=>$_SESSION['u'], 'dateClosed'=>'NOW()'),'jobReqID="'.$_POST['reqID'].'" AND status=0');
@@ -32,7 +38,7 @@ if(isset($_POST['addRemarks']) && !empty($_POST['addRemarks'])){
 }
 
 $infoQ = $db->selectQueryArray('
-	SELECT jobReqData.*, org, dept, grp, subgrp, title, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.minSal) AS minSal, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.maxSal) AS maxSal, newPositions.desc
+	SELECT jobReqData.*, org, dept, grp, subgrp, title, status, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.minSal) AS minSal, (SELECT salaryAllowance FROM salaryRange WHERE salID=jobReqData.maxSal) AS maxSal, newPositions.desc
 	FROM jobReqData
 	LEFT JOIN newPositions ON posID = positionID
 	WHERE jobReqID = "'.$_GET['id'].'"
@@ -176,7 +182,15 @@ $rName = $ptDb->selectSingleQueryArray('staff', 'sFirst, sLast' , 'username="'.$
 					?>
 					<tr>
 						<td width=50%>Open</td>
-						<td width=50% align="center"><?php echo $open;  if($open>0 && ($_SESSION['u']==$info['requestor'] || is_admin())){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a> | <a href="/req-info.php?id=<?= $_GET['id'] ?>&p=yes&no=head" onclick="return confirmPool()" style="color:red;">Pool</a><?php } ?></b></td>
+						<td width=50% align="center"><?php echo $open;  if(/*open>0 &&*/ ($_SESSION['u']==$info['requestor'] || is_admin())){ ?> <br/><b><a href="/req-info.php?id=<?= $_GET['id'] ?>&c=yes&no=head" onclick="return confirmDelete()" style="color:red;">Cancel</a> | 
+						<?php
+
+						if( $info['status'] == 3 ) { ?>
+								<a href="/req-info.php?id=<?= $_GET['id'] ?>&p=no&no=head" onclick="return confirmActive()" style="color:red;">Active</a>
+						<?php } else { ?>
+								<a href="/req-info.php?id=<?= $_GET['id'] ?>&p=yes&no=head" onclick="return confirmPool()" style="color:red;">Pool</a>
+						<?php } ?>
+						<?php } ?></b></td>
 					</tr>
 					<tr>
 						<td>Closed</td>
@@ -198,8 +212,11 @@ function confirmDelete() {
     return confirm('Are you sure you want to cancel open job requisition?')
 }
 
-function confirmPool) {
+function confirmPool() {
     return confirm('Are you sure you want to pool the job requisition?')
+}
+function confirmActive() {
+    return confirm('Are you sure you want to open the job requisition?')
 }
 function checkCancel(){ 
 	if(document.getElementById('cancelRemarks').value==''){
