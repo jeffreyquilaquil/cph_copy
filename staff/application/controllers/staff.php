@@ -3675,14 +3675,18 @@ class Staff extends MY_Controller {
 				if($_POST['submitType']=='uploadPay' && !empty($_FILES['pfile'])){
 					$username = $this->dbmodel->getSingleField('staffs', 'username', 'empID="'.$empID.'"');
 					$cntend = count($_FILES['pfile']['name']);
-					
+										
 					$notUploaded = '';
 					for($x=0; $x<$cntend; $x++){
 						if($_FILES['pfile']['name'][$x]!=''){
 							$extn = array_reverse(explode('.', $_FILES['pfile']['name'][$x]));
-							$paydate = str_replace($username.'-', '', $_FILES['pfile']['name'][$x]);
-							$paydate = str_replace('.'.$extn[0], '', $paydate);
-												
+							/* $paydate = str_replace($username.'-', '', $_FILES['pfile']['name'][$x]);
+							$paydate = str_replace('.'.$extn[0], '', $paydate); */
+														
+							$payEx = array_reverse(explode('_', $extn[1]));
+							$payEx2 = array_reverse(explode('-', $payEx[0]));
+							$paydate = $payEx2[0].'-'.$payEx2[2].'-'.$payEx2[1];
+														
 							if(date('Y-m-d', strtotime($paydate)) == $paydate){
 								$fname = $this->textM->getRandText(15).''.strtotime(date('Y-m-d H:i:s')).'.'.$extn[0];							
 								move_uploaded_file($_FILES['pfile']['tmp_name'][$x], UPLOADS.'/prevPayslips/'.$fname);
