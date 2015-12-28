@@ -53,11 +53,11 @@ if(count($info)==0){
 <div class="container">	
 	<fieldset>
 		<legend><?= $info['fname'].' '.$info['lname'] ?> Information</legend>
-		<b>Position Applied:</b> <? echo $position; if($info['isNew']==0 || !empty($openP)){ echo ' <span style="color:red;">(Reprofile Needed'.$openP.')</span>'; } ?>
+		<b>Position Applied:</b> <? echo $position; if(($info['isNew']==0 || !empty($openP)) && $info['process']<6){ echo ' <span style="color:red;">(Reprofile Needed'.$openP.')</span>'; } ?>
 	</fieldset>	
 	<br/>
 	<b>Recruitment Status Info</b>
-	<?php
+	<?php	
 		if($info['processStat']==1 && empty($info['processText'])) echo ' - <span style="color:red;">in progress</span>';		
 		if(!empty($info['processText'])) echo ' - <span style="color:red;">'.$info['processText'].'</span>';
 	?>

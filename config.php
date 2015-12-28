@@ -9,6 +9,8 @@ function __autoload($class_name){
 }
 
 $hosturl = $_SERVER['HTTP_HOST'];
+	////// $hosturl = 'careerph.tatepublishing.net'; ///enable if accessing live
+
 
 $dbname="projectTracker";
 $user="pt";

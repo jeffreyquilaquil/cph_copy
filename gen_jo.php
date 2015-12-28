@@ -14,11 +14,9 @@
 	require_once('includes/fpdf/fpdf.php');
 	require_once('includes/fpdf/fpdi.php');
 	
-	$applicant_details = $db->selectSingleQueryArray('applicants a', 'fname, lname, gender, IF(p.id IS NULL, np.title, p.title) AS "position_title", g.startDate, offer', 'a.id = '.$_GET['appID'].' AND g.joID = '.$_GET['jo_id'], 'LEFT JOIN generatedJO g ON g.appID = a.id LEFT JOIN positions p ON a.position = p.id LEFT JOIN newPositions np ON a.position = np.posID');
+	$applicant_details = $db->selectSingleQueryArray('applicants a', 'fname, lname, gender, title, g.startDate, offer', 'a.id = '.$_GET['appID'].' AND g.joID = '.$_GET['jo_id'], 'LEFT JOIN generatedJO g ON g.appID = a.id LEFT JOIN newPositions np ON a.position = np.posID');
 	$prefix = ($applicant_details['gender'] == 'female' ) ? 'Ms.' : 'Mr.';
-
 	
-
 	ob_end_clean();
 	$pdf = new FPDI();
 	$pdf->AddPage();
@@ -40,7 +38,7 @@
 	$pdf->Write(0, 'Dear '.$prefix.' '.$applicant_details['lname'].',');
 
 	$pdf->setXY(82, 92);
-	$pdf->Write(4, $applicant_details['position']);
+	$pdf->Write(4, $applicant_details['title']);
 
 	$pdf->setXY(82, 100.5);
 	$pdf->Write(0, date('F d, Y',strtotime($applicant_details['startDate'])));
