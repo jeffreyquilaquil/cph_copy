@@ -160,7 +160,7 @@ class Payrollmodel extends CI_Model {
 				if($sDates->startDate>=$info->payPeriodStart && $sDates->startDate<=$info->payPeriodEnd){
 					$hr = $this->payrollM->getNumHoursExWeekend($sDates->startDate, $info->payPeriodEnd);
 					$payValue = $dailyRate*$hr;
-				}else if($sDates->endDate!="0000-00-00" && $sDates->endDate>=$info->payPeriodStart && $sDates->endDate<=$info->payPeriodEnd){
+				}else if($sDates->endDate!="0000-00-00" && $sDates->endDate>=$info->payPeriodStart && $sDates->endDate<$info->payPeriodEnd){
 					$hr = $this->payrollM->getNumHoursExWeekend($info->payPeriodStart, $sDates->endDate);
 					$payValue = $dailyRate*$hr;
 				}else{
