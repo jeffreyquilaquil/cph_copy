@@ -15,8 +15,8 @@
 		$allLogsText .= '<table width="25%" class="hidden tblalltimein">';
 		foreach($allLogs AS $a){
 			if($a->logtype=='D' || $a->logtype=='E'){
-				if($breaknum%2!=0) $logtypeText = 'Break Out';
-				else $logtypeText = 'Break In';
+				if($breaknum%2!=0) $logtypeText = 'Start Break';
+				else $logtypeText = 'End Break';
 			}else $logtypeText = $logtypeArr[$a->logtype];
 			
 			$allLogsText .= '<tr class="border-bottom-black"><td>'.$logtypeText.'</td><td align="center">'.date('h:i a', strtotime($a->logtime)).'</td></tr>';
@@ -102,7 +102,7 @@
 					echo '<br/>';
 				} 
 				
-				if(!empty($breakouttext)) echo '<span class="errortext">Pending Break In. Break out time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span><br/>';
+				if(!empty($breakouttext)) echo '<span class="errortext">Pending End Break. Start break time: <b>'.date('h:i a', strtotime($breakouttext)).'</b></span><br/>';
 			
 				///CHECK IF LOGGED OUT
 				if(!empty($logtimeout)){
@@ -139,7 +139,7 @@
 				echo '<td width="30%" valign="middle" align="center">';
 					if(empty($breakouttext)){
 						echo '<button class="btnclass btngreen" onClick="goonbreak(this, \'D\')">TAKE A BREAK</button><br/>
-						<span class="errortext">If you BREAK OUT using biometric, please wait for few minutes for it to reflect here.</span>';
+						<span class="errortext">If you TAKE A BREAK using biometric, please wait for few minutes for it to reflect here.</span>';
 						
 						if(isset($schedToday['workhome'])) echo '<br/><br/><button class="btnclass" onClick="goonbreak(this, \'Z\')">CLOCK OUT</button>';
 						
@@ -178,7 +178,7 @@
 		$(t).attr('disabled', 'disabled');
 		displaypleasewait();
 		$.post('<?= $this->config->item('career_uri') ?>', {submitType:'recordbreak', logtype:hihi},function(){
-			if(hihi=='D') alert('Your break out has been recorded.\nPlease don\'t forget to Go Back To Work later.\nEnjoy your break!');
+			if(hihi=='D') alert('Your start break has been recorded.\nPlease don\'t forget to Go Back To Work later.\nEnjoy your break!');
 			else if(hihi=='A') alert('Your clock in has been recorded.');
 			else if(hihi=='Z') alert('Your clock out has been recorded.');
 			else alert('Your break in has been recorded.');

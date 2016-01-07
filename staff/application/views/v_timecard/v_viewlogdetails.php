@@ -390,8 +390,8 @@
 				echo '<tr class="bioclass hidden">';
 					echo '<td width="15%">';
 						if($b->logtype=='D' || $b->logtype=='E'){
-							if($breaknum%2!=0) echo 'Break Out';
-							else echo 'Break In';
+							if($breaknum%2!=0) echo 'Start Break';
+							else echo 'End Break';
 						}else echo $logtypeArr[$b->logtype];
 					echo '</td>';					
 					echo '<td>'.date('h:i a', strtotime($b->logtime)).'</td>';
