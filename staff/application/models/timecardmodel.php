@@ -113,17 +113,20 @@ class Timecardmodel extends CI_Model {
 		
 		//get staff holiday schedule PH-0 US-1
 		$myHoliday = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$empID.'"');
-		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, phWork, usWork, holidayDate', $holidayCondition);		
+		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, phWork, usWork, holidayDate', $holidayCondition);	
+	
 		foreach($queryHoliday AS $holiday){
 			$day = date('j', strtotime($holiday->holidayDate));
 			$dayArr[$day]['holiday'] = $holiday->holidayName;
 			$dayArr[$day]['holidayType'] = $holidayTypeArr[$holiday->holidayType];
 			$dayArr[$day]['schedDate'] = $year.date('-m-d', strtotime($holiday->holidayDate));			
 			
-			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==1 && $myHoliday==0) || ($holiday->usWork==1 && $myHoliday==1)))
+			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
 				unset($dayArr[$day]['sched']);
-		}
+			}
 				
+		}
+						
 		//check for custom schedule. This will show schedule even if holiday with work
 		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
 		
