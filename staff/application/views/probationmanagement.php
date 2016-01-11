@@ -10,13 +10,13 @@
 	<table class="tableInfo datatable">
 		<thead>
 			<tr class="trhead">
-				<td>Name of Employee</td>
-				<td>Email Address</td>
-				<td>Position Title</td>
-				<td>Immediate Supervisor</td>
-				<td>Start Date</td>
-				<td>90th Day</td>
-				<td>PER Status</td>
+				<th>Name of Employee</th>
+				<th>Email Address</th>
+				<th>Position Title</th>
+				<th>Immediate Supervisor</th>
+				<th>Start Date</th>
+				<th>90th Day</th>
+				<th>PER Status</th>
 			</tr>
 		</thead>
 	<?php
@@ -39,13 +39,13 @@
 	<table class="tableInfo datatable">
 		<thead>
 			<tr class="trhead">
-				<td>Name of Employee</td>
-				<td>Email Address</td>
-				<td>Position Title</td>
-				<td>Immediate Supervisor</td>
-				<td>Start Date</td>
-				<td>Tenure Age (Years)</td>
-				<td>PER Status</td>
+				<th>Name of Employee</th>
+				<th>Email Address</th>
+				<th>Position Title</th>
+				<th>Immediate Supervisor</th>
+				<th>Start Date</th>
+				<th>Tenure Age (Years)</th>
+				<th>PER Status</th>
 			</tr>
 		</thead>
 	<?php
@@ -73,12 +73,12 @@
 	<table class="tableInfo datatable">
 		<thead>
 			<tr class="trhead">
-				<td>Evaluation ID</td>
-				<td>Name of Employee</td>
-				<td>Reviewer</td>
-				<td>Final Rating</td>
-				<td>PDF File</td>
-				<td><br/></td>
+				<th>Evaluation ID</th>
+				<th>Name of Employee</th>
+				<th>Reviewer</th>
+				<th>Final Rating</th>
+				<th>PDF File</th>
+				<th><br/></th>
 			</tr>
 		</thead>
 	<?php

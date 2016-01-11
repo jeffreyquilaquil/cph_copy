@@ -39,8 +39,8 @@ if($this->access->accessFullHR==true){
 		foreach($pendingPrint AS $n):
 			echo '
 				<tr id="trpendingprint_'.$n->nteID.'">
-					<td>'.$n->name.'</td>
-					<td>'.ucfirst($n->type).'</td>
+					<td><a href="'.$this->config->base_url().'staffinfo/'.$n->username.'/" target="_blank">'.$n->name.'</a></td>
+					<td>'.((is_numeric($n->type))?$dataOffense[$n->type]:ucfirst($n->type)).'</td>
 					<td>'.$this->textM->ordinal($n->offenselevel).' Offense</td>
 					<td>'.date('F d, Y', strtotime($n->dateissued)).'</td>
 					<td>'.$n->issuerName.'</td>
@@ -84,8 +84,8 @@ if($this->access->accessFullHR==true){
 				$whoprinted = explode('|', $u->carprinted);
 			echo '
 				<tr id="trnteupload_'.$u->nteID.'">
-					<td>'.$u->name.'</td>
-					<td>'.ucfirst($u->type).'</td>
+					<td><a href="'.$this->config->base_url().'staffinfo/'.$u->username.'/" target="_blank">'.$u->name.'</a></td>
+					<td>'.((is_numeric($u->type))?$dataOffense[$u->type]:ucfirst($u->type)).'</td>
 					<td>'.$this->textM->ordinal($u->offenselevel).' Offense</td>
 					<td>'.date('F d, Y', strtotime($u->dateissued)).'</td>
 					<td>'.$u->issuerName.'</td>
@@ -122,26 +122,30 @@ if($this->access->accessFullHR==true){
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Employee</td>
-		<td>NTE Type</td>
-		<td>Level of Offense</td>
-		<td>Date Issued</td>
-		<td>Issued By</td>
-		<td>Sanction</td>
-		<td>Details</td>
+		<th>Employee</th>
+		<th>NTE Type</th>
+		<th>Level of Offense</th>
+		<th>Date Issued</th>
+		<th>Issued By</th>
+		<th>Sanction</th>
+		<th>Details</th>
 	</tr>
 </thead>
 <?php
 	foreach($allActive AS $a):
 		echo '
 			<tr id="trpendingprint_'.$a->nteID.'">
-				<td>'.$a->name.'</td>
-				<td>'.ucfirst($a->type).'</td>
+				<td><a href="'.$this->config->base_url().'staffinfo/'.$a->username.'/" target="_blank">'.$a->name.'</a></td>
+				<td>'.((is_numeric($a->type))?$dataOffense[$a->type]:ucfirst($a->type)).'</td>
 				<td>'.$this->textM->ordinal($a->offenselevel).' Offense</td>
 				<td>'.date('F d, Y', strtotime($a->dateissued)).'</td>
 				<td>'.$a->issuerName.'</td>
-				<td>'.(($a->status==3)?'None. Response Accepted':$a->sanction).'</td>
-				<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$a->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>
+				<td>';
+					if($a->status==3) echo 'None. Response Accepted';
+					else if($a->status==4) echo 'Written Warning';
+					else $a->sanction;
+			echo '</td>
+				<td align="center"><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$a->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"></a></td>
 			</tr>
 		';
 	endforeach;

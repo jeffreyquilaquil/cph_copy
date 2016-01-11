@@ -1222,6 +1222,46 @@ class Staffmodel extends CI_Model {
 		$pdf->Output('incident_report_form'.$row->reportID.'.pdf', 'I');
 	}
 	
+	
+	function pdfwrittenwarning($row, $type='I'){			
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'nte_written.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','B',9);
+		$pdf->SetTextColor(0, 0, 0);
+		
+		$pdf->setXY(35, 29); $pdf->Write(0, date('l, F d, Y h:i a', strtotime($row->dateissued)));
+		$pdf->setXY(35, 33); $pdf->Write(0, $row->fname.' '.$row->lname);
+		$pdf->setXY(35, 37); $pdf->Write(0, 'The Human Resource Department');
+		$pdf->setXY(35, 41); $pdf->Write(0, $row->supName);
+		
+		$pdf->SetFont('Arial','',9);
+		$pdf->setXY(22, 75); $pdf->MultiCell(175, 3,$row->wrDetails,0,'L',false);
+		
+		$pdf->SetFont('Arial','B',9);
+		$pdf->SetTextColor(255, 0, 0);
+		$pdf->setXY(22, 147); $pdf->Write(0, $this->textM->ordinal($row->offenselevel).' Offense');
+		
+		$pdf->SetFont('Arial','',9);
+		$pdf->SetTextColor(0, 0, 0);
+		$pdf->setXY(22, 151); $pdf->MultiCell(175, 3,$row->category.' - '.$row->offense.' - Level '.$row->level,0,'L',false);
+		
+		$pdf->SetFont('Arial','B',9); ///ISSUED BY
+		$pdf->setXY(20, 208); $pdf->MultiCell(78, 3, strtoupper($row->supName),0,'C',false);
+		$pdf->setXY(124, 208); $pdf->MultiCell(60, 3,date('F d, Y', strtotime($row->dateissued)),0,'C',false);
+		///RECEIVED BY
+		$pdf->setXY(20, 229); $pdf->MultiCell(78, 3, strtoupper($row->fname.' '.$row->lname),0,'C',false);
+		$pdf->setXY(124, 229); $pdf->MultiCell(60, 3,date('F d, Y', strtotime($row->dateissued)),0,'C',false);
+				
+		$pdf->Output('nte_written'.$row->nteID.'.pdf', $type);
+	}
+	
 }
 
 ?>

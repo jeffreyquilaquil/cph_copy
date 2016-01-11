@@ -26,12 +26,28 @@
 	if($nlevel>3) $nextsanction = 'Termination';
 	else $nextsanction = $sanctionArr[$nlevel]; */
 	
+	if(is_numeric($row->type)){
+		echo '<tr>';
+			echo '<td>Status</td>';
+			echo '<td>'.$warningStatusArr[$row->wrStatus].'</td>';
+		echo '</tr>';
+		echo '<tr>
+			<td width="30%">Offense Type</td>
+			<td>'.$dataOffense->offense.'</td>
+		</tr>';
+		echo '<tr>
+			<td width="30%">Level</td>
+			<td>'.$dataOffense->level.'</td>
+		</tr>';
+	}else{
+		echo '<tr>
+			<td width="30%">Offense Type</td>
+			<td>'.ucfirst($row->type).'</td>
+		</tr>';
+	}
 ?>
 
-	<tr>
-		<td width="30%">Offense Type</td>
-		<td><?= ucfirst($row->type) ?></td>
-	</tr>
+	
 	<tr>
 		<td>Offense Number</td>
 		<td><?= $this->textM->ordinal($row->offenselevel).' Offense' ?></td>
@@ -40,6 +56,7 @@
 		<td>Date NTE Issued</td>
 		<td><?= date('F d, Y', strtotime($row->dateissued)) ?></td>
 	</tr>
+<?php if(!is_numeric($row->type)){ ?>
 	<tr>
 		<td><?= (($row->type=='AWOL') ? 'AWOL': 'Tardiness')?> Dates</td>	
 		<td>
@@ -53,15 +70,27 @@
 				endforeach;
 			?>
 		</td>
-	</tr>
-	<tr>
-		<td>Prescribed Sanction</td>
-		<td><?= $sanctionArr[$row->offenselevel] ?></td>
-	</tr>
-	<tr>
-		<td>Any subsequent case will merit</td>
-		<td><?= $nextsanction ?></td>
-	</tr>
+	</tr>	
+<?php } ?>
+
+<?php
+	if($row->status==4){
+		echo '<tr>
+			<td>Prescribed Sanction</td>
+			<td>Written Warning</td>
+		</tr>';
+	}else{
+		echo '<tr>
+			<td>Prescribed Sanction</td>
+			<td>'.$sanctionArr[$row->offenselevel].'</td>
+		</tr>';
+		echo '<tr>
+			<td>Any subsequent case will merit</td>
+			<td>'.$nextsanction.'</td>
+		</tr>';
+	}	
+ ?>
+
 	<tr>
 		<td>NTE Issuer</td>
 		<td><?= $row->issuerName ?></td>

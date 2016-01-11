@@ -410,14 +410,23 @@ class Emailmodel extends CI_Model {
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr-list@tatepublishing.net', $subject, $hrBody,'CareerPH');
 	}
 	
-	public function sendRequestEditToSup($nteID){
-		$info = $this->dbmodel->getSingleInfo('staffNTE', 'empID_fk, email, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs AS s WHERE s.empID=staffs.supervisor) AS supName, (SELECT email FROM staffs AS s WHERE s.empID=staffs.supervisor) AS sEmail, wrDetails, wrEdited', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+	public function sendRequestEditToSup($nteID, $type='requestchange'){
+		$info = $this->dbmodel->getSingleInfo('staffNTE', 'empID_fk, email, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs AS s WHERE s.empID=staffs.supervisor) AS supName, (SELECT email FROM staffs AS s WHERE s.empID=staffs.supervisor) AS sEmail, wrDetails, wrEdited, wrResponse', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		
-		$subject = $info->name.' requested changes to the details of the incident';
-		$body = '<p>Please be informed that '.$info->name.' requested changes to the details of the incident.</p><form action="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/" method="POST">';
-		$body .= '<p><b>Original Details of the Incident:</b><br/>'.$info->wrDetails.'</p>';
-		$body .= '<p><b>Employee\'s edited Details of the Incident:</b><br/><textarea name="wrEdited" rows=8 style="width:600px">'.$info->wrEdited.'</textarea></p>';
-		$body .= '<a href="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/"><button style="padding:5px; background-color:green; color:#fff; width:400px; text-align:center;">Click here to edit or accept details.</button></a>';
+		if($type=='requestchange'){
+			$subject = $info->name.' requested changes to the details of the incident';
+			$body = '<p>Please be informed that '.$info->name.' requested changes to the details of the incident.</p><form action="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/" method="POST">';
+			$body .= '<p><b>Original Details of the Incident:</b><br/>'.$info->wrDetails.'</p>';
+			$body .= '<p><b>Employee\'s edited Details of the Incident:</b><br/><i>'.stripslashes($info->wrEdited).'</i></p>';
+			$body .= '<a href="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/"><button style="padding:5px; background-color:green; color:#fff; width:400px; text-align:center;">Click here to edit or accept details.</button></a>';
+		}else if($type=='respond'){
+			$subject = $info->name.' responded to NTE you generated';
+			$body = '<p>Please be informed that '.$info->name.' reponded to the NTE you generated.</p>';
+			$body .= '<p><b>Response:</b><br/>'.$info->wrResponse.'</p>';
+			$body .= 'Click <a href="'.$this->config->base_url().'writtenmanagement/'.$nteID.'/">here</a> to view details.';
+		}
+		
+		
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $info->sEmail, $subject, $body,'CareerPH');
 	}
 }

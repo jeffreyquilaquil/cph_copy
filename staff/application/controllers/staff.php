@@ -1295,6 +1295,11 @@ class Staff extends MY_Controller {
 				
 				$data['allActive'] = $this->dbmodel->getQueryResults('staffNTE', 'nteID, type, offenselevel, dateissued, status, sanction, username, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS iname FROM staffs e WHERE e.empID=staffNTE.issuer LIMIT 1) AS issuerName', 'status!=2'.$condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateissued DESC');
 				
+				//OFFENSES
+				$offArr = $this->dbmodel->getQueryResults('staffOffenses', 'offenseID, offense');
+				foreach($offArr AS $of)
+					$data['dataOffense'][$of->offenseID] = $of->offense;
+				
 			}
 		}
 		$this->load->view('includes/template', $data);
@@ -1307,8 +1312,14 @@ class Staff extends MY_Controller {
 			
 			$data['row'] = $this->dbmodel->getSingleInfo('staffNTE', 'staffNTE.*, CONCAT(fname," ",lname) AS name, email, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=issuer AND issuer!=0) AS issuerName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=carissuer AND carissuer!=0) AS carName', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk'); 
 			
-			if($data['row']->type=='tardiness') $data['sanctionArr'] = $this->textM->constantArr('sanctiontardiness');
+			if($data['row']->type=='tardiness' || is_numeric($data['row']->type)) $data['sanctionArr'] = $this->textM->constantArr('sanctiontardiness');
 			else $data['sanctionArr'] = $this->textM->constantArr('sanctionawol');
+			
+			//OFFENSES
+			if(is_numeric($data['row']->type)){
+				$data['dataOffense'] = $this->dbmodel->getSingleInfo('staffOffenses', 'offense, category, level', 'offenseID="'.$data['row']->type.'"');
+			}
+			$data['warningStatusArr'] = $this->textM->constantArr('writtenWarningStatus');
 			
 			if(!empty($_POST)){
 				if($_POST['submitType']=='aknowledge'){
@@ -3715,6 +3726,162 @@ class Staff extends MY_Controller {
 			}
 		}
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function generatewrittenwarning() {
+		$data['content'] = 'writtenwarninggenerate';
+		
+		if($this->user!=false){
+			$id = $this->uri->segment(2);
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, email, supervisor', 'empID="'.$id.'"');
+						
+			if(!empty($_POST)){				
+				if($_POST['submitType']=='getOffdetails'){
+					$level = $this->dbmodel->getSingleField('staffNTE', 'COUNT(nteID)', 'empID_fk="'.$id.'" AND status!=2 AND type="'.$_POST['offenseID'].'"');
+					$level = (int)$level+1;
+					
+					echo $level;
+					exit;
+				}else if($_POST['submitType']=='submitWarning'){					
+					$insArr['empID_fk'] = $id;
+					if($_POST['offenseLevel']<2){
+						$insArr['status'] = 4; //this is for the written warning
+						$insArr['wrStatus'] = 1; //this is for the written warning
+					} 
+					
+					$insArr['issuer'] = $this->user->empID;
+					$insArr['dateissued'] = date('Y-m-d H:i:s');
+					$insArr['wrDateGenerated'] = date('Y-m-d H:i:s');					
+					$insArr['offensedates'] = date('Y-m-d', strtotime($_POST['dateIncident']));
+					$insArr['wrDetails'] = addslashes($_POST['details']);
+					$insArr['type'] = $_POST['offenseID_fk'];
+					$insArr['offenselevel'] = $_POST['offenseLevel'];					
+					$insID = $this->dbmodel->insertQuery('staffNTE', $insArr);
+					
+					
+					$offDetail = $this->dbmodel->getSingleInfo('staffOffenses', 'offense, level', 'offenseID="'.$_POST['offenseID_fk'].'"');					
+					$emDetail = '<p><b>Details of the incident:</b><br/>'.$_POST['details'].'</p>';
+					$emDetail .= '<p><b>COC violation committed:</b><br/>'.$offDetail->offense.'</p>';
+					$emDetail .= '<p><b>Offense Level:</b><br/>Level '.$offDetail->level.'</p>';
+					
+					$this->emailM->sendWrittenWarningEmail($data['row'], $emDetail, $insID);
+					$data['submitted'] = true;
+				}
+			}
+			
+			
+					
+							
+			$data['violationList'] = $this->dbmodel->getQueryResults('staffOffenses', 'offenseID,offense,level,category', 'level=1');	
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function writtenwarning(){
+		$data['content'] = 'writtenwarning';
+		
+		if($this->user!=false){
+			$nteID = $this->uri->segment(2);
+			$data['type'] = $this->uri->segment(3);
+			
+			if(!empty($_POST)){
+				$updateArr = array();
+				if($_POST['submitType']=='requestchange'){
+					$upArr['wrStatus'] = 4;
+					$upArr['wrEdited'] = addslashes($_POST['wrEdited']);
+					$this->dbmodel->updateQuery('staffNTE', array('nteID'=>$nteID), $upArr);
+					$this->emailM->sendRequestEditToSup($nteID);
+					echo 'Submitted';
+					exit;
+				}else if($_POST['submitType']=='accept'){
+					$updateArr['wrStatus'] = 2;
+					$updateArr['wrEdited'] = addslashes($_POST['wrEdited']);
+					$echoAfter = 'Submitted';
+				}else if($_POST['submitType']=='respond'){
+					$upArr['wrStatus'] = 3;
+					$upArr['wrResponse'] = addslashes($_POST['wrResponse']);	
+					$this->dbmodel->updateQuery('staffNTE', array('nteID'=>$nteID), $upArr);
+					$this->emailM->sendRequestEditToSup($nteID, $type='respond');
+					echo 'Submitted';
+					exit;
+				}else if($_POST['submitType']=='deliberate'){
+					$updateArr['wrDeliberation'] = addslashes($_POST['wrDeliberation']);
+					if($_POST['subType']==0){
+						$updateArr['wrStatus'] = 5;
+						$data['demerit'] = true;
+					}else{
+						$updateArr['wrStatus'] = 6;
+						$data['demerit'] = false;
+					}
+				}else if($_POST['submitType']=='merit' || $_POST['submitType']=='nomerit'){
+					if($_POST['submitType']=='merit') $updateArr['wrStatus'] = 6;
+					else $updateArr['wrStatus'] = 5;
+					$updateArr['wrDeliberation'] = addslashes($_POST['wrDeliberation']);
+					$echoAfter = 'Submitted';
+				}
+				
+				if(!empty($updateArr)){					
+					$this->dbmodel->updateQuery('staffNTE', array('nteID'=>$nteID), $updateArr);
+					if(!empty($echoAfter)){
+						echo $echoAfter;
+						exit;
+					}
+				}
+			}
+						
+			$data['info'] = $this->dbmodel->getSingleInfo('staffNTE', 'wrDetails, wrEdited, wrDeliberation, empID_fk, fname, issuer, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=issuer) AS supName, (SELECT email FROM staffs WHERE empID=issuer) AS supEmail', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+									
+			if($data['type']=='download'){	///download and send email to supervisor to pick up document
+				//send email to requestor to get printed document from HR						
+				$emBody = '<p>Hi '.$data['info']->supName.',</p>
+						<p>Please be informed that the written warning document that you generated for '.$data['info']->fname.' has been printed. Please collect the document from HR and have it signed by '.$data['info']->name.'.</p>
+						<p>&nbsp;</p>
+						<p>Yours truly,<br/>
+						<b>The Human Resources Department</b></p>';												
+				$this->emailM->sendEmail('hr.cebu@tatepublishing.net', $data['info']->supEmail, 'Written warning document has been printed', $emBody, 'The Human Resources Department');
+				
+				header('Location:'.$this->config->base_url().'writtenmanagement/'.$nteID.'/pdf/D');
+				exit;
+			}else if($this->access->accessFullHR==false){
+				if(($data['type']=='requestchange' || $data['type']=='notsign') && $data['info']->empID_fk!=$this->user->empID) $data['access'] = false;
+				else if($data['type']=='accept' && $data['info']->issuer!=$this->user->empID) $data['access'] = false;
+			}		
+		}		
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function writtenmanagement(){
+		$data['content'] = 'writtenmanagement';
+		$data['contentpage'] = '';
+		$id = $this->uri->segment(2);
+		
+		if($this->user!=false){
+			if($this->access->accessFullHR==false) $data['access'] = false;
+			
+			$data['wrStatusArr'] = $this->textM->constantArr('writtenWarningStatus');
+			
+			if(!empty($id) && is_numeric($id)){
+				$data['info'] = $this->dbmodel->getSingleInfo('staffNTE', 'nteID, empID_fk, type, offenselevel, category, wrDetails, wrEdited, wrResponse, wrDeliberation, dateissued, wrStatus, CONCAT(lname,", ",fname) AS name, fname, lname, username, offense, level, issuer, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName', 'status=4 AND wrStatus>0 AND nteID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN staffOffenses ON offenseID=type');
+				
+				if($data['info']->empID_fk==$this->user->empID || $data['info']->issuer==$this->user->empID) $data['access'] = true;
+				
+				if($this->uri->segment(3)=='pdf'){
+					if($this->uri->segment(4)=='') $type = 'I';
+					else $type = $this->uri->segment(4);
+					$this->staffM->pdfwrittenwarning($data['info'], $type);
+					exit;
+				}else{
+					$data['contentpage'] = 'details';				
+				}				
+			}else{
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('staffNTE', 'nteID, empID_fk, type, offenselevel, dateissued, wrStatus, CONCAT(lname,", ",fname) AS name, username, offense, level', 'status=4 AND wrStatus>0', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN staffOffenses ON offenseID=type');
+			}		
+		}
+		
+		if($data['contentpage']=='details') $this->load->view('includes/templatecolorbox', $data);
+		else $this->load->view('includes/template', $data);
 	}
 	
 }

@@ -748,6 +748,16 @@ class Textmodel extends CI_Model {
 			$arr = array('base'=>'base', 'gross'=>'gross', 'taxable'=>'taxable', 'net'=>'net');
 		}else if($a=='payrollStatusArr'){
 			$arr = array('Generated', 'Published', 'Finalized');
+		}else if($a=='writtenWarningStatus'){
+			$arr = array(
+					'1'=>'New',
+					'2'=>'Revision submitted by immediate sup',
+					'3'=>'Employee responded',
+					'4'=>'Deliberate',
+					'5'=>'Employee Response NO MERIT. Pending upload signed written warning (IS).',
+					'6'=>'Written Warning VOID. Pending upload signed written warning (IS).',
+					'7'=>'Signed written warning on file (uploaded).'
+				);
 		}
 		
 		return $arr;

@@ -17,15 +17,15 @@
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Coaching ID</td>
-		<td>Employee's Name</td>
-		<td>Date Generated</td>
-		<td>Coaching Period</td>
-		<td>Coaching Start</td>
-		<td>Evaluation Date</td>
-		<td>Immediate Supervisor</td>		
-		<td>Status</td>
-		<td></td>
+		<th>Coaching ID</th>
+		<th>Employee's Name</th>
+		<th>Date Generated</th>
+		<th>Coaching Period</th>
+		<th>Coaching Start</th>
+		<th>Evaluation Date</th>
+		<th>Immediate Supervisor</th>		
+		<th>Status</th>
+		<th></th>
 	</tr>
 </thead>
 <?php
@@ -54,14 +54,14 @@
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Coaching ID</td>
-		<td>Employee's Name</td>
-		<td>Date Generated</td>
-		<td>Coaching Period</td>
-		<td>Coaching Start</td>
-		<td>Evaluation Date</td>
-		<td>Immediate Supervisor</td>
-		<td>Details</td>
+		<th>Coaching ID</th>
+		<th>Employee's Name</th>
+		<th>Date Generated</th>
+		<th>Coaching Period</th>
+		<th>Coaching Start</th>
+		<th>Evaluation Date</th>
+		<th>Immediate Supervisor</th>
+		<th>Details</th>
 	</tr>
 </thead>
 <?php
@@ -90,16 +90,16 @@
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Coaching ID</td>
-		<td>Employee's Name</td>
-		<td>Date Generated</td>
-		<td>Coaching Period</td>
-		<td>Coaching Start</td>
-		<td>Evaluation Date</td>
-		<td>Immediate Supervisor</td>
-		<td>Status</td>
-		<td>Coaching Form</td>
-		<td>Details</td>
+		<th>Coaching ID</th>
+		<th>Employee's Name</th>
+		<th>Date Generated</th>
+		<th>Coaching Period</th>
+		<th>Coaching Start</th>
+		<th>Evaluation Date</th>
+		<th>Immediate Supervisor</th>
+		<th>Status</th>
+		<th>Coaching Form</th>
+		<th>Details</th>
 	</tr>
 </thead>
 <?php
@@ -134,17 +134,17 @@
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Coaching ID</td>
-		<td>Employee's Name</td>
-		<td>Date Generated</td>
-		<td>Coaching Period</td>
-		<td>Coaching Start</td>
-		<td>Evaluation Date</td>
-		<td>Immediate Supervisor</td>
-		<td>Status</td>
-		<td>Coaching Form</td>
-		<td>Evaluation Form</td>
-		<td>Details</td>
+		<th>Coaching ID</th>
+		<th>Employee's Name</th>
+		<th>Date Generated</th>
+		<th>Coaching Period</th>
+		<th>Coaching Start</th>
+		<th>Evaluation Date</th>
+		<th>Immediate Supervisor</th>
+		<th>Status</th>
+		<th>Coaching Form</th>
+		<th>Evaluation Form</th>
+		<th>Details</th>
 	</tr>
 </thead>
 <?php
@@ -193,15 +193,15 @@
 <table class="tableInfo datatable">
 <thead>
 	<tr class="trhead">
-		<td>Coaching ID</td>
-		<td>Employee's Name</td>
-		<td>Date Generated</td>
-		<td>Coaching Period</td>
-		<td>Coaching Start</td>
-		<td>Evaluation Date</td>
-		<td>Immediate Supervisor</td>
-		<td>Status</td>
-		<td>Details</td>
+		<th>Coaching ID</th>
+		<th>Employee's Name</th>
+		<th>Date Generated</th>
+		<th>Coaching Period</th>
+		<th>Coaching Start</th>
+		<th>Evaluation Date</th>
+		<th>Immediate Supervisor</th>
+		<th>Status</th>
+		<th>Details</th>
 	</tr>
 </thead>
 <?php
