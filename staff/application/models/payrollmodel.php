@@ -119,7 +119,7 @@ class Payrollmodel extends CI_Model {
 		$this->dbmodel->updateQueryText('tcPayslipDetails', 'payValue=0, numHR=0', 'payslipID_fk='.$payslipID);
 		
 		$itemArr = $this->payrollM->getPaymentItemsForPayroll($info);
-						
+		
 		///INSERT PAYSLIP DETAILS except tax because it is computed last
 		foreach($itemArr AS $item){
 			$hr = 0;
@@ -612,15 +612,20 @@ class Payrollmodel extends CI_Model {
 				$deductArr[$nobya->payID] = $nobya;
 			}
 			
-			$deductItems = $this->payrollM->getPaymentItems($empID, 1, ' AND payCategory=6');		
-			
+			$deductItems = $this->payrollM->getPaymentItems($empID, 1, ' AND payCategory=6');
+			$deadArr = array();
+						
 			foreach($deductItems AS $ded){
-				$deduct .= $ded->payName."\n";
-				if(isset($deductArr[$ded->payID])) $curr .= $this->textM->convertNumFormat($deductArr[$ded->payID]->payValue)."\n";
-				else $curr .= "-\n";
-								
-				$ytdAmount = $this->payrollM->getTotalDeduction($empID, $ded->payID);
-				$ytd .= $this->textM->convertNumFormat($ytdAmount)."\n";
+				if(!in_array($ded->payID_fk, $deadArr)){
+					$deduct .= $ded->payName."\n";
+					if(isset($deductArr[$ded->payID_fk])){
+						$curr .= $this->textM->convertNumFormat($deductArr[$ded->payID_fk]->payValue)."\n";
+						array_push($deadArr, $ded->payID_fk);
+					}else $curr .= "-\n";
+									
+					$ytdAmount = $this->payrollM->getTotalDeduction($empID, $ded->payID_fk);
+					$ytd .= $this->textM->convertNumFormat($ytdAmount)."\n";
+				}
 			}
 			
 			$pdf->setXY(117, 68);
