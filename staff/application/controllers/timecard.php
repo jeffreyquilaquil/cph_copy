@@ -810,9 +810,10 @@ class Timecard extends MY_Controller {
 		$data['tpage'] = 'payslips';
 		
 		if($this->user!=false){
-			if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
-			else $condition = '';
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1 '.$condition, 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
+			//if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
+			//else $condition = '';
+			
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
