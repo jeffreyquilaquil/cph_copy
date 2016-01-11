@@ -246,9 +246,7 @@ class Emailmodel extends CI_Model {
 		
 		$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', $subject, $abody, 'CAREERPH', 'helpdesk.cebu@tatepublishing.net');
 	}
-	
-	
-	
+		
 	//TIMECARD EMAILSSSSSSSSS
 	public function emailTimecard($type, $row){
 		$from = 'careers.cebu@tatepublishing.net';
@@ -261,6 +259,7 @@ class Emailmodel extends CI_Model {
 			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time in yet for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked in.</i></p>';
+			$body .= '<p><b style="color:red">****Please do not reply to this email. Visit <a href="'.$this->config->base_url().'timecard/timelogs/">Timecard and Payroll > My Time Logs</a> instead.</b></p>';
 			$body .= '<p>&nbsp;</p>';
 			$body .= '<p>Thanks!<br/>CAREERPH</p>';
 		}else if($type=='noclockout2hours'){
@@ -272,6 +271,7 @@ class Emailmodel extends CI_Model {
 			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time out recorded for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked out or click <a href="'.$this->config->base_url().'timecard/timelogs/">here</a> to view your timelogs.</i></p>';
+			$body .= '<p><b style="color:red">****Please do not reply to this email. Visit <a href="'.$this->config->base_url().'timecard/timelogs/">Timecard and Payroll > My Time Logs</a> instead.</b></p>';
 			$body .= '<p>&nbsp;</p>';
 			$body .= '<p>Thanks!<br/>CAREERPH</p>';
 		}
@@ -388,6 +388,37 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>Tate Publishing and Enterprises (Philippines), Inc.</p>';		
 		
 		$this->emailM->sendEmail( $from, $to, $subject, $body,'CareerPH', $cc);
+	}
+	
+	public function sendWrittenWarningEmail($row, $details, $insID){
+		$supInfo = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS supName, email', 'empID="'.$row->supervisor.'"');
+		
+		//sending email to employee
+		$empBody = $details;
+		$empBody .= '<p><br/>The written warning document will now be printed and shall be routed to you for signature. <font style="color:red;">Remember that this document will be stored in your permanent file as a corrective action. By signing this form, you fully admit to your involvement in the incident stated above. If any of the details in the incident are incorrect or missing, <i>do not sign</i> this form and request your leader to revise the accuracy of the form and email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> with the reason for your refusal to receive the written warning.</font></p>';
+		$empBody .= '<p>If you refuse to sign this written warning, please click "I am not signing this written warning at all."</p>';
+		$empBody .= '<p><a href="'.$this->config->base_url().'writtenwarning/'.$insID.'/requestchange/"><button style="padding:5px; background-color:green; color:#fff; width:400px; text-align:center;">Some of the details are incorrect. Request changes.</button></a></p>';
+		$empBody .= '<p>The printout of the written warning shall be routed to you for your signature. If you are clicking "Request Changes", then respectfully decline signing the written warning until the details are corrected.</p>';
+		$empBody .= '<p><a href="'.$this->config->base_url().'writtenwarning/'.$insID.'/notsign/"><button style="padding:5px; background-color:green; color:#fff; width:400px; text-align:center;">I am not signing this written warning at all</button></a></p>';
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $row->email, 'A written warning has been generated for you', $empBody,'CareerPH');
+		
+		//sending email to HR
+		$subject = $supInfo->supName.' generated written warning for '.$row->name;
+		$hrBody = $details;
+		$hrBody .= '<p><a href="'.$this->config->base_url().'writtenwarning/'.$insID.'/download/"><button style="padding:5px; background-color:green; color:#fff; width:550px; text-align:center;">Please click here to download the file and print the written warning document and give it to '.$supInfo->supName.'</button></a></p>';
+		$hrBody .= '<p><br/><b>To HR:</b> Make sure to print the document right away because when you click the download link above, the immediate supervisor will be notified that the document is printed already and will be instructed to pick up the document from HR.</p>';
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr-list@tatepublishing.net', $subject, $hrBody,'CareerPH');
+	}
+	
+	public function sendRequestEditToSup($nteID){
+		$info = $this->dbmodel->getSingleInfo('staffNTE', 'empID_fk, email, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs AS s WHERE s.empID=staffs.supervisor) AS supName, (SELECT email FROM staffs AS s WHERE s.empID=staffs.supervisor) AS sEmail, wrDetails, wrEdited', 'nteID="'.$nteID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
+		
+		$subject = $info->name.' requested changes to the details of the incident';
+		$body = '<p>Please be informed that '.$info->name.' requested changes to the details of the incident.</p><form action="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/" method="POST">';
+		$body .= '<p><b>Original Details of the Incident:</b><br/>'.$info->wrDetails.'</p>';
+		$body .= '<p><b>Employee\'s edited Details of the Incident:</b><br/><textarea name="wrEdited" rows=8 style="width:600px">'.$info->wrEdited.'</textarea></p>';
+		$body .= '<a href="'.$this->config->base_url().'writtenwarning/'.$nteID.'/accept/"><button style="padding:5px; background-color:green; color:#fff; width:400px; text-align:center;">Click here to edit or accept details.</button></a>';
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $info->sEmail, $subject, $body,'CareerPH');
 	}
 }
 ?>
