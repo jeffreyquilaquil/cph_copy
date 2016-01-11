@@ -270,8 +270,8 @@ if(isset($_POST) AND !empty($_POST)){
 			$pdf->SetFont('Arial','B',9);
 			//$pdf->setTextColor(255, 255, 255);
 			$pdf->setTextColor(0, 0, 0);	
-			
-			$full_name = strtoupper( $hire['fname'] .' ', $hire['lname'] );
+		    $full_name = $hire['fname'].' '.$hire['lname'];	
+			$full_name = strtoupper( $full_name );
 			$pdf->setXY(67, 118);		
 			$pdf->Write(0, $full_name );
 			
