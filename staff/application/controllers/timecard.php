@@ -163,7 +163,7 @@ class Timecard extends MY_Controller {
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
 									}else $updateArr['timeOut'] = $d['logtime'];
-								}else if(strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut)) $updateArr['timeOut'] = $d['logtime'];
+								}else if(strtotime($d['logtime']) >= strtotime($logData->offsetOut.' '.$timeAllowedClockOut)) $updateArr['timeOut'] = $d['logtime'];
 							}else if($logData->timeIn!=$date00 || isset($updateArr['timeIn'])){ //this is for breaks and there is time in recorded
 								$updateArr['breaks'] .= $d['logtime'].'|';
 								$updateArr['numBreak']++;
