@@ -59,12 +59,12 @@
 	<tr class="trhead"><td colspan=2><center>APPROVALS</center></td></tr>
 	
 	<form action="" method="POST">
-	<?php if($row->matStatus==4 && $this->access->accessFullHR===true){ ?>
-		<tr>
+	<?php //if($row->matStatus==4 && $this->access->accessFullHR===true){ ?>
+		<!--<tr>
 			<td><br/></td>
 			<td class="errortext"><input type="checkbox" name="submitType" value="schedUpdated"/> PayrollHero schedule updated</td>
-		</tr>
-	<?php }else{ ?>
+		</tr>-->
+	<?php //}else{ ?>
 		<tr>
 			<td>
 		<?php
@@ -88,7 +88,7 @@
 			<td>Note</td>
 			<td><textarea class="forminput" name="approveNote"></textarea></td>
 		</tr>
-	<?php } ?>
+	<?php //} ?>
 		<tr>
 			<td><br/></td>
 			<td><input type="submit" class="btnclass btngreen" value="Submit"/></td>
@@ -478,8 +478,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	<tr class="hidedisapprove">
 		<td>Updates</td>
 		<td>
-			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?> <?= (($row->leaveType==4 || $row->leaveType==5)?'class="hidden" checked':'')?>/><?= (($row->leaveType!=4 && $row->leaveType!=5)?'Leave Credits is correct<br/>':'')?>
-			<span id="paysspan" <?= (($row->status==2)?'class="hidden"':'') ?>><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox" <?= $disabled ?>/>PayrollHero schedule updated</span>
+			<input name="HR_leave_credits_updated" id="HR_leave_credits_updated" type="checkbox" <?= $disabled ?> <?= (($row->leaveType==4 || $row->leaveType==5)?'class="hidden" checked':'')?>/><?= (($row->leaveType!=4 && $row->leaveType!=5)?'Leave Credit is correct<br/>':'')?>
 		</td>
 	</tr>	
 	<tr class="trremarks">
@@ -602,9 +601,9 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 		echo '<form action="" method="POST" onSubmit="return validateHRcancel('.$row->status.');">';	
 		echo '<tr><td>On submission leave credits is</td><td><input type="text" name="leaveCredits" id="leaveCredits" value="'.($row->leaveCredits + $row->leaveCreditsUsed).'" class="forminput"/></td></tr>';
 
-		if($row->status!=2){
+		/* if($row->status!=2){
 			echo '<tr><td>Update</td><td><input name="HR_payrollhero_updated" id="HR_payrollhero_updated" type="checkbox"/>PayrollHero schedule updated</td></tr>';
-		}
+		} */
 		
 		echo '<tr><td><br/></td><td><input type="hidden" name="submitType" value="cancelHRapprove"/> <input class="btnclass btngreen" type="submit" value="Submit"/></td></tr>';
 		echo '</form>';
@@ -967,7 +966,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 			if(tinyMCE.get('message').getContent()=='' || $('input[name="subjectEmail"]').val()=='' || $('input[name="toEmail"]').val()=='' ) 
 				validtxt += '- All fields are required.\n';
 		}else{
-			if(($('#status').val()==1 && ($('#HR_leave_credits_updated:checked').length==0 || $('#HR_payrollhero_updated:checked').length==0)) ||
+			if(($('#status').val()==1 && $('#HR_leave_credits_updated:checked').length==0) ||
 				($('#status').val()==2 && $('#HR_leave_credits_updated:checked').length==0)
 			){
 				validtxt += '- Please check all checkboxes.\n';
@@ -1023,7 +1022,7 @@ if($row->status!=3 || ($row->status==3 && $row->hrapprover!=0)){
 	}
 	
 	function validateHRcancel(status){
-		if($('#leaveCredits').val()=='' || (status!=2 && $('#HR_payrollhero_updated:checked').length==0)){
+		if($('#leaveCredits').val()==''){
 			alert('Please check approvals.');
 			return false;
 		}else{
