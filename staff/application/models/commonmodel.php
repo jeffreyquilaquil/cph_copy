@@ -210,8 +210,18 @@ class Commonmodel extends CI_Model {
 					'COUNT(slogID)', 
 					'publishBy="" AND slogDate!="'.date('Y-m-d').'"'.$condUsers, 
 					'LEFT JOIN staffs ON empID=empID_fk');
-		}else if($type=='timelogRequests'){							
-			$cnt = $this->dbmodel->getSingleField('tcTimelogUpdates', 'count(logDate)', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+		}else if($type=='timelogRequests'){
+			$condition = '';
+			if($this->access->accessFullHR==false){
+				$ids = '"",'; //empty value for staffs with no under yet
+				$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+				foreach($myStaff AS $m):
+					$ids .= $m->empID.',';
+				endforeach;
+				$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
+			}
+		
+			$cnt = $this->dbmodel->getSingleField('tcTimelogUpdates', 'count(logDate)', 'status=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $cnt;

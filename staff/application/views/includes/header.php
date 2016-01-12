@@ -56,9 +56,13 @@
 					
 					if($this->access->accessFullHR==true){
 						$unpublished = $this->commonM->countResults('unpublishedLogs');
-						$logRequest = $this->commonM->countResults('timelogRequests');
 						
 						echo '<li '.(($segment2=='unpublishedlogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/unpublishedlogs/">Unpublished Logs <b>'.(($unpublished>0)?'['.$unpublished.']':'').'</b></a></li>';
+					}
+					
+					if($this->access->accessFullHRFinance==true || $this->user->level>0){
+						$logRequest = $this->commonM->countResults('timelogRequests');
+						
 						echo '<li '.(($segment2=='logpendingrequest')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/logpendingrequest/">Log Pending Requests <b>'.(($logRequest>0)?'['.$logRequest.']':'').'</b></a></li>';
 					}
 					

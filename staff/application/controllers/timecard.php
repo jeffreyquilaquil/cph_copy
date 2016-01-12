@@ -1024,6 +1024,7 @@ class Timecard extends MY_Controller {
 		$data['dataBiometrics'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		
+		$data['isUnder'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
 		$this->load->view('includes/templatecolorbox', $data);		
@@ -1639,10 +1640,20 @@ class Timecard extends MY_Controller {
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){
-			if($this->access->accessFullHRFinance==false){
+			if($this->access->accessFullHRFinance==false && $this->user->level==0){
 				$data['access'] = false;
 			}else{
-				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				$condition = '';
+				if($this->access->accessFullHR==false){
+					$ids = '"",'; //empty value for staffs with no under yet
+					$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);				
+					foreach($myStaff AS $m):
+						$ids .= $m->empID.',';
+					endforeach;
+					$condition .= ' AND empID_fk IN ('.rtrim($ids,',').')';
+				}
+				
+				$data['timelogRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', 'logDate, message, dateRequested, empID_fk, CONCAT(fname," ",lname) AS name, username', 'status=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		

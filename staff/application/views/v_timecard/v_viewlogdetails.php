@@ -1,7 +1,8 @@
 <?php
 	$editAccess = false;
-	if($this->access->accessFull==true) $editAccess = true;
-	else if($this->access->accessHRFinance==true && $this->user->empID!=$visitID) $editAccess = true;
+	if($this->access->accessFull==true || ($this->access->accessHRFinance==true && $this->user->empID!=$visitID) || $isUnder!=false){
+		$editAccess = true;
+	}
 		
 	$date00 = '0000-00-00 00:00:00';
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
