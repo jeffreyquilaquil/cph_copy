@@ -13,7 +13,7 @@
 			<input type="text" name="username" value="" class="padding5px" placeholder="username"/><input type="submit" value="Submit"/><br/>
 		</form>';
 		
-		echo '  <a href="http://129.3.252.99'.$_SERVER['REQUEST_URI'].'" target="_blank"><button>Go to test page</button></a>';
+		echo '  <a href="http://10.100.0.1'.$_SERVER['REQUEST_URI'].'" target="_blank"><button>Go to test page</button></a>';
 		echo '  <a href="https://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'].'" target="_blank"><button>Go to live page</button></a>';
 		
 		/* echo '<form action="'.$this->config->base_url().'hello/empID/" method="POST">

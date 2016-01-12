@@ -15,7 +15,7 @@
 			<td><br/></td>
 			<td>
 				<input type="hidden" name="urlRequest" value="<?= $_SERVER['REQUEST_URI'] ?>"/>
-				<input type="submit" value="Log in"/><br/><br/>
+				<input type="submit" value="Log in" class="btnclass btngreen"/><br/><br/>
 				<a href="<?= $this->config->base_url().'forgotpassword/' ?>" class="iframe">Forgot Password?</a>
 			</td>
 		</tr>

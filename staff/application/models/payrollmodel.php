@@ -44,6 +44,13 @@ class Payrollmodel extends CI_Model {
 			$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType, payCDto, payCategory, payAmount', 'payslipID_fk="'.$payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');		
 			if(count($queryItems)>0){
 				$catArr = $this->textM->constantArr('payCategory');
+				$down['earning'] = 0;
+				$down['deduction'] = 0;
+				$down['allowance'] = 0;
+				$down['adjustment'] = 0;
+				$down['advance'] = 0;
+				$down['benefit'] = 0;
+				$down['bonus'] = 0;
 				$down['net'] = 0;
 				
 				$groupPerCat = array();	
@@ -61,7 +68,6 @@ class Payrollmodel extends CI_Model {
 						$down['basePay'] = $q->payValue;
 				}
 				
-				$down['earning'] = 0;
 				foreach($groupPerCat AS $k=>$cat){
 					if($k==0 || $k==7){
 						if(isset($down['earning'])) $down['earning'] += $cat;
@@ -532,7 +538,7 @@ class Payrollmodel extends CI_Model {
 			
 			$dataSum = $this->dbmodel->getSingleInfo('tcPayslips', 'SUM(earning) AS earning, SUM(deduction) AS deduction, SUM(allowance) AS allowance, SUM(adjustment) AS adjustment, SUM(bonus) AS bonus, SUM(advance) AS advance, SUM(benefit) AS benefit, SUM(net) AS net', 'empID_fk="'.$empID.'" AND pstatus=1 AND status<3 AND YEAR(payPeriodEnd)="'.date('Y').'"',
 			'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
-											
+														
 			$pdf->setXY(20, 46);
 			$pdf->Write(0,$payInfo->idNum); //employee no
 			$pdf->setXY(38, 44);
