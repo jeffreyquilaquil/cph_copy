@@ -28,9 +28,9 @@ if($host == 'careerph.tatepublishing.net'){
 	$config['showProfiler'] = false;
 	$config['timeCardTest'] = false;
 }else{
-	$config['base_url']	= 'http://129.3.252.99/staff/';
-	$config['career_url']	= 'http://129.3.252.99';
-	$config['career_uri']	= 'http://129.3.252.99'.$_SERVER['REQUEST_URI'];
+	$config['base_url']	= 'http://10.100.0.1/staff/';
+	$config['career_url']	= 'http://10.100.0.1';
+	$config['career_uri']	= 'http://10.100.0.1'.$_SERVER['REQUEST_URI'];
 	$config['toEmail']	= 'ludivina.marinas@tatepublishing.net';
 	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
 	$config['demnCryptIV']	= 'TaTe';
