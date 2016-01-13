@@ -1462,7 +1462,7 @@ class Timecard extends MY_Controller {
 				'payslipID="'.$payID.'" AND empID_fk="'.$empID.'"', 
 				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position LEFT JOIN orgLevel ON levelID=orgLevel_fk');
 			
-			if($this->access->accessFullHRFinance==false && $data['payInfo']!=$this->user->empID && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
+			if($this->access->accessFullHRFinance==false && $data['payInfo']->empID!=$this->user->empID && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
 				$data['access'] = false;
 			}			
 			
@@ -1867,6 +1867,48 @@ class Timecard extends MY_Controller {
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	public function payrolldistributionreport(){
+		$payID = $this->uri->segment(3);
+		
+		if($this->user==false || $this->access->accessFullHR==false){
+			$data['access'] = false;
+			$data['content'] = 'index';
+			$this->load->view('includes/template', $data);
+		}else{
+			
+		}		
+	}
+	
+	public function testExcel2(){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+
+		$fileType = 'Excel5';
+		$fileName = 'includes/reporttest.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		// Change the file
+		$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', 'Hello')
+					->setCellValue('A6', 'LUDIVINA MARINAS')
+					->setCellValue('B1', 'World!');
+
+		// Write the file
+		/* $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		$objWriter->save($fileName); */
+		
+		
+		#echo date('H:i:s') . " Write to Excel2007 format\n";
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="payroll.xls"');
+		$objWriter->save('php://output');
 	}
 		
 }
