@@ -1792,7 +1792,7 @@ class Staff extends MY_Controller {
 								}
 								
 								//send email to accounting if approved without pay
-								if(isset($_POST['status']) && $_POST['status']==2){
+								/* if(isset($_POST['status']) && $_POST['status']==2){
 									$eMsg = '<p>Hi,</p>
 											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' is Approved without Pay for the following dates:</p>
 											<p>
@@ -1806,7 +1806,7 @@ class Staff extends MY_Controller {
 											<p>'.$this->user->name.'</p>
 										';
 									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Leave Approved Without Pay', $eMsg, 'CareerPH Auto-Email');
-								}
+								} */
 								
 								$uEmail = '<p>Hi '.$data['row']->fname.',</p>
 										<p>HR updated your '.strtolower($data['leaveTypeArr'][$data['row']->leaveType]).' request. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/">here</a> to view leave details.</p><p><br/></p><p>Thanks!</p><p>CAREERPH</p>';
@@ -1858,7 +1858,7 @@ class Staff extends MY_Controller {
 							$actby = 'Approved '.$data['row']->name.'\'s cancel leave request. ';
 							
 							//send email to accounting if cancel leave without pay
-							if($data['row']->status==2){
+							/* if($data['row']->status==2){
 								$cancelMsg = '<p>Hi Accounting,</p>
 											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' for the below dates has been cancelled.</p>
 											<p>Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
@@ -1866,7 +1866,7 @@ class Staff extends MY_Controller {
 											Total Number of Hours: '.$data['row']->totalHours.'</p>
 											<p>Thank you.</p><br/>CareerPH';
 								$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Cancelled Leave Without Pay', $cancelMsg, 'CareerPH Auto-Email');
-							}							
+							} */							
 						}else if($_POST['submitType']=='resubmit'){
 							$updateArr['status'] = 0;	
 							$actby = 'Resubmit your leave request. ';
@@ -2008,13 +2008,13 @@ class Staff extends MY_Controller {
 									$usernote = $this->user->name.' approved your refiling request. This leave is "With Pay" and your leave credits is now '.$_POST['leaveCredits'].'.';
 									
 									//send email to accounting
-									$refiledMsg = '<p>Hi Accounting,</p>
+									/* $refiledMsg = '<p>Hi Accounting,</p>
 											<p>This is an automatic email to inform you that the leave request of employee '.$data['row']->name.' for the below dates has been refiled and now WITH PAY.</p>
 											<p>Start of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveStart)).'<br/>
 											End of Leave: '.date('F d, Y h:i a', strtotime($data['row']->leaveEnd)).'<br/>
 											Total Number of Hours: '.$data['row']->totalHours.'</p>
 											<p>Thank you.</p><br/>CareerPH';
-									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Refiled Leave Without Pay to With Pay', $refiledMsg, 'CareerPH Auto-Email');
+									$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Refiled Leave Without Pay to With Pay', $refiledMsg, 'CareerPH Auto-Email'); */
 								}else{
 									$updateArr['isrefiled'] = 0;
 									$refiledata = 'HR Disapproved Refiling Request';
