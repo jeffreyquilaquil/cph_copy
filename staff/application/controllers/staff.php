@@ -343,8 +343,7 @@ class Staff extends MY_Controller {
 					$tab = "\t";
 					$cntNewYork = count($data['fvalue']);
 					for($i=0;$i<$cntNewYork;$i++){
-						$txt .= $this->textM->constantText('txt_'.$data['fvalue'][$i]).$tab;
-						
+						$txt .= strtoupper($this->textM->constantText('txt_'.$data['fvalue'][$i]))."\t";						
 					}
 					
 					$txt .= "\r\n";
@@ -354,8 +353,8 @@ class Staff extends MY_Controller {
 						for($j=0;$j<$cntUS;$j++){
 							if($data['fvalue'][$j]=='sal')
 								$txt .= $this->textM->convertDecryptedText($data['fvalue'][$j],$q->$data['fvalue'][$j]);
-							else
-								$txt .= $q->$data['fvalue'][$j];
+							else if($data['fvalue'][$j]=='phone') $txt .= $q->phone1.((!empty($q->phone2))?','.$q->phone2:'');
+							else $txt .= trim($q->$data['fvalue'][$j]);
 							$txt .= $tab;
 						}
 						$txt .= "\r\n";
