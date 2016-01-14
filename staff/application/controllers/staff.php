@@ -604,6 +604,43 @@ class Staff extends MY_Controller {
 								}
 							}														
 						}
+					}else if($_POST['submitType']=='uploadPrevPay'){
+						$err = '';
+						
+						$upFile = $_FILES['pfilei'];
+						$cntUp = count($upFile['name']);
+						
+						if(empty($upFile['name'][0])){
+							$err = 'No file uploaded.';
+						}else{
+							$moreThan100 = 0;
+							for($n=0; $n<$cntUp; $n++){
+								if(strlen($upFile['name'][$n])>100)
+									$moreThan100 = 1;
+							}
+							if($moreThan100==1)
+								$err = 'Filename is too long. Please upload filename less than 100 characters.';
+						} 		
+						
+						if($err!=''){
+							echo '<script>alert("'.$err.'"); window.location.href="'.$this->config->base_url().$data['backlink'].'";</script>';
+						}else{		
+							$fnotes = '';
+							$dir = UPLOAD_DIR.$data['row']->username.'/payslips/';
+							if (!file_exists($dir)) {
+								mkdir($dir, 0755, true);
+								chmod($dir, 0777);
+							}
+								
+							for($ff=0; $ff<$cntUp; $ff++){
+								$filename = $upFile['name'][$ff];
+								
+								if(!move_uploaded_file($upFile['tmp_name'][$ff], $dir.$filename)){
+									echo '<script>alert("Unable to upload file. Please upload less than 2MB."); location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
+									exit;
+								}															
+							}														
+						}						
 					}else if($_POST['submitType']=='delFile'){
 						$this->dbmodel->updateQuery('staffUploads', array('upID'=>$_POST['upID']), array('isDeleted' => 1, 'deletedBy'=>$this->user->empID, 'dateDeleted'=>date('Y-m-d H:i:s')));
 
@@ -674,6 +711,31 @@ class Staff extends MY_Controller {
 				$data['coachedNames'] = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(fname," ",lname) as name', 'coach="'.$data['row']->empID.'" AND active=1');
 								
 				$data['isUnderMe'] = $this->commonM->checkStaffUnderMe($data['row']->username);
+				
+				$data['dataPayslips'] = array();
+				$data['payslipDIR'] = UPLOAD_DIR.$data['row']->username.'/payslips/';
+				if (is_dir($data['payslipDIR'])) {
+					$fileArr = array();
+					if ($dh = opendir($data['payslipDIR'])) {
+						while(($filename = readdir($dh)) !== false){
+							if($filename!='.' && $filename!='..')
+								$fileArr[] = $filename;
+						}
+						closedir($dh);
+					}
+					
+					foreach($fileArr AS $f){						
+						$katski = array_reverse(explode('_', $f));
+						$katski2 = explode('.', $katski[0]);
+						$katski3 = explode('-', $katski2[0]);
+						$data['dataPayslips'][$katski3[2].'-'.$katski3[0].'-'.$katski3[1]] = $f;
+					}
+					
+					foreach ($data['dataPayslips'] as $key => $part) {
+						$sort[$key] = strtotime($key);
+					}
+					array_multisort($sort, SORT_DESC, $data['dataPayslips']);					
+				}
 										
 				if($page=='myinfo'){
 					$data['updatedVal'] = $this->dbmodel->getQueryResults('staffUpdated', '*', 'empID_fk="'.$data['row']->empID.'" AND status=0', 'timestamp');

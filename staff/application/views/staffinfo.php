@@ -727,19 +727,43 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 	?>
 	</table>
 <?php } 
-	
-	if($this->access->accessFullHRFinance==true || $current=='myinfo'){
-?>
-	<table class="tableInfo" id="disPrevPay">
+	if($current=='myinfo' || $this->access->accessFullHR==true){
+		$cntpayslips = count($dataPayslips);
+?>	
+<!----------------------- DISCIPLINARY MEASURES ----------------------->	
+	<table class="tableInfo" id="prevpaytbl">
 		<tr class="trlabel">
 			<td>
-				Previous Payslips
-				<a href="<?= $this->config->base_url().'previouspayslips/'.$row->empID.'/' ?>" class="edit iframe"><?= (($this->access->accessFullHRFinance==true)?'Upload/':'') ?>View Files</a>
+				Previous Payslips <?= (($cntpayslips>0)?'('.$cntpayslips.')':'') ?> &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('prevpaytbl', this)" class="droptext">Show</a>]
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('prevpay')">+ Add File</a><? } ?>
+				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('prevpay')"/>
+					<input type="hidden" name="typeVal" value="prevpay"/>
+					<input type="hidden" name="submitType" value="uploadPrevPay"/>
+				</form>
 			</td>
 		</tr>		
 	</table>
-<?php } ?>
-	</div><? //end of tab-1 ?>
+<?php 
+	echo '<table class="tableInfo hidden" id="prevpaytblData">';
+		if($cntpayslips==0){
+			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
+		}else{
+			echo '<tr class="trhead">
+					<td>Filename</td>								
+					<td align="right">File</td>
+				</tr>';
+			foreach($dataPayslips AS $slip){
+				echo '<tr>';
+					echo '<td>'.$slip.'</td>';
+					echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+				echo '</tr>';
+			}
+		}
+	echo '</table>';
+
+	} ?>
+	</div>
 <!----------------------- END OF TAB 1 ----------------------->		
 <!----------------------- START OF TAB 2 NOTES ----------------------->		
 	<div id="tab-2" class="tab-content">
