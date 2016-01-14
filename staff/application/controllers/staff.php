@@ -285,7 +285,7 @@ class Staff extends MY_Controller {
 					$condition .= 'empID IN ('.rtrim($ids,',').')';							
 				}
 								
-				$flds = 'CONCAT(fname," ",lname) AS name, ';
+				$flds = 'CONCAT(lname,", ",fname) AS name, ';
 				if(isset($_POST['flds']) || (isset($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report')){				
 					if(isset($_POST['flds'])){
 						foreach($_POST['flds'] AS $p):
@@ -610,6 +610,11 @@ class Staff extends MY_Controller {
 						$upFile = $_FILES['pfilei'];
 						$cntUp = count($upFile['name']);
 						
+						echo '<pre>';
+						print_r($upFile);
+						echo '</pre>';
+						exit;
+						
 						if(empty($upFile['name'][0])){
 							$err = 'No file uploaded.';
 						}else{
@@ -723,7 +728,7 @@ class Staff extends MY_Controller {
 						}
 						closedir($dh);
 					}
-					
+										
 					foreach($fileArr AS $f){						
 						$katski = array_reverse(explode('_', $f));
 						$katski2 = explode('.', $katski[0]);
