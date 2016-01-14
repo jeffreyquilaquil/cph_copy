@@ -731,10 +731,12 @@ class Staff extends MY_Controller {
 						$data['dataPayslips'][$katski3[2].'-'.$katski3[0].'-'.$katski3[1]] = $f;
 					}
 					
-					foreach ($data['dataPayslips'] as $key => $part) {
-						$sort[$key] = strtotime($key);
-					}
-					array_multisort($sort, SORT_DESC, $data['dataPayslips']);					
+					if(count($data['dataPayslips'])>0){
+						foreach ($data['dataPayslips'] as $key => $part) {
+							$sort[$key] = strtotime($key);
+						}
+						array_multisort($sort, SORT_DESC, $data['dataPayslips']);
+					}				
 				}
 										
 				if($page=='myinfo'){
