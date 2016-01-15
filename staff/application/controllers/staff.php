@@ -1564,10 +1564,6 @@ class Staff extends MY_Controller {
 					}		
 					exit;
 				}
-				echo '<pre>';
-				print_r($_POST);
-				echo '</pre>';
-				exit;
 				
 				//check for duplicate insert leave data
 				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.$_POST['reason'].'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0');
