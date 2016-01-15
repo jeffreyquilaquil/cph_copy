@@ -76,7 +76,7 @@ class MyCrons extends MY_Controller {
 	*****/
 	function resetAnnivLeaveCredits(){	
 		//select active staffs with month and day start date is today
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, leaveCredits, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND startDate LIKE "%'.date('m-d').'"');
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, leaveCredits, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND startDate LIKE "%'.date('m-d').'" AND office="PH-Cebu"');
 		foreach($query AS $q):		
 			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
 			$years = floor($diff / (365*60*60*24));
