@@ -1031,6 +1031,7 @@ class Payrollmodel extends CI_Model {
 			$payArr[$m->payDate] = $m;
 		}
 		
+		$month13c = 0;
 		foreach($dateArr AS $date){
 			$payDate .= date('d-M-Y', strtotime($date))."\n";
 			
@@ -1041,8 +1042,12 @@ class Payrollmodel extends CI_Model {
 				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
 				$taxWithheld .= $this->textM->convertNumFormat($payArr[$date]->incomeTax)."\n";
 				
-				//13th month computation = (basepay-deduction)/12
-				$month13c = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
+				
+				if($staffInfo->endDate>=date('Y').'-01-25'){
+					$month13c = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+				}				
+				
 				$month13 .= $this->textM->convertNumFormat($month13c)."\n";
 				$netPay .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									

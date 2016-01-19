@@ -1682,7 +1682,7 @@ class Timecard extends MY_Controller {
 					foreach($_POST AS $k=>$p){
 						$_POST[$k] = str_replace(',','',$p);
 					}
-					
+										
 					$_POST['generatedBy'] = $this->user->username;
 					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
 					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');

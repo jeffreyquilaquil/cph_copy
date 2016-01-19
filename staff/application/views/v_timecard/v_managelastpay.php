@@ -26,9 +26,15 @@
 			echo '<td>'.$this->textM->convertNumFormat($data->deductTotal).'</td>';
 			echo '<td><b>PHP '.$this->textM->convertNumFormat($data->netLastPay).'</b></td>';
 			echo '<td align="right">
-					<a class="iframe" href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'"><img width="20px" src="'.$this->config->base_url().'css/images/icon-options-edit.png"></a>
-					&nbsp;&nbsp;&nbsp;
-					<a target="_blank" href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'&show=pdf"><img width="20px" src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>				
+					<ul class="dropmenu">
+						<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
+							<ul class="dropleft">
+								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'" class="iframe">View Details</a></li>
+								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'" class="iframe">Re-compute Last Pay</a></li>
+								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'&show=pdf" target="_blank">View PDF File</a></li>
+							</ul>
+						</li>
+					</ul>				
 				</td>';
 		echo '</tr>';
 	}

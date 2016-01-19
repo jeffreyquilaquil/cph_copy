@@ -132,6 +132,7 @@
 							<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
 								<ul class="dropleft">';
 								echo '<li><a href="'.$this->config->base_url().'timecard/managepayrolldetail/'.$pay->payrollsID.'/">View Details</a></li>';
+								echo '<li><a href="'.$this->config->base_url().'timecard/payrolldistributionreport/'.$pay->payrollsID.'/">Download Payroll Distribution Report</a></li>';
 							if($pay->status==0)
 								echo '<li><a href="javascript:void(0);" onClick="removePayroll('.$pay->payrollsID.')">Remove this payroll</a></li>';						
 							echo '</ul>
