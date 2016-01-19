@@ -90,7 +90,7 @@ class Payrollmodel extends CI_Model {
 	*****/
 	public function getPaymentItemsForPayroll($info){
 		$kaonNapud = array();
-		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1);
+		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1, $info->payPeriodStart, $info->payPeriodEnd);
 			
 		foreach($dessertItems AS $cake){
 			$eat = true;
@@ -452,17 +452,27 @@ class Payrollmodel extends CI_Model {
 	/******
 		$activeOnly=1 show only active items
 	******/
-	public function getPaymentItems($empID, $activeOnly=0, $condition=''){
+	public function getPaymentItems($empID, $activeOnly=0, $condition='', $payStart='', $payEnd=''){
+		
 		if($activeOnly==1) $condition .= ' AND s.status=1';
 		
-		$sql= 'SELECT payID, payID AS payID_fk, payName, payType, s.payPercent, s.payAmount AS prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
-					FROM tcPayslipItems AS s
-					WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.') '.$condition.'
-					UNION
-					SELECT payStaffID AS payID, payID_fk, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
-					FROM tcPayslipItemStaffs AS s
-					LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$condition.' 
-					ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
+		$first = $condition;
+		$second = $condition;
+		
+		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd!='0000-00-00'){
+			$first .= ' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd))';
+			$second .= ' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd))';
+		}
+		
+		$sql= 'SELECT payID, payID AS payID_fk, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+				FROM tcPayslipItems AS s
+				WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.') '.$first.'
+				UNION
+				SELECT payStaffID AS payID, payID_fk, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
+				FROM tcPayslipItemStaffs AS s
+				LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$second.' 
+				ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
+								
 		$query = $this->dbmodel->dbQuery($sql);
 					
 		return $query->result(); 
@@ -618,9 +628,9 @@ class Payrollmodel extends CI_Model {
 				$deductArr[$nobya->payID] = $nobya;
 			}
 			
-			$deductItems = $this->payrollM->getPaymentItems($empID, 1, ' AND payCategory=6');
+			$deductItems = $this->payrollM->getPaymentItems($empID, 1, ' AND payCategory=6', $payInfo->payPeriodStart, $payInfo->payPeriodEnd);
 			$deadArr = array();
-						
+			
 			foreach($deductItems AS $ded){
 				if(!in_array($ded->payID_fk, $deadArr)){
 					$deduct .= $ded->payName."\n";
@@ -629,7 +639,7 @@ class Payrollmodel extends CI_Model {
 						array_push($deadArr, $ded->payID_fk);
 					}else $curr .= "-\n";
 									
-					$ytdAmount = $this->payrollM->getTotalDeduction($empID, $ded->payID_fk);
+					$ytdAmount = $this->payrollM->getTotalDeduction($empID, $ded->payID_fk, $payInfo->payPeriodEnd);
 					$ytd .= $this->textM->convertNumFormat($ytdAmount)."\n";
 				}
 			}
@@ -699,22 +709,14 @@ class Payrollmodel extends CI_Model {
 		return $hours;
 	}
 	
-	public function getTotalDeduction($empID, $itemID){
-		$val = 0;
-		$myItemInfo = $this->payrollM->getPaymentItems($empID, 1, ' AND payID='.$itemID);
-		if(isset($myItemInfo[0])){
-			$myItemInfo = $myItemInfo[0];
-			
-			$condition = '';
-			if($myItemInfo=='0000-00-00') $condition .= ' AND YEAR(payPeriodEnd)="'.date('Y').'"';
-			
-			$val = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk LEFT JOIN tcPayslips ON payslipID=payslipID_fk LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 
-				'SUM(payValue)', 
-				'tcPayslips.empID_fk="'.$empID.'" AND payItemID_fk="'.$itemID.'" AND tcPayrolls.status!=3 AND tcPayslips.pstatus=1 AND tcPayslipItems.status=1'.$condition);
-		}
+	public function getTotalDeduction($empID, $itemID, $periodEnd){
+		$val = $this->dbmodel->getSingleField('tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk LEFT JOIN tcPayslips ON payslipID = payslipID_fk LEFT JOIN tcPayrolls ON payrollsID = payrollsID_fk',
+				'SUM(payValue)',
+				'tcPayslips.empID_fk="'.$empID.'" AND payItemID_fk="'.$itemID.'" AND tcPayrolls.status!=3 AND tcPayslips.pstatus=1 AND tcPayslipItems.status=1 AND payPeriodEnd<="'.$periodEnd.'" AND YEAR(payPeriodEnd)="'.date('Y', strtotime($periodEnd)).'"');
 		
 		return $val;
 	}
+	
 	
 	/******
 		Semi-Monthly is from 26th day of previous month to 10th day of current month
