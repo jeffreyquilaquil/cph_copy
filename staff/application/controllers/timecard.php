@@ -1712,7 +1712,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
@@ -1872,12 +1872,83 @@ class Timecard extends MY_Controller {
 	public function payrolldistributionreport(){
 		$payID = $this->uri->segment(3);
 		
-		if($this->user==false || $this->access->accessFullHR==false){
+		if($this->user==false || $this->access->accessFullHR==false || !is_numeric($payID)){
 			$data['access'] = false;
 			$data['content'] = 'index';
 			$this->load->view('includes/template', $data);
 		}else{
+			require_once('includes/excel/PHPExcel/IOFactory.php');
+			$fileType = 'Excel5';
+			$fileName = 'includes/templates/payrollDistributionReport.xls';
+
+			// Read the file
+			$objReader = PHPExcel_IOFactory::createReader($fileType);
+			$objPHPExcel = $objReader->load($fileName);
 			
+			
+			$dataPay = $this->dbmodel->getQueryResults('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd, payslipID, empID_fk, monthlyRate, basePay, totalTaxable, earning, deduction, tcPayslips.allowance, adjustment, advance, benefit, bonus, net, CONCAT(lname,", ",fname) AS name, idNum', 
+					'payrollsID="'.$payID.'"',
+					'LEFT JOIN tcPayslips ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
+					
+			$payArr = array();
+			$needHourArr = array('regularTaken', 'nightDiff', 'overTime', 'specialPHLHoliday', 'regularPHLHoliday', 'regularUSHoliday', 'regularHoliday', 'regHourAdded', 'nightDiffAdded', 'nightDiffSpecialHoliday', 'nightDiffRegHoliday');
+			foreach($dataPay AS $paid){
+				$payArr[$paid->empID_fk] = (array)$paid;
+				
+				$payItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payCode, payValue, numHR', 'payslipID_fk="'.$paid->payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+				
+				foreach($payItems AS $item){
+					$payArr[$paid->empID_fk][$item->payCode] = $item->payValue;
+					if(in_array($item->payCode, $needHourArr)) $payArr[$paid->empID_fk][$item->payCode.'HR'] = $item->numHR;
+				}
+			}
+			
+			echo '<table>';
+			foreach($payArr AS $pay){
+				echo '<tr>';
+					echo '<td>'.$pay['name'].'</td>'; ///employee
+					echo '<td>'.$pay['idNum'].'</td>'; //employee ID
+					echo '<td>'.((isset($pay['regularTaken']))?$pay['regularTaken']:'0.00').'</td>'; //regular taken
+					echo '<td>'.((isset($pay['regularTakenHR']))?$pay['regularTakenHR']:'0.00').'</td>'; //regular taken hours
+					
+					//regular worked hours
+					if(isset($pay['basePayHR']) && $pay['basePayHR']>0){
+						echo '<td>'.((isset($pay['basePay']))?$pay['basePay']:'0.00').'</td>'; //regular worked
+						echo '<td>'.((isset($pay['basePayHR']))?$pay['basePayHR']:'0.00').'</td>'; //regular worked hours
+						echo '<td>0.00</td>'; //base pay
+					}else{
+						echo '<td>0.00</td>'; //regular worked
+						echo '<td>0.00</td>'; //regular worked hours
+						echo '<td>'.((isset($pay['basePay']))?$pay['basePay']:'0.00').'</td>'; //base pay
+					}
+					
+				echo '</tr>';
+			}
+			
+			echo '</table>';
+			
+				echo '<pre>';
+				print_r($payArr);
+				echo '</pre>';
+				exit;
+			
+			
+			/* 
+
+			// Change the file
+			$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A1', 'Hello')
+						->setCellValue('A6', 'LUDIVINA MARINAS')
+						->setCellValue('B1', 'World!');
+
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+			ob_end_clean();
+			// We'll be outputting an excel file
+			header('Content-type: application/vnd.ms-excel');
+			header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
+			$objWriter->save('php://output');
+			
+			 */
 		}		
 	}
 	

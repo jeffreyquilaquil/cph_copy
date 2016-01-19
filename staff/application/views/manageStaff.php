@@ -103,7 +103,7 @@
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'schedules/setschedule/'.$row->empID.'/">Set Schedule</a></li>';
 						}
 						if($this->access->accessFullFinance==true){
-							echo '<li><a class="iframe2" href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$row->empID.'/">Compute Last Pay</a></li>';
+							echo '<li><a class="iframe2" href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$row->empID.'">Compute Last Pay</a></li>';
 						}							
 				echo 	'</ul>
 					</li>
