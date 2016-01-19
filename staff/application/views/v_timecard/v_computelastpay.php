@@ -47,7 +47,7 @@
 	<?php
 		if($pageType=='showperiod'){
 			if($staffInfo->endDate=='0000-00-00'){
-				echo '<hr/><p class="errortext">Please input <b>end date</b> first. Click <a href="'.$this->config->base_url().'staffinfo/'.$staffInfo->username.'/" target="_blank">here</a> to visit staff info page.</p>';
+				echo '<hr/><p class="errortext">Please input <b>Separation Date</b> first. Click <a href="'.$this->config->base_url().'staffinfo/'.$staffInfo->username.'/" target="_blank">here</a> to visit staff info page.</p>';
 			}else{
 				$yearOption = array();
 				$monthOption = array();
