@@ -8,11 +8,12 @@
 	}else{
 		echo '<h3>Compute Last Pay</h3>';
 		
-		$salary = $this->textM->decryptText($staffInfo->sal);
+		$salary = $this->textM->decryptText($staffInfo->sal);		
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
 		$leaveAmount = $staffInfo->leaveCredits * $dailyRate;			
 	}
-
+	
+	$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 	
 	$totalIncome = 0;
 	$totalSalary = 0;
@@ -283,9 +284,9 @@
 					echo '<td>Unpaid Salary</td>';
 					echo '<td>';
 					if($pageType=='showpay'){
-						echo $this->textM->convertNumFormat($payInfo->addUnpaid*$dailyRate).' <span class="colorgray">('.$payInfo->addUnpaid.' days x '.$dailyRate.')</span>';
+						echo $this->textM->convertNumFormat($payInfo->addUnpaid*$hourlyRate).' <span class="colorgray">('.$payInfo->addUnpaid.' hours x '.$hourlyRate.')</span>';
 					}else{
-						echo $this->textM->formfield('number', 'unpaidSal', '0.00', 'padding5px', '', 'step="any" style="width:50px"').' days x '.$dailyRate.' = <b id="unpaid">0.00</b>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/timelogs/" target="_blank">Visit Timelogs</a>]';
+						echo $this->textM->formfield('number', 'unpaidSal', '0.00', 'padding5px', '', 'step="any" style="width:50px"').' hours x '.$hourlyRate.' = <b id="unpaid">0.00</b>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/timelogs/" target="_blank">Visit Timelogs</a>]';
 					}
 				echo '</tr>';
 				echo '<tr class="weightbold trAddOns" style="background-color:#bbb;">';
@@ -387,7 +388,7 @@
 				$(this).val(0);
 			} 
 			
-			dailyRate = parseFloat('<?= $dailyRate ?>');
+			dailyRate = parseFloat('<?= $hourlyRate ?>');
 			num = num * dailyRate;
 			
 			totalAddOn = parseFloat('<?= $total13th + $leaveAmount ?>') + parseFloat(num);
