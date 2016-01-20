@@ -60,11 +60,11 @@
 						echo '<li '.(($segment2=='unpublishedlogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/unpublishedlogs/">Unpublished Logs <b>'.(($unpublished>0)?'['.$unpublished.']':'').'</b></a></li>';
 					}
 					
-					/* if($this->access->accessFullHRFinance==true || $this->user->level>0){
+					if($this->access->accessFullHRFinance==true){
 						$logRequest = $this->commonM->countResults('timelogRequests');
 						
 						echo '<li '.(($segment2=='logpendingrequest')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/logpendingrequest/">Log Pending Requests <b>'.(($logRequest>0)?'['.$logRequest.']':'').'</b></a></li>';
-					} */
+					}
 					
 					if($this->access->accessFullHRFinance==true){
 						echo '<li '.(($segment2=='managelastpay')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managelastpay/">Manage Last Pay</a></li>';
