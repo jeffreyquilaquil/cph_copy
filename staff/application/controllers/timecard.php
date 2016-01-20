@@ -194,21 +194,17 @@ class Timecard extends MY_Controller {
 							$updateArr['timeBreak'] = $this->textM->convertTimeToMinHours($timebreaks,true);
 						}
 						
-						echo '<pre>'; echo $id;
-						print_r($updateArr);
-						echo '</pre>';
-															
-						/* if(!empty($updateArr))
-							$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $updateArr); */
+						 if(!empty($updateArr))
+							$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $updateArr);
 					}				
 				}
 			}
 		
 			//change value of isInserted to 1 meaning log is inserted
-			/* if(count($logIDInserted)>0){
+			if(count($logIDInserted)>0){
 				$this->dbmodel->updateQueryText('tcTimelogs', 'isInserted="1"', 'logID IN ('.implode(',', $logIDInserted).')');
 				echo 'Successfully inserted.';
-			} */
+			}
 			
 			$this->cronDailyAttendanceRecord();////CALL TO PUBLISH AND UPDATE RECORDS
 		}
