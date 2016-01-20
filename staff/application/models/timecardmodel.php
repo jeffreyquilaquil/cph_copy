@@ -74,7 +74,7 @@ class Timecardmodel extends CI_Model {
 			foreach($queryMainSched AS $sched){
 				for($start=$strdateStart; $start<=$strdateEnd; ){	
 					$dtoday = date('Y-m-d', $start);
-					if(strtotime($dtoday)>=strtotime($sched->effectivestart) && ($sched->effectiveend=='0000-00-00' || strtotime($dtoday)<=strtotime($sched->effectiveend))){
+					if(strtotime($dtoday)>=strtotime($sched->effectivestart) && ($sched->effectiveend=='0000-00-00' || strtotime($dtoday)<strtotime($sched->effectiveend))){
 						$weekType = strtolower(date('l', strtotime($dtoday)));
 						if(!empty($timeArrayVal[$sched->$weekType])){
 							$i = date('j', strtotime($dtoday));
@@ -92,7 +92,7 @@ class Timecardmodel extends CI_Model {
 			foreach($queryMainSched AS $sched){
 				for($i=$ival; $i<=$dEnd; $i++){
 					$dtoday =	date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
-					if(strtotime($dtoday)>=strtotime($sched->effectivestart) && ($sched->effectiveend=='0000-00-00' || strtotime($dtoday)<=strtotime($sched->effectiveend))){
+					if(strtotime($dtoday)>=strtotime($sched->effectivestart) && ($sched->effectiveend=='0000-00-00' || strtotime($dtoday)<strtotime($sched->effectiveend))){
 						$weekType = strtolower(date('l', strtotime($dtoday)));
 						if(!empty($timeArrayVal[$sched->$weekType])){
 							$dayArr[$i]['sched'] = $timeArrayVal[$sched->$weekType];
