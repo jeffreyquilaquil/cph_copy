@@ -12,7 +12,7 @@ class Timecardmodel extends CI_Model {
 		$val = '';
 		
 		if($fld == 'timeAllowedClockIn') $val = '-4 HOUR';
-		else if($fld == 'timeAllowedClockOut') $val = '+4 HOUR';
+		else if($fld == 'timeAllowedClockOut') $val = '+5 HOUR';
 		else if($fld == 'earlyClockIn') $val = '-2 HOUR';
 		else if($fld == 'outLate') $val = '+2 HOUR';
 		else if($fld == 'overBreak') $val = '5400';
