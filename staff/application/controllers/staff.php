@@ -1093,7 +1093,7 @@ class Staff extends MY_Controller {
 				$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 				
 				$pdf->SetFont('Arial','B',16);
-				$pdf->setXY(132, 24);
+				$pdf->setXY(138, 24);
 				$pdf->Write(0, date('Y'));
 				
 				$pdf->SetFont('Arial','B',10);

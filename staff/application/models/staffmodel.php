@@ -1250,7 +1250,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','',9);
 		$pdf->SetTextColor(0, 0, 0);
-		$pdf->setXY(22, 154); $pdf->MultiCell(175, 3,$row->category.' - '.$row->offense.' - Level '.$row->level,0,'L',false);
+		$pdf->setXY(22, 154.5); $pdf->MultiCell(175, 3,$row->category.' - '.$row->offense.' - Level '.$row->level,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',9); ///ISSUED BY
 		$pdf->setXY(20, 212); $pdf->MultiCell(78, 3, strtoupper($row->supName),0,'C',false);
