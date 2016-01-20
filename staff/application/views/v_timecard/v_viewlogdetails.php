@@ -393,7 +393,10 @@
 						if($b->logtype=='D' || $b->logtype=='E'){
 							if($breaknum%2!=0) echo 'Start Break';
 							else echo 'End Break';
-						}else echo $logtypeArr[$b->logtype];
+						}else{
+							$breaknum = 0;
+							echo $logtypeArr[$b->logtype];
+						} 
 					echo '</td>';					
 					echo '<td>'.date('h:i a', strtotime($b->logtime)).'</td>';
 				echo '</tr>';
