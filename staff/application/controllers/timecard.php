@@ -120,8 +120,9 @@ class Timecard extends MY_Controller {
 		$date00 = '0000-00-00 00:00:00';
 		$logIDInserted = array();
 		
-		$logQuery = $this->dbmodel->getQueryResults('tcTimelogs', 'tcTimelogs.*, empID, username', 'isInserted=0', 'LEFT JOIN staffs ON idNum=staffs_idNum_fk', 'logtime');				
-		if(count($logQuery)>0){
+		$logQuery = $this->dbmodel->getQueryResults('tcTimelogs', 'tcTimelogs.*, empID, username', 'isInserted=0', 'LEFT JOIN staffs ON idNum=staffs_idNum_fk', 'logtime');
+	
+		if(count($logQuery)>0){			
 			foreach($logQuery AS $log){
 				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND ("'.$log->logtime.'" BETWEEN DATE_ADD(schedIn, INTERVAL '.$timeAllowedClockIn.')  AND DATE_ADD(schedOut, INTERVAL '.$timeAllowedClockOut.'))'); //get log id belong to certain schedule
 				
@@ -162,7 +163,8 @@ class Timecard extends MY_Controller {
 								if($logData->offsetHour>0 && $logData->schedIn!=$logData->offsetOut && $logData->schedOut!=$logData->offsetIn){
 									if(strtotime($d['logtime']) >= strtotime($logData->offsetOut) && strtotime($d['logtime']) <= strtotime($logData->offsetOut.' '.$timeAllowedClockOut) ){
 										$updateArr['offTimeOut'] = $d['logtime']; //for offset
-									}else $updateArr['timeOut'] = $d['logtime'];
+										$updateArr['timeOut'] = $d['logtime'];	
+									}else $updateArr['timeOut'] = $d['logtime'];								
 								}else if(strtotime($d['logtime']) >= strtotime($logData->offsetOut.' '.$timeAllowedClockOut)) $updateArr['timeOut'] = $d['logtime'];
 							}else if($logData->timeIn!=$date00 || isset($updateArr['timeIn'])){ //this is for breaks and there is time in recorded
 								$updateArr['breaks'] .= $d['logtime'].'|';
@@ -191,18 +193,22 @@ class Timecard extends MY_Controller {
 							}
 							$updateArr['timeBreak'] = $this->textM->convertTimeToMinHours($timebreaks,true);
 						}
+						
+						echo '<pre>'; echo $id;
+						print_r($updateArr);
+						echo '</pre>';
 															
-						if(!empty($updateArr))
-							$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $updateArr);
+						/* if(!empty($updateArr))
+							$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$id), $updateArr); */
 					}				
 				}
 			}
 		
 			//change value of isInserted to 1 meaning log is inserted
-			if(count($logIDInserted)>0){
+			/* if(count($logIDInserted)>0){
 				$this->dbmodel->updateQueryText('tcTimelogs', 'isInserted="1"', 'logID IN ('.implode(',', $logIDInserted).')');
 				echo 'Successfully inserted.';
-			}
+			} */
 			
 			$this->cronDailyAttendanceRecord();////CALL TO PUBLISH AND UPDATE RECORDS
 		}
