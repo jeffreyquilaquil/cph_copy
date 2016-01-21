@@ -2569,15 +2569,15 @@ class Staff extends MY_Controller {
 			$segment3 = $this->uri->segment(3);
 							
 			$data['sent'] = false;
-			if(!empty($_POST)){				
+			if(!empty($_POST) && isset($_POST['submitType'])){		
 				$fromName = $_POST['fromName'];
 				$from = $_POST['from'];
 				$to = ltrim($_POST['to'],',');
 				$subject = $_POST['subject'];
-				$message = $_POST['message'];				
-				
+				$message = $_POST['message'];	
+			
 								
-				if($segment2=='addinfoleavesubmitted'){			
+				if($segment2=='addinfoleavesubmitted'){		
 					$addInfo = '<b>'.strtoupper($this->user->username).'</b><br/>
 									Sent: '.date('M d, Y h:i A').'<br/>
 									To: '.$to.'<br/>
@@ -2604,7 +2604,19 @@ class Staff extends MY_Controller {
 					$staffID = $this->dbmodel->getSingleField('staffs', 'empID', 'email="'.trim($toemails[$e]).'" OR pemail="'.trim($toemails[$e]).'"');
 					if(!empty($staffID)) 
 						$this->commonM->addMyNotif($staffID, $ntexts, 0, 1, $this->user->empID);
-				}				
+				}
+
+				//add record on timelog request update
+				if($segment2=='timelogrequest'){
+					$ins['empID_fk'] = $segment3;
+					$ins['logDate'] = $this->uri->segment(4);
+					$ins['message'] = addslashes('<div class="divMessageReq">'.$ntexts.'</div>');
+					$ins['status'] = 0;
+					$ins['updatedBy'] = $this->user->username; 
+					$ins['dateRequested'] = date('Y-m-d H:i:s');
+					$ins['dateUpdated'] = $ins['dateRequested'];					
+					$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);	
+				}
 								
 				$data['sent'] = true;
 			}else{			
@@ -2627,6 +2639,18 @@ class Staff extends MY_Controller {
 					$data['to'] = 'accounting.cebu@tatepublishing.net';
 					$data['subject'] = 'Inquiry for Payslip ID #'.$segment3;	
 					$data['message'] = 'Hi Accounting,<br/><br/><i>Please refer to payslip link <a href="'.$this->config->base_url().'timecard/'.$this->uri->segment(4).'/payslipdetail/'.$segment3.'/">'.$this->config->base_url().'timecard/'.$this->uri->segment(4).'/payslipdetail/'.$segment3.'/</a></i><br/><br/>';
+				}else if($segment2=='timelogrequest' && !empty($_POST)){
+					$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment3.'"');
+					$data['to'] = $data['row']->email;					
+					$data['subject'] = 'Update on your timelog request for '.$this->uri->segment(4);
+					
+					$data['message'] = '<p>Hi '.$data['row']->fname.',</p>
+							<p>This is in response to your timelog request.<p>
+							<p style="color:red">[WRITE MESSAGE HERE...]</p>
+							<p>&nbsp;</p>
+							<p>Thanks!</p>
+							<hr/>
+							<p><b>Your request message:</b><br/><i>'.$_POST['message'].'</i></p>';
 				}else if($segment2!=''){
 					$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
 					$data['to'] = $data['row']->email;

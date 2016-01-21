@@ -418,18 +418,27 @@
 			echo '<tr class="updateclass hidden" '.(($u->status==1)?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td width="120px">'.date('d M y h:i a', strtotime($u->dateRequested)).'</td>';
 				echo '<td valign="top">';
-					echo nl2br($u->message);
+					$message = nl2br(str_replace('<br/>', '', $u->message));
 					if(!empty($u->docs)){
-						echo '<br/><b>Supporting Docs</b><br/><ul>';
+						$message .= '<br/><b>Supporting Docs</b><br/><ul>';
 						$dd = explode('|', $u->docs);
 						foreach($dd AS $d){
 							if(!empty($d))
-								echo '<li><a href="'.$this->config->base_url().$dir.$d.'">'.$d.'</a></li>';
+								$message .= '<li><a href="'.$this->config->base_url().$dir.$d.'">'.$d.'</a></li>';
 						}
-						echo '</ul>';
+						$message .= '</ul>';
+					}
+					echo $message;
+					
+					if($u->type=='request'){
+						//echo '<a href="'.$this->config->base_url().'sendEmail/'.$visitID.'/"><button type="button" class="btnorange">Send message to '.$row->fname.' about this</button></a>';
+						echo '<form action="'.$this->config->base_url().'sendEmail/timelogrequest/'.$visitID.'/'.$u->logDate.'/" method="POST" onSubmit="displaypleasewait();">';
+							echo $this->textM->formfield('textarea', 'message', $message, 'hidden');
+							echo '<button class="btnorange">Send message to '.$row->fname.' about this</button>';
+						echo '</form>';
 					}
 				echo '</td>';
-				echo '<td>';
+				echo '<td width="100px">';
 					if($u->status==1){
 						if($editAccess==true){
 							echo $this->textM->formfield('select', 'status', '<option value="1">Pending</option><option value="0">Resolve</option><option value="2">Done</option>', 'forminput', '', 'onChange="showUpdate('.$u->updateID.', this)"');
@@ -561,6 +570,7 @@
 			$('#formpublish').addClass('hidden');
 			$('#btnpublish').show();
 		});
+		
 	});
 	
 	function showUpdate(id, t){

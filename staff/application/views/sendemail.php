@@ -46,7 +46,8 @@
 	<tr>
 		<td><br/></td>
 		<td>
-			<input type="submit" value="Send Email" class="btnclass"/>
+			<input type="hidden" name="submitType" value="sending"/>
+			<input type="submit" value="Send Email" class="btnclass btngreen"/>
 		</td>
 	</tr>
 </form>
