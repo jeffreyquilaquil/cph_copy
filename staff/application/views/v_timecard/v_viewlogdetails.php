@@ -437,7 +437,7 @@
 			echo '<tr class="updateclass hidden" '.(($u->status==1)?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td width="120px">'.date('d M y h:i a', strtotime($u->dateRequested)).'</td>';
 				echo '<td valign="top">';
-					$message = nl2br(str_replace('<br/>', '\n', ));
+					$message = nl2br(str_replace('<br/>', '\n', $u->message));
 					if(!empty($u->docs)){
 						$message .= '<br/><b>Supporting Docs</b><br/><ul>';
 						$dd = explode('|', $u->docs);
