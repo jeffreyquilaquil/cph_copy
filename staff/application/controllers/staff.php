@@ -2650,7 +2650,7 @@ class Staff extends MY_Controller {
 							<p>&nbsp;</p>
 							<p>Thanks!</p>
 							<hr/>
-							<p><b>Your request message:</b><br/><i>'.$_POST['message'].'</i></p>';
+							<p><b>Your request message:</b><br/><i>'.$_POST['message'].'</i></p><p>Click <a href="'.$this->config->base_url().'timecard/'.$segment3.'/viewlogdetails/?d='.$this->uri->segment(4).'">here</a> to visit timelog for this day.</p>';
 				}else if($segment2!=''){
 					$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname, email', 'empID="'.$segment2.'"');
 					$data['to'] = $data['row']->email;
