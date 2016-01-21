@@ -438,7 +438,7 @@
 						echo '</form>';
 					}
 				echo '</td>';
-				echo '<td width="100px">';
+				echo '<td width="150px">';
 					if($u->status==1){
 						if($editAccess==true){
 							echo $this->textM->formfield('select', 'status', '<option value="1">Pending</option><option value="0">Resolve</option><option value="2">Done</option>', 'forminput', '', 'onChange="showUpdate('.$u->updateID.', this)"');
