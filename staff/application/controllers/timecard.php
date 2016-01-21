@@ -69,7 +69,7 @@ class Timecard extends MY_Controller {
 		if($staffID!=''){
 			$staffID = ' AND empID NOT IN ('.rtrim($staffID, ',').')';
 		}
-		
+				
 		//STAFF SCHEDULES		
 		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);			
 		foreach($queryStaffs AS $staff){
@@ -77,7 +77,7 @@ class Timecard extends MY_Controller {
 			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffLogPublish table
 			if(!empty($logIDD)) $scheduled++;
 		}
-		
+	
 		//INSERT TO TCATTENDANCE TABLE IF NOT EXIST ELSE UPDATE Records
 		$attLog = $this->dbmodel->getSingleInfo('tcAttendance', '*', 'dateToday="'.$today.'"');
 				
@@ -666,7 +666,7 @@ class Timecard extends MY_Controller {
 			
 			//for schedule history
 			$data['timeArr'] = $this->commonM->getSchedTimeArray();			
-			$data['schedData'] = $this->dbmodel->getQueryResults('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk'); 
+			$data['schedData'] = $this->dbmodel->getQueryResults('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate DESC'); 
 									
 			//this is for link on the dates
 			$data['dayEditOptionArr'] = array();
