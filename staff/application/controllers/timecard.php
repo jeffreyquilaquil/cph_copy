@@ -62,7 +62,7 @@ class Timecard extends MY_Controller {
 		
 		//CHECK FOR STAFFS TODAY SCHEDULES
 		$staffID = '';
-		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'"');
+		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'" AND showStatus=1');
 		if(count($querySchd)>0){
 			foreach($querySchd AS $s) $staffID .= $s->empID_fk.',';
 		}
@@ -125,10 +125,10 @@ class Timecard extends MY_Controller {
 	
 		if(count($logQuery)>0){			
 			foreach($logQuery AS $log){
-				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND ("'.$log->logtime.'" BETWEEN DATE_ADD(schedIn, INTERVAL '.$timeAllowedClockIn.')  AND DATE_ADD(schedOut, INTERVAL '.$timeAllowedClockOut.'))'); //get log id belong to certain schedule
+				$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND showStatus=1 AND ("'.$log->logtime.'" BETWEEN DATE_ADD(schedIn, INTERVAL '.$timeAllowedClockIn.')  AND DATE_ADD(schedOut, INTERVAL '.$timeAllowedClockOut.'))'); //get log id belong to certain schedule
 				
 				if(empty($logID)){ //check if there is logs with no schedule on the same day
-					$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND slogDate="'.date('Y-m-d', strtotime($log->logtime)).'"');
+					$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$log->empID.'" AND slogDate="'.date('Y-m-d', strtotime($log->logtime)).'" AND showStatus=1');
 				}
 				
 				if(empty($logID)){ //if still empty insert records
@@ -144,7 +144,7 @@ class Timecard extends MY_Controller {
 	
 			if(count($logArr)>0){
 				foreach($logArr AS $id=>$trying){
-					$logData = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'slogID, slogDate, timeIn, timeOut, breaks, timeBreak, numBreak, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'slogID="'.$id.'"');
+					$logData = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'slogID, slogDate, timeIn, timeOut, breaks, timeBreak, numBreak, schedIn, schedOut, offsetIn, offsetOut, schedHour, offsetHour', 'slogID="'.$id.'" AND showStatus=1');
 															
 					$updateArr = array();									
 					if(count($trying)>0){
@@ -234,7 +234,7 @@ class Timecard extends MY_Controller {
 	
 		$dateToday = date('Y-m-d H:00:00');
 		//SEND EMAIL TO EMPLOYEES WITH NO TIME IN YET BUT schedIn is the current hour
-		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail, leaveID_fk', 'schedIn="'.$dateToday.'" AND active=1 AND timeIn="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');	
+		$queryNoTimeIn = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail, leaveID_fk', 'schedIn="'.$dateToday.'" AND active=1 AND timeIn="0000-00-00 00:00:00" AND showStatus=1', 'LEFT JOIN staffs ON empID=empID_fk');	
 		
 		if(count($queryNoTimeIn)>0){
 			foreach($queryNoTimeIn AS $timein){
@@ -253,7 +253,7 @@ class Timecard extends MY_Controller {
 		}		
 		
 		//SEND EMAIL TO EMPLOYEES IF NO CLOCK OUT YET AFTER 4 HOURS
-		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00"', 'LEFT JOIN staffs ON empID=empID_fk');
+		$queryNoClockOut = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk, email, fname, schedIn, schedOut, (SELECT email FROM staffs s WHERE s.empID=staffs.supervisor) AS supEmail', 'schedOut="'.date('Y-m-d H:00:00', strtotime(' -4 hours')).'" AND active=1 AND timeIn!="0000-00-00 00:00:00" AND timeOut="0000-00-00 00:00:00" AND showStatus=1', 'LEFT JOIN staffs ON empID=empID_fk');
 		
 		
 		if(count($queryNoClockOut)>0){
@@ -301,7 +301,7 @@ class Timecard extends MY_Controller {
 			$dateEnd = date('Y-m-25');
 		}
 		
-		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, email, fname, lname', 'publishBy="" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'slogDate');		
+		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, email, fname, lname', 'publishBy="" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND showStatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'slogDate');		
 		if(count($query)>0){
 			if($page=='hr') $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, 'HR');
 			else $this->emailM->emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query);
@@ -383,7 +383,7 @@ class Timecard extends MY_Controller {
 			}
 				
 			//this is for logs for the calendar month			
-			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk, status', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31"');
+			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk, status', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND showStatus=1');
 		
 			foreach($dateLogs AS $dl){
 				$numDay = $dl->dayLogDate;
@@ -934,7 +934,7 @@ class Timecard extends MY_Controller {
 					if($numb>0){
 						$message = 'Updated break to: '.trim($message, ', ');
 						
-						$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', 'breaks', 'slogID="'.$_POST['slogID'].'"');
+						$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', 'breaks', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');
 						if(empty($prevVal)) $message .= ' from none';
 						else{
 							$message .= ' from ';
@@ -948,7 +948,7 @@ class Timecard extends MY_Controller {
 					$updatePub[$_POST['changetype']] = $_POST['inoutval'];
 					$message = 'Updated '.$this->textM->constantText($_POST['changetype']).' to '.date('h:i a', strtotime($_POST['inoutval']));
 					
-					$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', $_POST['changetype'], 'slogID="'.$_POST['slogID'].'"');
+					$prevVal = $this->dbmodel->getSingleField('tcStaffLogPublish', $_POST['changetype'], 'slogID="'.$_POST['slogID'].'" AND showStatus=1');
 					if(!empty($prevVal)){
 						if($prevVal=='0000-00-00 00:00:00') $message .= ' from none';
 						else $message .= ' from '.date('h:i a', strtotime($prevVal));
@@ -990,7 +990,7 @@ class Timecard extends MY_Controller {
 				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');				
 			}else if($_POST['submitType']=='unpublish'){
 				//insert to tcTimelogUpdates
-				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'"');	
+				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');	
 				$message = '<b>Unpublished log.</b>';
 				if(count($info)>0){
 					$message .= '<br/>Details:<br/>Time Paid: '.$info->publishTimePaid;
@@ -1016,13 +1016,24 @@ class Timecard extends MY_Controller {
 				$upA['dateUpdated'] = date('Y-m-d H:i:s');
 				$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upA);
 				$this->dbmodel->updateConcat('tcTimelogUpdates', 'updateID="'.$_POST['updateID'].'"', 'message', '<br/><i style="font-size:11px;"><u>Change status to DONE - by '.$this->user->username.'</u></i><br/>');
+			}else if($_POST['submitType']=='removeLog'){				
+				$upLog['empID_fk'] = $data['visitID'];
+				$upLog['logDate'] = $data['today'];
+				$upLog['message'] = '<b>Previous record deleted. Remove reason:</b><br/>'.$_POST['removeReason'];
+				$upLog['status'] = 0;
+				$upLog['updatedBy'] = $this->user->username;
+				$upLog['dateRequested'] = date('Y-m-d H:i:s');
+				$upLog['dateUpdated'] = $upLog['dateRequested'];
+				$this->dbmodel->insertQuery('tcTimelogUpdates', $upLog);
+				
+				$this->dbmodel->updateQueryText('tcStaffLogPublish', 'showStatus=0', 'slogID="'.$_POST['slogID'].'"');
 			}
 			
 			$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
 		}
 		
 		$data['schedToday'] = $this->timeM->getSchedToday($id, $data['today']);
-		$data['dataLog'] = $this->dbmodel->getSingleInfo('tcStaffLogPublish', '*', 'empID_fk="'.$id.'" AND slogDate="'.$data['today'].'"');
+		$data['dataLog'] = $this->dbmodel->getSingleInfo('tcStaffLogPublish', '*', 'empID_fk="'.$id.'" AND slogDate="'.$data['today'].'" AND showStatus=1');
 		$data['dataBiometrics'] = $this->timeM->getLogsToday($data['visitID'], $data['today'], $data['schedToday']);
 		$data['updateRequests'] = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$id.'" AND logDate="'.$data['today'].'"', '', 'dateRequested DESC');
 		
@@ -1203,7 +1214,7 @@ class Timecard extends MY_Controller {
 			
 			$dataLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
 				'slogID, slogDate, empID_fk, schedHour, timeIn, timeOut, schedIn, schedOut, publishTimePaid, publishND, publishHO, publishHOND, publishDeduct, publishBy, status', 
-				'slogDate BETWEEN "'.$data['start'].'" AND "'.$data['end'].'" AND empID_fk IN ('.$data['empIDs'].')');	
+				'slogDate BETWEEN "'.$data['start'].'" AND "'.$data['end'].'" AND empID_fk IN ('.$data['empIDs'].') AND showStatus=1');	
 			
 			foreach($dataLogs AS $d){
 				$data['dataAttendance'][$d->empID_fk]['dates'][$d->slogDate] = $d;
@@ -1511,7 +1522,7 @@ class Timecard extends MY_Controller {
 					
 					$data['dataWorked'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
 						'slogID, slogDate, empID_fk, publishTimePaid, publishND, publishDeduct, publishOT, publishHO, publishHOND, publishBy', 
-						'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'"', 
+						'empID_fk="'.$data['payInfo']->empID.'" AND slogDate BETWEEN "'.$data['payInfo']->payPeriodStart.'" AND "'.$data['payInfo']->payPeriodEnd.'" AND showStatus=1', 
 						'', 
 						'slogDate');
 					
@@ -1630,7 +1641,7 @@ class Timecard extends MY_Controller {
 				
 				$data['dataUnpublished'] = $this->dbmodel->getQueryResults('tcStaffLogPublish', 
 					'slogID, slogDate, schedIn, schedOut, timeIn, timeOut, timeBreak, empID_fk, CONCAT(fname," ",lname) AS name, username', 
-					'publishBy="" AND slogDate!="'.$data['currentDate'].'"'.$condUsers, 
+					'publishBy="" AND slogDate!="'.$data['currentDate'].'" AND showStatus=1 '.$condUsers, 
 					'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}

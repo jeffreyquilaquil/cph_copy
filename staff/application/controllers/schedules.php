@@ -291,7 +291,7 @@ class Schedules extends MY_Controller {
 					$schdArr = $this->timeM->getSchedArr($arr['dateToday'], $arr['timeText']);
 					if(isset($schdArr['start']) && isset($schdArr['end'])){
 						if($currentDateToday>=$arr['dateToday']){
-							$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$arr['dateToday'].'" AND empID_fk="'.$data['empID'].'"');
+							$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$arr['dateToday'].'" AND empID_fk="'.$data['empID'].'" AND showStatus=1');
 							if(!empty($dailyLogID)){
 								$upp['schedIn'] = $schdArr['start'];
 								$upp['schedOut'] = $schdArr['end'];
@@ -385,7 +385,7 @@ class Schedules extends MY_Controller {
 							
 							//CHECK IF ALREADY INSERTED IN tcStaffLogPublish UPDATE DETAILS IF EXISTS
 							if($k<=date('Y-m-d')){
-								$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$k.'" AND empID_fk="'.$a2['id'].'"');
+								$dailyLogID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'slogDate="'.$k.'" AND empID_fk="'.$a2['id'].'" AND showStatus=1');
 								if(!empty($dailyLogID)){
 									$schedArr = $this->timeM->getSchedArr($k, $newarr['timeText']);
 									$upp['schedIn'] = $schedArr['start'];

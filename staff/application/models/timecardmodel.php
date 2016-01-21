@@ -347,14 +347,14 @@ class Timecardmodel extends CI_Model {
 			$condition .= ' AND publishBy!=""';
 		}else if($type=='unscheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'"');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND schedIn="'.$dateoo.'" AND timeIn!="'.$dateoo.'" AND timeOut!="'.$dateoo.'" AND showStatus=1');
 		}else if($type=='scheduled'){
 			$dateoo = '0000-00-00 00:00:00';
-			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'")');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk', 'slogDate="'.$dateToday.'" AND (schedIn!="'.$dateoo.'" OR offsetIn!="'.$dateoo.'") AND showStatus=1');
 		}
 		
 		if($query==''){
-			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, CONCAT(fname," ",lname) AS name, publishBy '.$flds, 'slogDate="'.$dateToday.'" '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, CONCAT(fname," ",lname) AS name, publishBy '.$flds, 'slogDate="'.$dateToday.'"  AND showStatus=1 '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $query;
@@ -413,7 +413,7 @@ class Timecardmodel extends CI_Model {
 	********/
 	public function publishLogs(){
 		$time00 = '0000-00-00 00:00:00';
-		$condition = 'publishBy=""';
+		$condition = 'publishBy="" AND showStatus=1';
 		$updateArray = array();
 		
 		$condition .= ' AND (';
@@ -567,7 +567,7 @@ class Timecardmodel extends CI_Model {
 			$insArr['empID_fk'] = $empID;
 			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
 										
-			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not	
+			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'" AND showStatus=1'); //check if not exist insert if not	
 			if(is_numeric($logID))
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
 			else

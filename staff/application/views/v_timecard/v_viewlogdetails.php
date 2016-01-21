@@ -20,8 +20,12 @@
 	
 	///PUBLISHED
 		if(!empty($dataLog->publishBy))  echo '&nbsp;&nbsp;<b class="errortext">'.(($dataLog->status==1)?'FINALIZED':'PUBLISHED').'</b>';
-		else if($editAccess==true && empty($dataLog->publishBy)) 
+		else if($editAccess==true && !empty($dataLog) && empty($dataLog->publishBy)){
 			echo '&nbsp;&nbsp;<button id="btnpublish" class="btnclass btngreen">Publish</button>';
+			
+			if(!empty($dataLog) && empty($schedToday))
+				echo '&nbsp;&nbsp;<button id="btnremove" class="btnclass btnorange">Remove this log</button>';
+		}			
 	
 		echo '&nbsp;&nbsp;<a href="'.$this->config->base_url().'timecard/'.$visitID.'/?d='.$today.'" target="_blank"><button class="btnclass">Go to Timelog Page</button></a>';
 				
@@ -33,6 +37,21 @@
 	if($this->access->accessHRFinance==true && $editAccess==false) echo '<i><b class="errortext">Note:</b> You cannot edit your own logs.</i>';
 	
 	echo '<hr/>';
+	
+	///REMOVING LOGS
+	if(!empty($dataLog) && empty($schedToday)){
+		echo '<div id="divRemovelog" class="hidden" style="padding:5px; margin-bottom:10px; border:1px solid #ccc;">';
+			echo '<form action="" method="POST" onSubmit="displaypleasewait();">';
+				echo '<b>Why do you want to remove today\'s log?</b>';
+				echo $this->textM->formfield('textarea', 'removeReason', '', 'forminput', '', 'required id="removeReason"');
+				
+				echo $this->textM->formfield('hidden', 'slogID', $dataLog->slogID);
+				echo $this->textM->formfield('hidden', 'submitType', 'removeLog');
+				echo $this->textM->formfield('submit', '', 'Remove this log', 'btnclass btngreen');
+				echo '&nbsp;&nbsp;'.$this->textM->formfield('button', '', 'Cancel', 'btnclass', '', 'id="btncancelremove"');
+			echo '</form>';
+		echo '</div>';
+	}
 	
 	if(isset($alerttext)){
 		echo '<p class="tacenter"><b class="errortext">'.$alerttext.'</b></p>';
@@ -546,7 +565,7 @@
 		$('#unpublish').click(function(){
 			if(confirm('Are you sure you want to unpublish this record?')){
 				displaypleasewait();
-				$.post('<?= $this->config->item('career_uri') ?>',{submitType:'unpublish', slogID:'<?= $dataLog->slogID ?>'}, 
+				$.post('<?= $this->config->item('career_uri') ?>',{submitType:'unpublish', slogID:'<?= ((isset($dataLog->slogID))?$dataLog->slogID:'') ?>'}, 
 				function(){
 					location.reload();
 				});
@@ -569,6 +588,18 @@
 		$('#btncancelpublish').click(function(){
 			$('#formpublish').addClass('hidden');
 			$('#btnpublish').show();
+		});
+		
+		
+		$('#btncancelremove').click(function(){
+			$('#btnremove').removeClass('hidden');
+			$('#divRemovelog').addClass('hidden');
+			$('#removeReason').val('');
+		});
+		
+		$('#btnremove').click(function(){
+			$(this).addClass('hidden');
+			$('#divRemovelog').removeClass('hidden');
 		});
 		
 	});
