@@ -437,7 +437,7 @@
 			echo '<tr class="updateclass hidden" '.(($u->status==1)?'style="background-color:#ffb2b2;"':'').'>';
 				echo '<td width="120px">'.date('d M y h:i a', strtotime($u->dateRequested)).'</td>';
 				echo '<td valign="top">';
-					$message = nl2br(str_replace('<br/>', '\n', $u->message));
+					$message = nl2br($u->message);
 					if(!empty($u->docs)){
 						$message .= '<br/><b>Supporting Docs</b><br/><ul>';
 						$dd = explode('|', $u->docs);
@@ -450,7 +450,6 @@
 					echo $message;
 					
 					if($u->type=='request'){
-						//echo '<a href="'.$this->config->base_url().'sendEmail/'.$visitID.'/"><button type="button" class="btnorange">Send message to '.$row->fname.' about this</button></a>';
 						echo '<form action="'.$this->config->base_url().'sendEmail/timelogrequest/'.$visitID.'/'.$u->logDate.'/" method="POST" onSubmit="displaypleasewait();">';
 							echo $this->textM->formfield('textarea', 'message', $message, 'hidden');
 							echo '<button class="btnorange">Send message to '.$row->fname.' about this</button>';
