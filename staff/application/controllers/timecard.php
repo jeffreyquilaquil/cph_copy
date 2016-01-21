@@ -71,7 +71,7 @@ class Timecard extends MY_Controller {
 		}
 		
 		//STAFF SCHEDULES		
-		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);		
+		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);			
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
 			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffLogPublish table
@@ -80,6 +80,7 @@ class Timecard extends MY_Controller {
 		
 		//INSERT TO TCATTENDANCE TABLE IF NOT EXIST ELSE UPDATE Records
 		$attLog = $this->dbmodel->getSingleInfo('tcAttendance', '*', 'dateToday="'.$today.'"');
+				
 		if(count($attLog)==0){
 			$ins['dateToday'] = $today;
 			$ins['scheduled'] = $scheduled;
@@ -208,7 +209,6 @@ class Timecard extends MY_Controller {
 			
 			$this->cronDailyAttendanceRecord();////CALL TO PUBLISH AND UPDATE RECORDS
 		}
-		exit;		
 	}
 	
 	

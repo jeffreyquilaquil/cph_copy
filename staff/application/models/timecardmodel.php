@@ -567,9 +567,11 @@ class Timecardmodel extends CI_Model {
 			$insArr['empID_fk'] = $empID;
 			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
 							
-			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not
-			if(empty($logID))
-				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);
+			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'"'); //check if not exist insert if not	
+			if(is_numeric($logID))
+				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
+			else
+				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);				
 		}
 		
 		
