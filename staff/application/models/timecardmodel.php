@@ -159,9 +159,8 @@ class Timecardmodel extends CI_Model {
 			$conditionLeave .= ')';
 		}
 		
-		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
-		
-		$leavestrend = strtotime($dateEnd.' +1 day');
+		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
 			$end = date('Y-m-d H:i:s', strtotime($leave->leaveEnd));								
@@ -172,8 +171,10 @@ class Timecardmodel extends CI_Model {
 							 
 				if(isset($dayArr[$dayj]['sched']) && strtotime($start)>=$strdateStart && (strtotime($leaveEnd)<=$leavestrend || strtotime($start)<=$leavestrend)){
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
-					$dayArr[$dayj]['leaveID'] = $leave->leaveID;					
-					$dayArr[$dayj]['leaveStatus'] = $leave->status;					
+					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
+					$dayArr[$dayj]['leaveStatus'] = $leave->status;
+					$dayArr[$dayj]['leaveStatusText'] = $this->textM->getLeaveStatusText($leave->status, $leave->iscancelled, $leave->isrefiled);
+					
 					if($leave->status==1){
 						if($leave->totalHours==4) $dayArr[$dayj]['schedHour'] = 4;
 						else $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];

@@ -112,8 +112,7 @@
 		////LEAVE DETAILS
 		if($dataLog->leaveID_fk>0){
 			$leaveTypeArr = $this->textM->constantArr('leaveType');
-			$leaveStatusArr = $this->textM->constantArr('leaveStatus');
-			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'"');
+			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'"');
 						
 			if(count($leave)>0){
 				if($leave->leaveType==4 && $leave->status==1){
@@ -126,7 +125,7 @@
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
-					echo '<tr><td width="15%">Status</td><td><b>'.ucfirst($leaveStatusArr[$leave->status]).'</b> '.(($leave->leaveType==4)?'<span class="errortext">Hours paid based on offset schedules</span>':'').'</td></tr>';
+					echo '<tr><td width="15%">Status</td><td><b>'.ucfirst($this->textM->getLeaveStatusText($leave->status, $leave->iscancelled, $leave->isrefiled)).'</b> '.(($leave->leaveType==4)?'<span class="errortext">Hours paid based on offset schedules</span>':'').'</td></tr>';
 					echo '<tr><td>Leave Type</td><td>'.$leaveTypeArr[$leave->leaveType].'</td></tr>';
 					
 					if($today==date('Y-m-d', strtotime($leave->leaveStart)) || (strtotime($today)>=strtotime($leave->leaveStart) && strtotime($today)<=strtotime($leave->leaveEnd))){
