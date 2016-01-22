@@ -60,6 +60,9 @@ class Timecard extends MY_Controller {
 		$todaySmall = date('j');
 		$scheduled = 0;
 		
+		//$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'empID=309');	
+		
+		
 		//CHECK FOR STAFFS TODAY SCHEDULES
 		$staffID = '';
 		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'" AND showStatus=1');
@@ -71,9 +74,13 @@ class Timecard extends MY_Controller {
 		}
 				
 		//STAFF SCHEDULES		
-		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);			
+		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);	
+		
+	
+		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
+			
 			$logIDD = $this->timeM->insertToDailyLogs($staff->empID, $today, $schedToday); //inserting to tcStaffLogPublish table
 			if(!empty($logIDD)) $scheduled++;
 		}

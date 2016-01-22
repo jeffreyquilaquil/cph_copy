@@ -123,8 +123,7 @@ class Timecardmodel extends CI_Model {
 			
 			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
 				unset($dayArr[$day]['sched']);
-			}
-				
+			}				
 		}
 						
 		//check for custom schedule. This will show schedule even if holiday with work
@@ -140,7 +139,6 @@ class Timecardmodel extends CI_Model {
 				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
 			}else if($yeye->status==0) unset($dayArr[$d]);		
 		}
-		
 		
 		//CHECK FOR LEAVES
 		if($dateStart==$dateEnd){
@@ -245,7 +243,7 @@ class Timecardmodel extends CI_Model {
 						
 						if($day['leave']==$start.' - '.$firstend4 || $day['leave']==$start.' - '.$firstend5){
 							$dayArr[$k]['sched'] = $secondstart4.' - '.$end;
-							if($dayArr[$k]['schedHour']==4) $dayArr[$k]['schedHour'] = 8;
+							if($dayArr[$k]['schedHour']==4 || $dayArr[$k]['leaveStatus']==1) $dayArr[$k]['schedHour'] = 8;
 							else $dayArr[$k]['schedHour'] = 4;
 						}else if($day['leave']==$secondstart4.' - '.$end || $day['leave']==$secondstart5.' - '.$end){
 							$dayArr[$k]['sched'] = $start.' - '.$firstend4;
@@ -441,38 +439,42 @@ class Timecardmodel extends CI_Model {
 		$condition .= ')';
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk, staffHolidaySched', $condition, 'LEFT JOIN staffs ON empID=empID_fk'); //include leave status for approve with pay and not an offset set status=4 if offset
-					
+							
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
+				$pubHours = 0;
+				
 				$upArr = array();
 				if($q->leaveID_fk>0){					
 					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND (status=1 OR status=2)');	
 									
 					if(count($leave)>0){
 						if($leave->leaveType==4 || $leave->status==2){
-							$upArr['publishTimePaid'] = 0; ///for offset
+							$pubHours = 0; ///for offset
 						}else if($leave->totalHours==4){
-							$upArr['publishTimePaid'] = 4; ///for half day leave
+							$pubHours = 4; ///for half day leave
 						}else if($leave->totalHours%8==0){
-							$upArr['publishTimePaid'] = 8; //for whole day leave
+							$pubHours = 8; //for whole day leave
 						}else{ ///if leave is a day and with half day							
-							if($leave->leaveEnd<$q->schedOut || $leave->leaveStart>$q->schedIn) $upArr['publishTimePaid'] = 4;
-							else $upArr['publishTimePaid'] = 8;
+							if($leave->leaveEnd<$q->schedOut || $leave->leaveStart>$q->schedIn) $pubHours = 4;
+							else $pubHours = 8;
 						}
 					}
-				}else{
-					if($q->timeIn==$time00 && $q->timeOut==$time00) $upArr['publishTimePaid'] = 0;
-					else{
-						if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $upArr['publishTimePaid'] = $q->schedHour - $q->offsetHour; //if offset and late 
-						else $upArr['publishTimePaid'] = $q->schedHour;
-						
-						$upArr['publishND'] = $this->payrollM->getNightDiffTime($q);
-					}
-				}				
-												
-				if(isset($upArr['publishTimePaid'])){					
+				}
+
+				if($q->timeIn==$time00 && $q->timeOut==$time00) $pubHours = 0;
+				else{
+					if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $pubHours = ($q->schedHour - $q->offsetHour); //if offset and late 
+					else $pubHours = $q->schedHour;
+					
+					$upArr['publishND'] = $this->payrollM->getNightDiffTime($q);
+				}
+							
+				if($pubHours>0){
+					$upArr['publishTimePaid'] = $pubHours;
+					
 					//CHECK FOR HOLIDAY
 					$holiday = $this->payrollM->isHoliday($q->slogDate);
 					if($holiday!=false){
@@ -483,7 +485,7 @@ class Timecardmodel extends CI_Model {
 						}
 						if($showHoliday==true)
 							$upArr['publishHO'] = $this->payrollM->getHolidayHours($holiday['date'], $q);
-					}					
+					}	
 					
 					$upArr['datePublished'] = $dateToday;
 					$upArr['publishBy'] = 'system';					
@@ -575,9 +577,17 @@ class Timecardmodel extends CI_Model {
 			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
 										
 			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'" AND showStatus=1'); //check if not exist insert if not	
-			if(is_numeric($logID))
+			if(is_numeric($logID)){
+				//remove publish details
+				$insArr['publishTimePaid'] = 0;
+				$insArr['publishDeduct'] = 0;
+				$insArr['publishND'] = 0;
+				$insArr['datePublished'] = '0000-00-00 00:00:00';
+				$insArr['publishBy'] = '';
+				$insArr['publishNote'] = '';				
+				
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
-			else
+			}else
 				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);				
 		}
 		
