@@ -319,7 +319,7 @@
 										echo ' <span class="errortext">OVER BREAK ('.trim($this->textM->convertTimeToMinHours($overSec)).')</span>';
 										echo '<br/><b class="errortext">Hour Deduction: '.$overHour.' '.(($overHour>1)?'Hours':'Hour').'</b>';
 									} 
-									//if($dataLog->numBreak%2!=0) echo ' <span class="errortext">MISSING BREAK IN</span>';							
+									if($dataLog->numBreak%2!=0 && date('Y-m-d H:i:s')>date('Y-m-d H:i:s', strtotime($dataLog->timeBreak.' '.$OUTL8))) echo ' <span class="errortext">MISSING BREAK IN</span>';							
 								}
 							}
 						echo '</td>';
