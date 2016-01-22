@@ -1262,6 +1262,35 @@ class Staffmodel extends CI_Model {
 		$pdf->Output('nte_written'.$row->nteID.'.pdf', $type);
 	}
 	
+	
+	function updatePublishLog($leaveID){
+		$dateToday = date('Y-m-d H:i:s');
+		$leave = $this->dbmodel->getSingleInfo('staffLeaves', '*', 'leaveID='.$leaveID);
+		
+		if(!empty($leave)){
+			if($dateToday>=$leave->leaveStart){ //update tcStaffLogPublish for previous dates	
+				$this->dbmodel->updateQueryText('tcStaffLogPublish', 
+					'leaveID_fk="'.$leaveID.'", publishTimePaid=0, publishDeduct=0, publishND=0, datePublished="0000-00-00 00:00:00", publishBy="", publishNote=""', 
+					'empID_fk="'.$leave->empID_fk.'" AND (schedIn BETWEEN "'.$leave->leaveStart.'" AND "'.$leave->leaveEnd.'" OR schedOut BETWEEN "'.$leave->leaveStart.'" AND "'.$leave->leaveEnd.'")');
+			}
+			
+			if(!empty($leave->offsetdates)){
+				$tawa = explode('|', rtrim($leave->offsetdates, '|'));
+				
+				foreach($tawa AS $ta){
+					$smile = explode(',', $ta);
+					$start = date('Y-m-d H:i:s', strtotime($smile[0].' -1 day'));
+					
+					if($dateToday>=$start){
+						//remove publish details						
+						$this->dbmodel->updateQueryText('tcStaffLogPublish', 
+							'leaveID_fk="'.$leaveID.'", publishTimePaid=0, publishDeduct=0, publishND=0, datePublished="0000-00-00 00:00:00", publishBy="", publishNote=""', 
+							'empID_fk="'.$leave->empID_fk.'" AND slogDate BETWEEN "'.$start.'" AND "'.$smile[1].':00'.'"');
+					}
+				}
+			}
+		}
+	}
 }
 
 ?>

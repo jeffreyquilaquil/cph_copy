@@ -1719,6 +1719,7 @@ class Staff extends MY_Controller {
 						$insArr['supDocs'] = $_POST['fromUploaded'];
 									
 					$insID = $this->dbmodel->insertQuery('staffLeaves', $insArr);
+					$this->staffM->updatePublishLog($insID); ///UPDATING tcStaffLogPublish
 					
 					if(isset($_FILES) && !empty($_FILES['supDocs'])){	
 						$insDoc = '';

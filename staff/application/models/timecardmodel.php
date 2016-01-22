@@ -493,6 +493,7 @@ class Timecardmodel extends CI_Model {
 			$this->timeM->cntUpdateAttendanceRecord($k);
 		}
 		
+		echo 'Updated';
 		exit;		
 	}
 	
