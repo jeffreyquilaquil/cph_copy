@@ -379,14 +379,7 @@ class Timecard extends MY_Controller {
 					if(isset($leave['pendingleave'])) $displayArray[$datej]['pendingleave'] = $leave['pendingleave']; //for pending leave
 					if(isset($leave['offset'])) $displayArray[$datej]['offset'] = $leave['offset']; //for offset
 					if(isset($leave['pendingoffset'])) $displayArray[$datej]['pendingoffset'] = $leave['pendingoffset']; //for pending offset
-					if(isset($leave['leaveStatusText'])){
-						$displayArray[$datej]['leaveStatusText'] = $leave['leaveStatusText']; //for pending offset
-						if(isset($leave['leaveStatusText']) && $leave['leaveStatusText']=='Additional Information Required'){
-							$displayArray[$datej]['pendingleave'] = $leave['leave'];
-							unset($displayArray[$datej]['leave']);
-						}
-											
-					} 
+					if(isset($leave['leaveStatusText'])) $displayArray[$datej]['leaveStatusText'] = $leave['leaveStatusText']; //leave status text
 				}
 			}
 				
@@ -701,7 +694,7 @@ class Timecard extends MY_Controller {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-								
+										
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){

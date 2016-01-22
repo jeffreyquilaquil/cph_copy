@@ -174,7 +174,7 @@ class Timecardmodel extends CI_Model {
 					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
 					$dayArr[$dayj]['leaveStatus'] = $leave->status;
 					$dayArr[$dayj]['leaveStatusText'] = $this->textM->getLeaveStatusText($leave->status, $leave->iscancelled, $leave->isrefiled);
-					
+										
 					if($leave->status==1){
 						if($leave->totalHours==4) $dayArr[$dayj]['schedHour'] = 4;
 						else $dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'];
@@ -184,7 +184,12 @@ class Timecardmodel extends CI_Model {
 					else $leaveSched = date('h:i a', strtotime($start)).' - '.date('h:i a', strtotime($leaveEnd));
 					
 					if($leave->status==1 || $leave->status==2) $dayArr[$dayj]['leave'] = $leaveSched;
-					else $dayArr[$dayj]['pendingleave'] = $leaveSched;					
+					else $dayArr[$dayj]['pendingleave'] = $leaveSched;	
+
+					if($dayArr[$dayj]['leaveStatusText']=='Additional Information Required'){
+						$dayArr[$dayj]['pendingleave'] = $leaveSched;
+						unset($dayArr[$dayj]['leave']);
+					}
 				}
 				
 				$start = date('Y-m-d H:i:s', strtotime($start.' +1 day'));
