@@ -287,22 +287,7 @@ class Emailmodel extends CI_Model {
 		$from = 'careers.cebu@tatepublishing.net';
 		$to = 'dayshift.cebu@tatepublishing.net,nightshift.cebu@tatepublishing.net';
 		$cc = 'leaders.cebu@tatepublishing.net';
-		
-		///THIS IS FOR TEST
-		if($this->config->item('timeCardTest')==true){
-			$to = '';
-			$cc = 'hr.cebu@tatepublishing.net,accounting.cebu@tatepublishing.net';
-			$testUsersID = $this->commonM->getTestUsers();
-			$emails = $this->dbmodel->getQueryResults('staffs', 'email', 'empID IN ('.implode(',', $testUsersID).')');
-			
-			if(count($emails)>0){
-				foreach($emails AS $e)
-					$to .= $e->email.',';
 				
-				$to = rtrim($to, ',');
-			}
-		}
-		
 		$body = '<p>Hi All,</p>';
 		$body .= '<p>Please be reminded to double-check your time card logs on "<a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>" > "<a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a>"</a> page in CareerPH. Any status that does not equal to "Published to Payroll (Number of Hours)" from <b>'.$period.'</b> may lead to deductions. So even if you have already passed your forms through careerph.tatepublishing.net, please follow up with us until ALL your time logs show "Published to Payroll (Number of Hours)".</p>';
 		$body .= '<p>If you have dates where your attendance is not published to payroll, please send message to HR by clicking "Request Update" on the date options or email <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> AND CC:<a href="mailto:accounting.cebu@tatepublishing.net">accounting.cebu@tatepublishing.net</a> on or before <b>'.$deadline.'</b> to ensure that you do not have any payroll discrepancies for the upcoming pay day.</p>';
