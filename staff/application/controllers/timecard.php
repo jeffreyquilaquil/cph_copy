@@ -60,9 +60,6 @@ class Timecard extends MY_Controller {
 		$todaySmall = date('j');
 		$scheduled = 0;
 		
-		//$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'empID=309');	
-		
-		
 		//CHECK FOR STAFFS TODAY SCHEDULES
 		$staffID = '';
 		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'" AND showStatus=1');
