@@ -437,20 +437,22 @@ class Timecardmodel extends CI_Model {
 		$condition .= ' (timeIn="'.$time00.'" AND timeOut="'.$time00.'" AND timeBreak="00:00:00" AND DATE_ADD(schedOut, INTERVAL '.$this->timeM->timesetting('outLate').')<"'.date('Y-m-d H:i:s').'")';
 		
 		$condition .= ')';
+	
 		
 		$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, schedHour, offsetHour, schedIn, schedOut, timeIn, timeOut, leaveID_fk, staffHolidaySched', $condition, 'LEFT JOIN staffs ON empID=empID_fk'); //include leave status for approve with pay and not an offset set status=4 if offset
-							
+									
 		if(count($query)>0){
 			$dateToday = date('Y-m-d H:i:s');
 			
 			foreach($query AS $q){
+				$runpublish = true;
 				$pubHours = 0;
 				
 				$upArr = array();
 				if($q->leaveID_fk>0){					
-					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND (status=1 OR status=2)');	
+					$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, empID_fk, leaveType, leaveStart, iscancelled, leaveEnd, status, totalHours', 'leaveID="'.$q->leaveID_fk.'" AND iscancelled!=1 AND (leaveStart<="'.$q->schedIn.'") AND (status=1 OR status=2)');
 									
-					if(count($leave)>0){
+					if(count($leave)>0 && $leave->iscancelled!=4){
 						if($leave->leaveType==4 || $leave->status==2){
 							$pubHours = 0; ///for offset
 						}else if($leave->totalHours==4){
@@ -461,18 +463,18 @@ class Timecardmodel extends CI_Model {
 							if($leave->leaveEnd<$q->schedOut || $leave->leaveStart>$q->schedIn) $pubHours = 4;
 							else $pubHours = 8;
 						}
-					}
+					}else $runpublish = false;
 				}
 
-				if($q->timeIn==$time00 && $q->timeOut==$time00) $pubHours = 0;
+				if($q->timeIn==$time00 && $q->timeOut==$time00) $pubHours += 0;
 				else{
-					if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $pubHours = ($q->schedHour - $q->offsetHour); //if offset and late 
-					else $pubHours = $q->schedHour;
+					if($q->offsetHour>0 && ($q->timeIn>$q->schedIn || $q->timeOut<$q->schedOut)) $pubHours += ($q->schedHour - $q->offsetHour); //if offset and late 
+					else $pubHours += $q->schedHour;
 					
 					$upArr['publishND'] = $this->payrollM->getNightDiffTime($q);
 				}
-							
-				if($pubHours>0){
+					
+				if($runpublish==true){
 					$upArr['publishTimePaid'] = $pubHours;
 					
 					//CHECK FOR HOLIDAY
@@ -488,7 +490,7 @@ class Timecardmodel extends CI_Model {
 					}	
 					
 					$upArr['datePublished'] = $dateToday;
-					$upArr['publishBy'] = 'system';					
+					$upArr['publishBy'] = 'system';	
 					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$q->slogID), $upArr);
 				
 					$updateArray[$q->slogDate] = true;
@@ -503,6 +505,18 @@ class Timecardmodel extends CI_Model {
 		
 		echo 'Updated';
 		exit;		
+	}
+	
+	public function unpublishedLogs($slogID, $removePub=array()){
+		//remove publish details
+		$removePub['publishTimePaid'] = 0;
+		$removePub['publishDeduct'] = 0;
+		$removePub['publishND'] = 0;
+		$removePub['datePublished'] = '0000-00-00 00:00:00';
+		$removePub['publishBy'] = '';
+		$removePub['publishNote'] = '';
+		
+		$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$slogID), $removePub); ///REMOVE PUBLISH DETAILS		
 	}
 	
 	
@@ -604,6 +618,14 @@ class Timecardmodel extends CI_Model {
 		$ins['updatedBy'] = $this->user->username;
 		$ins['dateUpdated'] = $ins['dateRequested'];
 		$this->dbmodel->insertQuery('tcTimelogUpdates', $ins);
+	}
+	
+	public function updateStaffLog($today, $empID){
+		if($today<=date('Y-m-d')){
+			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $empID, true);
+			$logIDD = $this->timeM->insertToDailyLogs($empID, $today, $schedToday); //inserting to tcStaffLogPublish table
+			$this->timeM->cntUpdateAttendanceRecord($today);
+		}
 	}
 	
 	

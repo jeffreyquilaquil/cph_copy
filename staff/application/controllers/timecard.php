@@ -60,6 +60,9 @@ class Timecard extends MY_Controller {
 		$todaySmall = date('j');
 		$scheduled = 0;
 		
+		//$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'empID=309');	
+		
+		
 		//CHECK FOR STAFFS TODAY SCHEDULES
 		$staffID = '';
 		$querySchd = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'empID_fk', 'slogDate="'.$today.'" AND showStatus=1');
@@ -72,8 +75,6 @@ class Timecard extends MY_Controller {
 				
 		//STAFF SCHEDULES		
 		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);	
-		
-	
 		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
@@ -1004,16 +1005,7 @@ class Timecard extends MY_Controller {
 					$message .= '<br/>Prev Published By: '.$info->publishBy;
 				}				
 				$this->timeM->addToLogUpdate($id, $data['today'], $message);
-				
-				//remove publish details
-				$removePub['publishTimePaid'] = 0;
-				$removePub['publishDeduct'] = 0;
-				$removePub['publishND'] = 0;
-				$removePub['datePublished'] = '0000-00-00 00:00:00';
-				$removePub['publishBy'] = '';
-				$removePub['publishNote'] = '';
-				
-				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), $removePub); ///REMOVE PUBLISH DETAILS
+				$this->timeM->unpublishedLogs($_POST['slogID']);
 				$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
 				exit;
 			}else if($_POST['submitType']=='doneChanging'){
