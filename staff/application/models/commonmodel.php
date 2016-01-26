@@ -208,7 +208,7 @@ class Commonmodel extends CI_Model {
 			}			
 			$cnt = $this->dbmodel->getSingleField('tcStaffLogPublish', 
 					'COUNT(slogID)', 
-					'publishBy="" AND slogDate!="'.date('Y-m-d').'"'.$condUsers, 
+					'publishBy="" AND showStatus=1 AND slogDate!="'.date('Y-m-d').'"'.$condUsers, 
 					'LEFT JOIN staffs ON empID=empID_fk');
 		}else if($type=='timelogRequests'){
 			$condition = '';
