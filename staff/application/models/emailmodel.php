@@ -372,7 +372,7 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>Thanks,</p>';
 		$body .= '<p>Tate Publishing and Enterprises (Philippines), Inc.</p>';		
 		
-		$this->emailM->sendEmail( $from, $to, $subject, $body,'CareerPH', $cc);
+		//$this->emailM->sendEmail( $from, $to, $subject, $body,'CareerPH', $cc);
 	}
 	
 	public function sendWrittenWarningEmail($row, $details, $insID){
