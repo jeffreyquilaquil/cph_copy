@@ -354,6 +354,9 @@
 			echo '</table>';
 		}
 		
+		echo '<pre>';
+		print_r($dataLog);
+		echo '</pre>';
 		
 		////THIS IS FOR PUBLISHING LOG
 		echo '<form id="formpublish" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
@@ -362,7 +365,7 @@
 			echo '<tr><td width="15%">Base Paid Hours</td><td>'.$dataLog->schedHour.' '.(($dataLog->schedHour>1)?'Hours':'Hour').'</td></tr>';
 			if($dataLog->offsetHour>0){
 				echo '<tr><td>Offset Paid Hours</td><td>'.$dataLog->offsetHour.' '.(($dataLog->offsetHour>1)?'Hours':'Hour').' '.((isset($offsetinvalid))?'<span class="errortext">Offset forfeited</span>':'').'</td></tr>';
-				if(isset($offsetinvalid)) $deductionHour += $dataLog->offsetHour;
+				//if(isset($offsetinvalid)) $deductionHour += $dataLog->offsetHour;
 			}
 				
 			if($deductionHour>0)
