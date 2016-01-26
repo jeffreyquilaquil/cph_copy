@@ -4,7 +4,8 @@ class Staffmodel extends CI_Model {
 	
     function __construct() {
         // Call the Model constructor
-        parent::__construct();			
+        parent::__construct();		
+		$this->load->model('timecardmodel', 'timeM');
     }
 			
 	function compareResults($new, $orig){
@@ -1265,13 +1266,15 @@ class Staffmodel extends CI_Model {
 	
 	function updatePublishLog($leaveID){
 		$dateToday = date('Y-m-d H:i:s');
-		$leave = $this->dbmodel->getSingleInfo('staffLeaves', '*', 'leaveID='.$leaveID);
-		
+		$leave = $this->dbmodel->getSingleInfo('staffLeaves', '*', 'leaveID='.$leaveID); 
+				
 		if(!empty($leave)){
 			if($dateToday>=$leave->leaveStart){ //update tcStaffLogPublish for previous dates	
 				$this->dbmodel->updateQueryText('tcStaffLogPublish', 
 					'leaveID_fk="'.$leaveID.'", publishTimePaid=0, publishDeduct=0, publishND=0, datePublished="0000-00-00 00:00:00", publishBy="", publishNote=""', 
 					'empID_fk="'.$leave->empID_fk.'" AND (schedIn BETWEEN "'.$leave->leaveStart.'" AND "'.$leave->leaveEnd.'" OR schedOut BETWEEN "'.$leave->leaveStart.'" AND "'.$leave->leaveEnd.'")');
+				
+				$this->timeM->updateStaffLog($leave->leaveStart, $leave->empID_fk);
 			}
 			
 			if(!empty($leave->offsetdates)){
@@ -1280,17 +1283,20 @@ class Staffmodel extends CI_Model {
 				foreach($tawa AS $ta){
 					$smile = explode(',', $ta);
 					$start = date('Y-m-d H:i:s', strtotime($smile[0].' -1 day'));
-					
+										
 					if($dateToday>=$start){
 						//remove publish details						
 						$this->dbmodel->updateQueryText('tcStaffLogPublish', 
 							'leaveID_fk="'.$leaveID.'", publishTimePaid=0, publishDeduct=0, publishND=0, datePublished="0000-00-00 00:00:00", publishBy="", publishNote=""', 
 							'empID_fk="'.$leave->empID_fk.'" AND slogDate BETWEEN "'.$start.'" AND "'.$smile[1].':00'.'"');
+						
+						$this->timeM->updateStaffLog($start, $leave->empID_fk);
 					}
 				}
 			}
 		}
 	}
+	
 }
 
 ?>

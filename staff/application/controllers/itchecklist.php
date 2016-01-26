@@ -5,6 +5,7 @@ class Itchecklist extends MY_Controller {
 	public function __construct(){
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
+		$this->load->model('staffmodel', 'staffM');
 	}
 		
 	public function index(){
@@ -230,5 +231,9 @@ class Itchecklist extends MY_Controller {
 		
 		$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$slogID), $removePub); ///REMOVE PUBLISH DETAILS
 		$this->timeM->cntUpdateAttendanceRecord($today); //UPDATE ATTENDANCE RECORDS
+	}
+	
+	public function internet(){
+		$this->staffM->updatePublishLog(3835);
 	}
 }

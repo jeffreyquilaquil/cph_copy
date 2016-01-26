@@ -609,12 +609,7 @@ class Staff extends MY_Controller {
 						
 						$upFile = $_FILES['pfilei'];
 						$cntUp = count($upFile['name']);
-						
-						echo '<pre>';
-						print_r($upFile);
-						echo '</pre>';
-						exit;
-						
+												
 						if(empty($upFile['name'][0])){
 							$err = 'No file uploaded.';
 						}else{
@@ -1818,7 +1813,7 @@ class Staff extends MY_Controller {
 								$usernote .= ' This is waiting for HR approval.';
 							
 								$hrnote = '<b>'.ucfirst(strtolower($data['leaveStatusArr'][$updateArr['status']])).'</b> '.$data['row']->name.'\'s leave request. This is waiting for your approval. Click <a href="'.$this->config->base_url().'staffleaves/'.$data['row']->leaveID.'/" class="iframe">here</a> to take HR action.';	
-							}							
+							}
 						}else if($_POST['submitType']=='hr'){	
 							if($_POST['status']==4){ //additional info required
 								$updateArr['iscancelled'] = 4;
@@ -1936,7 +1931,7 @@ class Staff extends MY_Controller {
 											Total Number of Hours: '.$data['row']->totalHours.'</p>
 											<p>Thank you.</p><br/>CareerPH';
 								$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing', 'CareerPH - Cancelled Leave Without Pay', $cancelMsg, 'CareerPH Auto-Email');
-							} */							
+							} */	
 						}else if($_POST['submitType']=='resubmit'){
 							$updateArr['status'] = 0;	
 							$actby = 'Resubmit your leave request. ';
@@ -2145,7 +2140,8 @@ class Staff extends MY_Controller {
 						}
 												
 						if(count($updateArr)>0){
-							$this->dbmodel->updateQuery('staffLeaves', array('leaveID'=>$data['row']->leaveID), $updateArr);
+							$this->dbmodel->updateQuery('staffLeaves', array('leaveID'=>$data['row']->leaveID), $updateArr);							
+							$this->staffM->updatePublishLog($data['row']->leaveID); ///UPDATE STAFF LOGS
 							
 							if(isset($_POST['submitType']) && $_POST['submitType']=='maternityresume')							
 								header('Location:'.$_SERVER['REQUEST_URI'].'updated/maternityresume/');

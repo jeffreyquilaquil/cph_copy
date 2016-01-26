@@ -112,7 +112,7 @@
 		////LEAVE DETAILS
 		if($dataLog->leaveID_fk>0){
 			$leaveTypeArr = $this->textM->constantArr('leaveType');
-			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'"');
+			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours, offsetdates', 'leaveID="'.$dataLog->leaveID_fk.'" AND (status!=3 AND status!=5)');
 						
 			if(count($leave)>0){
 				if($leave->leaveType==4 && $leave->status==1){

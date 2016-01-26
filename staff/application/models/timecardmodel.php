@@ -537,21 +537,21 @@ class Timecardmodel extends CI_Model {
 		$logID = '';
 		$insArr = array();
 		$todaySmall = date('j', strtotime($today));
-			
+		
 		if(isset($schedToday[$todaySmall])){ 		
 			$sArr = $schedToday[$todaySmall];	
 			
 			if(isset($sArr['sched'])){				
 				if($sArr['sched']=='On Leave' && isset($sArr['leave'])) $schedArr = $this->timeM->getSchedArr($today, $sArr['leave']);
 				else $schedArr = $this->timeM->getSchedArr($today, $sArr['sched']);
-					
+									
 				if(isset($schedArr['start']) && isset($schedArr['end']) && !isset($schedArr['suspend'])){
 					$insArr['schedIn'] = $schedArr['start'];
 					$insArr['schedOut'] = $schedArr['end'];
 					$insArr['schedHour'] = $sArr['schedHour'];
 				}
 			}
-			
+						
 			//THIS IS TO CHECK IF THERE IS AN OFFSET
 			if(isset($sArr['offset'])){
 				$offArr = $this->timeM->getSchedArr($today, $sArr['offset']);
@@ -589,7 +589,7 @@ class Timecardmodel extends CI_Model {
 			$insArr['slogDate'] = $today;
 			$insArr['empID_fk'] = $empID;
 			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
-										
+				
 			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'" AND showStatus=1'); //check if not exist insert if not	
 			if(is_numeric($logID)){
 				//remove publish details
@@ -598,8 +598,7 @@ class Timecardmodel extends CI_Model {
 				$insArr['publishND'] = 0;
 				$insArr['datePublished'] = '0000-00-00 00:00:00';
 				$insArr['publishBy'] = '';
-				$insArr['publishNote'] = '';				
-				
+				$insArr['publishNote'] = '';		
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
 			}else
 				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);				
@@ -621,6 +620,8 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function updateStaffLog($today, $empID){
+		$today = date('Y-m-d', strtotime($today));
+		
 		if($today<=date('Y-m-d')){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $empID, true);
 			$logIDD = $this->timeM->insertToDailyLogs($empID, $today, $schedToday); //inserting to tcStaffLogPublish table

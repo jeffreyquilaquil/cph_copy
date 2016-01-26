@@ -90,7 +90,7 @@ class Payrollmodel extends CI_Model {
 	*****/
 	public function getPaymentItemsForPayroll($info){
 		$kaonNapud = array();
-		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1, $info->payPeriodStart, $info->payPeriodEnd);
+		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1, '', $info->payPeriodStart, $info->payPeriodEnd);
 			
 		foreach($dessertItems AS $cake){
 			$eat = true;

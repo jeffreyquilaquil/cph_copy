@@ -37,20 +37,7 @@ class Timecard extends MY_Controller {
 				$this->$method($data);
 		}	
 	}
-		
-	public function timetest(){	
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-09');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-10');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-11');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-12');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-13');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-14');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-16');
-		$this->timeM->cntUpdateAttendanceRecord('2015-11-17');
-		//$this->timeM->publishLogs();
-		exit;
-	}
-		
+				
 	//runs everyday at 12am
 	//get staff schedules and insert to tcStaffLogPublish
 	//insert to tcAttendance for summary of results today
@@ -1423,7 +1410,7 @@ class Timecard extends MY_Controller {
 				$data['dataItemInfo'] = (object) $data['dataItemInfo'];	
 			}else{
 				if(isset($_GET['staffPayID'])){
-					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.*, payName, payType, payCDto, payCategory, 	mainItem, tcPayslipItems.payAmount AS prevAmount', 'payStaffID="'.$_GET['staffPayID'].'"', 'LEFT JOIN tcPayslipItems ON payID=payID_fk');
+					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.*, payName, payType, payCDto, payCategory, mainItem, tcPayslipItems.payAmount AS prevAmount', 'payStaffID="'.$_GET['staffPayID'].'"', 'LEFT JOIN tcPayslipItems ON payID=payID_fk');
 				}else{
 					$data['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="'.$_GET['payID'].'"');	
 				}				
