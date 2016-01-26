@@ -1210,7 +1210,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(128, 245.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
 		
 		$pdf->Output('lastpay.pdf', 'I');		
-	}
+	}	
 	
 }
 ?>

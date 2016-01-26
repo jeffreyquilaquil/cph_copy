@@ -979,12 +979,14 @@ class Timecard extends MY_Controller {
 				$pubArr['datePublished'] = date('Y-m-d H:i:s');
 				$pubArr['publishBy'] = $this->user->username;
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$_POST['slogID']), $pubArr);
+				$this->emailM->sendEmailEditedPayrollLogs($data['today'], $data['visitID']);
 				
 				//insert to tcTimelogUpdates
 				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');				
 			}else if($_POST['submitType']=='unpublish'){
 				//insert to tcTimelogUpdates
 				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');	
+				
 				$message = '<b>Unpublished log.</b>';
 				if(count($info)>0){
 					$message .= '<br/>Details:<br/>Time Paid: '.$info->publishTimePaid;
@@ -993,6 +995,7 @@ class Timecard extends MY_Controller {
 				}				
 				$this->timeM->addToLogUpdate($id, $data['today'], $message);
 				$this->timeM->unpublishedLogs($_POST['slogID']);
+				$this->emailM->sendEmailEditedPayrollLogs($data['today'], $data['visitID']);
 				$this->timeM->cntUpdateAttendanceRecord($data['today']); //UPDATE ATTENDANCE RECORDS
 				exit;
 			}else if($_POST['submitType']=='doneChanging'){

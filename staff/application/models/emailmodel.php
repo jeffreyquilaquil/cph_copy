@@ -372,7 +372,7 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>Thanks,</p>';
 		$body .= '<p>Tate Publishing and Enterprises (Philippines), Inc.</p>';		
 		
-		//$this->emailM->sendEmail( $from, $to, $subject, $body,'CareerPH', $cc);
+		$this->emailM->sendEmail( $from, $to, $subject, $body,'CareerPH', $cc);
 	}
 	
 	public function sendWrittenWarningEmail($row, $details, $insID){
@@ -414,5 +414,28 @@ class Emailmodel extends CI_Model {
 		
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $info->sEmail, $subject, $body,'CareerPH');
 	}
+	
+	/***
+		Check if there is already payroll. Send email to regenerate payroll
+		$type = 'unpublished'
+	***/
+	public function sendEmailEditedPayrollLogs($today, $empID){		
+		$info = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, CONCAT(fname," ",lname) AS name', 
+				'empID_fk="'.$empID.'" AND status!=3 AND pstatus=1 AND "'.$today.'" BETWEEN payPeriodStart AND payPeriodEnd', 
+				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
+						
+		if(!empty($info)){
+			$subject = 'Updated Logs';
+			$body = 'Hi,<br/><br/>';
+			$body .= 'Payroll for '.$info->payPeriodStart.' to '.$info->payPeriodEnd.' has been generated and logs of '.$info->name.' on '.$today.' has been updated . Please check and regenerate payslip if needed.<br/>';
+			$body .= 'Click <a href="'.$this->config->base_url().'timecard/'.$empID.'/viewlogdetails/?d='.$today.'">here</a> to view log details.<br/>';
+			$body .= 'Click <a href="'.$this->config->base_url().'timecard/'.$empID.'/payslipdetail/'.$info->payslipID.'/">here</a> to view payslip details.<br/>';
+			$body .= '<br/>Thanks,<br/>CareerPH';
+			
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', $subject, $body, 'CareerPH');
+		}
+		
+	}
+	
 }
 ?>
