@@ -47,7 +47,7 @@ if($hosturl=='careerph.tatepublishing.net'){
 	define('RECAPTCHA_PUBLIC_KEY', '6LcCEf8SAAAAAL2vBZjOw7cnsvKzOt-Cz3JX5YGg');
 	define('RECAPTCHA_PRIVATE_KEY', '6LcCEf8SAAAAAJEqr_vkLRIE3vjylf8CiIvgxgQe');
 }else{
-	define("HOME_URL","http://129.3.252.99/".PROJECT);
+	define("HOME_URL","http://10.100.0.1/".PROJECT);
 	define('DIR_DOWNLOAD', $_SERVER['DOCUMENT_ROOT'].'/'.PROJECT);
 	define('HTTP_SERVER', 'http://'.$_SERVER['HTTP_HOST'].'/'.PROJECT);
 	define('RECAPTCHA_PUBLIC_KEY', '6LdUdAcTAAAAAJi7BeDbFmj6pj8ZCZUsIe4tJ_6N');

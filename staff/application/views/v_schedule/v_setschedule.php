@@ -29,7 +29,7 @@
 	<table class="tableInfo">
 		<tr>
 			<td width="20%">Start Date</td>
-			<td><input type="text" name="startDate" class="forminput datepick" required/></td>
+			<td><input type="text" name="startDate" value="<?= ((isset($_GET['d']))?date('F d, Y', strtotime($_GET['d'])):'') ?>" class="forminput datepick" required/></td>
 		</tr>
 		<tr>
 			<td>End Date</td>

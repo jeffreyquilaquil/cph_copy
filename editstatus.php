@@ -969,6 +969,14 @@
 				}else if($info['process']==6 && $info['processStat']==0){ //HIRED AND CLOSED STATUS ?>	
 					<div>
 						<b>Applicant is successfully hired on <?= date('F d, Y', strtotime($info['hiredDate'])) ?>. Start date is on <?= date('F d, Y', strtotime($info['startDate'])) ?>.<br/>An email has been sent to careerph.tatepublishing.net, immediate supervisor, IT, and the Job Requisition requester.</b>
+						<br/><br/>
+					<?php
+						$empID = $db->selectSingleQuery('staffs', 'empID' , 'fname="'.$info['fname'].'" AND lname="'.$info['lname'].'" AND active="1"');
+						
+						if(!empty($empID)){
+							echo '<a href="'.HOME_URL.'staff/schedules/setschedule/'.$empID.'/?d='.$info['startDate'].'" target="blank"><button type="button" style="padding:5px;">Click here to add schedule</button></a>';
+						}
+					?>						
 					</div>				
 				<?php
 				}else if($info['process']==6 && $info['processStat']==1){ //HIRED STATUS NOT YET CLOSED	
