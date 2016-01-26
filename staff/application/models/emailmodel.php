@@ -421,7 +421,7 @@ class Emailmodel extends CI_Model {
 	***/
 	public function sendEmailEditedPayrollLogs($today, $empID){		
 		$info = $this->dbmodel->getSingleInfo('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, CONCAT(fname," ",lname) AS name', 
-				'empID_fk="'.$empID.'" AND status!=3 AND pstatus=1 AND "'.$today.'" BETWEEN payPeriodStart AND payPeriodEnd', 
+				'empID_fk="'.$empID.'" AND status>0 AND status!=3 AND pstatus=1 AND "'.$today.'" BETWEEN payPeriodStart AND payPeriodEnd', 
 				'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
 						
 		if(!empty($info)){
