@@ -353,11 +353,7 @@
 				}
 			echo '</table>';
 		}
-		
-		echo '<pre>';
-		print_r($dataLog);
-		echo '</pre>';
-		
+				
 		////THIS IS FOR PUBLISHING LOG
 		echo '<form id="formpublish" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
 		echo '<table id="tblpublishlog" class="tableInfo" style="margin:10px 0; background-color:#ffb2b2;">';
