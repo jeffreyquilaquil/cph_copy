@@ -120,8 +120,10 @@
 						$isOffset = true;
 						$deductionHour += $dataLog->offsetHour;
 					}
-				}else if($leave->status!=1)
-					$deductionHour = $dataLog->schedHour;
+				}
+				
+				/* else if($leave->status!=1)
+					$deductionHour = $dataLog->schedHour; */
 				
 				echo '<table id="tblleavedetails" class="tableInfo" style="margin-top:10px;">';
 					echo '<tr class="trlabel"><td colspan=2>LEAVE DETAILS</td></tr>';
@@ -285,7 +287,7 @@
 							} 
 						echo '</td>';
 					echo '</tr>';
-					
+				
 					//BREAKS
 					echo '<tr>';
 						echo '<td><b>Breaks</b></td>';
@@ -353,7 +355,7 @@
 				}
 			echo '</table>';
 		}
-				
+		
 		////THIS IS FOR PUBLISHING LOG
 		echo '<form id="formpublish" class="hidden" action="" method="POST" onSubmit="displaypleasewait();">';
 		echo '<table id="tblpublishlog" class="tableInfo" style="margin:10px 0; background-color:#ffb2b2;">';
