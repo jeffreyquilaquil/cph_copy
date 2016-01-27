@@ -1872,9 +1872,9 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function payrolldistributionreport(){
-		$payID = $this->uri->segment(3);
-		
-		if($this->user==false || $this->access->accessFullHR==false || !is_numeric($payID)){
+		$payrollsID = $this->uri->segment(3);
+				
+		if($this->user==false || $this->access->accessFullHR==false || !is_numeric($payrollsID)){
 			$data['access'] = false;
 			$data['content'] = 'index';
 			$this->load->view('includes/template', $data);
@@ -1887,102 +1887,135 @@ class Timecard extends MY_Controller {
 			$objReader = PHPExcel_IOFactory::createReader($fileType);
 			$objPHPExcel = $objReader->load($fileName);
 			
+			$arrCell = array();			
+			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
+			foreach (range('A', 'P') as $char) array_push($arrCell, 'A'.$char);
 			
-			$dataPay = $this->dbmodel->getQueryResults('tcPayrolls', 'payrollsID, payPeriodStart, payPeriodEnd, payslipID, empID_fk, monthlyRate, basePay, totalTaxable, earning, deduction, tcPayslips.allowance, adjustment, advance, benefit, bonus, net, CONCAT(lname,", ",fname) AS name, idNum', 
-					'payrollsID="'.$payID.'"',
-					'LEFT JOIN tcPayslips ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
-					
-			$payArr = array();
-			$needHourArr = array('regularTaken', 'nightDiff', 'overTime', 'specialPHLHoliday', 'regularPHLHoliday', 'regularUSHoliday', 'regularHoliday', 'regHourAdded', 'nightDiffAdded', 'nightDiffSpecialHoliday', 'nightDiffRegHoliday');
-			foreach($dataPay AS $paid){
-				$payArr[$paid->empID_fk] = (array)$paid;
-				
-				$payItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payCode, payValue, numHR', 'payslipID_fk="'.$paid->payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
-				
-				foreach($payItems AS $item){
-					$payArr[$paid->empID_fk][$item->payCode] = $item->payValue;
-					if(in_array($item->payCode, $needHourArr)) $payArr[$paid->empID_fk][$item->payCode.'HR'] = $item->numHR;
-				}
-			}
+			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
+									
+			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
+						'fname, lname, empID_fk, idNum, payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
+						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
+						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
+						LEFT JOIN staffs ON empID=empID_fk 
+						LEFT JOIN newPositions ON posID=position 
+						LEFT JOIN orgLevel ON levelID=orgLevel_fk
+						LEFT JOIN sssTable ON monthlyRate BETWEEN minRange AND maxRange', 
+						'lname');
+						
 			
-			echo '<table>';
-			foreach($payArr AS $pay){
-				echo '<tr>';
-					echo '<td>'.$pay['name'].'</td>'; ///employee
-					echo '<td>'.$pay['idNum'].'</td>'; //employee ID
-					echo '<td>'.((isset($pay['regularTaken']))?$pay['regularTaken']:'0.00').'</td>'; //regular taken
-					echo '<td>'.((isset($pay['regularTakenHR']))?$pay['regularTakenHR']:'0.00').'</td>'; //regular taken hours
-					
-					//regular worked hours
-					if(isset($pay['basePayHR']) && $pay['basePayHR']>0){
-						echo '<td>'.((isset($pay['basePay']))?$pay['basePay']:'0.00').'</td>'; //regular worked
-						echo '<td>'.((isset($pay['basePayHR']))?$pay['basePayHR']:'0.00').'</td>'; //regular worked hours
-						echo '<td>0.00</td>'; //base pay
-					}else{
-						echo '<td>0.00</td>'; //regular worked
-						echo '<td>0.00</td>'; //regular worked hours
-						echo '<td>'.((isset($pay['basePay']))?$pay['basePay']:'0.00').'</td>'; //base pay
-					}
-					
-				echo '</tr>';
-			}
-			
-			echo '</table>';
-			
-				echo '<pre>';
-				print_r($payArr);
-				echo '</pre>';
-				exit;
-			
-			
-			/* 
-
 			// Change the file
 			$objPHPExcel->setActiveSheetIndex(0)
-						->setCellValue('A1', 'Hello')
-						->setCellValue('A6', 'LUDIVINA MARINAS')
-						->setCellValue('B1', 'World!');
+						->setCellValue('A1', 'PAYROLL DISTRIBUTION REPORT - '.date('F d, Y', strtotime($dataPayroll->payPeriodStart)).' - '.date('F d, Y', strtotime($dataPayroll->payPeriodEnd)));
+			
+			$counter = 3;
+			foreach($payInfo AS $pay){
+				$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$pay->payslipID.'" AND payValue!="0.00"',
+				'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
+				
+				$objPHPExcel->getActiveSheet()->setCellValue($arrCell[0].$counter, $pay->lname.', '.$pay->fname); //employee name
+				$objPHPExcel->getActiveSheet()->setCellValue($arrCell[1].$counter, $pay->idNum); //employee id
+				
+				if(count($dataItems)>0){
+					$arrItem = array();
+					
+					foreach($dataItems AS $item){
+						$payValue = (($item->payType=='debit')?'-':'').$item->payValue;
+						if(empty($item->payCode)){
+							if(isset($arrItem['misc'])) $arrItem['misc'] += $payValue;
+							else $arrItem['misc'] = $payValue;
+						}else{
+							$arrItem[$item->payCode] = $payValue;
+							if($item->numHR>0)
+								$arrItem[$item->payCode.'HR'] = $item->numHR;
+						}
+					}
+					
+					if(count($arrItem)>0){
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[2].$counter, ((isset($arrItem['regularTaken']))?$arrItem['regularTaken']:0)); //regular taken
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[3].$counter, ((isset($arrItem['regularTakenHR']))?$arrItem['regularTakenHR']:0)); //regular taken hours
+						
+						if(isset($arrItem['basePay']) && isset($arrItem['basePayHR'])){
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[4].$counter, $arrItem['basePay']); //regular worked
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[5].$counter, ($arrItem['basePayHR']*8)); //regular worked hours
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[6].$counter, 0); //base pay
+						}else{
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[4].$counter, 0); //regular worked
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[5].$counter, 0); //regular worked hours
+							$objPHPExcel->getActiveSheet()->setCellValue($arrCell[6].$counter, $pay->basePay); //base pay
+						}
+						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[7].$counter, ((isset($arrItem['nightDiff']))?$arrItem['nightDiff']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[8].$counter, ((isset($arrItem['nightDiffHR']))?$arrItem['nightDiffHR']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[9].$counter, ((isset($arrItem['nightDiffRegHoliday']))?$arrItem['nightDiffRegHoliday']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[10].$counter, ((isset($arrItem['nightDiffRegHolidayHR']))?$arrItem['nightDiffRegHolidayHR']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[11].$counter, ((isset($arrItem['nightDiffSpecialHoliday']))?$arrItem['nightDiffSpecialHoliday']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[12].$counter, ((isset($arrItem['nightDiffSpecialHolidayHR']))?$arrItem['nightDiffSpecialHolidayHR']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[13].$counter, ((isset($arrItem['regPHLHoliday']))?$arrItem['regPHLHoliday']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[14].$counter, ((isset($arrItem['regPHLHolidayHR']))?$arrItem['regPHLHolidayHR']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[15].$counter, ((isset($arrItem['specialPHLHoliday']))?$arrItem['specialPHLHoliday']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[16].$counter, ((isset($arrItem['specialPHLHolidayHR']))?$arrItem['specialPHLHolidayHR']:0)); 
+						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[17].$counter, $pay->earning); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[18].$counter, 0); 
+						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[19].$counter, ((isset($arrItem['pagIbig']))?$arrItem['pagIbig']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[20].$counter, ((isset($arrItem['sss']))?$arrItem['sss']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[21].$counter, $pay->totalTaxable); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[22].$counter, ((isset($arrItem['medReimbursement']))?$arrItem['medReimbursement']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[23].$counter, ((isset($arrItem['clothingAllowance']))?$arrItem['clothingAllowance']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[24].$counter, ((isset($arrItem['laundryAllowance']))?$arrItem['mealAllowance']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[25].$counter, ((isset($arrItem['mealAllowance']))?$arrItem['mealAllowance']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[26].$counter, ((isset($arrItem['medicalAllowance']))?$arrItem['medicalAllowance']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[27].$counter, ((isset($arrItem['riceAllowance']))?$arrItem['riceAllowance']:0)); 						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[28].$counter, ((isset($arrItem['perfBonus']))?$arrItem['perfBonus']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[29].$counter, ((isset($arrItem['unusedLeave']))?$arrItem['unusedLeave']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[30].$counter, ((isset($arrItem['misc']))?$arrItem['misc']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[31].$counter, ((isset($arrItem['sunlife']))?$arrItem['sunlife']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[32].$counter, ((isset($arrItem['maxicare']))?$arrItem['maxicare']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[33].$counter, ((isset($arrItem['pagIbigLoan']))?$arrItem['pagIbigLoan']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[34].$counter, ((isset($arrItem['sssLoan']))?$arrItem['sssLoan']:0)); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[35].$counter, ((isset($arrItem['incomeTax']))?$arrItem['incomeTax']:0)); 
+						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[36].$counter, $pay->net); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[37].$counter, $pay->net); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[38].$counter, $pay->earning); 						
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[39].$counter, ((isset($arrItem['additionalPagIbig']))?$arrItem['additionalPagIbig']:0));
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[40].$counter, '-'.$pay->eCompensation); 
+						$objPHPExcel->getActiveSheet()->setCellValue($arrCell[41].$counter, '-'.$pay->employerShare);			
+					}
+				}				
+				
+				$counter++;
+			}
+			
+			//TOTALS
+			$cnt = $counter-1;
+			$countCell = count($arrCell);
+			$objPHPExcel->getActiveSheet()->setCellValue($arrCell[0].$counter, 'TOTALS:');
+			for($c=2; $c<$countCell; $c++){
+				$objPHPExcel->getActiveSheet()->setCellValue($arrCell[$c].$counter, '=SUM('.$arrCell[$c].'3:'.$arrCell[$c].$cnt.')');
+			}
+			
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':AP'.$counter)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':AP'.$counter)->applyFromArray(
+			array('fill' 	=> array(
+										'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+										'color'		=> array('argb' => 'FFF000')
+									)
+				 )
+			);
+							
 
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 			ob_end_clean();
 			// We'll be outputting an excel file
 			header('Content-type: application/vnd.ms-excel');
 			header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
-			$objWriter->save('php://output');
-			
-			 */
-		}		
+			$objWriter->save('php://output');			
+		}	
 	}
 	
-	public function testExcel2(){
-		require_once('includes/excel/PHPExcel/IOFactory.php');
-
-		$fileType = 'Excel5';
-		$fileName = 'includes/reporttest.xls';
-
-		// Read the file
-		$objReader = PHPExcel_IOFactory::createReader($fileType);
-		$objPHPExcel = $objReader->load($fileName);
-
-		// Change the file
-		$objPHPExcel->setActiveSheetIndex(0)
-					->setCellValue('A1', 'Hello')
-					->setCellValue('A6', 'LUDIVINA MARINAS')
-					->setCellValue('B1', 'World!');
-
-		// Write the file
-		/* $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
-		$objWriter->save($fileName); */
-		
-		
-		#echo date('H:i:s') . " Write to Excel2007 format\n";
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
-		ob_end_clean();
-		// We'll be outputting an excel file
-		header('Content-type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment; filename="payroll.xls"');
-		$objWriter->save('php://output');
-	}
 		
 }
 ?>
