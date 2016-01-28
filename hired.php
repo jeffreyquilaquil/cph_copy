@@ -221,6 +221,31 @@ if(isset($_POST) AND !empty($_POST)){
 				</body>
 				</html>";
 		
+		sendEmail( $from, $to, $subject, $body, 'Career Index Auto Email' );	
+		
+		
+		$Abody = '
+			<style>p{font-family:arial;}</style>
+			<p>Dear '.$hire['fname'].' '.$hire['lname'].',</p>
+			<p><br/></p>
+			<p>Congratulations!</p>
+			<p>We in Tate Publishing and Enterprises (Philippines), Inc. are very excited to welcome you on '.date('F d, Y', strtotime($startD)).'.</p>
+			<p>Your Tate Publishing ID Number is: '.$_POST['payroll'].'<br/>
+			Your Immediate Supervisor is: '.$jobReq['supervisor'].'</p>
+			<p>On your first day, your immediate supervisor '.$jobReq['supervisor'].' will be waiting to welcome you.</p>
+			<p>To help you be prepared for your first day, please take time to read this page: <a href="http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/">http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/</a>.</p>		
+			<p>If you have questions, please do not hesitate to call HR at 09173015686 or (032)318-2586. You may also email us at <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>.</p>
+			<p>Once again, congratulations and welcome to the Tate Family!</p>
+			<p>Good Luck and God Bless.</p>
+			<p><br/></p>
+			<p>See you soon!</p>
+			<p>Tate Publishing HR Team</p>
+		';
+		sendEmail( $from, $hire['email'].','.$_POST['email'].',hr.cebu@tatepublishing.net', 'Welcome to Tate Publishing & Enterprises (Philippines), Inc.', $Abody, 'Career Index Auto Email' );
+
+		$db->updateQuery('applicants', array('processStat' => '0', 'processText' => 'Hired', 'hiredDate' => date('Y-m-d'), 'startDate' => date('Y-m-d', strtotime($startD))), 'id='.$_GET['id']);	
+		addStatusNote($_GET['id'], 'hired', '', $hire['position']);
+		
 		//once we all have our data then we can create now the template for temporary ID
 		//generate tmp ID
 		if( file_exists($uploaded_file_id) ){
@@ -285,32 +310,6 @@ if(isset($_POST) AND !empty($_POST)){
 			$pdf->Output($tmp_id_filename.'.pdf', 'D');
 			
 		}
-					
-				
-		
-		sendEmail( $from, $to, $subject, $body, 'Career Index Auto Email' );
-		
-		$Abody = '
-			<style>p{font-family:arial;}</style>
-			<p>Dear '.$hire['fname'].' '.$hire['lname'].',</p>
-			<p><br/></p>
-			<p>Congratulations!</p>
-			<p>We in Tate Publishing and Enterprises (Philippines), Inc. are very excited to welcome you on '.date('F d, Y', strtotime($startD)).'.</p>
-			<p>Your Tate Publishing ID Number is: '.$_POST['payroll'].'<br/>
-			Your Immediate Supervisor is: '.$jobReq['supervisor'].'</p>
-			<p>On your first day, your immediate supervisor '.$jobReq['supervisor'].' will be waiting to welcome you.</p>
-			<p>To help you be prepared for your first day, please take time to read this page: <a href="http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/">http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/</a>.</p>		
-			<p>If you have questions, please do not hesitate to call HR at 09173015686 or (032)318-2586. You may also email us at <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>.</p>
-			<p>Once again, congratulations and welcome to the Tate Family!</p>
-			<p>Good Luck and God Bless.</p>
-			<p><br/></p>
-			<p>See you soon!</p>
-			<p>Tate Publishing HR Team</p>
-		';
-		sendEmail( $from, $hire['email'].','.$_POST['email'].',hr.cebu@tatepublishing.net', 'Welcome to Tate Publishing & Enterprises (Philippines), Inc.', $Abody, 'Career Index Auto Email' );
-
-		$db->updateQuery('applicants', array('processStat' => '0', 'processText' => 'Hired', 'hiredDate' => date('Y-m-d'), 'startDate' => date('Y-m-d', strtotime($startD))), 'id='.$_GET['id']);	
-		addStatusNote($_GET['id'], 'hired', '', $hire['position']);
 	}
 	
 	header('Location:editstatus.php?id='.$_GET['id'].'&hired='.$postSuccess.'&err='.urlencode($postError));
