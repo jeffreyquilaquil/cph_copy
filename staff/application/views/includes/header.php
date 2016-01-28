@@ -148,6 +148,13 @@
 			?>
 				</ul>
 			</li>
+			
+			<?php
+				if($this->access->accessFullHRFinance==true){
+					echo '<li><a href="'.$this->config->base_url().'reports/">Reports</a></li>';
+				}
+			?>
+			
 		</ul>
 		
 	</div>	

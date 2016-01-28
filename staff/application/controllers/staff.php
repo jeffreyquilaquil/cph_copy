@@ -3973,6 +3973,28 @@ class Staff extends MY_Controller {
 		else $this->load->view('includes/template', $data);
 	}
 	
+	public function reports(){
+		$data['content'] = 'reports';
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				if(!empty($_POST)){
+					if($_POST['submitType']=='genLeaveCodes'){
+						$start = date('Y-m-d', strtotime($_POST['dateFrom']));
+						$end = date('Y-m-d', strtotime($_POST['dateTo']));
+												
+						$queryCode = $this->dbmodel->getQueryResults('staffCodes', '*', 'dategenerated BETWEEN "'.$start.'" AND "'.$end.'"');
+						$this->staffM->excelGenerateLeaveCodes($queryCode, $start, $end);						
+					}
+				}
+				
+			}
+		}
+		
+		$this->load->view('includes/template', $data);
+	}
+	
 }
 
 ?>

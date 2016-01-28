@@ -1297,6 +1297,48 @@ class Staffmodel extends CI_Model {
 		}
 	}
 	
+	function excelGenerateLeaveCodes($query, $start, $end){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/leaveCodesTemplate.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+		
+		// Change the file
+		$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', 'GENERATED LEAVE CODES REPORT - '.date('F d, Y', strtotime($start)).' - '.date('F d, Y', strtotime($end)));
+					
+					
+		$staffArr = array();
+		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname,", ",fname) AS name');
+		foreach($queryStaffs AS $s){
+			$staffArr[$s->empID] = $s->name;
+		}
+		$statusArr = array(0=>'Expired', 1=>'Active', 2=>'Redeemed');
+		
+		$cnt = 3;
+		foreach($query AS $q){
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cnt, $q->dategenerated);
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cnt, $q->code);
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cnt, ((isset($staffArr[$q->generatedBy]))?$staffArr[$q->generatedBy]:''));
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cnt, ((isset($staffArr[$q->forWhom]))?$staffArr[$q->forWhom]:''));
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cnt, ((isset($staffArr[$q->usedBy]))?$staffArr[$q->usedBy]:''));
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cnt, $q->why);
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, $statusArr[$q->status]);
+			
+			$cnt++;
+		}
+		
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
+		$objWriter->save('php://output');
+	}
+	
 }
 
 ?>
