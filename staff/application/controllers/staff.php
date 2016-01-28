@@ -3973,6 +3973,110 @@ class Staff extends MY_Controller {
 		else $this->load->view('includes/template', $data);
 	}
 	
+	public function medrequest(){
+		$data['content'] = 'medrequest';
+		$data['submitted'] = false;		
+		$data['disabled'] = '';
+		//check if we have session data
+		if($this->user!=false){
+			$id = $this->uri->segment(2);
+			if( isset($id) AND !empty($id) ){
+				$data['employee_info'] = $this->dbmodel->getSingleInfo('staffMedRequest', 'medrequestID, empID, idNum, CONCAT(fname, " ", lname) AS "name", prescription_date, requested_amount, date_submitted, supporting_docs_url', 'medrequestID = '. $id, 'LEFT JOIN staffs ON empID_fk = empID');
+				$data['disabled'] = 'disabled';
+			} else {
+				$data['employee_info'] = $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, CONCAT(fname," ", lname) AS "name"', 'empID = '.$this->user->empID);
+			}		
+			//if we have post data then save
+			if( isset($_POST) AND !empty($_POST) ){
+				$insert_array['empID_fk'] = $this->input->post('empID');
+				$insert_array['prescription_date'] = date('Y-m-d H:i:s', strtotime( $this->input->post('prescription_date') ) );
+				$insert_array['requested_amount'] = $this->input->post('requested_amount');
+				$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+				
+				if( isset($_FILES) AND !empty($_FILES) ){
+					$files = $_FILES;
+					
+					/* config data */
+					$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
+					$upload_config['allowed_types'] = 'gif|jpg|png';
+					$upload_config['max_size']	= '2048';
+					$upload_config['overwrite']	= 'FALSE';
+					
+					$this->load->library('upload');
+					
+					//check how many to upload
+					$upload_count = count( $_FILES['supporting_docs']['name'] );
+					for( $x = 0; $x < $upload_count; $x++ ){
+						$_FILES['to_upload']['name'] = $files['supporting_docs']['name'][$x];
+						$_FILES['to_upload']['type'] = $files['supporting_docs']['type'][$x];
+						$_FILES['to_upload']['tmp_name'] = $files['supporting_docs']['tmp_name'][$x];
+						$_FILES['to_upload']['error'] = $files['supporting_docs']['error'][$x];
+						$_FILES['to_upload']['size'] = $files['supporting_docs']['size'][$x];
+						
+						$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+						$uniq_id = uniqid();
+						$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
+						
+						$this->upload->initialize( $upload_config );
+						
+						if( ! $this->upload->do_upload('to_upload') ){
+							$error_data[$x] = $this->upload->display_errors();
+						} else {
+							$upload_data[$x] = $this->upload->data();
+						}
+					}
+					
+					//if we have error, throw it to views
+					if( isset($error_data) AND !empty($error_data) ){
+						foreach( $upload_data as $key1 => $val1 ){
+							$data['error'] .= $val1 ."\n";
+						}						
+					}					
+					if( isset($upload_data) AND !empty($upload_data) ){
+						foreach( $upload_data as $key => $val ){
+							$docs_url[] = $val['full_path'];
+						}
+						$insert_array['supporting_docs_url'] = json_encode( $docs_url );
+						$insert_array['supporting_docs_url'] = addslashes($insert_array['supporting_docs_url']);
+					}					
+				} // end of file upload
+				
+				//if we have all data then insert
+				if( isset($insert_array['supporting_docs_url']) ){
+					$insert_id = $this->dbmodel->insertQuery('staffMedRequest', $insert_array);
+					
+					//send notification to staff with med_person access
+					
+					//there can be multiple medical personnel
+					$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');					
+					
+					$ntexts = 'Requested a medical reimbursement. Check Manage Staff > Medical Reimbursement Management page or click <a href="'. $this->config->base_url() .'medrequest/'.$insert_id.'/" class="iframe">here</a> to view the medical reimbursement details and approve.';
+					foreach( $med_person_id as $key => $val ){
+						$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+					}
+		
+					$data['submitted'] = true;
+				}
+			}
+		}
+		$this->output->enable_profiler(true);
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	
+	function test(){
+		
+		$id = $this->uri->segment(2);
+		var_dump($id);
+		
+		$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');
+			echo '<pre>';
+		var_dump($med_person_id);
+		foreach( $med_person_id as $key => $val ){
+			var_dump($val->empID);
+		}
+		echo '</pre>';
+	}
+	
 }
 
 ?>
