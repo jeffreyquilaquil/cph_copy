@@ -359,15 +359,16 @@ class Emailmodel extends CI_Model {
 		}
 	}
 	
-	public function sendPublishPayrollEmail($period, $to, $name){
+	public function sendPublishPayrollEmail($period, $to, $name, $isRegenereted=0){
 		$from = 'careers.cebu@tatepublishing.net';
 		$cc = 'accounting.cebu@tatepublishing.net';
-		$subject = 'YOUR HARD WORK HAS PAID OFF! Now don\'t spend it all at once :)';
+		if($isRegenereted==1) $subject = 'Payslip Regenerated - Please check :)';
+		else $subject = 'YOUR HARD WORK HAS PAID OFF! Now don\'t spend it all at once :)';
 		
 		$body = '<p>Hi '.$name.',</p>';
-		$body .= '<p>Your payslip for the payroll period of '.$period.' is ready for viewing. You can access this payslip through CareerPH Timecard and Payroll "<a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a>" page.</p>';
+		$body .= '<p>Your payslip for the payroll period of '.$period.' '.(($isRegenereted==1)?'has been regenerated and ':'').' is ready for viewing. You can access this payslip through CareerPH Timecard and Payroll "<a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a>" page.</p>';
 		$body .= '<p>Kindly review your payslip and report any discrepancies by replying to this email immediately. To ensure prompt resolution, please remember to include important details in your email, such as the specific item on the payslip that is incorrect and any other supporting details that can validate your claim.</p>';
-		$body .= '<p><b>IMPORTANT:</b> Discrepancies on incentive / bonus amounts will only be entertained from managers and team leaders. If you are eligible for an incentive / bonus and it is not reflected on your payslip or if the incentive / bonus amount on your payslip is wrong, please escalate your concern to your team leader so they can validate it prior to forwarding to Accounting/HR.</p>';
+		$body .= '<p><br/><b>IMPORTANT:</b><i> Discrepancies on incentive / bonus amounts will only be entertained from managers and team leaders. If you are eligible for an incentive / bonus and it is not reflected on your payslip or if the incentive / bonus amount on your payslip is wrong, please escalate your concern to your team leader so they can validate it prior to forwarding to Accounting/HR.</i></p>';
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks,</p>';
 		$body .= '<p>Tate Publishing and Enterprises (Philippines), Inc.</p>';		

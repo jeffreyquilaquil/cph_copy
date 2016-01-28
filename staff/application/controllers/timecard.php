@@ -1583,11 +1583,13 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			$id = $this->uri->segment(3);
 			$info = array();
-			$query = $this->dbmodel->getSingleInfo('tcPayslips', 'empID_fk, payPeriodEnd, payPeriodStart, payrollsID, payType', 'payslipID="'.$id.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk');
+			$query = $this->dbmodel->getSingleInfo('tcPayslips', 'empID_fk, fname, email, payPeriodEnd, payPeriodStart, payrollsID, payType', 'payslipID="'.$id.'"', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk LEFT JOIN staffs ON empID=empID_fk');
 			if(count($query)>0){
 				foreach($query AS $k=>$v) $info[$k] = $v;
 				$info['empIDs'] = $query->empID_fk;
 				$this->payrollM->generatepayroll($info);
+				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
+				$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
 			}			
 		}
 	}
