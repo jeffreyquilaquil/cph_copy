@@ -269,7 +269,7 @@
 					$leaveAmount = $payInfo->addLeave * $dailyRate;
 				}
 				echo '<tr class="trAddOns"><td colspan=2><br/></td></tr>';
-				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons</td></tr>';
+				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnAddOn">+ Add</button>':'').'</td></tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>13th Month Pay</td>';
 					echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
@@ -289,14 +289,26 @@
 						echo $this->textM->formfield('number', 'unpaidSal', '0.00', 'padding5px', '', 'step="any" style="width:50px"').' hours x '.$hourlyRate.' = <b id="unpaid">0.00</b>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/timelogs/" target="_blank">Visit Timelogs</a>]';
 					}
 				echo '</tr>';
-				echo '<tr class="weightbold trAddOns" style="background-color:#bbb;">';
+				
+				///ADDITIONAL ADD ONS
+				if(!empty($payInfo->addOns)){
+					$addArr = unserialize(stripslashes($payInfo->addOns));
+					foreach($addArr AS $k=>$add){
+						echo '<tr class="trAddOns">';
+							echo '<td>'.ucwords($k).'</td>';
+							echo '<td>'.$this->textM->convertNumFormat($add).'</td>';
+						echo '</tr>';
+					}
+				}
+				
+				echo '<tr id="trTotalAddOn" class="weightbold trAddOns" style="background-color:#bbb;">';
 					echo '<td>Add Ons Total</td>';
 					echo '<td id="totalAddOn">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->addTotal):$this->textM->convertNumFormat($total13th + $leaveAmount)).'</td>';
 				echo '</tr>';
 				
 				///DEDUCTIONS
 				echo '<tr class="trDeductions"><td colspan=2><br/></td></tr>';
-				echo '<tr class="trlabel trDeductions"><td colspan=2>Deductions</td></tr>';
+				echo '<tr class="trlabel trDeductions"><td colspan=2>Deductions &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnDeductions">+ Add</button>':'').'</td></tr>';
 				if($pageType!='showpay' || ($pageType=='showpay' && $payInfo->deductMaxicare>0)){
 					echo '<tr class="trDeductions">';
 						echo '<td>Maxicare</td>';
@@ -321,7 +333,18 @@
 					echo '</tr>';
 				}
 				
-				echo '<tr class="weightbold trDeductions" style="background-color:#bbb;">';
+				///ADDITIONAL DEDUCTIONS
+				if(!empty($payInfo->addDeductions)){
+					$dedArr = unserialize(stripslashes($payInfo->addDeductions));
+					foreach($dedArr AS $d=>$ded){
+						echo '<tr class="trAddOns">';
+							echo '<td>'.ucwords($d).'</td>';
+							echo '<td>'.$this->textM->convertNumFormat($ded).'</td>';
+						echo '</tr>';
+					}
+				}
+				
+				echo '<tr id="trTotalDeduct" class="weightbold trDeductions" style="background-color:#bbb;">';
 					echo '<td>Deductions Total</td>';
 					echo '<td id="totalDeductions">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->deductTotal):'0.00').'</td>';
 				echo '</tr>';
@@ -382,31 +405,79 @@
 <script type="text/javascript">
 	$(function(){		
 		$('input[name="unpaidSal"]').blur(function(){
-			num = $(this).val();
-			if(num==''){
-				num = 0;
-				$(this).val(0);
-			} 
-			
-			dailyRate = parseFloat('<?= $hourlyRate ?>');
-			num = num * dailyRate;
-			
-			totalAddOn = parseFloat('<?= $total13th + $leaveAmount ?>') + parseFloat(num);
-			$('#totalAddOn').text(totalAddOn.toLocaleString()); $('.cls_totalAddOn').text(totalAddOn.toLocaleString());
-			$('#unpaid').text(num.toLocaleString());
-			computeLastPay();
+			getTotalAddOn();
 		});
 		
 		$('.inputdeduct').blur(function(){
-			deductions = 0;
-			if($(this).val()=='') $(this).val(0);
-			
-			deductions = parseFloat($('input[name="maxicare"]').val()) + parseFloat($('input[name="paymentArrears"]').val()) + parseFloat($('input[name="restitution"]').val());
-			$('#totalDeductions').text(deductions.toLocaleString());
-			$('.cls_totalDeductions').text(deductions.toLocaleString());
-			computeLastPay();
+			getTotalDeduct();
+		});
+		
+		$('#btnAddOn').click(function(){
+			$('<tr class="trAddOnAdd trAddOns"><td><?= $this->textM->formfield('text', 'addOnName[]', '', 'forminput', 'Add On Name') ?></td><td><?= $this->textM->formfield('number', 'addOnAmount[]', '', 'forminput', 'Add On Amount', 'style="width:250px;" onBlur="getTotalAddOn()"') ?> <button type="button" onClick="removeAddOn(this)">- Remove</button></td></tr>').insertBefore('#trTotalAddOn');
+		});
+		
+		$('#btnDeductions').click(function(){
+			$('<tr class="trAddDeduct trDeductions"><td><?= $this->textM->formfield('text', 'deductName[]', '', 'forminput', 'Deduction Name') ?></td><td><?= $this->textM->formfield('number', 'deductAmount[]', '', 'forminput inputdeduct', 'Deduction Amount', 'style="width:250px;" onBlur="getTotalDeduct()"') ?> <button type="button" onClick="removeDeduct(this)">- Remove</button></td></tr>').insertBefore('#trTotalDeduct');
 		});
 	});
+	
+	function getTotalAddOn(){
+		dailyRate = parseFloat('<?= $hourlyRate ?>');
+		total = parseFloat('<?= $total13th + $leaveAmount ?>');
+		
+		unpaidSal = $('input[name="unpaidSal"]').val();
+		if(unpaidSal==''){
+			unpaidSal = 0;
+			$('input[name="unpaidSal"]').val(0);
+		}
+		unpaidSal = unpaidSal * dailyRate;		
+		total += parseFloat(unpaidSal); ///UNPAID SALARY
+		$('#unpaid').text(unpaidSal.toLocaleString());	
+		
+		///ADD ONS
+		$('input[name="addOnAmount\[\]"]').each(function(){
+			if($.isNumeric($(this).val())){
+				total += parseFloat($(this).val(), 2);
+			}
+		});
+		
+		total = parseFloat(total);
+		$('#totalAddOn').text(total.toLocaleString()); 
+		$('.cls_totalAddOn').text(total.toLocaleString());
+		
+		computeLastPay();
+	}
+	
+	function getTotalDeduct(){
+		deductions = 0;
+		//if($(this).val()=='') $(this).val(0);
+		
+		deductions = parseFloat($('input[name="maxicare"]').val()) + parseFloat($('input[name="paymentArrears"]').val()) + parseFloat($('input[name="restitution"]').val());
+		
+		///additional deductions
+		$('input[name="deductAmount\[\]"]').each(function(){
+			if($.isNumeric($(this).val())){
+				deductions += parseFloat($(this).val(), 2);
+			}
+		});
+		
+		deductions = parseFloat(deductions);
+		$('#totalDeductions').text(deductions.toLocaleString());
+		$('.cls_totalDeductions').text(deductions.toLocaleString());
+		computeLastPay();
+	}
+	
+	function removeAddOn(t){
+		$(t).closest("tr").remove();
+		getTotalAddOn();
+	}
+	
+	function removeDeduct(t){
+		$(t).closest("tr").remove();
+		getTotalDeduct();
+	}
+	
+	
 	
 	function showHideTR(show){
 		if(show==1){ //show
@@ -535,7 +606,37 @@
 	}
 	
 	function savecomputation(){
-		if(confirm('Are you sure you want to save this last pay computation?')){
+		var checker = true;
+		var newAddOn = {};
+		var newDeduction = {};
+		$('input[name="addOnName\[\]"]').each(function(e, t){
+			fval = $(this).val();
+			$('input[name="addOnAmount\[\]"]').each(function(a, z){
+				sval = $(z).val();
+				if(a==e){
+					if((fval=='' && sval!='') || (fval!='' && sval==''))
+						checker = false;
+					else if(fval!='' && sval!='')
+						newAddOn[fval] = sval;
+				}
+			});
+		});
+		
+		$('input[name="deductName\[\]"]').each(function(e, t){
+			ffval = $(this).val();
+			$('input[name="deductAmount\[\]"]').each(function(a, z){
+				ssval = $(z).val();
+				if(a==e){
+					if((ffval=='' && ssval!='') || (ffval!='' && ssval==''))
+						checker = false;
+					else if(ffval!='' && ssval!='')
+						newDeduction[ffval] = ssval;
+				}
+			});
+		});
+		
+		if(checker==false) alert('Please check add ons and deductions details.');
+		else if(confirm('Are you sure you want to save this last pay computation?')){
 			displaypleasewait(); 
 			$.post('<?= $this->config->base_url().'timecard/computelastpay/' ?>',{
 				submitType:'savecomputation',
@@ -557,7 +658,9 @@
 				deductArrears:$('input[name="paymentArrears"]').val(),
 				deductResti:$('input[name="restitution"]').val(),
 				deductTotal:$('#totalDeductions').text(),
-				netLastPay:$('#netLastPay').text()
+				netLastPay:$('#netLastPay').text(),
+				addOns:newAddOn,
+				addDeductions:newDeduction
 			},function(id){
 				window.location.href='<?= $this->config->base_url() ?>timecard/computelastpay/?payID='+id;
 			});

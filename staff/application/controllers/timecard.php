@@ -1667,7 +1667,7 @@ class Timecard extends MY_Controller {
 	public function computelastpay(){
 		$data['content'] = 'v_timecard/v_computelastpay';
 		
-		if($this->user!=false){
+		if($this->user!=false){			
 			if(!empty($_POST['submitType'])){
 				if($_POST['submitType']=='submitPeriod'){						
 					header('Location:'.$this->config->base_url().'timecard/computelastpay/?empID='.$_GET['empID'].'&periodFrom='.$_POST['periodFromYear'].'-01-01'.'&periodTo='.date('Y-m-t', strtotime($_POST['periodToYear'].'-'.$_POST['periodToMonth'].'-01')));
@@ -1681,14 +1681,18 @@ class Timecard extends MY_Controller {
 				}else if($_POST['submitType']=='removePayslip'){
 					$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
 					exit;
-				}else if($_POST['submitType']=='savecomputation'){ //saving computation
+				}else if($_POST['submitType']=='savecomputation'){ //saving computation				
 					unset($_POST['submitType']);						
 					foreach($_POST AS $k=>$p){
 						$_POST[$k] = str_replace(',','',$p);
 					}
-										
+					
+					$_POST['addOns'] = addslashes(serialize($_POST['addOns']));
+					$_POST['addDeductions'] = addslashes(serialize($_POST['addDeductions']));
+					
 					$_POST['generatedBy'] = $this->user->username;
 					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
+					
 					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);

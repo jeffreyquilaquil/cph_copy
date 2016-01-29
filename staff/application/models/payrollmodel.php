@@ -1160,9 +1160,17 @@ class Payrollmodel extends CI_Model {
 		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->add13th." remaining leave credits x ".$dailyRate." daily rate)\n";
 		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $dailyRate)." (".$payInfo->addUnpaid." days x ".$dailyRate.")\n";
 		
+		if(!empty($payInfo->addOns)){
+			$addArr = unserialize(stripslashes($payInfo->addOns));
+			foreach($addArr AS $k=>$add){
+				$leftAdd .= ucwords($k)."\n";
+				$rightAdd .= $this->textM->convertNumFormat($add)."\n";
+			}
+		}
+		
 		$pdf->SetFont('Arial','',8);
-		$pdf->setXY(15, 23); $pdf->MultiCell(60, 4, $leftAdd,0,'L',false);
-		$pdf->setXY(75, 23); $pdf->MultiCell(80, 4, $rightAdd,0,'L',false);
+		$pdf->setXY(15, 20); $pdf->MultiCell(60, 4, $leftAdd,0,'L',false);
+		$pdf->setXY(75, 20); $pdf->MultiCell(80, 4, $rightAdd,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',8);
 		$pdf->setXY(75, 43); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->addTotal)); 
@@ -1183,9 +1191,17 @@ class Payrollmodel extends CI_Model {
 			$rightDeduct .= $this->textM->convertNumFormat($payInfo->deductResti)."\n";
 		}
 		
+		if(!empty($payInfo->addDeductions)){
+			$dedArr = unserialize(stripslashes($payInfo->addDeductions));
+			foreach($dedArr AS $d=>$ded){
+				$leftDeduct .= ucwords($d)."\n";
+				$rightDeduct .= $this->textM->convertNumFormat($ded)."\n";
+			}
+		}
+		
 		$pdf->SetFont('Arial','',8);
-		$pdf->setXY(15, 65); $pdf->MultiCell(60, 4, $leftDeduct,0,'L',false);
-		$pdf->setXY(75, 65); $pdf->MultiCell(60, 4, $rightDeduct,0,'L',false);
+		$pdf->setXY(15, 63); $pdf->MultiCell(60, 4, $leftDeduct,0,'L',false);
+		$pdf->setXY(75, 63); $pdf->MultiCell(60, 4, $rightDeduct,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',8);
 		$pdf->setXY(75, 83.7); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->deductTotal));
