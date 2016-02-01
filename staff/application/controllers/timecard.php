@@ -1695,7 +1695,7 @@ class Timecard extends MY_Controller {
 					
 					$_POST['generatedBy'] = $this->user->username;
 					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
-										
+																				
 					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
@@ -1723,7 +1723,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){

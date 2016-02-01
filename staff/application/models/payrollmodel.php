@@ -1162,9 +1162,11 @@ class Payrollmodel extends CI_Model {
 		
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
-			foreach($addArr AS $k=>$add){
-				$leftAdd .= ucwords($k)."\n";
-				$rightAdd .= $this->textM->convertNumFormat($add)."\n";
+			foreach($addArr AS $add){
+				if(isset($add[0]) && isset($add[1])){
+					$leftAdd .= ucwords($add[0])."\n";
+					$rightAdd .= $this->textM->convertNumFormat($add[1])."\n";
+				}
 			}
 		}
 		
@@ -1193,9 +1195,11 @@ class Payrollmodel extends CI_Model {
 		
 		if(!empty($payInfo->addDeductions)){
 			$dedArr = unserialize(stripslashes($payInfo->addDeductions));
-			foreach($dedArr AS $d=>$ded){
-				$leftDeduct .= ucwords($d)."\n";
-				$rightDeduct .= $this->textM->convertNumFormat($ded)."\n";
+			foreach($dedArr AS $ded){
+				if(isset($ded[0]) && isset($ded[1])){
+					$leftDeduct .= ucwords($ded[0])."\n";
+					$rightDeduct .= $this->textM->convertNumFormat($ded[1])."\n";
+				}
 			}
 		}
 		

@@ -293,11 +293,13 @@
 				///ADDITIONAL ADD ONS
 				if(!empty($payInfo->addOns)){
 					$addArr = unserialize(stripslashes($payInfo->addOns));
-					foreach($addArr AS $k=>$add){
-						echo '<tr class="trAddOns">';
-							echo '<td>'.ucwords($k).'</td>';
-							echo '<td>'.$this->textM->convertNumFormat($add).'</td>';
-						echo '</tr>';
+					foreach($addArr AS $add){
+						if(isset($add[0]) && isset($add[1])){
+							echo '<tr class="trAddOns">';
+								echo '<td>'.ucwords($add[0]).'</td>';
+								echo '<td>'.$this->textM->convertNumFormat($add[1]).'</td>';
+							echo '</tr>';
+						}
 					}
 				}
 				
@@ -336,11 +338,13 @@
 				///ADDITIONAL DEDUCTIONS
 				if(!empty($payInfo->addDeductions)){
 					$dedArr = unserialize(stripslashes($payInfo->addDeductions));
-					foreach($dedArr AS $d=>$ded){
-						echo '<tr class="trAddOns">';
-							echo '<td>'.ucwords($d).'</td>';
-							echo '<td>'.$this->textM->convertNumFormat($ded).'</td>';
-						echo '</tr>';
+					foreach($dedArr AS $ded){
+						if(isset($ded[0]) && isset($ded[1])){
+							echo '<tr class="trAddOns">';
+								echo '<td>'.ucwords($ded[0]).'</td>';
+								echo '<td>'.$this->textM->convertNumFormat($ded[1]).'</td>';
+							echo '</tr>';
+						}	
 					}
 				}
 				
@@ -413,11 +417,11 @@
 		});
 		
 		$('#btnAddOn').click(function(){
-			$('<tr class="trAddOnAdd trAddOns"><td><?= $this->textM->formfield('text', 'addOnName[]', '', 'forminput', 'Add On Name') ?></td><td><?= $this->textM->formfield('number', 'addOnAmount[]', '', 'forminput', 'Add On Amount', 'style="width:250px;" onBlur="getTotalAddOn()"') ?> <button type="button" onClick="removeAddOn(this)">- Remove</button></td></tr>').insertBefore('#trTotalAddOn');
+			$('<tr class="trAddOnAdd trAddOns"><td><?= $this->textM->formfield('text', 'addOnName[]', '', 'forminput', 'Add On Name') ?></td><td><?= $this->textM->formfield('number', 'addOnAmount[]', '', 'forminput', 'Add On Amount', 'style="width:250px;" onBlur="getTotalAddOn()" step="any"') ?> <button type="button" onClick="removeAddOn(this)">- Remove</button></td></tr>').insertBefore('#trTotalAddOn');
 		});
 		
 		$('#btnDeductions').click(function(){
-			$('<tr class="trAddDeduct trDeductions"><td><?= $this->textM->formfield('text', 'deductName[]', '', 'forminput', 'Deduction Name') ?></td><td><?= $this->textM->formfield('number', 'deductAmount[]', '', 'forminput inputdeduct', 'Deduction Amount', 'style="width:250px;" onBlur="getTotalDeduct()"') ?> <button type="button" onClick="removeDeduct(this)">- Remove</button></td></tr>').insertBefore('#trTotalDeduct');
+			$('<tr class="trAddDeduct trDeductions"><td><?= $this->textM->formfield('text', 'deductName[]', '', 'forminput', 'Deduction Name') ?></td><td><?= $this->textM->formfield('number', 'deductAmount[]', '', 'forminput inputdeduct', 'Deduction Amount', 'style="width:250px;" onBlur="getTotalDeduct()" step="any"') ?> <button type="button" onClick="removeDeduct(this)">- Remove</button></td></tr>').insertBefore('#trTotalDeduct');
 		});
 	});
 	
@@ -616,8 +620,9 @@
 				if(a==e){
 					if((fval=='' && sval!='') || (fval!='' && sval==''))
 						checker = false;
-					else if(fval!='' && sval!='')
-						newAddOn[fval] = sval;
+					else if(fval!='' && sval!=''){
+						newAddOn[e] = [fval, sval];
+					}
 				}
 			});
 		});
@@ -630,7 +635,7 @@
 					if((ffval=='' && ssval!='') || (ffval!='' && ssval==''))
 						checker = false;
 					else if(ffval!='' && ssval!='')
-						newDeduction[ffval] = ssval;
+						newDeduction[e] = [ffval, ssval];
 				}
 			});
 		});
