@@ -1037,11 +1037,15 @@ class Payrollmodel extends CI_Model {
 			$payDate .= date('d-M-Y', strtotime($date))."\n";
 			
 			if(isset($payArr[$date])){
+				$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+				$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
+				
 				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
 				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
-				$attendance .= (($payArr[$date]->deductions>0)?'-':'').$this->textM->convertNumFormat($payArr[$date]->deductions)."\n";
+				$attendance .= $regTaken."\n";
 				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
-				$taxWithheld .= $this->textM->convertNumFormat($payArr[$date]->incomeTax)."\n";
+				$taxWithheld .= $incomeTax."\n";
+				
 				
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 				
@@ -1054,9 +1058,9 @@ class Payrollmodel extends CI_Model {
 									
 				$totalIncome += $payArr[$date]->earning;
 				$totalSalary += $payArr[$date]->basePay;
-				$totalDeduction += $payArr[$date]->deductions;
+				$totalDeduction += $regTaken;
 				$totalTaxable += $payArr[$date]->totalTaxable;					
-				$totalTaxWithheld += $payArr[$date]->incomeTax;					
+				$totalTaxWithheld += $incomeTax;					
 				$total13th += $month13c;					
 				$totalNet += $payArr[$date]->net;						
 			}else{
