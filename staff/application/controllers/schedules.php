@@ -501,7 +501,7 @@ class Schedules extends MY_Controller {
 						$updateSched['datePublished'] = '0000-00-00 00:00:00';
 						$updateSched['publishBy'] = '';
 						$updateSched['schedHour'] = 0;
-						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$data['schedData']['date']), $updateSched);
+						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$data['schedData']['date'], 'empID_fk'=>$data['schedData']['id']), $updateSched);
 						
 						echo '<script>
 							alert("Schedule has been removed");
