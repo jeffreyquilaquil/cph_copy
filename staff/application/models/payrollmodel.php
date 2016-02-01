@@ -1024,6 +1024,7 @@ class Payrollmodel extends CI_Model {
 		
 		$salary = $payInfo->monthlyRate;
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
+		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 		$leaveAmount = $payInfo->addLeave * $dailyRate;		
 		
 		$payArr = array();
@@ -1158,7 +1159,7 @@ class Payrollmodel extends CI_Model {
 		$leftAdd .= "Unpaid Salary\n";		
 		$rightAdd = $this->textM->convertNumFormat($payInfo->add13th)."\n";
 		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->addLeave." remaining leave credits x ".$dailyRate." daily rate)\n";
-		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $dailyRate)." (".$payInfo->addUnpaid." hours x ".$dailyRate.")\n";
+		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $hourlyRate)." (".$payInfo->addUnpaid." hours x ".$hourlyRate.")\n";
 		
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
