@@ -29,7 +29,7 @@
 					<ul class="dropmenu">
 						<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
 							<ul class="dropleft">
-								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'" class="iframe">View Details</a></li>
+								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'" target="_blank">View Details</a></li>
 								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'" class="iframe">Re-compute Last Pay</a></li>
 								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'&show=pdf" target="_blank">View PDF File</a></li>
 							</ul>

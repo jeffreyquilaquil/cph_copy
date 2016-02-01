@@ -15,6 +15,9 @@
 	
 	$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 	
+	$totalSSS = 0;
+	$totalPhilhealth = 0;
+	$totalPagIbig = 0;
 	$totalIncome = 0;
 	$totalSalary = 0;
 	$totalDeduction = 0;
@@ -85,10 +88,19 @@
 				$payArr[$m->payDate] = $m;
 			}
 			
+			if($pageType=='showpay') $paycolspan = 12;
+			else $paycolspan = 9;
+			
 			echo '<table class="tableInfo">';
-				echo '<tr class="trlabel"><td colspan=8>Monthly Details&nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" class="droptext" onClick="showHide(\'trtaxIncome\', this)">Hide</a>]</td></tr>';
+				echo '<tr class="trlabel"><td colspan='.$paycolspan.'>Monthly Details&nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" class="droptext" onClick="showHide(\'trtaxIncome\', this)">Hide</a>]</td></tr>';
 				echo '<tr class="trhead">';
 					echo '<td>Payslip Date</td>';
+					if($pageType=='showpay'){
+						echo '<td>SSS</td>';
+						echo '<td>Philhealth</td>';
+						echo '<td>Pag-ibig</td>';
+					}
+					
 					echo '<td>Gross Income</td>';
 					echo '<td>Basic Salary</td>';
 					echo '<td>Attendance Deduction</td>';
@@ -96,35 +108,66 @@
 					echo '<td>Tax Withheld</td>';
 					echo '<td>13th Month Pay</td>';
 					echo '<td>NET Pay</td>';
+					echo '<td><br/></td>';
 				echo '</tr>';
 				
 			$month13 = 0;
 			foreach($dateArr AS $date){
 				echo '<tr class="trtaxIncome">';
 					echo '<td>'.date('d-M-Y', strtotime($date)).'</td>';
+					
 					if(isset($payArr[$date])){
+						$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+						$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
+						
+						if($pageType=='showpay'){
+							$ss1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['sss']:'0.00');
+							$phil1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:'0.00');
+							$pag1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:'0.00');
+							
+							echo '<td>'.$ss1.'</td>';
+							echo '<td>'.$phil1.'</td>';
+							echo '<td>'.$pag1.'</td>';
+							
+							$totalSSS += $ss1;
+							$totalPhilhealth += $phil1;
+							$totalPagIbig += $pag1;		
+						}
+						
+						
+						
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->earning).'</td>';
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->basePay).'</td>';
-						echo '<td>'.(($payArr[$date]->deductions>0)?'-':'').$this->textM->convertNumFormat($payArr[$date]->deductions).'</td>';
+						echo '<td>'.(($regTaken>0)?'-':'').$regTaken.'</td>';
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->totalTaxable).'</td>';
-						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->incomeTax).'</td>';
+						echo '<td>'.$incomeTax.'</td>';
 						
 						//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 						if($staffInfo->endDate>=date('Y').'-01-25'){
-							$month13 = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+							$month13 = ($payArr[$date]->basePay - $regTaken)/12;
 						}
 						
 						echo '<td>'.$this->textM->convertNumFormat($month13).'</td>'; 
 						echo '<td><b><a href="javascript:void(0);" title="Click to remove" onClick="requestRemove('.$payArr[$date]->payslipID.')">'.$this->textM->convertNumFormat($payArr[$date]->net).'</a></b></td>';
 						
+						echo '<td><a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/payslipdetail/'.$payArr[$date]->payslipID.'/" target="_blank"><img src="'.$this->config->base_url().'css/images/view-icon2.png" width="20px"></a></td>';
+						
+						
+						
 						$totalIncome += $payArr[$date]->earning;
 						$totalSalary += $payArr[$date]->basePay;
-						$totalDeduction += $payArr[$date]->deductions;
+						$totalDeduction += $regTaken;
 						$totalTaxable += $payArr[$date]->totalTaxable;					
-						$totalTaxWithheld += $payArr[$date]->incomeTax;					
+						$totalTaxWithheld += $incomeTax;					
 						$total13th += $month13;					
 						$totalNet += $payArr[$date]->net;						
 					}else{
+						if($pageType=='showpay'){
+							echo '<td>0.00</td>';
+							echo '<td>0.00</td>';
+							echo '<td>0.00</td>';
+						}
+						
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
@@ -132,11 +175,17 @@
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
+						echo '<td><br/></td>';
 					}
 				echo '</tr>';
 			}
 			echo '<tr class="weightbold" style="background-color:#ddd;">';
 				echo '<td>TOTALS</td>';
+				if($pageType=='showpay'){
+					echo '<td>'.$this->textM->convertNumFormat($totalSSS).'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalPhilhealth).'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalPagIbig).'</td>';
+				}
 				echo '<td>'.$this->textM->convertNumFormat($totalIncome).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalSalary).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalDeduction).'</td>';
@@ -144,10 +193,11 @@
 				echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalNet).'</td>';
+				echo '<td><br/></td>';
 			echo '</tr>';
 
 			echo '<tr class="trtaxIncome">';
-				echo '<td colspan=8><i class="errortext">*** Click net pay if you want to remove generated payslip.</i></td>';
+				echo '<td colspan='.$paycolspan.'><i class="errortext">*** Click net pay if you want to remove generated payslip.</i></td>';
 			echo '</tr>';
 			echo '</table>';
 		
@@ -373,7 +423,16 @@
 					echo '<td id="netLastPay">'.((isset($payInfo->netLastPay))?$this->textM->convertNumFormat($payInfo->netLastPay):'0.00').'</td>';
 				echo '</tr>';
 				
+				
+				
 				if($pageType=='showpay'){
+					///SUMMARY OF GOVERNMENT CONTRIBUTIONS
+					echo '<tr class="summary"><td colspan=2><br/></td></tr>';
+					echo '<tr class="trhead"><td colspan=2>Summary of Government Contributions</td></tr>';
+					echo '<tr><td>SSS</td><td>'.$this->textM->convertNumFormat($totalSSS).'</td></tr>';
+					echo '<tr><td>Philhealth</td><td>'.$this->textM->convertNumFormat($totalPhilhealth).'</td></tr>';
+					echo '<tr><td>Pag-ibig</td><td>'.$this->textM->convertNumFormat($totalPagIbig).'</td></tr>';
+					
 					echo '<tr>';
 						echo '<td>Generated By</td>';
 						echo '<td><i>'.$payInfo->generatedBy.' '.date('d-M-Y h:i a', strtotime($payInfo->dateGenerated)).'</i></td>';
@@ -388,9 +447,6 @@
 					echo '</tr>';
 				}
 			echo '</table>';
-			
-			
-			
 			
 			echo '<script type="text/javascript">';
 			echo '$(function(){';

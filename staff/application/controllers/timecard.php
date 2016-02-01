@@ -1734,9 +1734,25 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
 				$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
-				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
+				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net', 
 				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
 				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+				
+				$data['dataMonthItems'] = array();
+				if(count($data['dataMonth'])>0){
+					$slipID = '';
+					foreach($data['dataMonth'] AS $m){
+						$slipID .= $m->payslipID.',';
+					}
+					if(!empty($slipID)){
+						$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+						if(count($queryItems)>0){
+							foreach($queryItems AS $item){
+								$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
+							}
+						}
+					}
+				}
 			}
 							
 			///THIS IS FOR THE PDF
