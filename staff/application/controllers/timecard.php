@@ -1687,12 +1687,15 @@ class Timecard extends MY_Controller {
 						$_POST[$k] = str_replace(',','',$p);
 					}
 					
-					$_POST['addOns'] = addslashes(serialize($_POST['addOns']));
-					$_POST['addDeductions'] = addslashes(serialize($_POST['addDeductions']));
+					if(!empty($_POST['addOns'])) $_POST['addOns'] = addslashes(serialize($_POST['addOns']));
+					else $_POST['addOns']='';
+					
+					if(!empty($_POST['addDeductions'])) $_POST['addDeductions'] = addslashes(serialize($_POST['addDeductions']));
+					else $_POST['addDeductions']='';
 					
 					$_POST['generatedBy'] = $this->user->username;
 					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
-					
+										
 					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
