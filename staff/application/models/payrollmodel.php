@@ -1154,10 +1154,14 @@ class Payrollmodel extends CI_Model {
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
 		
 		///ADD ONS
-		$leftAdd = "13th Month Pay\n";
+		$leftAdd = '';
+		$rightAdd = '';
+		
+		if($payInfo->add13th>0) $leftAdd .= "13th Month Pay\n";		
 		$leftAdd .= "Unused Leave Credits\n";
 		$leftAdd .= "Unpaid Salary\n";		
-		$rightAdd = $this->textM->convertNumFormat($payInfo->add13th)."\n";
+		
+		if($payInfo->add13th>0) $rightAdd .= $this->textM->convertNumFormat($payInfo->add13th)."\n";
 		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->addLeave." remaining leave credits x ".$dailyRate." daily rate)\n";
 		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $hourlyRate)." (".$payInfo->addUnpaid." hours x ".$hourlyRate.")\n";
 		
