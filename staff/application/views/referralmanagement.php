@@ -9,13 +9,13 @@
 <div id="tab-1" class="tab-content current">
 	<table class="tableInfo datatable">
 		<thead>
-			<tr class="trhead">
-				<td>Date Submitted</td>
-				<td>Employee Name</td>
-				<td>Referral Last Name</td>
-				<td>Referral First Name</td>
-				<td>Referral Email Add</td>
-				<td>Referral Contact #</td>
+			<tr>
+				<th>Date Submitted</th>
+				<th>Employee Name</th>
+				<th>Referral Last Name</th>
+				<th>Referral First Name</th>
+				<th>Referral Email Add</th>
+				<th>Referral Contact #</th>
 			</tr>
 		</thead>
 	<?php
@@ -36,10 +36,10 @@
 <div id="tab-2" class="tab-content">
 	<table class="tableInfo datatable">
 		<thead>
-			<tr class="trhead">
-				<td>Employee Name</td>
-				<td>Referral Bonus<br/><i class="fs11px weightnormal">Php 500 will be given first if bonus is more than 500</i></td>
-				<td>Action</td>
+			<tr>
+				<th>Employee Name</th>
+				<th>Referral Bonus<br/><i class="fs11px weightnormal">Php 500 will be given first if bonus is more than 500</i></th>
+				<th>Action</th>
 			</tr>
 		</thead>
 	<?php
@@ -78,10 +78,10 @@
 	<table class="tableInfo datatable">
 		<thead>
 			<tr class="trhead">
-				<td>Employee Name</td>
-				<td>Referral Bonus</td>
-				<td>Released Date</td>
-				<td>MRB ID #</td>
+				<th>Employee Name</th>
+				<th>Referral Bonus</th>
+				<th>Released Date</th>
+				<th>MRB ID #</th>
 			</tr>
 		</thead>
 	<?php
