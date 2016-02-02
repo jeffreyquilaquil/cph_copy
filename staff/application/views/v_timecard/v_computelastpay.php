@@ -286,17 +286,19 @@
 				echo '</tr>';	
 
 				///START WITHHOLDING TAX ALLOCATION
+				$totalTaxWithheld = abs($totalTaxWithheld);
 				echo '<tr class="trTaxAlloc trlabel">';
 					echo '<td colspan=2>Withholding Tax Allocation</td>';
-				echo '</tr>';			
-				echo '<tr class="trTaxAlloc">';
-					echo '<td width="270px">Income Tax Withheld</td>';
-					echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '</tr>';
 				echo '<tr class="trTaxAlloc">';
 					echo '<td>Income Tax Due for the Year</td>';
 					echo '<td id="val_yearDue">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->taxDue):'0.00').'</td>';
+				echo '</tr>';				
+				echo '<tr class="trTaxAlloc">';
+					echo '<td width="270px">Income Tax Withheld</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '</tr>';
+				
 				echo '<tr id="trtaxRefund" class="trTaxAlloc weightbold" style="background-color:#bbb;">';
 					echo '<td>Tax <span class="txtRefund">Refund</span> for the year '.date('Y', strtotime($periodTo)).'</td>';
 					echo '<td id="val_taxRefund">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->taxRefund):'0.00').'</td>';
