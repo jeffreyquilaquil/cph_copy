@@ -1772,7 +1772,7 @@ class Timecard extends MY_Controller {
 					
 					if($acc==false) $data['access'] = false;
 					else exit;
-				}else{
+				}else{					
 					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 						$this->payrollM->pdfLastPay($data);
 						exit;
