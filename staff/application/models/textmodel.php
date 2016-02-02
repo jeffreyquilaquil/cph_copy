@@ -184,22 +184,22 @@ class Textmodel extends CI_Model {
 	function displaycis($info, $status){
 		$disp = '<table class="tableInfo datatable tblcis_'.$status.'">
 				<thead>
-					<tr class="trhead" align="center">
-						<td>Employee\'s Name</td>
-						<td>Date Filed</td>
-						<td>Effective Date</td>
-						<td>Changes<br/>
+					<tr>
+						<th>Employee\'s Name</th>
+						<th>Date Filed</th>
+						<th>Effective Date</th>
+						<th>Changes<br/>
 							<hr/>
 							<div style="width:100%; color:#555555; font-style:italic;">
 								<span style="float:left;">Type</span>
 								<span style="text-align:center;">'.(($status==3)?'Previous':'Current').' Info</span>
 								<span style="float:right;">New Info</span>
 							</div>
-						</td>
-						<td>Immediate Supervisor</td>
-						<td>Prepared By</td>
-						<td><br/></td>
-						<td><br/></td>
+						</th>
+						<th>Immediate Supervisor</th>
+						<th>Prepared By</th>
+						<th><br/></th>
+						<th><br/></th>
 					</tr>
 				</thead>
 			';
