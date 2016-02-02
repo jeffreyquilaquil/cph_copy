@@ -408,7 +408,8 @@ class Schedules extends MY_Controller {
 					exit;
 				}else if($_POST['submitType']=='removeSched'){
 					$dateToday = date('Y-m-d');
-					$marjune = unserialize (trim($_POST['schedArr'])); 									
+					$marjune = unserialize (trim($_POST['schedArr'])); 
+					
 					foreach($marjune AS $dateF=>$abel){
 						foreach($abel AS $no){
 							if(isset($no['sched'])){
@@ -441,8 +442,11 @@ class Schedules extends MY_Controller {
 									$upArr['publishNote'] = 0;
 									$upArr['publishBy'] = 0;
 									$upArr['status'] = 0;
-									$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$dateF, 'empID_fk'=>$no['id']), $upArr);						
+									$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$dateF, 'empID_fk'=>$no['id']), $upArr);										
 								}
+								
+								//insert to tcTimelogUpdates
+								$this->timeM->addToLogUpdate($no['id'], $dateF, '<b>Removed schedule</b><br/>Reason:'.$_POST['reason']);
 							}
 						}
 					}
@@ -502,6 +506,9 @@ class Schedules extends MY_Controller {
 						$updateSched['publishBy'] = '';
 						$updateSched['schedHour'] = 0;
 						$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogDate'=>$data['schedData']['date'], 'empID_fk'=>$data['schedData']['id']), $updateSched);
+						
+						//insert to tcTimelogUpdates
+						$this->timeM->addToLogUpdate($data['schedData']['id'], $data['schedData']['date'], '<b>Removed schedule</b><br/>Reason:'.$_POST['reason']);
 						
 						echo '<script>
 							alert("Schedule has been removed");

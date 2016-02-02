@@ -362,7 +362,8 @@ class Timecard extends MY_Controller {
 			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);				
 						
 			//this is for on leave			
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);			
+			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
+
 			foreach($querySchedule AS $leave){
 				if(isset($leave['leaveID'])){
 					$datej = date('j', strtotime($leave['schedDate']));
@@ -377,7 +378,7 @@ class Timecard extends MY_Controller {
 				
 			//this is for logs for the calendar month			
 			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk, status', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND showStatus=1');
-		
+	
 			foreach($dateLogs AS $dl){
 				$numDay = $dl->dayLogDate;
 				
@@ -484,17 +485,26 @@ class Timecard extends MY_Controller {
 				
 				$data['dayArr'][$k] = $want;				
 			}
-									
+												
 			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
 			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
-			$str5daysbefore = strtotime($data['currentDate'].' -5 days'); //strtotime 7 days before today
-			foreach($data['dayArr'] AS $h=>$m){
+			if(date('m') != date('m', strtotime($data['today']))) $daddyEnd = date('t', strtotime($data['today']));
+			else $daddyEnd = date('j', strtotime($data['today']));
+				
+			for($daddy=1; $daddy<=$daddyEnd; $daddy++){
+				if($checkIfUser && isset($displayArray[$daddy]['status']) && $displayArray[$daddy]['status']==0)
+					$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'Request Update');
+				
+				$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'View Details');
+			}
+			
+			/* foreach($data['dayArr'] AS $h=>$m){
 				if($checkIfUser && isset($displayArray[$h]['status']) && $displayArray[$h]['status']==0){					
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
 				}					
 				
 				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
-			}
+			} */
 			
 			
 			//CHECK FOR PENDING LOG REQUEST
@@ -1005,14 +1015,7 @@ class Timecard extends MY_Controller {
 				$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upA);
 				$this->dbmodel->updateConcat('tcTimelogUpdates', 'updateID="'.$_POST['updateID'].'"', 'message', '<br/><i style="font-size:11px;"><u>Change status to DONE - by '.$this->user->username.'</u></i><br/>');
 			}else if($_POST['submitType']=='removeLog'){				
-				$upLog['empID_fk'] = $data['visitID'];
-				$upLog['logDate'] = $data['today'];
-				$upLog['message'] = '<b>Previous record deleted. Remove reason:</b><br/>'.$_POST['removeReason'];
-				$upLog['status'] = 0;
-				$upLog['updatedBy'] = $this->user->username;
-				$upLog['dateRequested'] = date('Y-m-d H:i:s');
-				$upLog['dateUpdated'] = $upLog['dateRequested'];
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $upLog);
+				$this->timeM->addToLogUpdate($data['visitID'], $data['today'], '<b>Previous record deleted. <br/>Remove reason:</b> '.$_POST['removeReason']);
 				
 				$this->dbmodel->updateQueryText('tcStaffLogPublish', 'showStatus=0', 'slogID="'.$_POST['slogID'].'"');
 			}

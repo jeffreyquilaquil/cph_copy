@@ -15,6 +15,8 @@
 			<b style="font-size:14px;" class="errortext tacenter">Are you sure you want to remove the staff schedules on the left side?</b><br/><br/>
 			<form action="" method="POST" onSubmit="displaypleasewait();">				
 			<?php
+				echo $this->textM->formfield('textarea', 'reason', '', 'forminput', 'Type reason for removing schedule...', 'required');
+				
 				echo $this->textM->formfield('submit', '', 'Yes', 'btnclass btngreen').'&nbsp;&nbsp;';
 				echo $this->textM->formfield('button', '', 'No', 'btnclass', '', 'onClick="parent.$.colorbox.close(); return false;"');
 				
