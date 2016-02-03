@@ -16,7 +16,7 @@
 	<hr/>
 	<p>Please fill out the form below with the supporting documents to request for medicine reimbursement. Kindly take note that your request will not be processed if you do not submit the original prescription plus official receipt and complete this form.</p>
 	
-	<?php if( isset($error) AND !empty($error) ){
+	<?php if( isset($error_txt) AND !empty($error_txt) ){
 		echo nl2br($error);
 	} ?>
 	
