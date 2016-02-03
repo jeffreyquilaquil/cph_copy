@@ -41,8 +41,11 @@
 	$amountOptions = $this->textM->constantArr('payAmountOptions');
 	foreach($amountOptions AS $k=>$am)
 		$arrPayAmountOptions[$k] = (($k!='specific amount')?'computed base on ':'').$am;
-						
-	echo '<form id="formUpdate" action="" method="POST" onSubmit="displaypleasewait();">';
+	
+	if( $dynamic_call == false ){
+			echo '<form id="formUpdate" action="" method="POST" onSubmit="displaypleasewait();">';
+	}
+	
 	echo '<table class="tableInfo">';			
 		echo '<tr>';
 			echo '<td width="25%">Item Name</td>';
@@ -152,6 +155,7 @@
 		echo '<tr id="trsubmission" class="hidden">';
 			echo '<td><br/></td><td>';
 				if($pageType=='addItem'){
+					
 					echo $this->textM->formfield('submit', '', 'Add Item', 'btnclass btngreen');
 					echo $this->textM->formfield('hidden', 'submitType', 'addItem');
 				}else{
@@ -161,7 +165,9 @@
 						
 						echo $this->textM->formfield('hidden', 'payID', $dataItemInfo->payID);
 					}else{
-						echo $this->textM->formfield('submit', '', 'Update', 'btnclass btngreen');
+						if( $dynamic_call == false ){
+							echo $this->textM->formfield('submit', '', 'Add Item to Payslip', 'btnclass btngreen');
+						} 						
 						echo $this->textM->formfield('hidden', 'submitType', 'updateItem');
 					
 						if(isset($dataItemInfo->payID)) echo $this->textM->formfield('hidden', 'payID', $dataItemInfo->payID);
@@ -175,7 +181,10 @@
 			echo '</td>';
 		echo '</tr>';
 	echo '</table>';
-	echo '</form>';
+	
+	if( $dynamic_call == false ){
+		echo '</form>';
+	}
 		
 	if($pageType=='addItem' || $pageType=='empUpdate'){
 		echo '<script>';

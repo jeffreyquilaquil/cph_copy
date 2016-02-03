@@ -50,6 +50,7 @@ class MY_Controller extends CI_Controller {
 		$access->accessFullFinance = false;
 		$access->accessFullHRFinance = false;
 		$access->accessHRFinance = false;
+		$access->accessMedPerson = false;
 		
 		if($this->user!=false){
 			$access->myaccess = explode(',',$this->user->access);
@@ -57,10 +58,12 @@ class MY_Controller extends CI_Controller {
 			if(in_array('hr', $access->myaccess)) $access->accessHR = true;
 			if(in_array('finance', $access->myaccess)) $access->accessFinance = true;
 			if(in_array('exec', $access->myaccess)) $access->accessExec = true;
+			if(in_array('med_person', $access->myaccess)) $access->accessMedPerson = true;
 			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
-			if(count(array_intersect($access->myaccess,array('full','finance')))>0) $access->accessFullFinance = true;
+			if(count(array_intersect($access->myaccess,array('full','finance','med_finance')))>0) $access->accessFullFinance = true;
 			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;
 			if(count(array_intersect($access->myaccess,array('hr','finance')))>0) $access->accessHRFinance = true;
+			
 		}
 		
 		return $access;
@@ -68,6 +71,14 @@ class MY_Controller extends CI_Controller {
 
 	function checklogged($username, $pw){
 		return $query = $this->dbmodel->dbQuery('SELECT empID, username, password, active FROM staffs WHERE username = "'.$username.'" AND password = "'.md5($pw).'" LIMIT 1');
+	}
+	
+	function isSetNotEmpty($val){
+		if( isset($val) AND !empty($val) ){
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 

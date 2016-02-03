@@ -222,6 +222,8 @@ class Commonmodel extends CI_Model {
 			}
 		
 			$cnt = $this->dbmodel->getSingleField('tcTimelogUpdates', 'count(logDate)', 'status=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+		}else if( $type == 'medrequests' ){
+			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
 		}
 		
 		return $cnt;

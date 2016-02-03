@@ -360,6 +360,79 @@ class Textmodel extends CI_Model {
 		return $disp;
 	}
 	
+	//medicine reimbursement views
+	function reimbursementTableDisplay($data_query, $status, $datatable = true){
+		
+		$status_labels = $this->textM->constantArr('medrequest');
+		$id = uniqid();
+		$hideArr = array('pending_med', 'pending_accounting', 'all');
+		$disp = '<div id="tbl'.$status.'">
+				<table class="tableInfo fs11px" id="tbl_'.$id.'">
+				<thead>
+					<tr>
+						<th>Employee Name</th>
+						<th>Prescription Date</th>
+						<th>Requested Amount</th>
+						<th>Status</th>												
+						<th><br/></th> 
+					</tr>
+				</thead>
+				<tbody>
+				';
+						
+		foreach($data_query AS $row){
+			if( $status == 'pending_med' ){
+				if( $row->status == 0 ){
+					$disp .= '<tr>
+							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
+							<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
+							<td>'.$row->requested_amount.'</td>
+							<td>'.$status_labels[ $row->status ].'<td>
+							<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+						</tr>
+					';
+				}
+			} else if( $status == 'pending_accounting' ){
+				if( $row->status == 1 ){
+					$disp .= '<tr>
+							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
+							<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
+							<td>'.$row->requested_amount.'</td>
+							<td>'.$status_labels[ $row->status ].'<td>
+							<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+						</tr>
+					';
+				}
+			} else {
+				$disp .= '<tr>
+						<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
+						<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
+						<td>'.$row->requested_amount.'</td>
+						<td>'.$status_labels[ $row->status ].'<td>
+						<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+					</tr>
+				';
+			}
+		
+			
+		}
+		$disp .= '</tbody></table>
+				</div>';
+		
+		if( $datatable == true ){
+			echo '<script>
+				$(function(){
+					$("table#tbl'.$id.'").dataTable();					
+				});
+			</script>';
+		}
+
+		
+		return $disp;
+	}
+	
+	
+	
 	//assign $time to empty if you dont want to call customTimeArrayByCat function. Please call customTimeArrayByCat first if this is loop
 	function customTimeSelect($val='', $fvalue=''){
 		$time = $this->commonM->customTimeArrayByCat();		
@@ -758,6 +831,15 @@ class Textmodel extends CI_Model {
 					'6'=>'Written Warning VOID. Pending upload signed written warning (IS).',
 					'7'=>'Signed written warning on file (uploaded).'
 				);
+		}else if($a == 'medrequest'){
+			$arr = array(
+					'0' => 'Waiting on approval from medical personnel',
+					'1' => 'Approved by medical personnel',
+					'2' => 'Approved by accounting',
+					'3' => 'Disapproved by medical personnel',
+					'4' => 'Disapproved by accounting',
+					'5' => 'Cancelled'
+			);
 		}
 		
 		return $arr;
@@ -962,6 +1044,8 @@ class Textmodel extends CI_Model {
 		
 		return $txt;
 	}
+	
+	
 	
 	
 	

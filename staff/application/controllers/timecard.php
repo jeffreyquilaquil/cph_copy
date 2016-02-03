@@ -1326,6 +1326,8 @@ class Timecard extends MY_Controller {
 	public function manangepaymentitem($data){
 		$data['content'] = 'v_timecard/v_manange_paymentitems';
 		
+		$data['dynamic_call'] = false;
+		
 		if($this->user!=false){
 			if(isset($_GET['pageType']) && $_GET['pageType']=='empUpdate' && !isset($_GET['payID']) && !isset($_GET['staffPayID'])){
 				header('Location:'.$this->config->base_url().'timecard/'.$data['visitID'].'/mypayrollsetting/');
