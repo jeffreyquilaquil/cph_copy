@@ -398,7 +398,7 @@ class Staffmodel extends CI_Model {
 		
 		
 		$pdf->SetFont('Arial','B',11);
-		$pdf->setXY(20, 228);
+		$pdf->setXY(20, 226);
 		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false); //immediate supervisor
 		
 		$pdf->setXY(80, 228);
