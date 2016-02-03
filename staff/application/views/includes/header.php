@@ -74,7 +74,7 @@
 						echo '<li '.(($segment2=='managepayroll')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managepayroll/">Manage Payroll</a></li>';
 						//echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';
 					}
-						
+					
 					
 				echo '</ul>';
 			
@@ -103,6 +103,7 @@
 					$staffLeavesNum = $this->commonM->countResults('staffLeaves');
 					$nteNum = $this->commonM->countResults('nte');
 					$eval90th = $this->commonM->countResults('eval90th');
+					$medrequests = $this->commonM->countResults('medrequests');
 					
 					if($this->access->accessFullHR==true){
 						echo '<li '.(($content=='incidentreports')?'class="current"':'').'><a href="'.$this->config->base_url().'incidentreports/">HR Incident Reports</a></li>';
@@ -119,7 +120,11 @@
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
-					}			
+					}
+						
+					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
+						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
+					}
 						
 					echo '</ul>';
 				echo '</li>';
