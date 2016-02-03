@@ -4047,7 +4047,7 @@ class Staff extends MY_Controller {
 					
 					//if we have error, throw it to views
 					if( isset($error_data) AND !empty($error_data) ){
-						foreach( $upload_data as $key1 => $val1 ){
+						foreach( $error_data as $key1 => $val1 ){
 							$data['error'] .= $val1 ."\n";
 						}						
 					}					
