@@ -3702,7 +3702,7 @@ class Staff extends MY_Controller {
 				$data['access'] = false;
 			}else{	
 				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
-				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateSubmitted DESC');
 			}
 		}
 		
