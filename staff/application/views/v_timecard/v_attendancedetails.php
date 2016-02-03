@@ -36,6 +36,8 @@ if(count($queryUnPublished)>0){
 				echo '</td>';
 				if($this->access->accessFullHRFinance==true){
 					echo '<td><a href="'.$this->config->base_url().'timecard/'.$unpublished->empID_fk.'/viewlogdetails/?d='.$unpublished->slogDate.'&back=attendancedetails&publish=show"><button>Publish</button></a></td>';
+				}else{
+					echo '<td><a href="'.$this->config->base_url().'timecard/'.$unpublished->empID_fk.'/viewlogdetails/?d='.$unpublished->slogDate.'&back=attendancedetails"><button>View Details</button></a></td>';
 				}
 			echo '</tr>';
 		}
