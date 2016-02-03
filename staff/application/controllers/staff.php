@@ -4003,6 +4003,7 @@ class Staff extends MY_Controller {
 			} else {
                 $data['employee_info'] = $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, CONCAT(fname," ", lname) AS "name"', 'empID = '.$this->user->empID);
                 $data['pageview_type'] = 'file';
+                $data['header'] = 'Request a Medicine Reimbursement';
 			}		
 			//if we have post data then save
 			if( isset($_POST) AND !empty($_POST) ){
@@ -4077,7 +4078,6 @@ class Staff extends MY_Controller {
 				}
 			}
 		}
-		$this->output->enable_profiler(true);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
