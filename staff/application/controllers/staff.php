@@ -3709,6 +3709,7 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/template', $data);	
 	}
 	
+	
 	public function incidentreportaction(){
 		$data['content'] = 'incidentreportaction';
 		if($this->user==false){
