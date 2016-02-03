@@ -2371,7 +2371,7 @@ class Staff extends MY_Controller {
 					$upArr['reason'] = $_POST['reason'];
 					$upArr['effectivedate'] = date('Y-m-d',strtotime($_POST['effectivedate']));
 					
-					if($_POST['effectivedate']<=date('F d, Y')){
+					if($_POST['effectivedate']<=date('Y-m-d')){
 						$upArr['status'] = 3;
 						$chtext = '';
 						
@@ -3702,12 +3702,13 @@ class Staff extends MY_Controller {
 				$data['access'] = false;
 			}else{	
 				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
-				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateSubmitted DESC');
 			}
 		}
 		
 		$this->load->view('includes/template', $data);	
 	}
+	
 	
 	public function incidentreportaction(){
 		$data['content'] = 'incidentreportaction';

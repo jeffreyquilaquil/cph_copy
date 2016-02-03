@@ -982,6 +982,7 @@ class Payrollmodel extends CI_Model {
 		$staffInfo = $data['staffInfo'];
 		$dateArr = $data['dateArr'];
 		$dataMonth = $data['dataMonth'];
+		$dataMonthItems = $data['dataMonthItems'];
 		
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -1020,27 +1021,39 @@ class Payrollmodel extends CI_Model {
 		$totalTaxWithheld = 0;
 		$total13th = 0;
 		$totalNet = 0;
+		$totalSSS = 0;
+		$totalPhilhealth = 0;
+		$totalPagIbig = 0;
 		$personalExemption = 50000;	
 		
 		$salary = $payInfo->monthlyRate;
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
+		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 		$leaveAmount = $payInfo->addLeave * $dailyRate;		
 		
 		$payArr = array();
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
-		
+				
 		$month13c = 0;
 		foreach($dateArr AS $date){
 			$payDate .= date('d-M-Y', strtotime($date))."\n";
 			
 			if(isset($payArr[$date])){
+				$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+				$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
+				
+				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
+				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
+				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
+				
 				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
 				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
-				$attendance .= (($payArr[$date]->deductions>0)?'-':'').$this->textM->convertNumFormat($payArr[$date]->deductions)."\n";
+				$attendance .= $regTaken."\n";
 				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
-				$taxWithheld .= $this->textM->convertNumFormat($payArr[$date]->incomeTax)."\n";
+				$taxWithheld .= $incomeTax."\n";
+				
 				
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 				
@@ -1053,11 +1066,11 @@ class Payrollmodel extends CI_Model {
 									
 				$totalIncome += $payArr[$date]->earning;
 				$totalSalary += $payArr[$date]->basePay;
-				$totalDeduction += $payArr[$date]->deductions;
+				$totalDeduction += $regTaken;
 				$totalTaxable += $payArr[$date]->totalTaxable;					
-				$totalTaxWithheld += $payArr[$date]->incomeTax;					
+				$totalTaxWithheld += $incomeTax;					
 				$total13th += $month13c;					
-				$totalNet += $payArr[$date]->net;						
+				$totalNet += $payArr[$date]->net;					
 			}else{
 				$gross .= "0.00\n";
 				$basicSal .= "0.00\n";
@@ -1153,16 +1166,30 @@ class Payrollmodel extends CI_Model {
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
 		
 		///ADD ONS
-		$leftAdd = "13th Month Pay\n";
+		$leftAdd = '';
+		$rightAdd = '';
+		
+		if($payInfo->add13th>0) $leftAdd .= "13th Month Pay\n";		
 		$leftAdd .= "Unused Leave Credits\n";
 		$leftAdd .= "Unpaid Salary\n";		
-		$rightAdd = $this->textM->convertNumFormat($payInfo->add13th)."\n";
-		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->add13th." remaining leave credits x ".$dailyRate." daily rate)\n";
-		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $dailyRate)." (".$payInfo->addUnpaid." days x ".$dailyRate.")\n";
+		
+		if($payInfo->add13th>0) $rightAdd .= $this->textM->convertNumFormat($payInfo->add13th)."\n";
+		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->addLeave." remaining leave credits x ".$dailyRate." daily rate)\n";
+		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $hourlyRate)." (".$payInfo->addUnpaid." hours x ".$hourlyRate.")\n";
+		
+		if(!empty($payInfo->addOns)){
+			$addArr = unserialize(stripslashes($payInfo->addOns));
+			foreach($addArr AS $add){
+				if(isset($add[0]) && isset($add[1])){
+					$leftAdd .= ucwords($add[0])."\n";
+					$rightAdd .= $this->textM->convertNumFormat($add[1])."\n";
+				}
+			}
+		}
 		
 		$pdf->SetFont('Arial','',8);
-		$pdf->setXY(15, 23); $pdf->MultiCell(60, 4, $leftAdd,0,'L',false);
-		$pdf->setXY(75, 23); $pdf->MultiCell(80, 4, $rightAdd,0,'L',false);
+		$pdf->setXY(15, 20); $pdf->MultiCell(60, 4, $leftAdd,0,'L',false);
+		$pdf->setXY(75, 20); $pdf->MultiCell(80, 4, $rightAdd,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',8);
 		$pdf->setXY(75, 43); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->addTotal)); 
@@ -1183,9 +1210,19 @@ class Payrollmodel extends CI_Model {
 			$rightDeduct .= $this->textM->convertNumFormat($payInfo->deductResti)."\n";
 		}
 		
+		if(!empty($payInfo->addDeductions)){
+			$dedArr = unserialize(stripslashes($payInfo->addDeductions));
+			foreach($dedArr AS $ded){
+				if(isset($ded[0]) && isset($ded[1])){
+					$leftDeduct .= ucwords($ded[0])."\n";
+					$rightDeduct .= $this->textM->convertNumFormat($ded[1])."\n";
+				}
+			}
+		}
+		
 		$pdf->SetFont('Arial','',8);
-		$pdf->setXY(15, 65); $pdf->MultiCell(60, 4, $leftDeduct,0,'L',false);
-		$pdf->setXY(75, 65); $pdf->MultiCell(60, 4, $rightDeduct,0,'L',false);
+		$pdf->setXY(15, 63); $pdf->MultiCell(60, 4, $leftDeduct,0,'L',false);
+		$pdf->setXY(75, 63); $pdf->MultiCell(60, 4, $rightDeduct,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',8);
 		$pdf->setXY(75, 83.7); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->deductTotal));
@@ -1205,9 +1242,19 @@ class Payrollmodel extends CI_Model {
 		$pdf->SetFont('Arial','B',14);
 		$pdf->setXY(75, 126); $pdf->Write(0, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay)); ///NET LAST PAY
 		
+		////SUMMARY OF GOVERNMENT CONTRIBUTIONS
+		$pdf->SetFont('Arial','',9);
+		$pdf->setXY(15, 158); $pdf->Write(0, 'SSS');
+		$pdf->setXY(75, 158); $pdf->Write(0, $this->textM->convertNumFormat($totalSSS));
+		$pdf->setXY(15, 163); $pdf->Write(0, 'Philhealth');
+		$pdf->setXY(75, 163); $pdf->Write(0, $this->textM->convertNumFormat($totalPhilhealth));
+		$pdf->setXY(15, 168); $pdf->Write(0, 'Pag-ibig');
+		$pdf->setXY(75, 168); $pdf->Write(0, $this->textM->convertNumFormat($totalPagIbig));
+		
+		
 		$pdf->SetFont('Arial','B',11);
-		$pdf->setXY(61, 219.8); $pdf->MultiCell(34, 5, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay),0,'C',false); //received amount of
-		$pdf->setXY(128, 245.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
+		$pdf->setXY(61, 216.2); $pdf->MultiCell(34, 5, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay),0,'C',false); //received amount of
+		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
 		
 		$pdf->Output('lastpay.pdf', 'I');		
 	}	

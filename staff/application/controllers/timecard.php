@@ -362,7 +362,8 @@ class Timecard extends MY_Controller {
 			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);				
 						
 			//this is for on leave			
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);			
+			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
+
 			foreach($querySchedule AS $leave){
 				if(isset($leave['leaveID'])){
 					$datej = date('j', strtotime($leave['schedDate']));
@@ -377,7 +378,7 @@ class Timecard extends MY_Controller {
 				
 			//this is for logs for the calendar month			
 			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk, status', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND showStatus=1');
-		
+	
 			foreach($dateLogs AS $dl){
 				$numDay = $dl->dayLogDate;
 				
@@ -484,17 +485,26 @@ class Timecard extends MY_Controller {
 				
 				$data['dayArr'][$k] = $want;				
 			}
-									
+												
 			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
 			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
-			$str5daysbefore = strtotime($data['currentDate'].' -5 days'); //strtotime 7 days before today
-			foreach($data['dayArr'] AS $h=>$m){
+			if(date('m') != date('m', strtotime($data['today']))) $daddyEnd = date('t', strtotime($data['today']));
+			else $daddyEnd = date('j', strtotime($data['today']));
+				
+			for($daddy=1; $daddy<=$daddyEnd; $daddy++){
+				if($checkIfUser && isset($displayArray[$daddy]['status']) && $displayArray[$daddy]['status']==0)
+					$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'Request Update');
+				
+				$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'View Details');
+			}
+			
+			/* foreach($data['dayArr'] AS $h=>$m){
 				if($checkIfUser && isset($displayArray[$h]['status']) && $displayArray[$h]['status']==0){					
 					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
 				}					
 				
 				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
-			}
+			} */
 			
 			
 			//CHECK FOR PENDING LOG REQUEST
@@ -1005,14 +1015,7 @@ class Timecard extends MY_Controller {
 				$this->dbmodel->updateQuery('tcTimelogUpdates', array('updateID'=>$_POST['updateID']), $upA);
 				$this->dbmodel->updateConcat('tcTimelogUpdates', 'updateID="'.$_POST['updateID'].'"', 'message', '<br/><i style="font-size:11px;"><u>Change status to DONE - by '.$this->user->username.'</u></i><br/>');
 			}else if($_POST['submitType']=='removeLog'){				
-				$upLog['empID_fk'] = $data['visitID'];
-				$upLog['logDate'] = $data['today'];
-				$upLog['message'] = '<b>Previous record deleted. Remove reason:</b><br/>'.$_POST['removeReason'];
-				$upLog['status'] = 0;
-				$upLog['updatedBy'] = $this->user->username;
-				$upLog['dateRequested'] = date('Y-m-d H:i:s');
-				$upLog['dateUpdated'] = $upLog['dateRequested'];
-				$this->dbmodel->insertQuery('tcTimelogUpdates', $upLog);
+				$this->timeM->addToLogUpdate($data['visitID'], $data['today'], '<b>Previous record deleted. <br/>Remove reason:</b> '.$_POST['removeReason']);
 				
 				$this->dbmodel->updateQueryText('tcStaffLogPublish', 'showStatus=0', 'slogID="'.$_POST['slogID'].'"');
 			}
@@ -1669,7 +1672,7 @@ class Timecard extends MY_Controller {
 	public function computelastpay(){
 		$data['content'] = 'v_timecard/v_computelastpay';
 		
-		if($this->user!=false){
+		if($this->user!=false){			
 			if(!empty($_POST['submitType'])){
 				if($_POST['submitType']=='submitPeriod'){						
 					header('Location:'.$this->config->base_url().'timecard/computelastpay/?empID='.$_GET['empID'].'&periodFrom='.$_POST['periodFromYear'].'-01-01'.'&periodTo='.date('Y-m-t', strtotime($_POST['periodToYear'].'-'.$_POST['periodToMonth'].'-01')));
@@ -1683,14 +1686,21 @@ class Timecard extends MY_Controller {
 				}else if($_POST['submitType']=='removePayslip'){
 					$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
 					exit;
-				}else if($_POST['submitType']=='savecomputation'){ //saving computation
+				}else if($_POST['submitType']=='savecomputation'){ //saving computation				
 					unset($_POST['submitType']);						
 					foreach($_POST AS $k=>$p){
 						$_POST[$k] = str_replace(',','',$p);
 					}
-										
+					
+					if(!empty($_POST['addOns'])) $_POST['addOns'] = addslashes(serialize($_POST['addOns']));
+					else $_POST['addOns']='';
+					
+					if(!empty($_POST['addDeductions'])) $_POST['addDeductions'] = addslashes(serialize($_POST['addDeductions']));
+					else $_POST['addDeductions']='';
+					
 					$_POST['generatedBy'] = $this->user->username;
 					$_POST['dateGenerated'] = date('Y-m-d H:i:s');
+																				
 					$lastpayID = $this->dbmodel->getSingleField('tcLastPay', 'lastpayID', 'empID_fk="'.$_POST['empID_fk'].'"');
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
@@ -1718,7 +1728,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.$empID.'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
@@ -1729,9 +1739,25 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
 				$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
-				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deductions, (SELECT payValue FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payAmount="taxTable") AS incomeTax', 
+				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net', 
 				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
 				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+				
+				$data['dataMonthItems'] = array();
+				if(count($data['dataMonth'])>0){
+					$slipID = '';
+					foreach($data['dataMonth'] AS $m){
+						$slipID .= $m->payslipID.',';
+					}
+					if(!empty($slipID)){
+						$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+						if(count($queryItems)>0){
+							foreach($queryItems AS $item){
+								$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
+							}
+						}
+					}
+				}
 			}
 							
 			///THIS IS FOR THE PDF
@@ -1751,7 +1777,7 @@ class Timecard extends MY_Controller {
 					
 					if($acc==false) $data['access'] = false;
 					else exit;
-				}else{
+				}else{					
 					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 						$this->payrollM->pdfLastPay($data);
 						exit;

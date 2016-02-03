@@ -14,8 +14,8 @@ class MyCrons extends MY_Controller {
 	public function cancelledLeavesUnattended24Hrs(){	
 		$now = time();
 		$date24hours = date('Y-m-d H:i:s', strtotime('-1 day'));
-		$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3 AND status!=5 AND iscancelled=0) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")'); 
-		
+		$query = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, empID_fk, date_requested, iscancelled, datecancelled', '(approverID=0 AND date_requested<"'.$date24hours.'" AND status!=3 AND status!=5 AND iscancelled=0) OR (iscancelled=2 AND datecancelled<"'.$date24hours.'")');
+						
 		foreach($query AS $q):
 			if($q->iscancelled==2) $thedate = $q->datecancelled;
 			else $thedate = $q->date_requested;
@@ -58,7 +58,11 @@ class MyCrons extends MY_Controller {
 			echo '<pre>';
 			print_r($q);
 			echo '</pre>';
-		endforeach;		
+		endforeach;	
+
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS cancelledLeavesUnattended24Hrs '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		
 		exit;
 	}
 	
@@ -69,6 +73,11 @@ class MyCrons extends MY_Controller {
 			$this->dbmodel->updateQuery('staffCodes', array('codeID'=>$c->codeID), array('status'=>0));
 			$this->commonM->addMyNotif($c->generatedBy, "The code $c->code you generated was unused and automatically expired.", 0, 1, 0);		
 		endforeach;
+		
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS expiregeneratedcode '.date('Y-m-d H:i:s'), 'RESULTS: '.count($codes).'<pre>'.print_r($codes, true).'</pre>', 'CAREERPH');
+		
+		exit;
 	}
 	
 	/***** 
@@ -118,8 +127,9 @@ class MyCrons extends MY_Controller {
 			}
 		endforeach;
 		
-		echo '<pre>';
-		print_r($query);
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS resetAnnivLeaveCredits '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		
 		exit;
 	}
 		
@@ -154,6 +164,9 @@ class MyCrons extends MY_Controller {
 		endforeach;
 		echo count($query);
 
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS accessenddate '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		
 		exit;
 	}
 	
@@ -193,6 +206,10 @@ class MyCrons extends MY_Controller {
 			$this->commonM->addMyNotif($q->preparedby, 'The CIS you generated for <a href="'.$this->config->base_url().'staffinfo/'.$q->username.'/">'.$q->name.'</a> has been reflected to his/her employee details. Click <a href="'.$this->config->base_url().'cispdf/'.$q->cisID.'/" class="iframe">here</a> to check details.<br/>'.$chtext, 0, 1, 0);
 		endforeach;
 		echo count($query);
+		
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS updateStaffCIS '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		exit;
 	}
 	
 	public function coachingEvaluation(){
@@ -250,6 +267,11 @@ class MyCrons extends MY_Controller {
 		}
 		
 		echo 'Number of pending signed documents: '.count($printQ).'<br/>';
+		
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS coachingEvaluation pending evaluations '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS coachingEvaluation pending signed documents '.date('Y-m-d H:i:s'), 'RESULTS: '.count($printQ).'<pre>'.print_r($printQ, true).'</pre>', 'CAREERPH');
+		
 		exit;		
 	}
 	
@@ -307,6 +329,12 @@ class MyCrons extends MY_Controller {
 		echo '<pre>';
 		print_r($query);
 		print_r($queryIM);
+		
+		
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS ntePendings query'.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS ntePendings queryIM'.date('Y-m-d H:i:s'), 'RESULTS: '.count($queryIM).'<pre>'.print_r($queryIM, true).'</pre>', 'CAREERPH');
+		
 		exit;	
 	}
 	
@@ -346,6 +374,10 @@ class MyCrons extends MY_Controller {
 		if(!empty($toMeEmailContent)){
 			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS '.date('Y-m-d').' - email90thdayemployment', $toMeEmailContent, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net');
 		}
+		
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS email90thdayemployment '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		exit;
 	}
 	
 	public function emailPreEmploymentRequirements(){

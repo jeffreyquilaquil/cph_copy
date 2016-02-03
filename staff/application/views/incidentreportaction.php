@@ -52,7 +52,7 @@
 			<td>
 			<?php
 				echo $reportStatus[$details->status].'&nbsp;&nbsp;';
-				if($type!='action' && $this->access->accessFullHR==true) echo '<button onClick="window.location.href=\''.$this->config->base_url().'incidentreportaction/action/'.$details->reportID.'/\'">Update</button>';
+				if($type!='action' && $this->access->accessFullHR==true && $details->status!=10) echo '<button onClick="window.location.href=\''.$this->config->base_url().'incidentreportaction/action/'.$details->reportID.'/\'">Update</button>';
 			?>
 			</td>
 		</tr>
@@ -65,7 +65,7 @@
 			<td>
 			<?php
 				echo '<span class="spanwhere">'.$details->where.'</span>';
-				if($this->access->accessFullHR===true){
+				if($this->access->accessFullHR===true && $details->status!=10){
 					echo ' <button class="spanwhere" onClick="showEditWhere()">Edit</button>';
 					echo '<form id="formEditWhere" class="hidden" action="" method="POST">';
 						echo $this->textM->formfield('text', 'where', $details->where, 'forminput', '', 'required');

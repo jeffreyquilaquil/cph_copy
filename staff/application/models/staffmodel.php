@@ -265,151 +265,149 @@ class Staffmodel extends CI_Model {
 		$pdf->setXY(142, 59);
 		$pdf->Write(0, date('F d, Y', strtotime($cis->effectivedate)));	
 		
-		$cnum=0;
-		$cval = array();
 		$changes = json_decode($cis->changes);	
 		$pdf->SetFont('Arial','I',10);	
+		
+		$nextY = 85;
 		if(isset($changes->position)){
-			$cval[$cnum][0] = 'Change in Position Title';
-			$cval[$cnum][1] = $changes->position->c;
-			$cval[$cnum][2] = $changes->position->n;
-			$cnum++;
-		}		
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Position Title",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4, $changes->position->c,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->position->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();			
+		}	
+						
 		if(isset($changes->office)){
-			$cval[$cnum][0] = 'Change in Office Branch';
-			$cval[$cnum][1] = (($changes->office->c!='')?strtoupper($changes->office->c):'None');
-			$cval[$cnum][2] = strtoupper($changes->office->n);
-			$cnum++;
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Office Branch",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,(($changes->office->c!='')?strtoupper($changes->office->c):'None'),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, strtoupper($changes->office->n),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();	
 		}	
 		if(isset($changes->shift)){
-			$cval[$cnum][0] = 'Change in Shift Schedule';
-			$cval[$cnum][1] = (($changes->shift->c!='')?$changes->shift->c:'None');
-			$cval[$cnum][2] = $changes->shift->n;
-			$cnum++;
-		}
-		if(isset($changes->supervisor)){
-			$cval[$cnum][0] = 'Change in Immediate Supervisor';
-			$cval[$cnum][1] = $changes->supervisor->c;
-			$cval[$cnum][2] = $changes->supervisor->n;
-			$cnum++;
-		}
-		if(isset($changes->salary)){
-			$cval[$cnum][0] = 'Change in Basic Salary';
-			$cval[$cnum][1] = 'Php '.$this->textM->convertNumFormat($changes->salary->c);
-			$cval[$cnum][2] = 'Php '.$this->textM->convertNumFormat($changes->salary->n);
-			$cnum++;
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Shift Schedule",0,'L',false); $pdf->Ln();
 			
-			$cval[$cnum][0] = 'Justification for salary adjustment:';
-			$cval[$cnum][1] = $changes->salary->com;
-			$cval[$cnum][2] = '';
-			$cnum++;
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,(($changes->shift->c!='')?$changes->shift->c:'None'),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->shift->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+		}
+				
+		if(isset($changes->supervisor)){
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Immediate Supervisor",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,$changes->supervisor->c,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->supervisor->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
 		}
 		
+		if(isset($changes->salary)){
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Basic Salary",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,'Php '.$this->textM->convertNumFormat($changes->salary->c),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, 'Php '.$this->textM->convertNumFormat($changes->salary->n),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			
+			$pdf->SetFont('Arial','I',9);	
+			$pdf->setXY(25, $nextY);
+			$pdf->MultiCell(170, 4, "Justification for salary adjustment:\n".$changes->salary->com,0,'L',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+		}		
+		
+		$pdf->SetFont('Arial','I',10);	
 		if(isset($changes->separationDate)){
-			$cval[$cnum][0] = 'Change in Separation Date';
-			if($changes->separationDate->c=='0000-00-00')
-				$cval[$cnum][1] = 'N/A - Active employee';
-			else 
-				$cval[$cnum][1] = $changes->separationDate->c;
-			$cval[$cnum][2] = $changes->separationDate->n;
-			$cnum++;
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Separation Date",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			if($changes->separationDate->c=='0000-00-00') $pdf->MultiCell(60, 4,'N/A - Active employee',0,'C',false); 
+			else $pdf->MultiCell(60, 4,$changes->separationDate->c,0,'C',false); 
+			$pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->separationDate->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
 		}
 		
 		if(isset($changes->empStatus)){
-			$cval[$cnum][0] = 'Change in Employment Status';
-			$cval[$cnum][1] = ucfirst($changes->empStatus->c);
-			$cval[$cnum][2] = ucfirst($changes->empStatus->n);
-			$cnum++;
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Employment Status",0,'L',false); $pdf->Ln();
 			
-			$cval[$cnum][0] = 'Date when evaluation was conducted:';
-			$cval[$cnum][1] = date('F d, Y', strtotime($changes->empStatus->evalDate));
-			$cval[$cnum][2] = '';
-			$cnum++;
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,ucfirst($changes->empStatus->c),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
 			
-			$cval[$cnum][0] = 'Effective date of regularization:';
-			$cval[$cnum][1] = date('F d, Y', strtotime($changes->empStatus->regDate));
-			$cval[$cnum][2] = '';
-			$cnum++;
-		}
-				
-		if(isset($cval[0])){
-			$pdf->setXY(20, 88); $pdf->Write(0, $cval[0][0]); 
-			$pdf->setXY(80, 86); $pdf->MultiCell(50, 4, $cval[0][1] ,0,'L',false);
-			$pdf->setXY(142, 86); $pdf->MultiCell(50, 4,$cval[0][2] ,0,'L',false);
-		}
-		if(isset($cval[1])){			
-			if($cval[1][0]=='Justification for salary adjustment:'){
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[1][0]);
-				$pdf->setXY(80, 98); $pdf->MultiCell(115, 4, $cval[1][1],0,'L',false);
-			}else{
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[1][0]);
-				$pdf->setXY(85, 103); $pdf->Write(0, $cval[1][1]);
-				$pdf->setXY(140, 103); $pdf->Write(0, $cval[1][2]);
-			}			
-		}
-		if(isset($cval[2])){
-			if($cval[2][0]=='Justification for salary adjustment:'){
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[2][0]);
-				$pdf->setXY(80, 111); $pdf->MultiCell(115, 4, $cval[2][1],0,'L',false);
-			}else{
-				$pdf->setXY(20, 116); $pdf->Write(0, $cval[2][0]);
-				$pdf->setXY(85, 116); $pdf->Write(0, $cval[2][1]);
-				$pdf->setXY(140, 116); $pdf->Write(0, $cval[2][2]);
-			}
-		}
-		if(isset($cval[3])){
-			if($cval[3][0]=='Justification for salary adjustment:'){
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[3][0]);
-				$pdf->setXY(80, 123); $pdf->MultiCell(115, 4, $cval[3][1],0,'L',false);
-			}else{
-				$pdf->setXY(20, 128); $pdf->Write(0, $cval[3][0]);
-				$pdf->setXY(85, 128); $pdf->Write(0, $cval[3][1]);
-				$pdf->setXY(140, 128); $pdf->Write(0, $cval[3][2]);
-			}
-		}
-		if(isset($cval[4])){
-			if($cval[4][0]=='Justification for salary adjustment:'){
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[4][0]);
-				$pdf->setXY(80, 136); $pdf->MultiCell(115, 4, $cval[4][1],0,'L',false);
-			}else{
-				$pdf->setXY(20, 141); $pdf->Write(0, $cval[4][0]);
-				$pdf->setXY(85, 141); $pdf->Write(0, $cval[4][1]);
-				$pdf->setXY(140, 141); $pdf->Write(0, $cval[4][2]);
-			}
-		}
-		if(isset($cval[5])){
-			if($cval[5][0]=='Justification for salary adjustment:'){
-				$pdf->setXY(20, 103); $pdf->Write(0, $cval[5][0]);
-				$pdf->setXY(80, 148); $pdf->MultiCell(115, 4, $cval[5][1],0,'L',false);
-			}else{
-				$pdf->setXY(20, 153); $pdf->Write(0, $cval[5][0]);
-				$pdf->setXY(85, 153); $pdf->Write(0, $cval[5][1]);
-				$pdf->setXY(140, 153); $pdf->Write(0, $cval[5][2]);
-			}
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, ucfirst($changes->empStatus->n),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Date when evaluation was conducted:",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,date('F d, Y', strtotime($changes->empStatus->evalDate)),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Effective date of regularization:",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4,date('F d, Y', strtotime($changes->empStatus->regDate)),0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
 		}
 		
-		$cnum++;
-		if($cnum==1){ $pdf->setXY(75, 91); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==2){  $pdf->setXY(75, 103); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==3){  $pdf->setXY(75, 116); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==4){  $pdf->setXY(75, 128); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==5){  $pdf->setXY(75, 141); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==6){  $pdf->setXY(75, 153); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
-		else if($cnum==7){  $pdf->setXY(75, 165); $pdf->Write(0, '--------- NOTHING FOLLOWS ---------'); }
+		$pdf->setXY(18, $nextY);
+		$pdf->MultiCell(170, 4, '------------------------------------- NOTHING FOLLOWS ------------------------------------',0,'C',false);
+		
 		
 		$pdf->SetFont('Arial','B',11);
-		if(strlen($isupname)<21) $pdf->setXY(20, 209);
-		else $pdf->setXY(20, 205);
+		$pdf->setXY(20, 225);
 		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false); //immediate supervisor
 		
-		if(strlen($nsupname)<21) $pdf->setXY(80, 209);
-		else $pdf->setXY(80, 205);
+		$pdf->setXY(80, 225);
 		$pdf->MultiCell(50, 4, strtoupper($nsupname),0,'C',false); //second level manager
 			
-		$pdf->setXY(128, 209);
+		$pdf->setXY(128, 225);
 		$pdf->MultiCell(70, 4, strtoupper($this->user->name),0,'C',false); //Reviewed by
 	
-		$pdf->setXY(45, 240);	
+		$pdf->setXY(45, 258);	
 		$pdf->MultiCell(120, 4, strtoupper($cis->name) ,0,'C',false); //name of employee
 			
 		

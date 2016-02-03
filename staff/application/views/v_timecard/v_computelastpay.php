@@ -15,6 +15,9 @@
 	
 	$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 	
+	$totalSSS = 0;
+	$totalPhilhealth = 0;
+	$totalPagIbig = 0;
 	$totalIncome = 0;
 	$totalSalary = 0;
 	$totalDeduction = 0;
@@ -85,10 +88,19 @@
 				$payArr[$m->payDate] = $m;
 			}
 			
+			if($pageType=='showpay') $paycolspan = 12;
+			else $paycolspan = 9;
+			
 			echo '<table class="tableInfo">';
-				echo '<tr class="trlabel"><td colspan=8>Monthly Details&nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" class="droptext" onClick="showHide(\'trtaxIncome\', this)">Hide</a>]</td></tr>';
+				echo '<tr class="trlabel"><td colspan='.$paycolspan.'>Monthly Details&nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" class="droptext" onClick="showHide(\'trtaxIncome\', this)">Hide</a>]</td></tr>';
 				echo '<tr class="trhead">';
 					echo '<td>Payslip Date</td>';
+					if($pageType=='showpay'){
+						echo '<td>SSS</td>';
+						echo '<td>Philhealth</td>';
+						echo '<td>Pag-ibig</td>';
+					}
+					
 					echo '<td>Gross Income</td>';
 					echo '<td>Basic Salary</td>';
 					echo '<td>Attendance Deduction</td>';
@@ -96,35 +108,66 @@
 					echo '<td>Tax Withheld</td>';
 					echo '<td>13th Month Pay</td>';
 					echo '<td>NET Pay</td>';
+					echo '<td><br/></td>';
 				echo '</tr>';
 				
 			$month13 = 0;
 			foreach($dateArr AS $date){
 				echo '<tr class="trtaxIncome">';
 					echo '<td>'.date('d-M-Y', strtotime($date)).'</td>';
+					
 					if(isset($payArr[$date])){
+						$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+						$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
+						
+						if($pageType=='showpay'){
+							$ss1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['sss']:'0.00');
+							$phil1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:'0.00');
+							$pag1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:'0.00');
+							
+							echo '<td>'.$ss1.'</td>';
+							echo '<td>'.$phil1.'</td>';
+							echo '<td>'.$pag1.'</td>';
+							
+							$totalSSS += $ss1;
+							$totalPhilhealth += $phil1;
+							$totalPagIbig += $pag1;		
+						}
+						
+						
+						
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->earning).'</td>';
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->basePay).'</td>';
-						echo '<td>'.(($payArr[$date]->deductions>0)?'-':'').$this->textM->convertNumFormat($payArr[$date]->deductions).'</td>';
+						echo '<td>'.(($regTaken>0)?'-':'').$regTaken.'</td>';
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->totalTaxable).'</td>';
-						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->incomeTax).'</td>';
+						echo '<td>'.$incomeTax.'</td>';
 						
 						//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 						if($staffInfo->endDate>=date('Y').'-01-25'){
-							$month13 = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+							$month13 = ($payArr[$date]->basePay - $regTaken)/12;
 						}
 						
 						echo '<td>'.$this->textM->convertNumFormat($month13).'</td>'; 
 						echo '<td><b><a href="javascript:void(0);" title="Click to remove" onClick="requestRemove('.$payArr[$date]->payslipID.')">'.$this->textM->convertNumFormat($payArr[$date]->net).'</a></b></td>';
 						
+						echo '<td><a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/payslipdetail/'.$payArr[$date]->payslipID.'/" target="_blank"><img src="'.$this->config->base_url().'css/images/view-icon2.png" width="20px"></a></td>';
+						
+						
+						
 						$totalIncome += $payArr[$date]->earning;
 						$totalSalary += $payArr[$date]->basePay;
-						$totalDeduction += $payArr[$date]->deductions;
+						$totalDeduction += $regTaken;
 						$totalTaxable += $payArr[$date]->totalTaxable;					
-						$totalTaxWithheld += $payArr[$date]->incomeTax;					
+						$totalTaxWithheld += $incomeTax;					
 						$total13th += $month13;					
 						$totalNet += $payArr[$date]->net;						
 					}else{
+						if($pageType=='showpay'){
+							echo '<td>0.00</td>';
+							echo '<td>0.00</td>';
+							echo '<td>0.00</td>';
+						}
+						
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
@@ -132,11 +175,17 @@
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
 						echo '<td>0.00</td>';
+						echo '<td><br/></td>';
 					}
 				echo '</tr>';
 			}
 			echo '<tr class="weightbold" style="background-color:#ddd;">';
 				echo '<td>TOTALS</td>';
+				if($pageType=='showpay'){
+					echo '<td>'.$this->textM->convertNumFormat($totalSSS).'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalPhilhealth).'</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalPagIbig).'</td>';
+				}
 				echo '<td>'.$this->textM->convertNumFormat($totalIncome).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalSalary).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalDeduction).'</td>';
@@ -144,10 +193,11 @@
 				echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
 				echo '<td>'.$this->textM->convertNumFormat($totalNet).'</td>';
+				echo '<td><br/></td>';
 			echo '</tr>';
 
 			echo '<tr class="trtaxIncome">';
-				echo '<td colspan=8><i class="errortext">*** Click net pay if you want to remove generated payslip.</i></td>';
+				echo '<td colspan='.$paycolspan.'><i class="errortext">*** Click net pay if you want to remove generated payslip.</i></td>';
 			echo '</tr>';
 			echo '</table>';
 		
@@ -236,17 +286,19 @@
 				echo '</tr>';	
 
 				///START WITHHOLDING TAX ALLOCATION
+				$totalTaxWithheld = abs($totalTaxWithheld);
 				echo '<tr class="trTaxAlloc trlabel">';
 					echo '<td colspan=2>Withholding Tax Allocation</td>';
-				echo '</tr>';			
-				echo '<tr class="trTaxAlloc">';
-					echo '<td width="270px">Income Tax Withheld</td>';
-					echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '</tr>';
 				echo '<tr class="trTaxAlloc">';
 					echo '<td>Income Tax Due for the Year</td>';
 					echo '<td id="val_yearDue">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->taxDue):'0.00').'</td>';
+				echo '</tr>';				
+				echo '<tr class="trTaxAlloc">';
+					echo '<td width="270px">Income Tax Withheld</td>';
+					echo '<td>'.$this->textM->convertNumFormat($totalTaxWithheld).'</td>';
 				echo '</tr>';
+				
 				echo '<tr id="trtaxRefund" class="trTaxAlloc weightbold" style="background-color:#bbb;">';
 					echo '<td>Tax <span class="txtRefund">Refund</span> for the year '.date('Y', strtotime($periodTo)).'</td>';
 					echo '<td id="val_taxRefund">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->taxRefund):'0.00').'</td>';
@@ -269,7 +321,7 @@
 					$leaveAmount = $payInfo->addLeave * $dailyRate;
 				}
 				echo '<tr class="trAddOns"><td colspan=2><br/></td></tr>';
-				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons</td></tr>';
+				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnAddOn">+ Add</button>':'').'</td></tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>13th Month Pay</td>';
 					echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
@@ -289,14 +341,28 @@
 						echo $this->textM->formfield('number', 'unpaidSal', '0.00', 'padding5px', '', 'step="any" style="width:50px"').' hours x '.$hourlyRate.' = <b id="unpaid">0.00</b>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="'.$this->config->base_url().'timecard/'.$staffInfo->empID.'/timelogs/" target="_blank">Visit Timelogs</a>]';
 					}
 				echo '</tr>';
-				echo '<tr class="weightbold trAddOns" style="background-color:#bbb;">';
+				
+				///ADDITIONAL ADD ONS
+				if(!empty($payInfo->addOns)){
+					$addArr = unserialize(stripslashes($payInfo->addOns));
+					foreach($addArr AS $add){
+						if(isset($add[0]) && isset($add[1])){
+							echo '<tr class="trAddOns">';
+								echo '<td>'.ucwords($add[0]).'</td>';
+								echo '<td>'.$this->textM->convertNumFormat($add[1]).'</td>';
+							echo '</tr>';
+						}
+					}
+				}
+				
+				echo '<tr id="trTotalAddOn" class="weightbold trAddOns" style="background-color:#bbb;">';
 					echo '<td>Add Ons Total</td>';
 					echo '<td id="totalAddOn">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->addTotal):$this->textM->convertNumFormat($total13th + $leaveAmount)).'</td>';
 				echo '</tr>';
 				
 				///DEDUCTIONS
 				echo '<tr class="trDeductions"><td colspan=2><br/></td></tr>';
-				echo '<tr class="trlabel trDeductions"><td colspan=2>Deductions</td></tr>';
+				echo '<tr class="trlabel trDeductions"><td colspan=2>Deductions &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnDeductions">+ Add</button>':'').'</td></tr>';
 				if($pageType!='showpay' || ($pageType=='showpay' && $payInfo->deductMaxicare>0)){
 					echo '<tr class="trDeductions">';
 						echo '<td>Maxicare</td>';
@@ -321,7 +387,20 @@
 					echo '</tr>';
 				}
 				
-				echo '<tr class="weightbold trDeductions" style="background-color:#bbb;">';
+				///ADDITIONAL DEDUCTIONS
+				if(!empty($payInfo->addDeductions)){
+					$dedArr = unserialize(stripslashes($payInfo->addDeductions));
+					foreach($dedArr AS $ded){
+						if(isset($ded[0]) && isset($ded[1])){
+							echo '<tr class="trAddOns">';
+								echo '<td>'.ucwords($ded[0]).'</td>';
+								echo '<td>'.$this->textM->convertNumFormat($ded[1]).'</td>';
+							echo '</tr>';
+						}	
+					}
+				}
+				
+				echo '<tr id="trTotalDeduct" class="weightbold trDeductions" style="background-color:#bbb;">';
 					echo '<td>Deductions Total</td>';
 					echo '<td id="totalDeductions">'.(($pageType=='showpay')?$this->textM->convertNumFormat($payInfo->deductTotal):'0.00').'</td>';
 				echo '</tr>';
@@ -346,9 +425,18 @@
 					echo '<td id="netLastPay">'.((isset($payInfo->netLastPay))?$this->textM->convertNumFormat($payInfo->netLastPay):'0.00').'</td>';
 				echo '</tr>';
 				
+				
+				
 				if($pageType=='showpay'){
+					///SUMMARY OF GOVERNMENT CONTRIBUTIONS
+					echo '<tr class="summary"><td colspan=2><br/></td></tr>';
+					echo '<tr class="trhead"><td colspan=2>Summary of Government Contributions</td></tr>';
+					echo '<tr><td>SSS</td><td>'.$this->textM->convertNumFormat($totalSSS).'</td></tr>';
+					echo '<tr><td>Philhealth</td><td>'.$this->textM->convertNumFormat($totalPhilhealth).'</td></tr>';
+					echo '<tr><td>Pag-ibig</td><td>'.$this->textM->convertNumFormat($totalPagIbig).'</td></tr>';
+					
 					echo '<tr>';
-						echo '<td>Generated</td>';
+						echo '<td>Generated By</td>';
 						echo '<td><i>'.$payInfo->generatedBy.' '.date('d-M-Y h:i a', strtotime($payInfo->dateGenerated)).'</i></td>';
 					echo '</tr>';
 				}
@@ -361,9 +449,6 @@
 					echo '</tr>';
 				}
 			echo '</table>';
-			
-			
-			
 			
 			echo '<script type="text/javascript">';
 			echo '$(function(){';
@@ -382,31 +467,79 @@
 <script type="text/javascript">
 	$(function(){		
 		$('input[name="unpaidSal"]').blur(function(){
-			num = $(this).val();
-			if(num==''){
-				num = 0;
-				$(this).val(0);
-			} 
-			
-			dailyRate = parseFloat('<?= $hourlyRate ?>');
-			num = num * dailyRate;
-			
-			totalAddOn = parseFloat('<?= $total13th + $leaveAmount ?>') + parseFloat(num);
-			$('#totalAddOn').text(totalAddOn.toLocaleString()); $('.cls_totalAddOn').text(totalAddOn.toLocaleString());
-			$('#unpaid').text(num.toLocaleString());
-			computeLastPay();
+			getTotalAddOn();
 		});
 		
 		$('.inputdeduct').blur(function(){
-			deductions = 0;
-			if($(this).val()=='') $(this).val(0);
-			
-			deductions = parseFloat($('input[name="maxicare"]').val()) + parseFloat($('input[name="paymentArrears"]').val()) + parseFloat($('input[name="restitution"]').val());
-			$('#totalDeductions').text(deductions.toLocaleString());
-			$('.cls_totalDeductions').text(deductions.toLocaleString());
-			computeLastPay();
+			getTotalDeduct();
+		});
+		
+		$('#btnAddOn').click(function(){
+			$('<tr class="trAddOnAdd trAddOns"><td><?= $this->textM->formfield('text', 'addOnName[]', '', 'forminput', 'Add On Name') ?></td><td><?= $this->textM->formfield('number', 'addOnAmount[]', '', 'forminput', 'Add On Amount', 'style="width:250px;" onBlur="getTotalAddOn()" step="any"') ?> <button type="button" onClick="removeAddOn(this)">- Remove</button></td></tr>').insertBefore('#trTotalAddOn');
+		});
+		
+		$('#btnDeductions').click(function(){
+			$('<tr class="trAddDeduct trDeductions"><td><?= $this->textM->formfield('text', 'deductName[]', '', 'forminput', 'Deduction Name') ?></td><td><?= $this->textM->formfield('number', 'deductAmount[]', '', 'forminput inputdeduct', 'Deduction Amount', 'style="width:250px;" onBlur="getTotalDeduct()" step="any"') ?> <button type="button" onClick="removeDeduct(this)">- Remove</button></td></tr>').insertBefore('#trTotalDeduct');
 		});
 	});
+	
+	function getTotalAddOn(){
+		dailyRate = parseFloat('<?= $hourlyRate ?>');
+		total = parseFloat('<?= $total13th + $leaveAmount ?>');
+		
+		unpaidSal = $('input[name="unpaidSal"]').val();
+		if(unpaidSal==''){
+			unpaidSal = 0;
+			$('input[name="unpaidSal"]').val(0);
+		}
+		unpaidSal = unpaidSal * dailyRate;		
+		total += parseFloat(unpaidSal); ///UNPAID SALARY
+		$('#unpaid').text(unpaidSal.toLocaleString());	
+		
+		///ADD ONS
+		$('input[name="addOnAmount\[\]"]').each(function(){
+			if($.isNumeric($(this).val())){
+				total += parseFloat($(this).val(), 2);
+			}
+		});
+		
+		total = parseFloat(total);
+		$('#totalAddOn').text(total.toLocaleString()); 
+		$('.cls_totalAddOn').text(total.toLocaleString());
+		
+		computeLastPay();
+	}
+	
+	function getTotalDeduct(){
+		deductions = 0;
+		//if($(this).val()=='') $(this).val(0);
+		
+		deductions = parseFloat($('input[name="maxicare"]').val()) + parseFloat($('input[name="paymentArrears"]').val()) + parseFloat($('input[name="restitution"]').val());
+		
+		///additional deductions
+		$('input[name="deductAmount\[\]"]').each(function(){
+			if($.isNumeric($(this).val())){
+				deductions += parseFloat($(this).val(), 2);
+			}
+		});
+		
+		deductions = parseFloat(deductions);
+		$('#totalDeductions').text(deductions.toLocaleString());
+		$('.cls_totalDeductions').text(deductions.toLocaleString());
+		computeLastPay();
+	}
+	
+	function removeAddOn(t){
+		$(t).closest("tr").remove();
+		getTotalAddOn();
+	}
+	
+	function removeDeduct(t){
+		$(t).closest("tr").remove();
+		getTotalDeduct();
+	}
+	
+	
 	
 	function showHideTR(show){
 		if(show==1){ //show
@@ -535,7 +668,38 @@
 	}
 	
 	function savecomputation(){
-		if(confirm('Are you sure you want to save this last pay computation?')){
+		var checker = true;
+		var newAddOn = {};
+		var newDeduction = {};
+		$('input[name="addOnName\[\]"]').each(function(e, t){
+			fval = $(this).val();
+			$('input[name="addOnAmount\[\]"]').each(function(a, z){
+				sval = $(z).val();
+				if(a==e){
+					if((fval=='' && sval!='') || (fval!='' && sval==''))
+						checker = false;
+					else if(fval!='' && sval!=''){
+						newAddOn[e] = [fval, sval];
+					}
+				}
+			});
+		});
+		
+		$('input[name="deductName\[\]"]').each(function(e, t){
+			ffval = $(this).val();
+			$('input[name="deductAmount\[\]"]').each(function(a, z){
+				ssval = $(z).val();
+				if(a==e){
+					if((ffval=='' && ssval!='') || (ffval!='' && ssval==''))
+						checker = false;
+					else if(ffval!='' && ssval!='')
+						newDeduction[e] = [ffval, ssval];
+				}
+			});
+		});
+		
+		if(checker==false) alert('Please check add ons and deductions details.');
+		else if(confirm('Are you sure you want to save this last pay computation?')){
 			displaypleasewait(); 
 			$.post('<?= $this->config->base_url().'timecard/computelastpay/' ?>',{
 				submitType:'savecomputation',
@@ -557,7 +721,9 @@
 				deductArrears:$('input[name="paymentArrears"]').val(),
 				deductResti:$('input[name="restitution"]').val(),
 				deductTotal:$('#totalDeductions').text(),
-				netLastPay:$('#netLastPay').text()
+				netLastPay:$('#netLastPay').text(),
+				addOns:newAddOn,
+				addDeductions:newDeduction
 			},function(id){
 				window.location.href='<?= $this->config->base_url() ?>timecard/computelastpay/?payID='+id;
 			});

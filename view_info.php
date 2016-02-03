@@ -185,7 +185,7 @@ if(count($info)==0){
 			echo '<ul>';
 			foreach($customTemplates AS $c){
 				echo '<li>';
-					echo '<a href="emailTemplate.php?id='.$id.'&type=customtemplate" class="iframe">'.$c['templateName'].'</a>';
+					echo '<a href="emailTemplate.php?id='.$id.'&type=customtemplate&tempID='.$c['templateID'].'" class="iframe">'.$c['templateName'].'</a>';
 					echo '&nbsp;[<a href="emailTemplate.php?type=edittemplate&tempID='.$c['templateID'].'" class="iframe" style="color:red; font-size:12px;">Edit</a>]';
 					echo '&nbsp;[<a href="javascript:void(0);" onClick="deleteCustomEmail('.$c['templateID'].')" style="color:red; font-size:12px;">Delete</a>]';
 				echo '</li>';

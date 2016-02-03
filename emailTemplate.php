@@ -17,7 +17,6 @@ if(!empty($id)){
 	$arrValues['%POSITION%'] = $position;
 }
 
-
 $subject = '';
 $to = '';
 $message;
@@ -358,7 +357,8 @@ if(isset($_POST) && !empty($_POST)){
 		?>
 		</form>
 	<?php }else{
-		$template = $db->selectSingleQueryArray('emailTemplates', 'template, templateName, toEdit' , 'templateType="'.$type.'"');
+		if(isset($_GET['tempID'])) $template = $db->selectSingleQueryArray('emailTemplates', 'template, templateName, toEdit' , 'templateID="'.$_GET['tempID'].'"');
+		else $template = $db->selectSingleQueryArray('emailTemplates', 'template, templateName, toEdit' , 'templateType="'.$type.'"');
 		
 		if($type=='custom' || $type=='hmanager' && !empty($info)){
 			$emailad = ''; 
