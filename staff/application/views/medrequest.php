@@ -1,7 +1,7 @@
 <?php 
 	if( $submitted === true ){
-		echo '<p class="errortext">'.$confirm_msg.'</p>';
-		//<script>parent.location.reload();</script>';
+		echo '<p class="errortext">'.$confirm_msg.'</p>
+		<script>parent.location.reload();</script>';
 	} else { ?>
 
 <form class="leaveForm" action="<?php echo $this->config->base_url(); ?>medrequest/" method="POST" enctype="multipart/form-data" onSubmit="return checkForm();">
