@@ -222,20 +222,35 @@ class Commonmodel extends CI_Model {
 			}
 		
 			$cnt = $this->dbmodel->getSingleField('tcTimelogUpdates', 'count(logDate)', 'status=1'.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
-
-		}else if( $type == 'medrequests' ){
-			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
-
 		}else if($type=='incidentreport'){
 			 $cnt = $this->dbmodel->getSingleField('staffReportViolation', 'count(reportID)', 'status>=1 AND status<10', 'dateSubmitted DESC');
-
 		}
 		
 		return $cnt;
 	}
 	
 	function getStaffUnder($empID, $level){
-		$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+		$query = '';
+		///tweak for design team
+		if($level==2){
+			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
+			if($myDesign->grp=='Design'){
+				$supervisors = '';
+				$supQuery = $this->dbmodel->getQueryResults('staffs', 'DISTINCT empID', 'empID IN (SELECT DISTINCT supervisor FROM staffs WHERE supervisor!=0) AND dept="Production" AND grp!="Editing"', 'LEFT JOIN newPositions ON posID=position');
+				if(count($supQuery)>0){
+					foreach($supQuery AS $sup)
+						$supervisors .= $sup->empID.',';
+				}
+				
+				$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
+			}
+		}
+		
+		
+		if(empty($query)){
+			$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+		}
+		
 		return $query->result();
 	}
 	

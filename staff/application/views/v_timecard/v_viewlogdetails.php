@@ -1,6 +1,6 @@
 <?php
 	$editAccess = false;
-	if($this->access->accessFull==true || ($this->user->empID!=$visitID && ($this->access->accessHRFinance==true || $isUnder!=false))){
+	if($this->access->accessFull==true || ($this->user->empID!=$visitID && $this->access->accessHRFinance==true)){
 		$editAccess = true;
 	}
 		
