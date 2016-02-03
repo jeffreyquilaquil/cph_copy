@@ -2371,7 +2371,7 @@ class Staff extends MY_Controller {
 					$upArr['reason'] = $_POST['reason'];
 					$upArr['effectivedate'] = date('Y-m-d',strtotime($_POST['effectivedate']));
 					
-					if($_POST['effectivedate']<=date('F d, Y')){
+					if($_POST['effectivedate']<=date('Y-m-d')){
 						$upArr['status'] = 3;
 						$chtext = '';
 						
