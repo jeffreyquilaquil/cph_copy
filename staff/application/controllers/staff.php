@@ -268,7 +268,7 @@ class Staff extends MY_Controller {
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
 										
-				if($this->user->access==''){
+				if($this->access->accessFullHRFinance==false){
 					$ids = '"",'; //empty value for staffs with no under yet
 					$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
 					foreach($myStaff AS $m):
@@ -3978,229 +3978,104 @@ class Staff extends MY_Controller {
 		$data['content'] = 'medrequest';
 		$data['submitted'] = false;		
 		$data['disabled'] = '';
-		$data['status_labels'] = $this->textM->constantArr('medrequest');
-		
 		//check if we have session data
 		if($this->user!=false){
-			$med_id = $this->uri->segment(2); 
-			if( $this->isSetNotEmpty($med_id) ){
-				//get data by id in staffMedRequest
-				$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'supporting_docs_url, prescription_date, requested_amount, empID, idNum, CONCAT(fname," ", lname) AS "name", status, medperson_remarks, accounting_remarks, approved_amount', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
-				
-				//get history of request by id
-				$data['med_request_history'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, medperson_remarks, accounting_remarks, approved_amount', 'empID_fk = '. $med_request_info->empID);				
-				
-				$data['header'] = 'Medicine Reimbursement Request of '. $med_request_info->name;
-				$data['employee_info'] = $med_request_info;
-				$data['pageview_type'] = 'approval';
-				$data['med_id'] = $med_id;
-				
-				$data_config['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="33"');
-				$data_config['dynamic_call'] = true;
-				$data_config['pageType'] = 'empUpdate';
-				$data_config['dataItemInfo']->payAmount = $med_request_info->approved_amount;
-				$data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
-				
+			$id = $this->uri->segment(2);
+			if( isset($id) AND !empty($id) ){
+				$data['employee_info'] = $this->dbmodel->getSingleInfo('staffMedRequest', 'medrequestID, empID, idNum, CONCAT(fname, " ", lname) AS "name", prescription_date, requested_amount, date_submitted, supporting_docs_url', 'medrequestID = '. $id, 'LEFT JOIN staffs ON empID_fk = empID');
+				$data['disabled'] = 'disabled';
 			} else {
 				$data['employee_info'] = $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, CONCAT(fname," ", lname) AS "name"', 'empID = '.$this->user->empID);
-				$data['header'] = 'Request a Medicine Reimbursement';
-				$data['pageview_type'] = 'file';
-			}			
+			}		
 			//if we have post data then save
 			if( isset($_POST) AND !empty($_POST) ){
+				$insert_array['empID_fk'] = $this->input->post('empID');
+				$insert_array['prescription_date'] = date('Y-m-d H:i:s', strtotime( $this->input->post('prescription_date') ) );
+				$insert_array['requested_amount'] = $this->input->post('requested_amount');
+				$insert_array['date_submitted'] = date('Y-m-d H:i:s');
 				
-				//med request submission
-				if( $this->isSetNotEmpty($_POST['from_page']) AND $_POST['from_page'] == 'file' ) {
-					$insert_array['empID_fk'] = $this->input->post('empID');
-					$insert_array['prescription_date'] = date('Y-m-d H:i:s', strtotime( $this->input->post('prescription_date') ) );
-					$insert_array['requested_amount'] = $this->input->post('requested_amount');
-					$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+				if( isset($_FILES) AND !empty($_FILES) ){
+					$files = $_FILES;
 					
-					if( $this->isSetNotEmpty($_FILES) ){
-						$files = $_FILES;					
-						/* config data */
-						$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
-						$upload_config['allowed_types'] = 'gif|jpg|png';
-						$upload_config['max_size']	= '2048';
-						$upload_config['overwrite']	= 'FALSE';						
-						$this->load->library('upload');			
-						
-						//check how many to upload
-						$upload_count = count( $_FILES['supporting_docs']['name'] );
-						for( $x = 0; $x < $upload_count; $x++ ){
-							$_FILES['to_upload']['name'] = $files['supporting_docs']['name'][$x];
-							$_FILES['to_upload']['type'] = $files['supporting_docs']['type'][$x];
-							$_FILES['to_upload']['tmp_name'] = $files['supporting_docs']['tmp_name'][$x];
-							$_FILES['to_upload']['error'] = $files['supporting_docs']['error'][$x];
-							$_FILES['to_upload']['size'] = $files['supporting_docs']['size'][$x];
-							
-							$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
-							$uniq_id = uniqid();
-							$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
-							
-							$this->upload->initialize( $upload_config );
-							
-							if( ! $this->upload->do_upload('to_upload') ){
-								$error_data[$x] = $this->upload->display_errors();
-							} else {
-								$upload_data[$x] = $this->upload->data();
-							}
-						}
-						
-						//if we have error, throw it to views
-						if( isset($error_data) AND !empty($error_data) ){
-							foreach( $upload_data as $key1 => $val1 ){
-								$data['error'] .= $val1 ."\n";
-							}						
-						}					
-						if( isset($upload_data) AND !empty($upload_data) ){
-							foreach( $upload_data as $key => $val ){
-								$docs_url[] = $val['full_path'];
-							}
-							$insert_array['supporting_docs_url'] = json_encode( $docs_url );
-							$insert_array['supporting_docs_url'] = addslashes($insert_array['supporting_docs_url']);
-						}					
-					} // end of file upload
+					/* config data */
+					$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
+					$upload_config['allowed_types'] = 'gif|jpg|png';
+					$upload_config['max_size']	= '2048';
+					$upload_config['overwrite']	= 'FALSE';
 					
-					//if we have all data then insert
-					if( $this->isSetNotEmpty($insert_array['supporting_docs_url']) ){
-						$insert_id = $this->dbmodel->insertQuery('staffMedRequest', $insert_array);
+					$this->load->library('upload');
+					
+					//check how many to upload
+					$upload_count = count( $_FILES['supporting_docs']['name'] );
+					for( $x = 0; $x < $upload_count; $x++ ){
+						$_FILES['to_upload']['name'] = $files['supporting_docs']['name'][$x];
+						$_FILES['to_upload']['type'] = $files['supporting_docs']['type'][$x];
+						$_FILES['to_upload']['tmp_name'] = $files['supporting_docs']['tmp_name'][$x];
+						$_FILES['to_upload']['error'] = $files['supporting_docs']['error'][$x];
+						$_FILES['to_upload']['size'] = $files['supporting_docs']['size'][$x];
 						
-						//send notification to staff with med_person access
+						$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+						$uniq_id = uniqid();
+						$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
 						
-						//there can be multiple medical personnel
-						$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');					
+						$this->upload->initialize( $upload_config );
 						
-						$ntexts = 'Requested a medicine reimbursement. Check Manage Staff > Medicine Reimbursement Management page or click <a href="'. $this->config->base_url() .'medrequest/'.$insert_id.'/" class="iframe">here</a> to view the medicine reimbursement details and approve.';
-						foreach( $med_person_id as $key => $val ){
-							$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+						if( ! $this->upload->do_upload('to_upload') ){
+							$error_data[$x] = $this->upload->display_errors();
+						} else {
+							$upload_data[$x] = $this->upload->data();
 						}
-			
-						$data['submitted'] = true;
-						$data['confirm_msg'] = 'Your medicine reimbursement request has been submitted.';
 					}
-				} //end of med request submission
-				
-				//medical personnel approval
-				if( $this->isSetNotEmpty($_POST['from_page']) AND $_POST['from_page'] == 'med_person' ){
 					
-					if( $this->isSetNotEmpty($_POST['medrequestID']) ){
-						//update the status
-						$update_array['status'] = $this->input->post('status_medperson');
-						$update_array['medperson_remarks'] = $this->input->post('remarks_med_person');
-						if( $update_array['status'] == 1 ){
-								$update_array['approved_amount'] = $this->input->post('approved_amount');						
-						} 						
-						$this->dbmodel->updateQuery('staffMedRequest', array('medrequestID' => $this->input->post('medrequestID') ), $update_array);
-						//then insert history
-						$history_array['medrequestID_fk'] = $this->input->post('medrequestID');
-						$history_array['updatedBy'] = $this->user->username;
-						$history_array['dateUpdate'] = date('Y-m-d H:i:s');
-						$history_array['remarks'] = $this->input->post('remarks_med_person');
-						$history_array['currentStatus'] = $update_array['status'];
-						$this->dbmodel->insertQuery('staffMedRequest_history', $history_array);
-						
-						//add notification to accounting that medicine requisition has been approved
-						$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%" OR access LIKE "%full%"');						
-						$ntexts = $data['status_labels'][ $update_array['status'] ] .' the medicine reimbursement request of '. $data['employee_info']->name.'. Check Manage Staff > Medicine Reimbursement Management page or click <a href="'. $this->config->base_url() .'medrequest/'. $this->input->post('medrequestID') .'/" class="iframe">here</a> to view the medicine reimbursement details and approve.';
-						foreach( $finance_id as $key => $val ){
-							$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+					//if we have error, throw it to views
+					if( isset($error_data) AND !empty($error_data) ){
+						foreach( $upload_data as $key1 => $val1 ){
+							$data['error'] .= $val1 ."\n";
+						}						
+					}					
+					if( isset($upload_data) AND !empty($upload_data) ){
+						foreach( $upload_data as $key => $val ){
+							$docs_url[] = $val['full_path'];
 						}
-						$data['submitted'] = true;
-						$data['confirm_msg'] = 'Medicine Reimbursement Request of '. $data['employee_info']->name .' has updated to '. $data['status_labels'][ $update_array['status'] ];
-					}
-				} //end of medical personnel approval
+						$insert_array['supporting_docs_url'] = json_encode( $docs_url );
+						$insert_array['supporting_docs_url'] = addslashes($insert_array['supporting_docs_url']);
+					}					
+				} // end of file upload
 				
-				//accounting approval
-				if( $this->isSetNotEmpty($_POST['from_page']) AND $_POST['from_page'] == 'full_finance' ){
-					var_dump($_POST);
-				
-					if( $this->isSetNotEmpty($_POST['medrequestID']) ){
-						//update the status
-						$update_array['status'] = $this->input->post('status_accounting');
-						$update_array['medperson_remarks'] = $this->input->post('remarks_accounting');						
-						$this->dbmodel->updateQuery('staffMedRequest', array('medrequestID' => $this->input->post('medrequestID') ), $update_array);
-						//then insert history
-						$history_array['medrequestID_fk'] = $this->input->post('medrequestID');
-						$history_array['updatedBy'] = $this->user->username;
-						$history_array['dateUpdate'] = date('Y-m-d H:i:s');
-						$history_array['remarks'] = $this->input->post('remarks_accounting');
-						$history_array['currentStatus'] = $update_array['status'];
-						$this->dbmodel->insertQuery('staffMedRequest_history', $history_array);
-						
-						//add item to payslip and filter out discrepancies
-						$payslip_array = $_POST;
-						if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
-						if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
-						if(!empty($payslip_array['payStart'])) $payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStart']));
-						if(!empty($payslip_array['payEnd'])) $payslip_array['payEnd'] = date('Y-m-d', strtotime($payslip_array['payEnd']));
-						if($payslip_array['payAmount']=='regularHoliday') $payslip_array['payPercent'] = $payslip_array['selectPayPercent'];
-						if($payslip_array['payAmount']=='specialHoliday') $payslip_array['payPercent'] = 2;
-						if($payslip_array['payPeriod']=='once' && !empty($payslip_array['payStartOnce'])){
-							$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
-							$payslip_array['payEnd'] = $payslip_array['payStart'];
-						}
-						$payslip_array['empID_fk'] = $payslip_array['empID'];
-						$payslip_array['payID_fk'] = $payslip_array['payID'];
-						
-						unset($payslip_array['empID']);
-						unset($payslip_array['emp_id']);
-						unset($payslip_array['emp_name']);
-						unset($payslip_array['prescription_date']);
-						unset($payslip_array['requested_amount']);
-						unset($payslip_array['from_page']);
-						unset($payslip_array['status_accounting']);
-						unset($payslip_array['remarks_accounting']);
-						unset($payslip_array['submit']);
-						unset($payslip_array['submitType']);
-						unset($payslip_array['payID']);
-						unset($payslip_array['inputPayAmount']);
-						unset($payslip_array['payAmountHourly']);
-						unset($payslip_array['payStartOnce']);
-						unset($payslip_array['selectPayPercent']);
-						unset($payslip_array['medrequestID']);
-						
-						$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
-						
-						//add notification to user that medicine requisition has been approved						
-						$ntexts = $data['status_labels'][ $update_array['status'] ] . ' your medicine reimbursement request. Click <a href="'. $this->config->base_url() .'medrequest/'.$this->input->post('medrequestID').'/" class="iframe">here</a> to view the medicine reimbursement details.';
+				//if we have all data then insert
+				if( isset($insert_array['supporting_docs_url']) ){
+					$insert_id = $this->dbmodel->insertQuery('staffMedRequest', $insert_array);
+					
+					//send notification to staff with med_person access
+					
+					//there can be multiple medical personnel
+					$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');					
+					
+					$ntexts = 'Requested a medical reimbursement. Check Manage Staff > Medical Reimbursement Management page or click <a href="'. $this->config->base_url() .'medrequest/'.$insert_id.'/" class="iframe">here</a> to view the medical reimbursement details and approve.';
+					foreach( $med_person_id as $key => $val ){
 						$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
-						
-						$data['submitted'] = true;
-						$data['confirm_msg'] = 'Medicine Reimbursement Request of '. $data['employee_info']->name .' has updated to '. $data['status_labels'][ $update_array['status'] ];
 					}
-				} //end of accounting approval
-			} //end of post
-		}
-		//$this->output->enable_profiler(true);
-		$this->load->view('includes/templatecolorbox', $data);
-	}
-	
-	public function medrequests(){
-		$data['content'] = 'medrequests';
 		
-		$data['data_query'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 1, 'LEFT JOIN staffs ON empID = empID_fk');
-		//var_dump($data['data_query']);
-		$this->load->view('includes/template', $data);	
+					$data['submitted'] = true;
+				}
+			}
+		}
+		$this->output->enable_profiler(true);
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	function test(){
 		
-		$med_id = $this->uri->segment(2);
-		var_dump($med_id);
+		$id = $this->uri->segment(2);
+		var_dump($id);
 		
-		$med_person_id = $this->dbmodel->getSingleInfo('staffs', 'empID', 'access LIKE "%med_person%"');
-		
-		$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'empID, idNum, CONCAT(fname," ", lname) AS "name"', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
-		$med_request_history = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, remarks', 'empID_fk = '. $med_request_info->empID);
+		$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');
 			echo '<pre>';
-		/*var_dump($med_person_id);
+		var_dump($med_person_id);
 		foreach( $med_person_id as $key => $val ){
 			var_dump($val->empID);
-		}*/
-		var_dump($med_request_history);
+		}
         echo '</pre>';
-		$this->output->enable_profiler(true);
     }
 	public function reports(){
 		$data['content'] = 'reports';
