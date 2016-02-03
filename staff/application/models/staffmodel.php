@@ -398,13 +398,13 @@ class Staffmodel extends CI_Model {
 		
 		
 		$pdf->SetFont('Arial','B',11);
-		$pdf->setXY(20, 226);
+		$pdf->setXY(20, 225);
 		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false); //immediate supervisor
 		
-		$pdf->setXY(80, 228);
+		$pdf->setXY(80, 225);
 		$pdf->MultiCell(50, 4, strtoupper($nsupname),0,'C',false); //second level manager
 			
-		$pdf->setXY(128, 228);
+		$pdf->setXY(128, 225);
 		$pdf->MultiCell(70, 4, strtoupper($this->user->name),0,'C',false); //Reviewed by
 	
 		$pdf->setXY(45, 258);	
