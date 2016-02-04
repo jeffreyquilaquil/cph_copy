@@ -74,7 +74,10 @@ class Payrollmodel extends CI_Model {
 					if(in_array($k, $grossArr)){
 						if(isset($down['earning'])) $down['earning'] += $cat;
 						else $down['earning'] = $cat;
-					}else $down[$catArr[$k]] = $cat;
+					}
+					
+					if($k!=0 && $k!==7)
+						$down[$catArr[$k]] = $cat;
 				}
 			}
 					
@@ -1069,9 +1072,9 @@ class Payrollmodel extends CI_Model {
 				$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
 				$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
 				
-				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
-				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
-				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
+				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
+				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
+				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
 				
 				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
 				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
@@ -1172,10 +1175,11 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(75, 231); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->taxDue)); //tax due
 		
 		///WITHHOLDING TAX ALLOCATION
-		$leftAlloc = "Income Tax Withheld\n";
-		$leftAlloc .= "Income Tax Due for the Year\n";		
-		$rightAlloc = $this->textM->convertNumFormat($payInfo->taxWithheld)."\n";
-		$rightAlloc .= $this->textM->convertNumFormat($payInfo->taxDue)."\n";
+		$leftAlloc = "Income Tax Due for the Year\n";	
+		$leftAlloc .= "Income Tax Withheld\n";
+		$rightAlloc = $this->textM->convertNumFormat($payInfo->taxDue)."\n";
+		$rightAlloc .= $this->textM->convertNumFormat($payInfo->taxWithheld)."\n";
+		
 		$pdf->SetFont('Arial','',7);
 		$pdf->setXY(15, 246.5); $pdf->MultiCell(60, 4, $leftAlloc,0,'L',false);
 		$pdf->setXY(75, 246.5); $pdf->MultiCell(60, 4, $rightAlloc,0,'L',false);
