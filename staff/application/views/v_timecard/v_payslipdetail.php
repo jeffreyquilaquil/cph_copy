@@ -36,6 +36,14 @@
 		<td>Start Date</td>
 		<td><?= date('F d, Y', strtotime($payInfo->startDate)) ?></td>
 	</tr>
+<?php
+	if($payInfo->endDate!='0000-00-00' && $payInfo->endDate>$payInfo->payPeriodStart && $payInfo->endDate<=$payInfo->payPeriodEnd){
+		echo '<tr>';
+			echo '<td>End Date</td>';
+			echo '<td>'.date('F d, Y', strtotime($payInfo->endDate)).'</td>';
+		echo '</tr>';
+	}
+?>
 	<tr>
 		<td width="20%">Period</td>
 		<td><?= date('F d, Y', strtotime($payInfo->payPeriodStart)).' - '.date('F d, Y', strtotime($payInfo->payPeriodEnd)).' <b>('.(($payInfo->payType=='semi')?'Semi-Monthly':'Monthly').')</b>' ?></td>
@@ -93,7 +101,7 @@
 				echo '<tr>';
 					echo '<td>'.$payCatArr[$d->payCategory].'</td>';
 					echo '<td>'.$d->payName.'</td>';
-					echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').' '.(($d->payAmount=='basePay' && $d->numHR>0)?'days':'').'</td>';
+					echo '<td>'.(($d->numHR>0)?number_format($d->numHR,1):'-').' '.(($d->numHR>0 && ($d->payCode=='basePay' || $d->payCode=='proRatedAllowance'))?'days':'').'</td>';
 					echo '<td>';
 						echo (($d->payType=="debit")?'-':'').$this->textM->convertNumFormat($d->payValue);
 					echo '</td>';
