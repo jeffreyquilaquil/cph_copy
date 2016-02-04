@@ -15,9 +15,14 @@ class Payrollmodel extends CI_Model {
 	******/
 	public function generatepayroll($info){		
 		$empArr = explode(',', rtrim($info['empIDs'], ','));
+		$catArr = $this->textM->constantArr('payCategory');
+		
 		foreach($empArr AS $emp){
 			$empInfo = $this->dbmodel->getSingleInfo('staffs', 'sal, taxstatus', 'empID="'.$emp.'"');
 			$monthlyRate = $this->textM->decryptText($empInfo->sal);
+			
+			if(isset($down)) 
+				unset($down);
 								
 			///INSERT TO tcPayslips			
 			$payslipID = $this->dbmodel->getSingleField('tcPayslips', 'payslipID', 'payrollsID_fk="'.$info['payrollsID'].'" AND empID_fk="'.$emp.'" AND pstatus=1');
@@ -42,8 +47,7 @@ class Payrollmodel extends CI_Model {
 			$down['totalTaxable'] = $taxableIncome;
 			
 			$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType, payCDto, payCategory, payAmount', 'payslipID_fk="'.$payslipID.'"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');		
-			if(count($queryItems)>0){
-				$catArr = $this->textM->constantArr('payCategory');
+			if(count($queryItems)>0){				
 				$down['earning'] = 0;
 				$down['deduction'] = 0;
 				$down['allowance'] = 0;
@@ -83,7 +87,7 @@ class Payrollmodel extends CI_Model {
 				}
 			}
 					
-			$this->dbmodel->updateQuery('tcPayslips', array('payslipID'=>$payslipID), $down);
+			$this->dbmodel->updateQuery('tcPayslips', array('payslipID'=>$payslipID, 'empID_fk'=>$emp, 'payrollsID_fk'=>$info['payrollsID'], 'pstatus'=>1), $down);
 			
 			//number generated
 			$cntGenerated = $this->dbmodel->getSingleField('tcPayslips', 'COUNT(payslipID)', 'payrollsID_fk="'.$info['payrollsID'].'" AND pstatus=1');
