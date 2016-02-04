@@ -175,23 +175,17 @@ if(count($dataMainItems)>0){ ?>
 <?php } ?>
 
 <!--------- PAYROLL SETTINGS ----------->
-<?php if($pagepayroll=='payrollsettings'){ ?>
+<?php if($pagepayroll=='payrollsettings' && count($dataPaySettings)>0){ ?>
 <div id="settings">
 <table class="tableInfo">
-	<tr>
-		<td width="25%">Cebu Minimum Wage</td>
-		<td><span id="minwage">Php <?= $this->textM->convertNumFormat($dataMinWage) ?></span>
-			<form id="formeditwage" class="hidden" action="" method="POST">
-				<?php
-					echo $this->textM->formfield('number', 'settingVal', $dataMinWage, 'forminput', '', 'step="any" required');
-					echo $this->textM->formfield('submit', '', 'Update', 'btnclass');
-					
-					echo $this->textM->formfield('hidden', 'submitType', 'updateMinWage');
-				?>
-			</form>
-		</td>
-		<td align="right"><img id="editminwage" src="<?= $this->config->base_url() ?>css/images/icon-options-edit.png" width="25px" class="cpointer"/></td>
-	</tr>
+<?php
+	foreach($dataPaySettings AS $sett){
+		echo '<tr>';
+			echo '<td>'.$sett->settingNote.'</td>';
+			echo '<td>Php '.$this->textM->convertNumFormat($sett->settingVal).'</td>';
+		echo '</tr>';
+	}
+?>
 </table>
 </div>
 <?php } ?>

@@ -121,9 +121,9 @@
 						$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
 						
 						if($pageType=='showpay'){
-							$ss1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['sss']:'0.00');
-							$phil1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:'0.00');
-							$pag1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:'0.00');
+							$ss1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:'0.00');
+							$phil1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:'0.00');
+							$pag1 = ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:'0.00');
 							
 							echo '<td>'.$ss1.'</td>';
 							echo '<td>'.$phil1.'</td>';
