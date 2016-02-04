@@ -1043,9 +1043,12 @@ class Payrollmodel extends CI_Model {
 		$gross = '';
 		$basicSal = '';
 		$attendance = '';
+		$adjustment = '';
 		$taxIncome = '';
+		$bonus = '';
 		$taxWithheld = '';
 		$month13 = '';
+		$deminimis = '';
 		$netPay = '';
 		
 		$totalIncome = 0;
@@ -1058,6 +1061,9 @@ class Payrollmodel extends CI_Model {
 		$totalSSS = 0;
 		$totalPhilhealth = 0;
 		$totalPagIbig = 0;
+		$totalBonus = 0;
+		$totalAdjustment = 0;
+		$totalAllowance = 0;
 		$personalExemption = 50000;	
 		
 		$salary = $payInfo->monthlyRate;
@@ -1084,11 +1090,13 @@ class Payrollmodel extends CI_Model {
 				
 				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
 				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
-				$attendance .= $regTaken."\n";
+				$attendance .= $this->textM->convertNumFormat($regTaken)."\n";
+				$adjustment .= $this->textM->convertNumFormat($payArr[$date]->adjustment)."\n";
 				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
+				$bonus .= $this->textM->convertNumFormat($payArr[$date]->bonus)."\n";
+				$deminimis .= $this->textM->convertNumFormat($payArr[$date]->allowance)."\n";
 				$taxWithheld .= $incomeTax."\n";
-				
-				
+								
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 				
 				if($staffInfo->endDate>=date('Y').'-01-25'){
@@ -1102,16 +1110,23 @@ class Payrollmodel extends CI_Model {
 				$totalSalary += $payArr[$date]->basePay;
 				$totalDeduction += $regTaken;
 				$totalTaxable += $payArr[$date]->totalTaxable;					
-				$totalTaxWithheld += $incomeTax;					
+				$totalTaxWithheld += $incomeTax;	
+				$totalBonus += $payArr[$date]->bonus;
+				$totalAdjustment += $payArr[$date]->adjustment;
+				$totalAllowance += $payArr[$date]->allowance;
+				
 				$total13th += $month13c;					
 				$totalNet += $payArr[$date]->net;					
 			}else{
 				$gross .= "0.00\n";
 				$basicSal .= "0.00\n";
 				$attendance .= "0.00\n";
+				$adjustment .= "0.00\n";
 				$taxIncome .= "0.00\n";
+				$bonus .= "0.00\n";
 				$taxWithheld .= "0.00\n";
 				$month13 .= "0.00\n";
+				$deminimis .= "0.00\n";
 				$netPay .= "0.00\n";
 			}
 		}
@@ -1119,25 +1134,32 @@ class Payrollmodel extends CI_Model {
 		$dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');
 		if($dependents=='') $dependents = 0;
 		else $personalExemption += ($dependents*25000);
+				
+		$pdf->SetFont('Arial','',6.5);
+		$pdf->setXY(11, 78); $pdf->MultiCell(18, 3.7, $payDate,0,'C',false);  //Payslip Date
+		$pdf->setXY(29, 78); $pdf->MultiCell(18, 3.7, $gross,0,'C',false);  //Gross Income
+		$pdf->setXY(46.5, 78); $pdf->MultiCell(18, 3.7, $basicSal,0,'C',false);  //Basic Salary
+		$pdf->setXY(63.8, 78); $pdf->MultiCell(18, 3.7, $attendance,0,'C',false);  //Attendance Deduction
+		$pdf->setXY(82, 78); $pdf->MultiCell(18, 3.7, $adjustment,0,'C',false);  //Adjustment
+		$pdf->setXY(100, 78); $pdf->MultiCell(18, 3.7, $taxIncome,0,'C',false);  //TAxable Income
+		$pdf->setXY(117.5, 78); $pdf->MultiCell(18, 3.7, $bonus,0,'C',false);  //bonus
+		$pdf->setXY(135.5, 78); $pdf->MultiCell(18, 3.7, $taxWithheld,0,'C',false);  //tax withheld
+		$pdf->setXY(153, 78); $pdf->MultiCell(18, 3.7, $month13,0,'C',false);  //13th Month Pay
+		$pdf->setXY(171, 78); $pdf->MultiCell(18, 3.7, $deminimis,0,'C',false);  //De minimis
+		$pdf->setXY(188, 78); $pdf->MultiCell(18, 3.7, $netPay,0,'C',false);  //NET Pay
 		
-		$pdf->SetFont('Arial','',8);
-		$pdf->setXY(11, 72); $pdf->MultiCell(24.5, 4.1, $payDate,0,'C',false);  //Payslip Date
-		$pdf->setXY(35, 72); $pdf->MultiCell(24.5, 4.1, $gross,0,'C',false);  //Gross Income
-		$pdf->setXY(60, 72); $pdf->MultiCell(24.5, 4.1, $basicSal,0,'C',false);  //Basic Salary
-		$pdf->setXY(85, 72); $pdf->MultiCell(24.5, 4.1, $attendance,0,'C',false);  //Attendance Deduction
-		$pdf->setXY(108, 72); $pdf->MultiCell(24.5, 4.1, $taxIncome,0,'C',false);  //Taxable Income
-		$pdf->setXY(133, 72); $pdf->MultiCell(24.5, 4.1, $taxWithheld,0,'C',false);  //Tax Withheld
-		$pdf->setXY(158, 72); $pdf->MultiCell(24.5, 4.1, $month13,0,'C',false);  //13th Month Pay
-		$pdf->setXY(183, 72); $pdf->MultiCell(24, 4.1, $netPay,0,'C',false);  //NET Pay
+		$pdf->SetFont('Arial','B',7);
+		$pdf->setXY(29, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalIncome),0,'C',false);
+		$pdf->setXY(46.5, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalSalary),0,'C',false);
+		$pdf->setXY(63.8, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalDeduction),0,'C',false);
+		$pdf->setXY(82, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalAdjustment),0,'C',false);
+		$pdf->setXY(100, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalTaxable),0,'C',false);
+		$pdf->setXY(117.5, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalBonus),0,'C',false);
+		$pdf->setXY(135.5, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalTaxWithheld),0,'C',false);
+		$pdf->setXY(153, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($total13th),0,'C',false);
+		$pdf->setXY(171, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalAllowance),0,'C',false);
+		$pdf->setXY(188, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalNet),0,'C',false);
 		
-		$pdf->SetFont('Arial','B',9);
-		$pdf->setXY(35, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalIncome),0,'C',false);
-		$pdf->setXY(60, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalSalary),0,'C',false);
-		$pdf->setXY(85, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalDeduction),0,'C',false);
-		$pdf->setXY(108, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalTaxable),0,'C',false);
-		$pdf->setXY(133, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalTaxWithheld),0,'C',false);
-		$pdf->setXY(158, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($total13th),0,'C',false);
-		$pdf->setXY(183, 171); $pdf->MultiCell(24.5, 4.1, $this->textM->convertNumFormat($totalNet),0,'C',false);
 		
 		///COMPUTATION OF TAX DUE
 		if(count($dataBracket)>0){
@@ -1173,12 +1195,12 @@ class Payrollmodel extends CI_Model {
 		$rightTaxDue .= ((isset($baseTax))?$this->textM->convertNumFormat($baseTax):'0.00')."\n";
 				
 		$pdf->SetFont('Arial','',7);
-		$pdf->setXY(15, 185.5); $pdf->MultiCell(60, 3.6, $leftTaxDue,0,'L',false);
-		$pdf->setXY(75, 185.5); $pdf->MultiCell(60, 3.6, $rightTaxDue,0,'L',false);		
+		$pdf->setXY(15, 183.5); $pdf->MultiCell(60, 3.6, $leftTaxDue,0,'L',false);
+		$pdf->setXY(75, 183.5); $pdf->MultiCell(60, 3.6, $rightTaxDue,0,'L',false);		
 		
 		$pdf->SetFont('Arial','B',8);
-		$pdf->setXY(15, 231); $pdf->Write(0, 'Tax Due for '.date('Y', strtotime($payInfo->dateTo))); //tax due
-		$pdf->setXY(75, 231); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->taxDue)); //tax due
+		$pdf->setXY(15, 229); $pdf->Write(0, 'Tax Due for '.date('Y', strtotime($payInfo->dateTo))); //tax due
+		$pdf->setXY(75, 229); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->taxDue)); //tax due
 		
 		///WITHHOLDING TAX ALLOCATION
 		$leftAlloc = "Income Tax Due for the Year\n";	
@@ -1187,12 +1209,12 @@ class Payrollmodel extends CI_Model {
 		$rightAlloc .= $this->textM->convertNumFormat($payInfo->taxWithheld)."\n";
 		
 		$pdf->SetFont('Arial','',7);
-		$pdf->setXY(15, 246.5); $pdf->MultiCell(60, 4, $leftAlloc,0,'L',false);
-		$pdf->setXY(75, 246.5); $pdf->MultiCell(60, 4, $rightAlloc,0,'L',false);
+		$pdf->setXY(15, 244.5); $pdf->MultiCell(60, 4, $leftAlloc,0,'L',false);
+		$pdf->setXY(75, 244.5); $pdf->MultiCell(60, 4, $rightAlloc,0,'L',false);
 		
 		$pdf->SetFont('Arial','B',8);
-		$pdf->setXY(15, 259); $pdf->Write(0, 'Tax '.(($payInfo->taxRefund<0)?'Deficit':'Refund').' for the year '.date('Y', strtotime($payInfo->dateTo))); //tax due
-		$pdf->setXY(75, 259); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->taxRefund)); //tax due
+		$pdf->setXY(15, 257); $pdf->Write(0, 'Tax '.(($payInfo->taxRefund<0)?'Deficit':'Refund').' for the year '.date('Y', strtotime($payInfo->dateTo))); //tax due
+		$pdf->setXY(75, 257); $pdf->Write(0, $this->textM->convertNumFormat($payInfo->taxRefund)); //tax due
 		
 		 
 		//PAGE 2

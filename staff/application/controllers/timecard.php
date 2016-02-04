@@ -1729,7 +1729,7 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
 				$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
-				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net', 
+				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
 				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
 				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
 				
