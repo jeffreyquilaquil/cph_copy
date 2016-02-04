@@ -410,7 +410,7 @@ class Textmodel extends CI_Model {
 						<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
 						<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
 						<td>'.$row->requested_amount.'</td>';
-						if( in_array( $row->status_accounting, array(2,4) ){
+						if( in_array( $row->status_accounting, array(2,4) ) ){
 								$disp .= '<td>'.$status_labels[ $row->status_accounting ].'<td>';
 						} else {
 							$disp .= '<td>'.$status_labels[ $row->status].'<td>';
