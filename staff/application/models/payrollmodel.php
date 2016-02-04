@@ -76,8 +76,10 @@ class Payrollmodel extends CI_Model {
 						else $down['earning'] = $cat;
 					}
 					
-					if($k!=0 && $k!==7)
-						$down[$catArr[$k]] = $cat;
+					if($k!=0 && $k!==7){
+						if(isset($down[$catArr[$k]])) $down[$catArr[$k]] += $cat;
+						else $down[$catArr[$k]] = $cat;
+					}
 				}
 			}
 					
