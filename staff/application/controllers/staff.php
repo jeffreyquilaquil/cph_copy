@@ -4007,6 +4007,11 @@ class Staff extends MY_Controller {
 				$data_config['dataItemInfo']->payAmount = $med_request_info->approved_amount;
                 $data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
 				$data['disabled'] = 'disabled';
+				
+				if( $this->user->empID == $med_request_info->empID ){
+					$data['self'] = true;
+				}
+				
                 //not pulling?
 			} else {
                 $data['employee_info'] = $this->dbmodel->getSingleInfo('staffs', 'empID, idNum, CONCAT(fname," ", lname) AS "name"', 'empID = '.$this->user->empID);
