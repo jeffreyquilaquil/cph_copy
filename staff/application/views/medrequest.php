@@ -123,6 +123,52 @@
 		</tr>
 <?php } ?>
 
+<?php if( isset($self) AND $self == true ) {
+	echo '<tr class="trhead">
+			<td colspan="2" align="center">APPROVALS
+				
+			</td>			
+		</tr>';
+	
+	if( $employee_info->status > 1 ) {
+	$display_subBtn = false;
+	?>
+<tr bgcolor="#eee">	
+			<td colspan="2">
+				<h3>Medical Personnel</h3>
+			</td>
+		</tr>
+		<tr>
+					<td>Status:</td>
+					<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
+				</tr>
+				<?php if( $employee_info->status == 1 ){
+					echo '<tr><td>Approved amount:</td>
+					<td>'.$employee_info->approved_amount.'</td></tr>';
+				} ?>
+				<tr>
+					<td>Remarks:</td>
+					<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
+				</tr>
+
+<?php } if( $employee_info->status_accounting > 1 ){
+$display_subBtn = false;
+	?>
+	<tr bgcolor="#eee">	
+			<td colspan="2">
+				<h3>Accounting</h3> 
+			</td>
+		</tr>
+	<tr>
+					<td>Status:</td>
+					<td><?php echo $status_labels[ $employee_info->status_accounting ]; ?></td>
+				</tr>				
+				<tr>
+					<td>Remarks:</td>
+					<td><?php echo wordwrap($employee_info->accounting_remarks, 75, "<br/>"); ?></td>
+				</tr>
+<?php } }//end self ?>
+
 <?php if( $pageview_type == 'approval' ) { ?>
 		<tr class="trhead">
 			<td colspan="2" align="center">APPROVALS
