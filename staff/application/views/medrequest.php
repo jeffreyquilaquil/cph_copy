@@ -1,7 +1,9 @@
 <?php 
+	$display_subBtn = true;
+	
 	if( $submitted === true ){
-		echo '<p class="errortext">'.$confirm_msg.'</p>
-		<script>parent.location.reload();</script>';
+		echo '<p class="errortext">'.$confirm_msg.'</p>';
+		//echo '<script>parent.location.reload();</script>';
 	} else { ?>
 
 <form class="leaveForm" action="<?php echo $this->config->base_url(); ?>medrequest/" method="POST" enctype="multipart/form-data" onSubmit="return checkForm();">
@@ -25,11 +27,11 @@
 	<table class="tableInfo">
 		<tr>
 			<td>ID No. <span class="required">*</td>
-			<td><input type="text" name="emp_id" value="<?php echo ( isset($_POST['emp_id']) ) ? $_POST['emp_id'] : $employee_info->idNum; ?>" class="forminput" disabled="true" /> </td>
+			<td><input type="text" name="emp_id" value="<?php echo ( isset($_POST['emp_id']) ) ? $_POST['emp_id'] : $employee_info->idNum; ?>" class="forminput" disabled="disabled" /> </td>
 		</tr>
 		<tr>
 			<td>Employee Name <span class="required">*</td>
-			<td><input type="text" name="emp_name" value="<?php echo ( isset($_POST['emp_name']) ) ? $_POST['emp_name'] : $employee_info->name; ?>"  class="forminput" disabled="true" /> </td>
+			<td><input type="text" name="emp_name" value="<?php echo ( isset($_POST['emp_name']) ) ? $_POST['emp_name'] : $employee_info->name; ?>"  class="forminput" disabled="disabled" /> </td>
 		</tr>
 		<tr>
 			<td>Prescription Date <span class="required">*</td>
@@ -132,7 +134,24 @@
 				<h3>Medical Personnel</h3>
 			</td>
 		</tr>
-		<?php if( $this->access->accessMedPerson == true ) { ?>
+		<?php if( $this->access->accessMedPerson == true ) { 
+			if( in_array($employee_info->status, array(1, 3) ) ){
+				$display_subBtn = false;
+			?>
+				<tr>
+					<td>Status:</td>
+					<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
+				</tr>
+				<?php if( $employee_info->status == 1 ){
+					echo '<tr><td>Approved amount:</td>
+					<td>'.$employee_info->approved_amount.'</td></tr>';
+				} ?>
+				<tr>
+					<td>Remarks:</td>
+					<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
+				</tr>				
+		<?php } else {	?>
+		
 		<input type="hidden" name="from_page" value="med_person" />		
 		<tr>
 			<td>Please check one:</td>
@@ -159,41 +178,138 @@
 				<input type="text" name="remarks_med_person" class="forminput" value="<?php echo ( isset($employee_info->medperson_remarks) ) ? $employee_info->medperson_remarks : ''; ?>" />
 			</td>
 		</tr>
-		<?php } ?>
-		<?php if( $this->access->accessFullFinance == true ){ ?>
-		<input type="hidden" name="from_page" value="full_finance" />
-		<tr>
-			<td>Status:</td>
-			<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
-		</tr>
-		<tr>
-			<td>Remarks:</td>
-			<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
-		</tr>
-		<tr>
-			<td>Approved Amount:</td>
-			<td><?php echo $employee_info->approved_amount; ?></td>
-		</tr>
-		<tr bgcolor="#eee">	
-			<td colspan="2">
-				<h3>Accounting</h3>
-			</td>
-		</tr>
-		<tr>
-			<td>Please check one:</td>
-			<td>
-			<?php $status_array = array(2 => 'Approve', 4 => 'Disapprove');
-				foreach( $status_array as $key => $val ){
-					echo '<input type="radio" name="status_accounting" id="status_accounting_'.$key.'" value="'.$key.'"';
-					if( $employee_info->status == $key ){
-						echo ' checked ';
-					}
-					echo '/><label for="status_accounting_'.$key.'">'.$val.'</label>';
-				}
-			?>
+		<?php } //end of status filter  
+		} //end of med_person flag ?>
+		<?php if( $this->access->accessFinance == true ){ ?>	
+			<?php if( $employee_info->status_accounting == 2 ) { //approved by accounting 
+				$display_subBtn = false;
 				
-			</td>
-		</tr>
+			?>
+				<tr>
+						<td>Status:</td>
+						<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
+					</tr>
+					<tr>
+						<td>Remarks:</td>
+						<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
+					</tr>
+					<tr>
+						<td>Approved Amount:</td>
+						<td><?php echo $employee_info->approved_amount; ?></td>
+					</tr>
+					<tr bgcolor="#eee">	
+						<td colspan="2">
+							<h3>Accounting</h3>
+						</td>
+					</tr>
+				<tr>
+					<td>Status:</td>
+					<td><?php echo $status_labels[ $employee_info->status_accounting ]; ?></td>
+				</tr>
+				<tr>
+					<td>Remarks:</td>
+					<td><?php echo wordwrap($employee_info->accounting_remarks, 75, "<br/>"); ?></td>
+				</tr>
+				<tr bgcolor="#eee">
+					<td colspan="2"><h4>Payslip Item</h4></td>
+				</tr>
+				<tr>
+		
+					<td>Item Name:</td>
+					<td><b><?php echo $payslip_details->payName; ?></b></td>
+				</tr>
+				<tr>
+					<td>Amount:</td>
+					<td><?php echo $payslip_details->payAmount; ?></td>
+				</tr>
+				<tr>
+					<td>Pay in:</td>
+					<td><?php echo $payslip_details->payPeriod; ?></td>
+				</tr>
+				<tr>
+					<td>Pay on:</td>
+					<td><?php 
+						if( $payslip_details->payPeriod == 'once' ){
+							echo $payslip_details->payStart;
+						} else {
+							echo 'from: '. $payslip_details->payStart .' to: '. $payslip_details->payEnd;
+						}
+					 ?></td>
+				</tr>
+						
+				
+			<?php } //end of status 2
+			 else if( $employee_info->status_accounting == 4 OR $employee_info->status == 0 ){ 
+			 $display_subBtn = false;
+			 
+				if( $employee_info->status_accounting == 4 ){
+			 ?> 
+					<tr>
+						<td>Status:</td>
+						<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
+					</tr>
+					<tr>
+						<td>Remarks:</td>
+						<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
+					</tr>
+					<?php if($employee_info->status == 1){ ?>
+							<tr>
+						<td>Approved Amount:</td>
+						<td><?php echo $employee_info->approved_amount; ?></td>
+					</tr>
+					<?php } ?>
+					
+					<tr bgcolor="#eee">	
+						<td colspan="2">
+							<h3>Accounting</h3>
+						</td>
+					</tr>
+				<?php } ?>
+				<tr>
+					<td>Status:</td>
+					<td><?php echo $status_labels[ $employee_info->status_accounting ]; ?></td>
+				</tr>
+				<tr>
+					<td>Remarks:</td>
+					<td><?php echo wordwrap($employee_info->accounting_remarks, 75, "<br/>"); ?></td>
+				</tr>
+		<?php	} else { ?>
+					<input type="hidden" name="from_page" value="full_finance" />
+					<tr>
+						<td>Status:</td>
+						<td><?php echo $status_labels[ $employee_info->status ]; ?></td>
+					</tr>
+					<tr>
+						<td>Remarks:</td>
+						<td><?php echo wordwrap($employee_info->medperson_remarks, 75, "<br/>"); ?></td>
+					</tr>
+					<?php if($employee_info->status == 1){ ?>
+							<tr>
+						<td>Approved Amount:</td>
+						<td><?php echo $employee_info->approved_amount; ?></td>
+					</tr>
+					<?php } ?>
+					
+					<tr bgcolor="#eee">	
+						<td colspan="2">
+							<h3>Accounting</h3>
+						</td>
+					</tr>
+					<tr>
+						<td>Please check one:</td>
+						<td>
+						<?php $status_array = array(2 => 'Approve', 4 => 'Disapprove');
+							foreach( $status_array as $key => $val ){
+								echo '<input type="radio" name="status_accounting" id="status_accounting_'.$key.'" value="'.$key.'"';
+								if( $employee_info->status == $key ){
+									echo ' checked ';
+								}
+								echo '/><label for="status_accounting_'.$key.'">'.$val.'</label>';
+							}
+						?>
+							
+						</td>
+					</tr>
 		<tr>
 			<td>Remarks</td>
 			<td>
@@ -205,13 +321,17 @@
 				<?php echo $payroll_item_html; ?>
 			</td>
 		</tr>
-		<?php } ?>
-<?php } ?>		
+		<?php } //end status flag ?> 
+		
+		
+		<?php } //end finance flag ?>
+<?php } //end approval flag  ?>		
 
-
-		<tr>			
+<?php if( $display_subBtn == true ) { ?>
+		<tr>
 			<td colspan="2" align="center"><input type="submit" name="submit" value="Submit" class="btnclass" /></td>
 		</tr>
+<?php } ?>
 	</table>
 </form>
 <?php if( $pageview_type == 'approval' ) { ?>

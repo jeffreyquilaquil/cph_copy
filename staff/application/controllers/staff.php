@@ -3984,10 +3984,17 @@ class Staff extends MY_Controller {
 			$med_id = $this->uri->segment(2); 
 			if( isset($med_id) AND !empty($med_id) ){
 				//get data by id in staffMedRequest
-				$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'supporting_docs_url, prescription_date, requested_amount, empID, idNum, CONCAT(fname," ", lname) AS "name", status, medperson_remarks, accounting_remarks, approved_amount', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
+				$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'supporting_docs_url, prescription_date, requested_amount, empID, idNum, CONCAT(fname," ", lname) AS "name", status, medperson_remarks, accounting_remarks, approved_amount, status_accounting, payStaffID_fk', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
+				
+				//if it is approved full data
+				if( $med_request_info->status_accounting == 2 ){
+					$payslip_details = $this->dbmodel->getSingleInfo('tcPayslipItemStaffs', 'tcPayslipItemStaffs.*, tcPayslipItems.payName', 'payStaffID = '. $med_request_info->payStaffID_fk, 'LEFT JOIN tcPayslipItems ON payID = payID_fk');
+					
+					$data['payslip_details'] = $payslip_details;
+				}		
 				
 				//get history of request by id
-				$data['med_request_history'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, medperson_remarks, accounting_remarks, approved_amount', 'empID_fk = '. $med_request_info->empID);				
+				$data['med_request_history'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, medperson_remarks, accounting_remarks, approved_amount, status_accounting', 'empID_fk = '. $med_request_info->empID);				
 				
 				$data['header'] = 'Medicine Reimbursement Request of '. $med_request_info->name;
 				$data['employee_info'] = $med_request_info;
@@ -4084,6 +4091,7 @@ class Staff extends MY_Controller {
 					if( $this->isSetNotEmpty($_POST['medrequestID']) ){
 						//update the status
 						$update_array['status'] = $this->input->post('status_medperson');
+						$update_array['status_accounting'] = $this->input->post('status_medperson');
 						$update_array['medperson_remarks'] = $this->input->post('remarks_med_person');
 						if( $update_array['status'] == 1 ){
 								$update_array['approved_amount'] = $this->input->post('approved_amount');						
@@ -4098,7 +4106,7 @@ class Staff extends MY_Controller {
 						$this->dbmodel->insertQuery('staffMedRequest_history', $history_array);
 						
 						//add notification to accounting that medicine requisition has been approved
-						$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%" OR access LIKE "%full%"');						
+						$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%"');						
 
 						$ntexts = $data['status_labels'][ $update_array['status'] ] .' the medicine reimbursement request of '. $data['employee_info']->name.'. Check Manage Staff > Medicine Reimbursement Management page or click <a href="'. $this->config->base_url() .'medrequest/'. $this->input->post('medrequestID') .'/" class="iframe">here</a> to view the medicine reimbursement details and approve.';
 						foreach( $finance_id as $key => $val ){
@@ -4110,20 +4118,19 @@ class Staff extends MY_Controller {
 				} //end med person update
 				
 				//accounting approval
-				if( $this->isSetNotEmpty($_POST['from_page']) AND $_POST['from_page'] == 'full_finance' ){
-					
+				if( $this->isSetNotEmpty($_POST['from_page']) AND $_POST['from_page'] == 'full_finance' ){					
 				
 					if( $this->isSetNotEmpty($_POST['medrequestID']) ){
 						//update the status
-						$update_array['status'] = $this->input->post('status_accounting');
-						$update_array['medperson_remarks'] = $this->input->post('remarks_accounting');						
+						$update_array['status_accounting'] = $this->input->post('status_accounting');
+						$update_array['accounting_remarks'] = $this->input->post('remarks_accounting');						
 						$this->dbmodel->updateQuery('staffMedRequest', array('medrequestID' => $this->input->post('medrequestID') ), $update_array);
 						//then insert history
 						$history_array['medrequestID_fk'] = $this->input->post('medrequestID');
 						$history_array['updatedBy'] = $this->user->username;
 						$history_array['dateUpdate'] = date('Y-m-d H:i:s');
 						$history_array['remarks'] = $this->input->post('remarks_accounting');
-						$history_array['currentStatus'] = $update_array['status'];
+						$history_array['currentStatus'] = $update_array['status_accounting'];
 						$this->dbmodel->insertQuery('staffMedRequest_history', $history_array);
 						
 						//add item to payslip and filter out discrepancies
@@ -4158,18 +4165,25 @@ class Staff extends MY_Controller {
 						unset($payslip_array['selectPayPercent']);
 						unset($payslip_array['medrequestID']);
 						
-						$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
+						if( isset($payslip_array) AND !empty($payslip_array) AND $_POST['status_accounting'] == 2 ){
+							$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
+							//update the med
+							$update_array = array('payStaffID_fk' => $insID);
+							$this->dbmodel->updateQuery('staffMedRequest', array('medrequestID' => $this->input->post('medrequestID') ), $update_array);
+						}
+						
 						
 						//add notification to user that medicine requisition has been approved						
-						$ntexts = $data['status_labels'][ $update_array['status'] ] . ' your medicine reimbursement request. Click <a href="'. $this->config->base_url() .'medrequest/'.$this->input->post('medrequestID').'/" class="iframe">here</a> to view the medicine reimbursement details.';
- 						$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+						$ntexts = $data['status_labels'][ $this->input->post('status_accounting') ] . ' your medicine reimbursement request. Click <a href="'. $this->config->base_url() .'medrequest/'.$this->input->post('medrequestID').'/" class="iframe">here</a> to view the medicine reimbursement details.';
+ 						$this->commonM->addMyNotif($data['employee_info']->empID, $ntexts, 5, 1);
 						
 						$data['submitted'] = true;
-						$data['confirm_msg'] = 'Medicine Reimbursement Request of '. $data['employee_info']->name .' has updated to '. $data['status_labels'][ $update_array['status'] ];
+						$data['confirm_msg'] = 'Medicine Reimbursement Request of '. $data['employee_info']->name .' has updated to '. $data['status_labels'][ $this->input->post('status_accounting') ];
  					}
 				}//end of accounting approval
 			} //end of post
 		}
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	

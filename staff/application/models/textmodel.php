@@ -393,16 +393,18 @@ class Textmodel extends CI_Model {
 					';
 				}
 			} else if( $status == 'pending_accounting' ){
-				if( $row->status == 1 ){
+				
+				if( ($row->status == 1 OR $row->status == 3) ){
+					if( ($row->status_accounting == 1 OR $row->status_accounting == 3) ){
 					$disp .= '<tr>
 							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
 							<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
 							<td>'.$row->requested_amount.'</td>
-							<td>'.$status_labels[ $row->status ].'<td>
+							<td>'.$status_labels[ $row->status ].' '. $row->status_accounting.' '.$row->status.'<td>
 							<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
 						</tr>
 					';
-				}
+				} }
 			} else {
 				$disp .= '<tr>
 						<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>

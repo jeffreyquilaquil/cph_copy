@@ -186,7 +186,7 @@
 		echo '</form>';
 	}
 		
-	if($pageType=='addItem' || $pageType=='empUpdate'){
+	if( ($pageType=='addItem' || $pageType=='empUpdate') AND $dynamic_call == false ){ 
 		echo '<script>';
 			echo '$(function(){
 				$("#divOnce").addClass("hidden");
