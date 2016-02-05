@@ -116,12 +116,24 @@ class Itchecklist extends MY_Controller {
 	}
 	
 	
+	
+	
 	public function test(){
+		echo '<pre>';
 		$query = $this->dbmodel->getQueryResults('tcPayslips', '*', 'payrollsID_fk=8');
 		foreach($query AS $q){
-			echo '<pre>';
-			print_r($q);
-			echo '</pre>';
+			$gross = 0;
+			$q2 = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payValue, payType', 'payslipID_fk="'.$q->payslipID.'" AND payCategory IN (0,1,3,4,5,7)', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+			if(!empty($q2)){
+				foreach($q2 AS $haha){
+					if($haha->payType=='debit') $gross -= $haha->payValue;
+					else $gross += $haha->payValue;
+				}
+			}
+			
+			//$this->dbmodel->updateQueryText('tcPayslips', 'earning="'.$gross.'"', 'payslipID="'.$q->payslipID.'"');
 		}
+		
+		echo '</pre>';
 	}
 }
