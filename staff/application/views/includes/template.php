@@ -70,7 +70,11 @@
 			}				
 		?>		
 	</div>
-	<footer></footer>	
+	<footer>
+		<div class="tacenter" style="padding:20px 0 5px;">
+			<a href="<?= $this->config->base_url().'includes/documentation.pdf' ?>" target="_blank">Documentation by Ludivina Mariñas 2016</a>
+		</div>
+	</footer>	
 </div>
 <?php
 	if($this->session->userdata('popupnotification') && $content=='index'){

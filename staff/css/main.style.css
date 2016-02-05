@@ -354,6 +354,8 @@ footer{
 	padding:5px;
 }
 
+footer a{ color:#fff; text-decoration:none; font-size:11px; }
+
 .tableInfo{ 
 	border-collapse:collapse;
 	width:100%;
