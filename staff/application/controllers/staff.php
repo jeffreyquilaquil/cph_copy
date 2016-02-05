@@ -144,7 +144,7 @@ class Staff extends MY_Controller {
 					$this->session->set_userdata('u', md5($row->username.'dv'));
 					$this->session->set_userdata('popupnotification', true);
 					
-					if($row->username=='lmarinas' || $row->username=='lmarinastest')					
+					if($row->username=='lmarinas' || $row->username=='lmarinastest' || $row->username=='mabellana')					
 						$this->session->set_userdata('testing', true);
 					
 					session_start();
