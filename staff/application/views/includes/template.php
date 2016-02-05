@@ -72,8 +72,15 @@
 	</div>
 	<footer>
 		<div class="tacenter" style="padding:20px 0 5px;">
-			<a href="<?= $this->config->base_url().'includes/documentation.pdf' ?>" target="_blank">Documentation by Ludivina Mariñas 2016</a>
-		</div>
+	<?php
+		if($this->user!=false){
+			if($this->user->dept=='IT')
+				echo '<a href="'.$this->config->base_url().'includes/documentation.pdf" target="_blank">Documentation by Ludivina Mariñas 2016</a>';
+			else
+				echo '<a href="#">by Ludivina Mariñas 2016</a>';
+		}
+	?>
+	</div>
 	</footer>	
 </div>
 <?php
