@@ -2370,7 +2370,7 @@ class Staff extends MY_Controller {
 					$upArr['reason'] = $_POST['reason'];
 					$upArr['effectivedate'] = date('Y-m-d',strtotime($_POST['effectivedate']));
 					
-					if($upArr['effectivedate']<=date('Y-m-d')){
+					if($_POST['effectivedate']<=date('Y-m-d')){
 						$upArr['status'] = 3;
 						$chtext = '';
 						
@@ -4138,37 +4138,40 @@ class Staff extends MY_Controller {
 						$history_array['currentStatus'] = $update_array['status_accounting'];
 						$this->dbmodel->insertQuery('staffMedRequest_history', $history_array);
 						
-						//add item to payslip and filter out discrepancies
-						$payslip_array = $_POST;
-						if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
-						if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
-						if(!empty($payslip_array['payStart'])) $payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStart']));
-						if(!empty($payslip_array['payEnd'])) $payslip_array['payEnd'] = date('Y-m-d', strtotime($payslip_array['payEnd']));
-						if($payslip_array['payAmount']=='regularHoliday') $payslip_array['payPercent'] = $payslip_array['selectPayPercent'];
-						if($payslip_array['payAmount']=='specialHoliday') $payslip_array['payPercent'] = 2;
-						if($payslip_array['payPeriod']=='once' && !empty($payslip_array['payStartOnce'])){
-							$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
-							$payslip_array['payEnd'] = $payslip_array['payStart'];
+						if( $_POST['status_accounting'] == 2 ){
+							//add item to payslip and filter out discrepancies
+							$payslip_array = $_POST;
+							if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
+							if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
+							if(!empty($payslip_array['payStart'])) $payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStart']));
+							if(!empty($payslip_array['payEnd'])) $payslip_array['payEnd'] = date('Y-m-d', strtotime($payslip_array['payEnd']));
+							if($payslip_array['payAmount']=='regularHoliday') $payslip_array['payPercent'] = $payslip_array['selectPayPercent'];
+							if($payslip_array['payAmount']=='specialHoliday') $payslip_array['payPercent'] = 2;
+							if($payslip_array['payPeriod']=='once' && !empty($payslip_array['payStartOnce'])){
+								$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
+								$payslip_array['payEnd'] = $payslip_array['payStart'];
+							}
+							$payslip_array['empID_fk'] = $payslip_array['empID'];
+							$payslip_array['payID_fk'] = $payslip_array['payID'];
+							
+							unset($payslip_array['empID']);
+							unset($payslip_array['emp_id']);
+							unset($payslip_array['emp_name']);
+							unset($payslip_array['prescription_date']);
+							unset($payslip_array['requested_amount']);
+							unset($payslip_array['from_page']);
+							unset($payslip_array['status_accounting']);
+							unset($payslip_array['remarks_accounting']);
+							unset($payslip_array['submit']);
+							unset($payslip_array['submitType']);
+							unset($payslip_array['payID']);
+							unset($payslip_array['inputPayAmount']);
+							unset($payslip_array['payAmountHourly']);
+							unset($payslip_array['payStartOnce']);
+							unset($payslip_array['selectPayPercent']);
+							unset($payslip_array['medrequestID']);
 						}
-						$payslip_array['empID_fk'] = $payslip_array['empID'];
-						$payslip_array['payID_fk'] = $payslip_array['payID'];
 						
-						unset($payslip_array['empID']);
-						unset($payslip_array['emp_id']);
-						unset($payslip_array['emp_name']);
-						unset($payslip_array['prescription_date']);
-						unset($payslip_array['requested_amount']);
-						unset($payslip_array['from_page']);
-						unset($payslip_array['status_accounting']);
-						unset($payslip_array['remarks_accounting']);
-						unset($payslip_array['submit']);
-						unset($payslip_array['submitType']);
-						unset($payslip_array['payID']);
-						unset($payslip_array['inputPayAmount']);
-						unset($payslip_array['payAmountHourly']);
-						unset($payslip_array['payStartOnce']);
-						unset($payslip_array['selectPayPercent']);
-						unset($payslip_array['medrequestID']);
 						
 						if( isset($payslip_array) AND !empty($payslip_array) AND $_POST['status_accounting'] == 2 ){
 							$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
