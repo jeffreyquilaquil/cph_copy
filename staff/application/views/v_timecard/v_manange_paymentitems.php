@@ -8,8 +8,11 @@
 				}else echo 'Batch Adding Payroll Item';				
 			}else echo 'Payroll Settings Detail';
 		}
-		
+	//remove when called from other page e.g. medrequest page
+	if( $dynamic_call == false ){
 		if($this->access->accessFullFinance==true && !isset($updatedText)) echo ' <button id="btnUpdate">Update</button>';
+	}
+		
 	echo '</h3>';		
 	echo '<hr/>';
 		
@@ -195,6 +198,13 @@
 			});';
 		echo '</script>';
 	}	
+	if( $dynamic_call == true ){
+		echo '<script>
+			$(function(){
+				removeUpdates();				
+			});
+		</script>';
+	}
 ?>
 <script type="text/javascript">
 	$(function(){
