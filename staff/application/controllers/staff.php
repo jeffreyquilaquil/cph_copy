@@ -4096,11 +4096,18 @@ class Staff extends MY_Controller {
 					if( $this->isSetNotEmpty($_POST['medrequestID']) ){
 						//update the status
 						$update_array['status'] = $this->input->post('status_medperson');
-						$update_array['status_accounting'] = $this->input->post('status_medperson');
 						$update_array['medperson_remarks'] = $this->input->post('remarks_med_person');
 						if( $update_array['status'] == 1 ){
 								$update_array['approved_amount'] = $this->input->post('approved_amount');						
-						} 						
+                        } 						
+                        //if disapproved, automatically disapproved accounting
+                        if( $update_array['status'] == 3 ){
+                            $update_array['status_accounting'] = 4;
+                        } else {
+						    $update_array['status_accounting'] = $update_array['status'];
+                        }
+
+
 						$this->dbmodel->updateQuery('staffMedRequest', array('medrequestID' => $this->input->post('medrequestID') ), $update_array);
 						//then insert history
 						$history_array['medrequestID_fk'] = $this->input->post('medrequestID');
