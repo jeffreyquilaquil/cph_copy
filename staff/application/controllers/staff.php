@@ -3984,7 +3984,7 @@ class Staff extends MY_Controller {
 			$med_id = $this->uri->segment(2); 
 			if( isset($med_id) AND !empty($med_id) ){
 				//get data by id in staffMedRequest
-				$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'supporting_docs_url, prescription_date, requested_amount, empID, idNum, CONCAT(fname," ", lname) AS "name", status, medperson_remarks, accounting_remarks, approved_amount, status_accounting, payStaffID_fk', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
+				$med_request_info = $this->dbmodel->getSingleInfo('staffMedRequest', 'medrequestID,supporting_docs_url, prescription_date, requested_amount, empID, idNum, CONCAT(fname," ", lname) AS "name", status, medperson_remarks, accounting_remarks, approved_amount, status_accounting, payStaffID_fk, date_submitted', 'medrequestID = '.$med_id, 'LEFT JOIN staffs ON empID = empID_fk');
 				
 				//if it is approved full data
 				if( $med_request_info->status_accounting == 2 ){

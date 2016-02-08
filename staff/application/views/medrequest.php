@@ -25,6 +25,16 @@
 	
 	<p class="required">* Required</p>
 	<table class="tableInfo">
+		<?php if($pageview_type == 'approval') {
+			echo '<tr>
+				<td>Request ID:</td><td>'.$employee_info->medrequestID.'</td>
+			</tr>
+			<tr>
+				<td>Submission Date:</td><td>'.$employee_info->date_submitted.'</td>
+			</tr>
+			';
+			
+		} ?>
 		<tr>
 			<td>ID No. <span class="required">*</td>
 			<td><input type="text" name="emp_id" value="<?php echo ( isset($_POST['emp_id']) ) ? $_POST['emp_id'] : $employee_info->idNum; ?>" class="forminput" disabled="disabled" /> </td>
