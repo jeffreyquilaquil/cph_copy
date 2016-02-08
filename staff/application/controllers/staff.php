@@ -3994,7 +3994,7 @@ class Staff extends MY_Controller {
 				}		
 				
 				//get history of request by id
-				$data['med_request_history'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, medperson_remarks, accounting_remarks, approved_amount, status_accounting', 'empID_fk = '. $med_request_info->empID);				
+				$data['med_request_history'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', 'medrequestID, prescription_date, requested_amount, supporting_docs_url, status, medperson_remarks, accounting_remarks, approved_amount, status_accounting, date_submitted', 'empID_fk = '. $med_request_info->empID);				
 				
 				$data['header'] = 'Medicine Reimbursement Request of '. $med_request_info->name;
 				$data['employee_info'] = $med_request_info;

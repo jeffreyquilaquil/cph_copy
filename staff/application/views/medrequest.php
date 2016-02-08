@@ -83,6 +83,7 @@
 					<thead>
 						<tr class="formLabel">
 							<td>Request ID</td>
+							<td>Submission Date</td>
 							<td>Prescription Date</td>
 							<td>Requested Amount</td>
 							<td>Approved Amount</td>
@@ -98,6 +99,7 @@
 							} ?>
 						>
 							<td><a href="medrequest/<?php echo $val->medrequestID; ?>"><?php echo $val->medrequestID; ?></a></td>
+							<td><?php echo date('Y-m-d', strtotime($val->date_submitted) ); ?></td>
 							<td><?php echo date('Y-m-d', strtotime($val->prescription_date) ); ?></td>
 							<td><?php echo $val->requested_amount; ?></td>
 							<td><?php echo $val->approved_amount; ?></td>
