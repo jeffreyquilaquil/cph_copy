@@ -296,7 +296,6 @@ class Emailmodel extends CI_Model {
 		$body .= '<p>Thanks!<br/>CareerPH</p>';
 		
 		$this->emailM->sendEmail($from, $to, $subject, $body, 'CareerPH', $cc );
-		//$this->emailM->sendEmail($from, 'ludivina.marinas@tatepublishing.net', $subject.'---'.$to.'--cc--'.$cc, $body, 'CareerPH' );
 	}
 	
 	public function emailTimecardUnpublishedLogs($dateStart, $dateEnd, $query, $type=''){
