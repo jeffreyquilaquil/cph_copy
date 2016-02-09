@@ -398,7 +398,7 @@ class Textmodel extends CI_Model {
 				}
 			} else if( $status == 'pending_accounting' ){
 				
-				if( ($row->status == 1 ){					
+				if( ($row->status == 1) AND ( !in_array($row->status_accounting, array(2,4))) ){	 				
 					$disp .= '<tr>
 							<td><a href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/" class="iframe" >'.$row->medrequestID.'</a></td>
 							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
