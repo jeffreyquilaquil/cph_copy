@@ -4238,6 +4238,13 @@ class Staff extends MY_Controller {
 						$this->staffM->excelGenerateLeaveCodes($queryCode, $start, $end);						
 					}
 				}
+				//current calc
+				$current_calc = $this->dbmodel->getSingleInfo('staffCompensationReports', '*', 'for_month LIKE "%'.date('Y-m', strtotime('-1 months') ).'%"');
+				$data['average_wage_rankfile'] = $this->textM->decryptText( $current_calc->total_wage_rankfile ) / $current_calc->total_rankfile;
+				$data['average_wage_supervisor'] = $this->textM->decryptText( $current_calc->total_wage_supervisor ) / $current_calc->total_supervisor;
+				
+				$past_calc = $this->dbmodel->getSQLQueryArrayResults('SELECT * FROM staffCompensationReports ORDER BY for_month DESC');
+				$data['past_calc'] = $past_calc;
 				
 			}
 		}
