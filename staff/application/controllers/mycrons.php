@@ -427,5 +427,44 @@ class MyCrons extends MY_Controller {
 		}
 		
 	}
+	
+	/*
+		Reports that will run every month that will calculate the employees compensation
+	*/
+	public function compensationReports(){
+		
+		$query = "SELECT * FROM staffs WHERE active = 1 AND office = 'PH-Cebu'";
+		$all_results = $this->dbmodel->getQueryArrayResults('staffs', '*', 'active = 1 AND office = "PH-Cebu"');
+		
+		$staff_array = array();		
+		//if we have results the calculate was are needed
+		if( !empty($all_results) ){			
+			//when for when is the report
+			$staff_array['for_month'] = date('Y-m-d');			
+			//when the report was generated
+			$staff_array['date_generated'] = date('Y-m-d H:i:s');			
+			//get total number of employees
+			$staff_array['total_employees'] = count($all_results);			
+			//traverse the array then find the treasure
+			foreach( $all_results as $staff ){				
+				//compute all supervisors, rank and file, and their compensation
+				if( $staff->is_supervisor == 1 ){
+					$staff_array['total_wage_supervisor'] += $this->textM->decryptText( $staff->sal );
+					$staff_array['total_supervisor'] += 1;
+				} else {
+					$staff_array['total_wage_rankfile'] += $this->textM->decryptText( $staff->sal );
+					$staff_array['total_rankfile'] += 1;
+				}
+			}	
+		}		
+		if( !empty($staff_array) ){
+			$staff_array['total_wage_rankfile'] = $this->textM->encryptText( $staff_array['total_wage_rankfile'] );
+			$staff_array['total_wage_supervisor'] = $this->textM->encryptText( $staff_array['total_wage_supervisor'] );
+			$this->dbmodel->insertQuery('staffCompensationReports', $staff_array);
+		}
+		exit();
+	}//end of compensation reports
+	
+	
 		
 }
