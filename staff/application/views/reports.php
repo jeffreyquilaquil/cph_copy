@@ -49,7 +49,7 @@ Average Leader Salary
 					<td>Month</td>
 					<td>Total Leaders</td>
 					<td>Averange Salary</td>
-					<td>Total Rand and File</td>
+					<td>Total Rank and File</td>
 					<td>Averange Salary</td>
 				</tr>
 			</thead>';
