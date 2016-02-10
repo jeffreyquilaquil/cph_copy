@@ -1894,7 +1894,7 @@ class Timecard extends MY_Controller {
 	public function payrolldistributionreport(){
 		$payrollsID = $this->uri->segment(3);
 				
-		if($this->user==false || $this->access->accessFullHR==false || !is_numeric($payrollsID)){
+		if($this->user==false || $this->access->accessFullFinance==false || !is_numeric($payrollsID)){
 			$data['access'] = false;
 			$data['content'] = 'index';
 			$this->load->view('includes/template', $data);
