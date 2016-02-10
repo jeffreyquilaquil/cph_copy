@@ -157,7 +157,7 @@
 			
 			<?php
 				if($this->access->accessFullHRFinance==true){
-					echo '<li><a href="'.$this->config->base_url().'reports/">Reports</a></li>';
+					echo '<li><a href="'.$this->config->base_url().'reports/">Reports and Stats</a></li>';
 				}
 			?>
 			
