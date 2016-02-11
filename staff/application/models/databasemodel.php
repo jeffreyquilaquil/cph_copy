@@ -72,6 +72,7 @@ class Databasemodel extends CI_Model {
 	}
 	
 	function getSQLQueryArrayResults($sql){
+		$arr = array();
 		$query = $this->db->query($sql);
 		foreach($query->result() AS $q):
 			$arr[] = $q;
