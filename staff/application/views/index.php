@@ -10,7 +10,7 @@
 			<button id="createAnn" style="padding:3px;">Create New</button>&nbsp;&nbsp;<button id="editAnn" style="padding:3px;">Edit</button>
 		</div>
 		<div id="txtdiv" class="hidden">
-			<textarea id="txtAnn" class="hidden" style="height:350px;"><?= $announcement ?></textarea>
+			<textarea id="txtAnn" class="hidden tiny" style="height:350px;"><?= $announcement ?></textarea>
 			<p><i>For inserting images, click <a href="<?= $this->config->base_url() ?>uploadFiles/" class="iframe">here</a> to upload image, copy the link then click Insert/edit image button, paste the link of the image in "Source" input box. Dimensions should be less than 560px.</i></p>
 			<button id="ccreate" class="hidden" onClick="insertUpdate('announcement');" style="padding:3px;">Create</button><button id="cupdate" onClick="insertUpdate('updateAnn');" class="hidden" style="padding:3px;">Update</button>&nbsp;&nbsp;<button id="ccancel" style="padding:3px;">Cancel</button>
 		</div>	
@@ -35,6 +35,52 @@
 
 <? //right-wrapper ?>
 <div id="right-wrapper">
+<?php  if( isset($view_feedback) AND !empty($view_feedback) ){ //upward feedback 
+?>
+<div class="upward_feedback" style="text-align: center; padding: 8px">
+<h1 style="color: #fff; font-weight: bold;">Upward Feedback</h1>
+<?php if( isset($confirm) AND !empty($confirm) ){
+	echo '<p style="color: #f00; font-weight: 400;" class="notice">'. $confirm .'</p>';
+} ?>
+	
+	<p>Our leaders are our Company's key drivers of success. Let us know your feedback about our leaders&mdash;your leader. Your response are confidential and shall be used in general to develop targetted training programs for our leaders.</p>
+	<form name="frm_leaderFeedback" action="" method="post">
+		<input type="hidden" name="submitType" value="leaderFeedback" />
+		<textarea name="txt_leaderFeedback" value="" style="width: 100%; height: 250px;"></textarea>
+		<p>This is a feedback for<br/>(pick the name of the leader)</p>
+		<select name="sel_leader">
+			<option value="0" selected>Choose...</option>
+			<?php if( isset($leaders) AND !empty($leaders) ){
+				foreach( $leaders as $row ){
+					echo '<option value="'. $row->empID .'">'. $row->name .'</option>';
+				}
+			} ?>
+		</select><br/><br/>
+		<input type="submit" value="Submit" name="btm_submit" class="btnclass" />
+	</form>
+</div>
+<script>
+	$(function(){
+		$('form[name="frm_leaderFeedback"]').submit(function(e){
+			if( $('select[name="sel_leader"]').val() == 0 ){
+				alert('Please select the name of the leader.');
+				e.preventDefault();
+			} else if( $('textarea[name="txt_leaderFeedback"]').val() == '' ){
+				alert('Please write your feedback.');
+				e.preventDefault();
+			}
+			
+		});
+		
+		setInterval( function(){
+			$('p.notice').fadeOut(3000);
+		}, 2000 );
+		
+	});
+</script>
+
+<?php } //end upward feedback ?>
+
 <?php if($this->user->perStatus<100){ ?>
 	<div style="padding:10px;" class="tacenter">
 		Your PER is<br/>
@@ -114,7 +160,7 @@
 <script type="text/javascript">
 	$(function () { 
 		tinymce.init({
-			selector: "textarea",	
+			selector: "textarea.tiny",	
 			menubar : false,
 			plugins: [
 				"link",

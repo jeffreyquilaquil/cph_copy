@@ -1,6 +1,32 @@
 <h2>Reports</h2>
 <hr/>
 
+<?php if( isset($which_report) AND $which_report == 'upward_feedback' ) { ?>
+	<div>
+		<table class="tableInfo datatable">
+			<thead>
+				<tr>
+					<td>Date Submitted</td>
+					<td>Name of respondent</td>
+					<td>Feedback for (name of leader)</td>
+					<td>Feedback</td>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if( isset($feedbacks) AND !empty($feedbacks) ){
+					foreach($feedbacks as $feedback){
+						echo '<tr>';
+						echo '<td>'. date('F d, Y', strtotime($feedback->date_submitted) ) .'</td>';
+						echo '<td>'. $feedback->respondent .'</td>';
+						echo '<td>'. $feedback->supervisor .'</td>';
+						echo '<td><textarea style="width: 250px; height: 100px;" disabled>'. $feedback->feedback .'</textarea></td>';
+						echo '</tr>';
+					}
+				} ?>
+			</tbody>
+		</table>
+	</div>
+<?php } else { ?>
 <ul class="tabs">
 	<li class="tab-link current" data-tab="tab-1">Generated Leave Codes</li>
 	<li class="tab-link" data-tab="tab-2">Compensation Reports</li>
@@ -87,3 +113,5 @@ $(function(){
 	});
 });
 </script>
+
+<?php } //end not upward feedback report ?>

@@ -12,7 +12,7 @@ class Staff extends MY_Controller {
 		
 	public function index(){
 		$data['content'] = 'index';	
-						
+		
 		if(!empty($_POST)){
 			if($_POST['submitType']=='announcement'){
 				$this->dbmodel->insertQuery('staffAnnouncements', array('announcement'=>addslashes($_POST['aVal']), 'createdBy'=>$this->user->empID));
@@ -74,6 +74,17 @@ class Staff extends MY_Controller {
 					echo '<script>alert("Unable to upload file. Please upload less than 2MB."); location.href="'.$_SERVER['REQUEST_URI'].'";</script>';
 					exit;
 				}
+			} else if( isset($_POST['submitType']) AND $_POST['submitType'] == 'leaderFeedback' ){
+				$insert_array = array();
+				$insert_array['supervisor'] = $this->input->post('sel_leader');
+				$insert_array['from_whom'] = $this->user->empID;
+				$insert_array['feedback'] = $this->input->post('txt_leaderFeedback');
+				$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+				
+				$insert_id = $this->dbmodel->insertQuery('staffLeaderFeedback', $insert_array);
+				if( isset($insert_id) AND !empty($insert_id) ){
+					$data['confirm'] = 'Your feedback has been noticed. Thank you for noticing this notice.';
+				}
 			}
 		}
 		
@@ -91,6 +102,15 @@ class Staff extends MY_Controller {
 				$data['perUploaded'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', 'perID_fk', 'empID_fk="'.$this->user->empID.'" AND perType=1');
 				$data['perForVerify'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', 'perID_fk', 'empID_fk="'.$this->user->empID.'" AND perType=0 AND forVerification=1');
 			}
+			
+			//feedback logic
+			$data['view_feedback'] = true;
+			
+			//get all leaders
+			$leaders = $this->dbmodel->getQueryArrayResults('staffs', 'empID, CONCAT(fname, " ", lname) AS "name"', 'is_supervisor = 1 AND active = 1 AND office = "PH-Cebu" ORDER BY fname');
+			$data['leaders'] = $leaders;
+		
+			//end of feedback logic
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -4225,10 +4245,19 @@ class Staff extends MY_Controller {
     }
 	public function reports(){
 		$data['content'] = 'reports';
+		$which_report = $this->uri->segment(2);
+		
 		
 		if($this->user!=false){
-			if($this->access->accessFullHRFinance==false) $data['access'] = false;
-			else{
+			if($this->access->accessFullHRFinance==false){
+				$data['access'] = false;
+			} else if( $which_report == 'upward_feedback' ){
+				$data['which_report'] = $which_report;
+					
+				$feedbacks = $this->dbmodel->getSQLQueryArrayResults('SELECT date_submitted, feedback, (SELECT CONCAT(fname, " ", lname) FROM staffs WHERE empID = from_whom) AS "respondent", (SELECT CONCAT(fname, " ", lname) FROM staffs WHERE staffs.empID = staffLeaderFeedback.supervisor) AS "supervisor" FROM staffLeaderFeedback ORDER BY date_submitted DESC');
+				$data['feedbacks'] = $feedbacks;
+				
+			} else {
 				if(!empty($_POST)){
 					if($_POST['submitType']=='genLeaveCodes'){
 						$start = date('Y-m-d', strtotime($_POST['dateFrom']));
