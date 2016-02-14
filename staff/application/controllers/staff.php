@@ -86,6 +86,25 @@ class Staff extends MY_Controller {
 					$data['confirm'] = 'Your feedback has been noticed. Thank you for noticing this notice.';
 				}
 			}
+			//Valentines Day Special
+			elseif ($_POST['submitType'] == 'sendvalentines') {
+				$empID = $this->dbmodel->getSingleField('staffs', 'empID', 'username = "'.$_POST['to'].'"');
+				$message = "This Valentines Message is from: ".$_POST['from']."<br/>";
+				$message .= $_POST['message'];
+				if($empID){
+					$message .= '
+						<br/>
+						Happy Valentines Day!!<br/>
+						<img src="'.$this->config->base_url().'includes/images/'.$_POST['card'].'.jpg" />
+					';
+					$this->commonM->addMyNotif($empID, $message, 0, 1);
+					echo "Message Sent";
+				}
+				else{
+					echo "User not found";
+				}
+				exit;
+			}
 		}
 		
 		if($this->user!=false){
@@ -1545,6 +1564,18 @@ class Staff extends MY_Controller {
 			$data['row'] = $this->dbmodel->getQueryResults('staffMyNotif', 'staffMyNotif.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=sID AND sID!=0) AS nName', 'isNotif=1 AND empID_fk="'.$this->user->empID.'"', '', 'nstatus DESC, notifID DESC');
 		}
 	
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+
+	public function sendValentinesGreetings(){
+		$data['content'] = 'sendvalentinesgreetings';
+		$queryDept = $this->dbmodel->ptdbQuery('SELECT * FROM eDept');
+		$query = $queryDept->result();
+		$data['PTDeptArr'] = array();
+
+		foreach($query AS $q){
+			$data['PTDeptArr'][$q->eDeptKey] = $q->eDeptName;
+		}
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
