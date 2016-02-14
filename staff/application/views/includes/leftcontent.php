@@ -72,6 +72,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	
 	echo '<ul id="leftMenu">';
 		if($this->user->username == $row->username){
+			echo '<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Valentines greetings</a></li>';
 			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
 			
