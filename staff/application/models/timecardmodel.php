@@ -355,7 +355,7 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		if($query==''){
-			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, CONCAT(fname," ",lname) AS name, publishBy '.$flds, 'slogDate="'.$dateToday.'"  AND showStatus=1 '.$condition, 'LEFT JOIN staffs ON empID=empID_fk');
+			$query = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, slogDate, empID_fk, CONCAT(fname," ",lname) AS name, publishBy '.$flds, 'slogDate="'.$dateToday.'"  AND showStatus=1 '.$condition.' AND office="PH-Cebu"', 'LEFT JOIN staffs ON empID=empID_fk');
 		}
 		
 		return $query;

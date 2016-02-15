@@ -1008,6 +1008,28 @@ class Payrollmodel extends CI_Model {
 		
 	}
 	
+	//release claim waiver
+	public function pdfReleaseClaim($data){
+		
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');		
+		$pdf = new FPDI();
+		
+		$pdf->AddPage();	
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'release_waiver_and_quitclaim.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','',9);
+		$pdf->setTextColor(0, 0, 0);	
+		$pdf->setXY(60, 46.5);
+		$pdf->Write(0, $data->full_name);
+		
+		$pdf->Output('release_waiver_and_quitclaim_'.$data->empID.'.pdf', 'I');	
+	}
+	
+	
+	
 	public function pdfLastPay($data){
 		$payInfo = $data['payInfo'];
 		$periodFrom = $data['periodFrom'];
@@ -1071,10 +1093,13 @@ class Payrollmodel extends CI_Model {
 		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 		$leaveAmount = $payInfo->addLeave * $dailyRate;		
 		
+		
 		$payArr = array();
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
+		//echo '<pre>';
+		//var_dump($payArr);
 				
 		$month13c = 0;
 		foreach($dateArr AS $date){
@@ -1087,6 +1112,20 @@ class Payrollmodel extends CI_Model {
 				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
 				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
 				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
+				
+				//add all adjustments
+				//"nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday"
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiff']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiff']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['overTime']))?$dataMonthItems[$payArr[$date]->payslipID]['overTime']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']))?$dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
 				
 				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
 				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";

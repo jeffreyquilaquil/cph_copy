@@ -6,7 +6,7 @@ class Timecard extends MY_Controller {
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
 		$this->load->model('payrollmodel', 'payrollM');
-		
+		$this->load->model('staffmodel', 'staffM');
 	}
 		
 	public function _remap($method){
@@ -1732,7 +1732,7 @@ class Timecard extends MY_Controller {
 				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
 				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
 				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
-				
+			
 				$data['dataMonthItems'] = array();
 				if(count($data['dataMonth'])>0){
 					$slipID = '';
@@ -1740,7 +1740,7 @@ class Timecard extends MY_Controller {
 						$slipID .= $m->payslipID.',';
 					}
 					if(!empty($slipID)){
-						$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+						$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
 						if(count($queryItems)>0){
 							foreach($queryItems AS $item){
 								$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
@@ -1755,10 +1755,16 @@ class Timecard extends MY_Controller {
 				$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
 				if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
 					$acc = true;
+					switch( $_GET['which_pdf'] ){
+						case 'view': $url_string = 'timecard/computelastpay/?payID='.$_GET['payID']; break;
+						case 'release': $url_string = 'timecard/computelastpay/?empID='.$_GET['empID']; break;
+						case 'coe': $url_string = 'timecard/computelastpay/?empID='.$_GET['empID']; break;
+						case 'bir': $url_string = 'timecard/computelastpay/?empID='.$_GET['empID']; break;
+					}
 					echo '<script>';
 						echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
 						echo 'if(pass=="'.$bdate.'"){
-							window.location.href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$_GET['payID'].'&show='.$this->textM->encryptText($bdate).'";
+							window.location.href="'.$this->config->base_url().$url_string.'&show='.$this->textM->encryptText($bdate).'&which_pdf='.$_GET['which_pdf'].'";
 						}else{ 
 							alert("Failed to load document. Invalid password.");';
 							$acc = false;
@@ -1767,11 +1773,33 @@ class Timecard extends MY_Controller {
 					
 					if($acc==false) $data['access'] = false;
 					else exit;
-				}else{					
+				}else{
 					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
-						$this->payrollM->pdfLastPay($data);
-						exit;
-					}else{
+						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
+							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
+						}
+						
+						switch( $_GET['which_pdf'] ){
+							case 'view': 								
+								$this->payrollM->pdfLastPay($data);									
+							break;
+							case 'release': //release waiver and quitclam
+								$staff_details->amount_in_words = 'one hundred pesos';
+								$staff_details->amount_in_figure = '100';
+								$this->payrollM->pdfReleaseClaim($staff_details);	
+							break;
+							case 'bir': //bir 2316
+							break;
+							case 'coe': //coe
+								//call staff details and use staffmodel->genCOEpdf()								
+								$staff_details->dateissued = date('F d, Y');
+								$staff_details->purpose = 'End of Employment';
+								$staff_details->last = true;
+								$staff_details->coeID = $staff_details->empID;
+								$this->staffM->genCOEpdf($staff_details);
+							break;
+						}
+					} else {
 						$data['access'] = false;
 					}
 				}									
