@@ -1784,8 +1784,9 @@ class Timecard extends MY_Controller {
 								$this->payrollM->pdfLastPay($data);									
 							break;
 							case 'release': //release waiver and quitclam
-								$staff_details->amount_in_words = 'one hundred pesos';
-								$staff_details->amount_in_figure = '100';
+							
+								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
+								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
 							case 'bir': //bir 2316
