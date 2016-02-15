@@ -1160,11 +1160,12 @@ class Textmodel extends CI_Model {
 		
 		if (null !== $fraction && is_numeric($fraction)) {
 			$string .= $decimal;
-			$words = array();
+			$string .= $this->convert_number_to_words($fraction);
+			/*$words = array();
 			foreach (str_split((string) $fraction) as $number) {
 				$words[] = $dictionary[$number];
 			}
-			$string .= implode(' ', $words);
+			$string .= implode(' ', $words);*/
 		}
 		
 		return $string;
