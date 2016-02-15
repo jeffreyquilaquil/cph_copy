@@ -1010,20 +1010,56 @@ class Payrollmodel extends CI_Model {
 	
 	//release claim waiver
 	public function pdfReleaseClaim($data){
+
+		$indent = 15;
 		
 		require_once('includes/fpdf/fpdf.php');
-		require_once('includes/fpdf/fpdi.php');		
-		$pdf = new FPDI();
+		//require_once('includes/fpdf/fpdi.php');		
+		require_once('includes/fpdf/fpdf_ext.php');
+		
+		
+		$pdf = new PDF_EXT();
 		
 		$pdf->AddPage();	
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'release_waiver_and_quitclaim.pdf');
-		$tplIdx = $pdf->importPage(1);
-		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-		
-		$pdf->SetFont('Arial','',9);
+		$pdf->SetMargins(20, 20);
 		$pdf->setTextColor(0, 0, 0);	
-		$pdf->setXY(60, 46.5);
-		$pdf->Write(0, $data->full_name);
+		
+		$pdf->SetFont('Arial','B',9);		
+		$pdf->setXY(0, 20);
+		$pdf->MultiCell(0, 10, 'RELEASE WAIVER AND QUITCLAIM', 0, 'C', false);		
+		$pdf->Ln(4);
+		$pdf->SetFont('Arial','',9);
+		$pdf->MultiCell(0, 4, 'KNOW ALL MEN BY THESE PRESENTS:', 0, 'L', false); 
+		$pdf->Ln(4);
+		$pdf->MultiCell(0, 5, 'That I, '.$data->full_name.', Filipino, of legal age, a resident of ________________ ________________________________________________, and formerly employed with Tate Publishing and Enterprises (Philippines), Inc., do by these presents acknowledge receipt of the sum of '.$data->amount_in_words.' ('.$data->amount_in_figure.'), Philippine Currency, from Tate Publishing and Enterprises (Philippines), Inc. in full payment and final settlement of my separation pay, 13th month pay, terminal benefits and accrued employment benefits due to me or which may be due to me from Tate Publishing and Enterprises (Philippines), Inc. under the law or under any existing agreement with respect thereto, as well as any and all claims of whatever kind and nature which I have or may have against Tate Publishing and Enterprises (Philippines), Inc., arising from my employment with and the termination of my employment with Tate Publishing and Enterprises (Philippines), Inc.', 0, 'J', false, $indent); 
+		$pdf->Ln(4);
+		$pdf->MultiCell(0, 5, 'In consideration of said payment, I do hereby quitclaim, release, discharge and waive any and all actions of whatever nature, expected, real or apparent, which I may have against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients by reason of or arising from my employment with the company. I will institute no action, whether civil, criminal, labor or administrative against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients. Any and all actions which I may have commenced either solely in my name or jointly with others before any office, board, bureau, court, or tribunal against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients are hereby deemed and considered voluntary withdrawn by me and I will no longer testify or continue to prosecute said action(s).', 0, 'J', false, $indent);
+		$pdf->Ln(4);
+		$pdf->MultiCell(0, 5, 'I declare that I have read this document and have fully understood its contents. I further declare that I voluntarily and willingly executed this Release, Waiver and Quitclaim with full knowledge of my rights under the law.', 0, 'J', false, $indent);
+		$pdf->Ln(4);
+		$pdf->MultiCell(0, 5, 'IN WITNESS WHEREOF, I have hereunto set my hand at ___________, this ___ day of ____________, 20___.', 0, 'L', false, $indent);
+		$pdf->Ln(8);
+		$pdf->SetX(120);
+		$pdf->SetMargins(20, 20);
+		$pdf->MultiCell(0, 5, '       '.$data->full_name.'         ', 'B', 'C', false);
+		$pdf->SetX(120);
+		$pdf->MultiCell(0, 5, '       Affiant         ', 0, 'C', false);
+		$pdf->Ln(8);
+		$pdf->MultiCell(0, 5, 'SIGNED IN THE PRESENCE OF', 0, 'C', false, $indent);
+		$pdf->MultiCell(0, 5, '____________________   ___________________', 0, 'C', false, $indent);
+		$pdf->Ln(10);
+		$pdf->MultiCell(0, 5, 'SUBSCRIBED AND SWORN to before me ___ day of __________, 20___ affiant exhibiting to me her Tax Certificate', 0, 'L', false);
+		$pdf->MultiCell(0, 5, 'No. ______________________ issued at ________________ on _______________.', 0, 'L', false);
+		$pdf->Ln(8);
+		$x = $pdf->GetX();
+		$y = $pdf->GetY();
+		$pdf->MultiCell(0, 5, 'Doc. No. _______; ', 0, 'L', false);
+		$pdf->MultiCell(0, 5, 'Page No._______;', 0, 'L', false);
+		$pdf->MultiCell(0, 5, 'Book No._______;', 0, 'L', false);
+		$pdf->MultiCell(0, 5, 'Series of 20______.', 0, 'L', false);
+		$pdf->SetXY( ($x + 100), $y );
+		$pdf->Cell(0, 5, 'NOTARY PUBLIC');
+		
 		
 		$pdf->Output('release_waiver_and_quitclaim_'.$data->empID.'.pdf', 'I');	
 	}
