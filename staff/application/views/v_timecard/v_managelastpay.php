@@ -32,9 +32,9 @@
 								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'" target="_blank">View Details</a></li>
 								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'" class="iframe">Re-compute Last Pay</a></li>
 								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?payID='.$data->lastpayID.'&show=pdf&which_pdf=view" target="_blank">View PDF File</a></li>';
-			echo 				'<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=release&payID='.$data->lastpayID.'" target="_blank">Release Waiver and Quit Claim</a></li>';
-								/*<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=coe" target="_blank">Certificate of Employment</a></li>
-								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=bir" target="_blank">BIR 2316</a></li>';*/
+			echo 				'<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=release&payID='.$data->lastpayID.'" target="_blank">Release Waiver and Quit Claim</a></li>
+								<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=coe" target="_blank">Certificate of Employment</a></li>';
+								/*<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$data->empID_fk.'&show=pdf&which_pdf=bir" target="_blank">BIR 2316</a></li>';*/
 			echo '</ul>
 						</li>
 					</ul>				

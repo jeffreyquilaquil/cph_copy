@@ -1785,7 +1785,7 @@ class Timecard extends MY_Controller {
 							break;
 							case 'release': //release waiver and quitclam
 							
-								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
+								$staff_details->amount_in_words = $this->textM->convert_number_to_words(6391.99);
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
@@ -1797,7 +1797,7 @@ class Timecard extends MY_Controller {
 								$staff_details->purpose = 'End of Employment';
 								$staff_details->last = true;
 								$staff_details->coeID = $staff_details->empID;
-								$this->staffM->genCOEpdf($staff_details);
+								$this->staffM->genCOEpdfLast($staff_details);
 							break;
 						}
 					} else {
