@@ -24,17 +24,26 @@
 					}else{
 						$img = $this->config->base_url().'css/images/logo.png';	
 					}					
-				}	
-				
-				
-				echo '<td class="nTD" width="70px"><img src="'.$img.'" width="60px"/></td>';
+                }	
+                echo '<td class="nTD" width="70px">';
+                if( $m['ntype'] != 6 ){				
+                    echo '<img src="'.$img.'" width="60px"/>';
+                }
+                 echo '</td>';
 				
 				$note = $m['note'];
 				
-				if($m['from']=='careerPH') 
-					echo '<td><b>'.(($m['name']=='')?'CareerPH':$m['name']).'</b> ('.date('M d y h:i a', strtotime($m['timestamp'])).')<br/><br/>'.$note.'<br/><br/></td>';
-				else 
-					echo '<td>'.$note.'</td>';	
+                if($m['from']=='careerPH'){
+                    echo '<td>';
+                    if( $m['ntype'] != 6 ){
+                        echo '<b>'.(($m['name']=='')?'CareerPH':$m['name']).'</b>'; 
+                    } 
+                    echo '('.date('M d y h:i a', strtotime($m['timestamp'])).')';
+                
+                    echo'<br/><br/>'.$note.'<br/><br/></td>';
+                } else {
+                    echo '<td>'.$note.'</td>';	
+                }
 				echo '</tr>';
 			}
 		}

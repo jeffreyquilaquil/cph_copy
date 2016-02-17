@@ -593,7 +593,8 @@ class Staffmodel extends CI_Model {
 				'name' => $m->name,
 				'type' => $m->ntype,
 				'access' => $m->accesstype,
-				'exec' => $m->userSID
+                'exec' => $m->userSID,
+                'ntype' => $m->ntype
 			);
 		endforeach;
 		
