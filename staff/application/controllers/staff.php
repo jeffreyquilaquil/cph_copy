@@ -1572,6 +1572,7 @@ class Staff extends MY_Controller {
 		$queryDept = $this->dbmodel->ptdbQuery('SELECT * FROM eDept');
 		$query = $queryDept->result();
 		$data['PTDeptArr'] = array();
+		$data['arraystaff'] = $this->dbmodel->getResultArray('staffs', 'username, CONCAT(fname, " ", lname) AS staffName', 'active = 1', '', 'fname ASC');
 
 		foreach($query AS $q){
 			$data['PTDeptArr'][$q->eDeptKey] = $q->eDeptName;
