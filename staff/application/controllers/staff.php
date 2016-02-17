@@ -98,7 +98,9 @@ class Staff extends MY_Controller {
 						<img src="'.$this->config->base_url().'includes/images/'.$_POST['card'].'.jpg" />
 					';
 					$this->commonM->addMyNotif($empID, $message, 0, 6);
-					echo "Message Sent";
+                    echo "Message Sent";
+                    header('location: '.$this->base_url());
+                    exit();
 				}
 				else{
 					echo "User not found";
