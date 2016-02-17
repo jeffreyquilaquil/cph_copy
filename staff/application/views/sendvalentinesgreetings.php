@@ -12,7 +12,16 @@
 	}
 </style>
 <div class='toFromForm'>
-	<div>To: <input type='text' class='padding5px messageTo' placeholder='Enter Username' size='50'/></div>
+	<div>To:
+		<select class='padding5px messageTo'>
+			<option value='0'> --- SELECT SOMEONE SPECIAL --- </option>
+			<?php
+				foreach($arraystaff as $v => $k){
+					echo "<option value='".$k['username']."'>".$k['staffName']."</option>";
+				}
+			?>
+		</select>
+	</div>
 	<div>From: 
 		<select class='messageFrom'>
 			<option selected>A Fan of Yours</option>
@@ -58,31 +67,35 @@ Choose a card: <br/><br/>
 		var data = tinyMCE.get('txtAnn').getContent();
 		var submitType = d;
 		var from = $('.messageFrom option:selected').val();
-		var to = $('.messageTo').val();
+		var to = $('.messageTo option:selected').val();
 		var card = $(".card-selected").data('img');
 		var datastrip = new FormData();//'submitType='+submitType+'&from='+from+'&to='+to+'message='
 
-		datastrip.append('submitType', d);
-		datastrip.append('from', from);
-		datastrip.append('to', to);
-		datastrip.append('message', data);
-		datastrip.append('card', card);
+		if( to != 0 ){
+			datastrip.append('submitType', d);
+			datastrip.append('from', from);
+			datastrip.append('to', to);
+			datastrip.append('message', data);
+			datastrip.append('card', card);
 
-		if(data == ''){
-			alert('Message is empty');
+			if(data == ''){
+				alert('Message is empty');
+			}else{
+				$.ajax({
+					type: 'POST',
+					url: "<?= $this->config->base_url() ?>",
+					data: datastrip,
+					async: false,
+					success: function(e){
+						alert(e);
+					},
+					cache: false,
+			        contentType: false,
+			        processData: false
+				});
+			}
 		}else{
-			$.ajax({
-				type: 'POST',
-				url: "<?= $this->config->base_url() ?>",
-				data: datastrip,
-				async: false,
-				success: function(e){
-					alert(e);
-				},
-				cache: false,
-		        contentType: false,
-		        processData: false
-			});
+			alert('Please select a recepient');
 		}
 	}
 </script>

@@ -60,6 +60,15 @@ class Databasemodel extends CI_Model {
 		$query = $this->db->query($sql);
 		return $query->result();
 	}
+
+	function getResultArray($table, $fields, $where=1, $join='', $orderby='', $trace=false){
+		if($orderby!='') $orderby = 'ORDER BY '.$orderby; 
+		$sql = "SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby;
+		if($trace==true) echo $sql;
+		
+		$query = $this->db->query($sql);
+		return $query->result_array();
+	}
 	
 	function getQueryArrayResults($table, $fields, $where=1, $join='', $orderby=''){
 		$arr = array();
