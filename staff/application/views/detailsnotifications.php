@@ -8,7 +8,8 @@ if(count($row)==0){
 foreach($row AS $r):
 ?>
 	<div class="notifdiv" id="n<?= $r->notifID ?>" style="background-color:#ddd">
-	<?php
+<?php
+    if( $r->ntype != 6 ){
 		if($r->nName!='') echo '<b>'.$r->nName.'</b> ';
 		else if($r->sID==0 && !empty($r->userSID)){
 			$ssName = explode('|', $r->userSID);
@@ -18,7 +19,8 @@ foreach($row AS $r):
 				echo '<b>CareerPH</b> ';
 		}else
 			echo '<b>CareerPH</b> ';
-		
+
+    }
 		$note = $r->ntexts;
 		/* $note = str_replace($this->user->name, 'you', $note);
 		$note = ucfirst($note); */

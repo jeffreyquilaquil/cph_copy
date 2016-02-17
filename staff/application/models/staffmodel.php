@@ -477,6 +477,35 @@ class Staffmodel extends CI_Model {
 		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
 	}
 	
+	function genCOEpdfLast($row){
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+		
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_last.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		
+		$pdf->SetFont('Arial','B',14);
+		$pdf->setXY(95, 91);
+		$pdf->Write(0, $row->name);
+		$pdf->setXY(95, 100);
+		$pdf->Write(0, $row->title);
+		$pdf->setXY(95, 109);
+		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
+		$pdf->setXY(95, 119);
+		$pdf->Write(0, date('F d, Y',strtotime($row->endDate)));
+		
+		
+		$pdf->setXY(87, 163);
+		$pdf->Write(0, date('F d, Y'));
+		
+		
+		
+		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
+	}
+	
 	function getEmailTemplate($id, $empID){
 		$template = $this->dbmodel->getSingleField('staffCustomEmails', 'emailTemplate', 'emailID="'.$id.'"');
 		$staff = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) AS name, fname, lname', 'emailID="'.$empID.'"');
