@@ -97,10 +97,9 @@ class Staff extends MY_Controller {
 						Happy Valentines Day!!<br/>
 						<img src="'.$this->config->base_url().'includes/images/'.$_POST['card'].'.jpg" />
 					';
-					$this->commonM->addMyNotif($empID, $message, 0, 6);
+					$this->commonM->addMyNotif($empID, $message, 6, 1);
                     echo "Message Sent";
-                    header('location: '.$this->base_url());
-                    exit();
+                    //echo '<script>location.reload();</script>';
 				}
 				else{
 					echo "User not found";
