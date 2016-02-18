@@ -1705,6 +1705,11 @@ class Timecard extends MY_Controller {
 							
 			$data['pageType'] = 'showperiod';
 			if(isset($_GET['payID'])){
+				//FOR BIR Purposes
+				if(isset($_GET['empID'])){
+					$empID = $_GET['empID'];
+				}
+
 				$data['pageType'] = 'showpay';
 				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
 				if(count($data['payInfo'])==0) $data['access'] = false;
@@ -1718,7 +1723,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'empID, username, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
@@ -1776,7 +1781,7 @@ class Timecard extends MY_Controller {
 				}else{
 					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
-							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
+							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
 						
 						switch( $_GET['which_pdf'] ){
@@ -1789,7 +1794,16 @@ class Timecard extends MY_Controller {
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
-							case 'bir': //bir 2316
+							case 'bir':
+									// var_dump($payInfo = $data['payInfo']);
+									// var_dump($periodFrom = $data['periodFrom']);
+									// var_dump($periodTo = $data['periodTo']);
+									// var_dump($dataBracket = $data['dataBracket']);
+									// var_dump($staffInfo = $data['staffInfo']);
+									// var_dump($dateArr = $data['dateArr']);
+									// var_dump($dataMonth = $data['dataMonth']);
+									// var_dump($dataMonthItems = $data['dataMonthItems']);
+							 		$this->payrollM->pdfBIR($data);
 							break;
 							case 'coe': //coe
 								//call staff details and use staffmodel->genCOEpdf()								
