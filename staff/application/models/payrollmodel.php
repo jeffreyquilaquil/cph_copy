@@ -1377,8 +1377,9 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($tnt), 0,2,'R');			
 
 		//FOR 42
+		$tsal = $totalSalary - $totalDeduction - $spp;
 		$pdf->setXY(194, 166);
-		$pdf->Cell(48, 5, $this->formatNum($totalSalary), 0,2,'R');			
+		$pdf->Cell(48, 5, $this->formatNum($tsal), 0,2,'R');			
 		
 		//FOR 47A
 		$pdf->setXY(194, 209);
