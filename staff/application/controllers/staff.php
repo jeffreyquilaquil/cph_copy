@@ -2783,7 +2783,7 @@ class Staff extends MY_Controller {
 		$data['content'] = 'generatecode';
 		
 		if($this->user!=false){
-			if(!empty($_POST)){
+			if(!empty($_POST) AND !empty($_POST['forWhom']) AND isset($_POST['forWhom']) ){
 				if($_POST['submitType']=='gencode'){
 					$chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 					$res = "";
@@ -4084,7 +4084,7 @@ class Staff extends MY_Controller {
 						$files = $_FILES;					
 						/* config data */
 						$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
-						$upload_config['allowed_types'] = 'gif|jpg|png';
+						$upload_config['allowed_types'] = 'gif|jpg|png|pdf';
 						$upload_config['max_size']	= '2048';
 						$upload_config['overwrite']	= 'FALSE';						
 						$this->load->library('upload');			
@@ -4112,8 +4112,9 @@ class Staff extends MY_Controller {
 						}
 						
 						//if we have error, throw it to views
-						if( isset($error_data) AND !empty($error_data) ){
-							foreach( $upload_data as $key1 => $val1 ){
+                        if( isset($error_data) AND !empty($error_data) ){
+                            $data['error'] = '';
+							foreach( $error_data as $key1 => $val1 ){
 								$data['error'] .= $val1 ."\n";
 							}						
 						}					
