@@ -218,6 +218,13 @@
 					if($pageType=='showpay') echo '<td>'.$this->textM->convertNumFormat($payInfo->taxFromPrevious).'</td>'; 
 					else echo '<td>'.$this->textM->formfield('number', 'taxFromPrevious', '0.00', 'padding5px', '', 'step="any"').'</td>';
 				echo '</tr>';
+
+				echo '<tr>';
+					echo '<td width="270px">Taxable Withheld from Previous Employer</td>';
+					if($pageType=='showpay') echo '<td>'.$this->textM->convertNumFormat($payInfo->taxWithheldFromPrevious).'</td>'; 
+					else echo '<td>'.$this->textM->formfield('number', 'taxWithheldFromPrevious', '0.00', 'padding5px', '', 'step="any"').'</td>';
+				echo '</tr>';
+
 				echo '<tr>';
 					echo '<td>Current Taxable Income</td>';
 					echo '<td>'.$this->textM->convertNumFormat($totalTaxable).'</td>';
@@ -708,6 +715,7 @@
 				dateTo:'<?= $periodTo ?>',
 				monthlyRate:'<?= $salary ?>',
 				taxFromPrevious:$('input[name="taxFromPrevious"]').val(),
+				taxWithheldFromPrevious: $('input[name="taxWithheldFromPrevious"]').val(),
 				taxFromCurrent:'<?= $totalTaxable ?>',
 				taxNetTaxable:$('#val_netTaxableIncome').text(),
 				taxWithheld:'<?= $totalTaxWithheld ?>',

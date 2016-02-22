@@ -1355,10 +1355,14 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(95, 285);
 		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheld) , 0,2,'R');
 
-		//SKIP 30B
-		//ADD 30A + 30B (No 30B Yet)
+		//FOR 30B
+		$pdf->setXY(95, 292);
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheldFromPrevious) , 0,2,'R');		
+
+		//FOR 31
+		$n31 = $payInfo->taxWithheldFromPrevious+$payInfo->taxWithheld;
 		$pdf->setXY(95, 298);
-		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheld) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
 
 		//FOR 37
 		$pdf->setXY(194, 100);
