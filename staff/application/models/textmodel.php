@@ -385,13 +385,15 @@ class Textmodel extends CI_Model {
 				<tbody>
 				';
 						
-		foreach($data_query AS $row){			
+		foreach($data_query AS $row){	
+			$status = '';
+			$status = (in_array($row->status_accounting, array(2, 4) ) )? $status_labels[ $row->status_accounting ] : $status_labels[ $row->status ];
 			$disp .= '<tr>
 					<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
 					<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
 					<td>'.date('d M y h:i a', strtotime($row->date_submitted) ).'</td>
 					<td>'.$row->requested_amount.'</td>
-					<td>'.(in_array($row->status_accounting, array(2, 4) ) )? $status_labels[ $row->status_accounting ] : $status_labels[ $row->status ].'</td>
+					<td>'.$status.'</td>
 					<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
 				</tr>
 			';
