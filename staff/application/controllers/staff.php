@@ -1530,6 +1530,7 @@ class Staff extends MY_Controller {
 		}else if($this->user!=false){	
 			$id = $this->uri->segment(2);
 			$data['updated'] = '';
+			
 			if(!empty($_POST)){
 				$atext = '';
 				if($_POST['submitType']=='accesstype'){
@@ -1539,18 +1540,21 @@ class Staff extends MY_Controller {
 						for($i=0; $i<$cntNevada; $i++){
 							$actext .= $_POST['access'][$i].',';
 						}
+						$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					}
+					if( isset($_POST['exclude_schedule']) ){
+						$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('exclude_schedule' => $_POST['exclude_schedule']) );
+					}					
 					
-					$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					$data['updated'] = 'Access type successfully submitted.';
 					$atext = 'Updated access type to '.rtrim($actext,',');
 				}
 				$this->commonM->addMyNotif($this->user->empID, $atext, 5);
 			}
 			
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name', 'empID="'.$id.'"');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name, exclude_schedule', 'empID="'.$id.'"');
 		}
-	
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
