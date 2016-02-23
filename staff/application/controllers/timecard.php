@@ -1790,7 +1790,7 @@ class Timecard extends MY_Controller {
 							break;
 							case 'release': //release waiver and quitclam
 							
-								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->getLastPay);
+								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
