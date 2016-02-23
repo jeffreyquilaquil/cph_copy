@@ -44,7 +44,7 @@
 <div class="cpointer" onClick="showTbl('cnt_disapproved_medical', this)">
 	<h3>Approved by Medical Personnel <?php echo '('. $cnt_accounting .')'; ?>  <a class="fs11px">[show]</a></h3><hr/>
 </div>
-		<?php echo $this->textM->reimbursementTableDisplay($data_disapproved_medical, 'cnt_disapproved_medical', true); ?>
+		<?php echo $this->textM->reimbursementTableDisplay($data_query_accounting, 'cnt_disapproved_medical', true); ?>
 		<br/><br/>
 		
 <div class="cpointer" onClick="showTbl('cnt_approved_accounting', this)">
