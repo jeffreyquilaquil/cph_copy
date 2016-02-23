@@ -361,12 +361,16 @@ class Textmodel extends CI_Model {
 	}
 	
 	//medicine reimbursement views
-	function reimbursementTableDisplay($data_query, $status, $datatable = true){
+	function reimbursementTableDisplay($data_query, $status, $hide = false, $datatable = true){
 		
 		$status_labels = $this->textM->constantArr('medrequest');
 		$id = uniqid();
 		$hideArr = array('pending_med', 'pending_accounting', 'all');
-		$disp = '<div id="tbl'.$status.'">
+		$disp = '<div id="tbl'.$status.'"';
+		if( $hide == true ){
+			$disp .= ' class="hidden" ';
+		}
+		$disp .= '">
 				<table class="tableInfo fs11px" id="tbl_'.$id.'">
 				<thead>
 					<tr>
@@ -375,64 +379,30 @@ class Textmodel extends CI_Model {
 						<th>Submission Date</th>
 						<th>Requested Amount</th>
 						<th>Status</th>												
-						<th><br/></th> 
+						<th>File</th> 
 					</tr>
 				</thead>
 				<tbody>
 				';
 						
-		foreach($data_query AS $row){
-			if( $status == 'pending_med' ){
-				if( $row->status == 0 ){
-					$disp .= '<tr>
-							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
-							<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
-							<td>'.date('d M y h:i a', strtotime($row->date_submitted) ).'</td>
-							<td>'.$row->requested_amount.'</td>
-							<td>'.$status_labels[ $row->status ].'<td>
-							<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-						</tr>
-					';
-				}
-			} else if( $status == 'pending_accounting' ){
-				
-				if( ($row->status == 1 AND ( !in_array($row->status_accounting, array(2,4)) ) ) ){					
-					$disp .= '<tr>
-							<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
-							<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
-							<td>'.date('d M y h:i a', strtotime($row->date_submitted) ).'</td>
-							<td>'.$row->requested_amount.'</td>
-							<td>'.$status_labels[ $row->status ].'<td>
-							<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-						</tr>
-					';
-				}
-			} else {
-				$disp .= '<tr>
-						<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
-						<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
-						<td>'.date('d M y h:i a', strtotime($row->date_submitted) ).'</td>
-						<td>'.$row->requested_amount.'</td>';
-						if( in_array( $row->status_accounting, array(2,4) ) ){
-								$disp .= '<td>'.$status_labels[ $row->status_accounting ].'<td>';
-						} else {
-							$disp .= '<td>'.$status_labels[ $row->status].'<td>';
-						}
-						
-						$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
-					</tr>
-				';
-			}
-		
-			
+		foreach($data_query AS $row){			
+			$disp .= '<tr>
+					<td><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/">'.$row->lname.' '.$row->fname.'</a></td>
+					<td>'.date('d M y h:i a', strtotime($row->prescription_date) ).'</td>
+					<td>'.date('d M y h:i a', strtotime($row->date_submitted) ).'</td>
+					<td>'.$row->requested_amount.'</td>
+					<td>'.$status_labels[ $row->status ].'</td>
+					<td><a class="iframe" href="'.$this->config->base_url().'medrequest/'.$row->medrequestID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>
+				</tr>
+			';
 		}
 		$disp .= '</tbody></table>
 				</div>';
 		
 		if( $datatable == true ){
-			echo '<script>
+			$disp .= '<script>
 				$(function(){
-					$("table#tbl'.$id.'").dataTable();					
+					$("table#tbl_'.$id.'").dataTable();					
 				});
 			</script>';
 		}

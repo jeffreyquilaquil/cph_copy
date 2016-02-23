@@ -4263,7 +4263,19 @@ class Staff extends MY_Controller {
 	public function medrequests(){
 		$data['content'] = 'medrequests';
 		
-		$data['data_query'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_all'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_medical'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 0', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 1 AND status_accounting NOT IN (2, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
+		
+		$data['data_approved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 2 AND status NOT IN (0, 1)', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 4 AND status NOT IN (0, 1)', 'LEFT JOIN staffs ON empID = empID_fk');
+		
+		$data['cnt_all'] = count($data['data_query_all']);
+		$data['cnt_medical'] = count($data['data_query_medical']);
+		$data['cnt_accounting'] = count($data['data_query_accounting']);
+		$data['cnt_approved_accounting'] = count($data['data_approved_accounting']);
+		$data['cnt_disapproved_accounting'] = count($data['data_disapproved_accounting']);
+		
 		//var_dump($data['data_query']);
 		$this->load->view('includes/template', $data);	
 	}
