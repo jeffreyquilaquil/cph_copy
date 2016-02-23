@@ -54,7 +54,7 @@
 		<br/><br/>
 		
 <div class="cpointer" onClick="showTbl('cnt_disapproved_accounting', this)">
-	<h3>Disapprove by Accounting <?php echo '('. $cnt_disapproved_accounting .')'; ?>  <a class="fs11px">[show]</a></h3><hr/>
+	<h3>Disapproved<?php echo '('. $cnt_disapproved_accounting .')'; ?>  <a class="fs11px">[show]</a></h3><hr/>
 </div>
 		<?php echo $this->textM->reimbursementTableDisplay($data_disapproved_accounting, 'cnt_disapproved_accounting', true); ?>
 		<br/><br/>
