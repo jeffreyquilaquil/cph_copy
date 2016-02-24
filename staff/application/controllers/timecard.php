@@ -1723,7 +1723,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, mname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){

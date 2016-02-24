@@ -1081,7 +1081,8 @@ class Payrollmodel extends CI_Model {
 		$pdf->AddPage();	
 		$pdf->setSourceFile(PDFTEMPLATES_DIR.'BIR2316.pdf');
 		$tplIdx = $pdf->importPage(1);
-		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		$pdf->useTemplate($tplIdx, null, null, 284.07783333333, 367.63325, true);
+		$pdf->SetAutoPageBreak(auto,1);
 			
 		//SET DEFAULT FONT TO ARIAL BOLD size 12PT
 		$pdf->SetFont('Arial','B',12);
@@ -1090,6 +1091,7 @@ class Payrollmodel extends CI_Model {
 		//FOR THE YEAR
 		$pdf->setXY(77, 35);
 		$pdf->Write(0, date("Y")); 
+		//$pdf->Write(0, $pdf->w.' '.$pdf->h); 
 
 		//FOR THE PERIOD
 		//FROM
@@ -1397,9 +1399,26 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $excs, 0,2,'R');
 
 		//FOR 55
-		$n55 = $totalSalary+$totalAdjustment+$excs;
+		$n55 = $tsal+$totalAdjustment;
 		$pdf->setXY(194, 297);
 		$pdf->Cell(48, 5, $this->formatNum($n55), 0,2,'R');
+
+		//FOR 56
+		$pdf->setXY(65, 309);
+		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
+
+		//FOR 56
+		$pdf->setXY(55, 317);
+		$pdf->Cell(75, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
+
+		//FOR 56
+		$pdf->setXY(55, 342);
+		$pdf->Cell(75, 5, "Diana Rose T. Bartulin", 0,2,'C');
+
+		//FOR 59
+		$pdf->setXY(157, 352);
+		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
+		$pdf->Cell(68, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');

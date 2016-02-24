@@ -1064,7 +1064,7 @@ class Textmodel extends CI_Model {
 		$conjunction = ' and ';
 		$separator   = ', ';
 		$negative    = 'negative ';
-		$decimal     = ' point ';
+		$decimal     = ' pesos and ';
 		$dictionary  = array(
 			0                   => 'zero',
 			1                   => 'one',
@@ -1161,6 +1161,7 @@ class Textmodel extends CI_Model {
 		if (null !== $fraction && is_numeric($fraction)) {
 			$string .= $decimal;
 			$string .= $this->convert_number_to_words($fraction);
+			$string .= ' centavos';
 			/*$words = array();
 			foreach (str_split((string) $fraction) as $number) {
 				$words[] = $dictionary[$number];
