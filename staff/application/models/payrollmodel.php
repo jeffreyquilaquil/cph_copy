@@ -1352,20 +1352,32 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(95, 272);
 		$pdf->Cell(48, 5, $n28, 0,2,'R');
 
-		//FOR 29
+		//FOR 29, 30A, 30B, and 31
+		$n30a = $n30b = $n31 = 0;
+		$n29 = $payInfo->taxDue;
+
+		if( $n29 > 0 && $payInfo->taxWithheldFromPrevious == 0 ){
+			$n30a = $n31 = $n29;
+		}
+		if( $n29 > 0 && $payInfo->taxWithheldFromPrevious > 0 ){
+			$n31 = $n29;
+			$n30b = $payInfo->taxWithheldFromPrevious;
+			$n30a = $n29 - $n30b;
+		}
+
 		$pdf->setXY(95, 278);
-		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxDue) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n29) , 0,2,'R');
 
 		//FOR 30A
 		$pdf->setXY(95, 285);
-		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheld) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n30a) , 0,2,'R');
 
 		//FOR 30B
 		$pdf->setXY(95, 292);
-		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheldFromPrevious) , 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($n30b) , 0,2,'R');		
 
 		//FOR 31
-		$n31 = $payInfo->taxWithheldFromPrevious+$payInfo->taxWithheld;
+		//$n31 = $payInfo->taxWithheldFromPrevious+$payInfo->taxWithheld;
 		$pdf->setXY(95, 298);
 		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
 
