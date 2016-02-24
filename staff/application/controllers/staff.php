@@ -1530,6 +1530,7 @@ class Staff extends MY_Controller {
 		}else if($this->user!=false){	
 			$id = $this->uri->segment(2);
 			$data['updated'] = '';
+			
 			if(!empty($_POST)){
 				$atext = '';
 				if($_POST['submitType']=='accesstype'){
@@ -1539,18 +1540,21 @@ class Staff extends MY_Controller {
 						for($i=0; $i<$cntNevada; $i++){
 							$actext .= $_POST['access'][$i].',';
 						}
+						$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					}
+					if( isset($_POST['exclude_schedule']) ){
+						$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('exclude_schedule' => $_POST['exclude_schedule']) );
+					}					
 					
-					$this->dbmodel->updateQuery('staffs', array('empID'=>$id), array('access' => rtrim($actext,',')));
 					$data['updated'] = 'Access type successfully submitted.';
 					$atext = 'Updated access type to '.rtrim($actext,',');
 				}
 				$this->commonM->addMyNotif($this->user->empID, $atext, 5);
 			}
 			
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name', 'empID="'.$id.'"');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'access, CONCAT(fname," ",lname) AS name, exclude_schedule', 'empID="'.$id.'"');
 		}
-	
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -4259,7 +4263,21 @@ class Staff extends MY_Controller {
 	public function medrequests(){
 		$data['content'] = 'medrequests';
 		
-		$data['data_query'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_all'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_medical'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 0', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_disapproved_medical'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 3', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_query_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 1 AND status_accounting NOT IN (2, 3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
+		
+		$data['data_approved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 2 AND status NOT IN (0)', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 3 AND status IN (3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
+		
+		$data['cnt_all'] = count($data['data_query_all']);
+		$data['cnt_medical'] = count($data['data_query_medical']);
+		$data['cnt_accounting'] = count($data['data_query_accounting']);
+		$data['cnt_approved_accounting'] = count($data['data_approved_accounting']);
+		$data['cnt_disapproved_accounting'] = count($data['data_disapproved_accounting']);
+		$data['cnt_disapproved_medical'] = count($data['data_disapproved_medical']);
+		
 		//var_dump($data['data_query']);
 		$this->load->view('includes/template', $data);	
 	}

@@ -62,7 +62,7 @@ class Timecard extends MY_Controller {
 		}
 				
 		//STAFF SCHEDULES		
-		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1'.$staffID);	
+		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1 AND exclude_schedule=0'.$staffID);	
 		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
@@ -80,7 +80,7 @@ class Timecard extends MY_Controller {
 			$ins['unpublished'] = $scheduled;
 			
 			$ins['holidayType'] = $this->dbmodel->getSingleField('staffHolidays', 'holidayType', 'holidayDate="'.$ins['dateToday'].'" OR holidayDate="0000-'.date('m-d', strtotime($ins['dateToday'])).'"');
-			$ins['numEmployees'] = $this->dbmodel->getSingleField('staffs', 'COUNT(empID)', 'active=1 AND startDate <= "'.$ins['dateToday'].'" AND (endDate="0000-00-00" OR endDate>="'.$ins['dateToday'].'")');
+			$ins['numEmployees'] = $this->dbmodel->getSingleField('staffs', 'COUNT(empID)', 'active=1 AND exclude_schedule=0 AND startDate <= "'.$ins['dateToday'].'" AND (endDate="0000-00-00" OR endDate>="'.$ins['dateToday'].'")');
 			
 			//leaves
 			$queryLeaves = $this->timeM->getNumDetailsAttendance($ins['dateToday'], 'leave');	
