@@ -1331,7 +1331,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxFromPrevious), 0,2,'R');
 
 		//FOR 25
-		$n25 = $payInfo->taxFromCurrent + $payInfo->taxFromPrevious;
+		$n25 = $n23 + $payInfo->taxFromPrevious;
 		$pdf->setXY(95, 254);
 		$pdf->Cell(48, 5, $this->formatNum($n25), 0,2,'R');		
 
