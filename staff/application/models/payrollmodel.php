@@ -790,7 +790,7 @@ class Payrollmodel extends CI_Model {
 	/****
 		Updating tcStaffLogPublish status
 	****/
-	public function staffLogStatusstaffLogStatus($payrollID, $status=''){
+	public function staffLogStatus($payrollID, $status=''){
 		if($status=='final'){
 			$condition = 'tcStaffLogPublish.status=1,publishBy=CASE WHEN publishBy="" THEN "system" ELSE publishBy END
 						,publishNote=CASE WHEN publishBy="" THEN "Published due to finalized payroll" ELSE publishNote END';
