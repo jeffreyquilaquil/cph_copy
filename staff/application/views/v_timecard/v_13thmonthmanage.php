@@ -37,6 +37,7 @@
 							echo '<li><a href="javascript:void(0);" onClick="regenerateMonth('.$data->empID_fk.', '.$data->tcmonthID.')">Regenerate 13th Month</a></li>';
 							echo '<li><a href="'.$this->config->base_url().'timecard/detail13thmonth/'.$data->tcmonthID.'/" class="iframe">View Details</a></li>';
 							echo '<li><a href="'.$this->config->base_url().'timecard/detail13thmonth/'.$data->tcmonthID.'/?show=pdf" class="iframe">View PDF</a></li>';
+							echo '<li><a href="'.$this->config->base_url().'timecard/detail13thmonth/'.$data->tcmonthID.'/?show=distro&tcid='.$data->tcmonthID.'&which=distro" >Distrobution Report</a></li>';
 						echo '</ul>';
 					echo '</li>';
 				echo '</ul>';

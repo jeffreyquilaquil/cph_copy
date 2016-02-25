@@ -1912,12 +1912,13 @@ class Timecard extends MY_Controller {
 				///THIS IS FOR THE PDF
 				if(isset($_GET['show'])){
 					$bdate = date('ymd', strtotime($data['dataInfo']->bdate));
-					if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
+					if( isset($_GET['show']) && $this->access->accessFullHRFinance==false){
+						$which = $_GET['show'];
 						$acc = true;
 						echo '<script>';
 							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
 							echo 'if(pass=="'.$bdate.'"){
-								window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'";
+								window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'&which='.$which.'";
 							}else{ 
 								alert("Failed to load document. Invalid password.");';
 								$acc = false;
@@ -1927,7 +1928,10 @@ class Timecard extends MY_Controller {
 						else exit;
 					}else{
 						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
-							$this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']);
+							switch( $_GET['which'] ){
+								case 'pdf': $this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']); break;
+								case 'distro': $this->distro13thMonth($_GET['tcid']); break;
+							}							
 							exit;
 						}else{
 							$data['access'] = false;
@@ -1939,6 +1943,52 @@ class Timecard extends MY_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
+	
+	//distro for 13thmonth
+	public function distro13thMonth(){
+		$tcmonthID = $_GET['tcid'];
+				
+		if($this->user==false || $this->access->accessFullFinance==false || !is_numeric($tcmonthID)){
+			$data['access'] = false;
+			$data['content'] = 'index';
+			$this->load->view('includes/template', $data);
+		}else{
+			require_once('includes/excel/PHPExcel/IOFactory.php');
+			$fileType = 'Excel5';
+			$fileName = 'includes/templates/13th_month_report.xls';
+
+			// Read the file
+			$objReader = PHPExcel_IOFactory::createReader($fileType);
+			$objPHPExcel = $objReader->load($fileName);
+			
+			$arrCell = array();			
+			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
+			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);
+			
+			$tcmonth_details = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', 'tcMonthID="'.$tcmonthID.'"', 'LEFT JOIN staffs ON empID = empID_fk');
+									
+			$period_text = date('M', strtotime($tcmonth_details->periodFrom)).' - '.date('M Y', strtotime($tcmonth_details->periodTo) );
+			
+			// Change the file
+			$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A1', '13th MONTH DISTRIBUTION REPORT - '.$period_text);
+						
+			$objPHPExcel->getActiveSheet()->setCellValue('A3', $tcmonth_details->empID_fk);
+			$objPHPExcel->getActiveSheet()->setCellValue('B3', $tcmonth_details->full_name);
+			$objPHPExcel->getActiveSheet()->setCellValue('C3', $period_text);
+			$objPHPExcel->getActiveSheet()->setCellValue('D3', $tcmonth_details->totalBasic);
+			$objPHPExcel->getActiveSheet()->setCellValue('E3', $tcmonth_details->totalDeduction);
+			$objPHPExcel->getActiveSheet()->setCellValue('F3', $tcmonth_details->totalAmount);
+			
+			
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+			ob_end_clean();
+			// We'll be outputting an excel file
+			header('Content-type: application/vnd.ms-excel');
+			header('Content-Disposition: attachment; filename="13th_Month_Distribution_Report-'.$tcmonth_details->full_name.'.xls"');
+			$objWriter->save('php://output');			
+		}	
+	} //end distro
 	
 	public function payrolldistributionreport(){
 		$payrollsID = $this->uri->segment(3);

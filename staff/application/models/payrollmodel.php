@@ -790,7 +790,7 @@ class Payrollmodel extends CI_Model {
 	/****
 		Updating tcStaffLogPublish status
 	****/
-	public function staffLogStatus($payrollID, $status=''){
+	public function staffLogStatusstaffLogStatus($payrollID, $status=''){
 		if($status=='final'){
 			$condition = 'tcStaffLogPublish.status=1,publishBy=CASE WHEN publishBy="" THEN "system" ELSE publishBy END
 						,publishNote=CASE WHEN publishBy="" THEN "Published due to finalized payroll" ELSE publishNote END';
@@ -1081,8 +1081,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->AddPage();	
 		$pdf->setSourceFile(PDFTEMPLATES_DIR.'BIR2316.pdf');
 		$tplIdx = $pdf->importPage(1);
-		$pdf->useTemplate($tplIdx, null, null, 284.07783333333, 367.63325, true);
-		$pdf->SetAutoPageBreak(auto,1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 			
 		//SET DEFAULT FONT TO ARIAL BOLD size 12PT
 		$pdf->SetFont('Arial','B',12);
@@ -1091,7 +1090,6 @@ class Payrollmodel extends CI_Model {
 		//FOR THE YEAR
 		$pdf->setXY(77, 35);
 		$pdf->Write(0, date("Y")); 
-		//$pdf->Write(0, $pdf->w.' '.$pdf->h); 
 
 		//FOR THE PERIOD
 		//FROM
@@ -1319,19 +1317,16 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(95, 236);
 		$pdf->Cell(48, 5, $tnt, 0,2,'R');
 
-		$tsal = $totalSalary - $totalDeduction - $spp;
-		$n23 = $tsal+$totalAdjustment;
-
 		//FOR 23
 		$pdf->setXY(95, 242);
-		$pdf->Cell(48, 5, $this->formatNum($n23), 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxFromCurrent), 0,2,'R');
 		
 		//FOR 24
 		$pdf->setXY(95, 248);
 		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxFromPrevious), 0,2,'R');
 
 		//FOR 25
-		$n25 = $n23 + $payInfo->taxFromPrevious;
+		$n25 = $payInfo->taxFromCurrent + $payInfo->taxFromPrevious;
 		$pdf->setXY(95, 254);
 		$pdf->Cell(48, 5, $this->formatNum($n25), 0,2,'R');		
 
@@ -1352,32 +1347,20 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(95, 272);
 		$pdf->Cell(48, 5, $n28, 0,2,'R');
 
-		//FOR 29, 30A, 30B, and 31
-		$n30a = $n30b = $n31 = 0;
-		$n29 = $payInfo->taxDue;
-
-		if( $n29 > 0 && $payInfo->taxWithheldFromPrevious == 0 ){
-			$n30a = $n31 = $n29;
-		}
-		if( $n29 > 0 && $payInfo->taxWithheldFromPrevious > 0 ){
-			$n31 = $n29;
-			$n30b = $payInfo->taxWithheldFromPrevious;
-			$n30a = $n29 - $n30b;
-		}
-
+		//FOR 29
 		$pdf->setXY(95, 278);
-		$pdf->Cell(48, 5, $this->formatNum($n29) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxDue) , 0,2,'R');
 
 		//FOR 30A
 		$pdf->setXY(95, 285);
-		$pdf->Cell(48, 5, $this->formatNum($n30a) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheld) , 0,2,'R');
 
 		//FOR 30B
 		$pdf->setXY(95, 292);
-		$pdf->Cell(48, 5, $this->formatNum($n30b) , 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->taxWithheldFromPrevious) , 0,2,'R');		
 
 		//FOR 31
-		//$n31 = $payInfo->taxWithheldFromPrevious+$payInfo->taxWithheld;
+		$n31 = $payInfo->taxWithheldFromPrevious+$payInfo->taxWithheld;
 		$pdf->setXY(95, 298);
 		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
 
@@ -1414,26 +1397,9 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $excs, 0,2,'R');
 
 		//FOR 55
-		$n55 = $tsal+$totalAdjustment;
+		$n55 = $totalSalary+$totalAdjustment+$excs;
 		$pdf->setXY(194, 297);
 		$pdf->Cell(48, 5, $this->formatNum($n55), 0,2,'R');
-
-		//FOR 56
-		$pdf->setXY(65, 309);
-		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
-
-		//FOR 56
-		$pdf->setXY(55, 317);
-		$pdf->Cell(75, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
-
-		//FOR 56
-		$pdf->setXY(55, 342);
-		$pdf->Cell(75, 5, "Diana Rose T. Bartulin", 0,2,'C');
-
-		//FOR 59
-		$pdf->setXY(157, 352);
-		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
-		$pdf->Cell(68, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');
