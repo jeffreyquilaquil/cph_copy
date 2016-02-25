@@ -1723,7 +1723,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, mname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
@@ -1876,6 +1876,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function manage13thmonth(){
+		
 		$data['content'] = 'v_timecard/v_13thmonthmanage';
 		$data['tpage'] = 'managepayroll';
 		$data['column'] = 'withLeft';
@@ -1884,8 +1885,14 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
+				if( isset($_POST['delete_13th_record']) AND $_POST['delete_13th_record'] == 'Delete' ){
+					$del_id = $_POST['id_'];
+					$this->db->delete('tc13thMonth', array('tcmonthID' => $del_id) );
+					$atext = 'Deleted table: tc13thMonth row: tcmonthID-'.$del_id;
+					$this->commonM->addMyNotif($this->user->empID, $atext, 5);
+				}
 				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
-			}
+			}			
 		}
 		
 		$this->load->view('includes/template', $data);
