@@ -1967,14 +1967,14 @@ class Timecard extends MY_Controller {
 			
 			$tcmonth_details = $this->dbmodel->getQueryArrayResults('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
 									
-			$period_text = date('M', strtotime($tcmonth_details->periodFrom)).' - '.date('M Y', strtotime($tcmonth_details->periodTo) );
+			
 			
 			// Change the file
 			$objPHPExcel->setActiveSheetIndex(0)
-						->setCellValue('A1', '13th MONTH DISTRIBUTION REPORT - '.$period_text);
+						->setCellValue('A1', '13th MONTH DISTRIBUTION REPORT');
 			$counter = 3;		
 			foreach( $tcmonth_details as $tcpay ){
-				
+				$period_text = date('M', strtotime($tcpay->periodFrom)).' - '.date('M Y', strtotime($tcpay->periodTo) );
 				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, $tcpay->empID_fk);
 				$objPHPExcel->getActiveSheet()->setCellValue('B'.$counter, $tcpay->full_name);
 				$objPHPExcel->getActiveSheet()->setCellValue('C'.$counter, $period_text);
