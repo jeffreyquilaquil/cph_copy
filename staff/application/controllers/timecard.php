@@ -1965,7 +1965,7 @@ class Timecard extends MY_Controller {
 			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
 			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);
 			
-			$tcmonth_details = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
+			$tcmonth_details = $this->dbmodel->getQueryArrayResults('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
 									
 			$period_text = date('M', strtotime($tcmonth_details->periodFrom)).' - '.date('M Y', strtotime($tcmonth_details->periodTo) );
 			
