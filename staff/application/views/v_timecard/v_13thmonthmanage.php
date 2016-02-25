@@ -17,16 +17,7 @@
 		<th class="hiddend"><br/></th>
 	</tr>	
 	</thead>
-	<tfoot>
-		<tr>
-			<th>Employee Name</th>
-			<th>Total Basic Pay</th>
-			<th>Total Deductions</th>
-			<th>13th Month Amount</th>
-			<th>Period</th>
-			<th class="hidden"><br/></th>
-		</tr>
-	</tfoot>
+	
 	<tbody>
 <?php
 	foreach($queryData AS $data){
@@ -57,7 +48,8 @@
 
 <script type="text/javascript">
 $(function(){
-	$('#dtable13').dataTable( {
+	$('#dtable13').dataTable({});
+	<?php /*
         initComplete: function () {
             this.api().columns().every( function () {
                 var column = this;
@@ -77,8 +69,8 @@ $(function(){
                     select.append( '<option value="'+d+'">'+d+'</option>' )
                 } );
             } );
-        }
-    });
+        } 
+    });*/ ?>
 	
 	$("#dtable13 tfoot tr th select:first").css( "width", "150px" );
 });
