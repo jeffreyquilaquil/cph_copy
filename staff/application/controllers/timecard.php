@@ -1965,20 +1965,25 @@ class Timecard extends MY_Controller {
 			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
 			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);
 			
-			$tcmonth_details = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', 'tcMonthID="'.$tcmonthID.'"', 'LEFT JOIN staffs ON empID = empID_fk');
+			$tcmonth_details = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
 									
 			$period_text = date('M', strtotime($tcmonth_details->periodFrom)).' - '.date('M Y', strtotime($tcmonth_details->periodTo) );
 			
 			// Change the file
 			$objPHPExcel->setActiveSheetIndex(0)
 						->setCellValue('A1', '13th MONTH DISTRIBUTION REPORT - '.$period_text);
-						
-			$objPHPExcel->getActiveSheet()->setCellValue('A3', $tcmonth_details->empID_fk);
-			$objPHPExcel->getActiveSheet()->setCellValue('B3', $tcmonth_details->full_name);
-			$objPHPExcel->getActiveSheet()->setCellValue('C3', $period_text);
-			$objPHPExcel->getActiveSheet()->setCellValue('D3', $tcmonth_details->totalBasic);
-			$objPHPExcel->getActiveSheet()->setCellValue('E3', $tcmonth_details->totalDeduction);
-			$objPHPExcel->getActiveSheet()->setCellValue('F3', $tcmonth_details->totalAmount);
+			$counter = 3;		
+			foreach( $tcmonth_details as $tcpay ){
+				
+				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, $tcpay->empID_fk);
+				$objPHPExcel->getActiveSheet()->setCellValue('B'.$counter, $tcpay->full_name);
+				$objPHPExcel->getActiveSheet()->setCellValue('C'.$counter, $period_text);
+				$objPHPExcel->getActiveSheet()->setCellValue('D'.$counter, $tcpay->totalBasic);
+				$objPHPExcel->getActiveSheet()->setCellValue('E'.$counter, $tcpay->totalDeduction);
+				$objPHPExcel->getActiveSheet()->setCellValue('F'.$counter, $tcpay->totalAmount);
+				$counter++;
+			}
+			
 			
 			
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
