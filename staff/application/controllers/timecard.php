@@ -1724,6 +1724,11 @@ class Timecard extends MY_Controller {
 			}				
 			
 			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			
+			//compute leaveCredits
+			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
+			$data['staffInfo']->leaveCredits = $this->commonM->computeLastLeave( $data['staffInfo']->startDate, $data['staffInfo']->leaveCredits );
+			
 			if(count($data['staffInfo'])==0) $data['access'] = false;
 			
 			if(isset($_GET['periodFrom']) && isset($_GET['periodTo'])){
