@@ -4,7 +4,7 @@
 	ul.dropleft{ right:20px; top:-10px; }
 </style>
 <?php if($this->access->accessFullFinance == true){
-	echo '<span style="text-align: right; float:right;"><button class="btnclass" onClick="distro();">Download Ditribution Report</button></span>';
+	echo '<span style="text-align: right; float:right;"><button class="btnclass" onClick="distro();">Download Distribution Report</button></span>';
 }
 ?>
 <h2>Generated 13th Month</h2>
