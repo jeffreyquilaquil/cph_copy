@@ -1902,41 +1902,44 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_13thmonthdetail';
 		
 		if($this->user!=false){
-			$id = $this->uri->segment(3);
-			$data['dataInfo'] = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, fname, lname, idNum, title, bdate', 'tcmonthID="'.$id.'"', 
-				'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
-			if(count($data['dataInfo'])==0) $data['access'] = false;
-			else{
-				$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo, $data['dataInfo']->includeEndMonth);
-				
-				///THIS IS FOR THE PDF
-				if(isset($_GET['show'])){
-					$bdate = date('ymd', strtotime($data['dataInfo']->bdate));
-					if( isset($_GET['show']) && $this->access->accessFullHRFinance==false){
-						$which = $_GET['show'];
-						$acc = true;
-						echo '<script>';
-							echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
-							echo 'if(pass=="'.$bdate.'"){
-								window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'&which='.$which.'";
-							}else{ 
-								alert("Failed to load document. Invalid password.");';
-								$acc = false;
-							echo '}';
-						echo '</script>';
-						if($acc==false) $data['access'] = false;
-						else exit;
-					}else{
-						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
-							switch( $_GET['which'] ){
-								case 'pdf': $this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']); break;
-								case 'distro': $this->distro13thMonth($_GET['tcid']); break;
-							}							
-							exit;
+			if( isset($_GET['show']) AND $_GET['show'] == 'distro' AND $this->access->accessFullHRFinance==true ){
+				$this->distro13thMonth();
+				exit();
+			} else {
+						
+				$id = $this->uri->segment(3);
+				$data['dataInfo'] = $this->dbmodel->getSingleInfo('tc13thMonth', 'tc13thMonth.*, fname, lname, idNum, title, bdate', 'tcmonthID="'.$id.'"', 
+					'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+				if(count($data['dataInfo'])==0) $data['access'] = false;
+				else{
+					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo, $data['dataInfo']->includeEndMonth);
+					
+					///THIS IS FOR THE PDF
+					if(isset($_GET['show'])){
+						$bdate = date('ymd', strtotime($data['dataInfo']->bdate));
+						if( isset($_GET['show']) AND $_GET['show'] == 'pdf' && $this->access->accessFullHRFinance==false){
+							$which = $_GET['show'];
+							$acc = true;
+							echo '<script>';
+								echo 'var pass = prompt("This document is password protected. Please enter a password.", "");';
+								echo 'if(pass=="'.$bdate.'"){
+									window.location.href="'.$this->config->base_url().'timecard/detail13thmonth/'.$id.'/?show='.$this->textM->encryptText($bdate).'&which='.$which.'";
+								}else{ 
+									alert("Failed to load document. Invalid password.");';
+									$acc = false;
+								echo '}';
+							echo '</script>';
+							if($acc==false) $data['access'] = false;
+							else exit;
 						}else{
-							$data['access'] = false;
-						}
-					}									
+							if ($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+								$this->payrollM->pdf13thMonth($data['dataInfo'], $data['dataMonth']); break;												
+								exit;
+							}else{
+								$data['access'] = false;
+							}
+						}									
+					}
 				}
 			}
 		}
@@ -1946,9 +1949,9 @@ class Timecard extends MY_Controller {
 	
 	//distro for 13thmonth
 	public function distro13thMonth(){
-		$tcmonthID = $_GET['tcid'];
+		//$tcmonthID = $_GET['tcid'];
 				
-		if($this->user==false || $this->access->accessFullFinance==false || !is_numeric($tcmonthID)){
+		if($this->user==false || $this->access->accessFullFinance==false ){
 			$data['access'] = false;
 			$data['content'] = 'index';
 			$this->load->view('includes/template', $data);
@@ -1961,9 +1964,9 @@ class Timecard extends MY_Controller {
 			$objReader = PHPExcel_IOFactory::createReader($fileType);
 			$objPHPExcel = $objReader->load($fileName);
 			
-			$arrCell = array();			
+			/*$arrCell = array();			
 			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
-			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);
+			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);*/
 			
 			$tcmonth_details = $this->dbmodel->getQueryArrayResults('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
 									
@@ -1990,7 +1993,7 @@ class Timecard extends MY_Controller {
 			ob_end_clean();
 			// We'll be outputting an excel file
 			header('Content-type: application/vnd.ms-excel');
-			header('Content-Disposition: attachment; filename="13th_Month_Distribution_Report-'.$tcmonth_details->full_name.'.xls"');
+			header('Content-Disposition: attachment; filename="13th_Month_Distribution_Report.xls"');
 			$objWriter->save('php://output');			
 		}	
 	} //end distro
