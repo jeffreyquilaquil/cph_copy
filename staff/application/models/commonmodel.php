@@ -384,6 +384,26 @@ class Commonmodel extends CI_Model {
 		return $users;
 	}
 	
+	//compute leave credits minus the incremental leave
+	public function computeLastLeave( $start_date, $leave_credits ){
+		
+		$current_date = date('Y-m-d');		
+		$start_date = date('Y-m-d', strtotime($start_date) );
+		
+		$current_date = date_create($current_date);
+		$start_date = date_create( $start_date );
+		
+		$diff = date_diff($current_date, $start_date);
+		$incremental_leave = $diff->format('%y');
+		
+		if( $incremental_leave >= $leave_credits ){
+			return 0;
+		} else {
+			return $leave_credits - $incremental_leave;
+		}
+		
+	}
+	
 	
 }
 

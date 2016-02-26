@@ -868,7 +868,11 @@ class Payrollmodel extends CI_Model {
 		
 		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, fname, lname, startDate, endDate, sal', 'empID="'.$empID.'"');
 		if(count($info)>0){
-			$basePay = ($this->textM->decryptText($info->sal))/2;
+			$basePay = ($this->textM->decryptText($info->sal));
+			//for convert the string to float
+			$basePay = (float) str_replace(',','',$basePay);
+			$basePay = $basePay/2; 
+			
 			
 			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
 								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
