@@ -241,7 +241,7 @@
 		<td>Department</td>
 		<td><?= $row->dept ?></td>
 	</tr>
-<?php if($row->leaveType==2 || $row->leaveType==3 || $row->leaveType==5 || ($row->leaveType==4 && !empty($row->supDocs)) || ($row->leaveType == 1 AND $row->status == 4) ){ ?>
+<?php if($row->leaveType==2 || $row->leaveType==3 || $row->leaveType==5 || ($row->leaveType==4 && !empty($row->supDocs)) || ($row->leaveType == 1 AND ($row->status == 4 OR $row->iscancelled == 4) ) ){ ?>
 	<tr>
 		<td>Supporting Documents</td>
 		<td>
