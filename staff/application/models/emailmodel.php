@@ -255,7 +255,7 @@ class Emailmodel extends CI_Model {
 			$to = $row->email;
 			$cc = $row->supEmail;
 			
-			$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
+			//$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
 			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time in yet for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked in.</i></p>';
@@ -267,7 +267,7 @@ class Emailmodel extends CI_Model {
 			$to = $row->email;
 			$cc = $row->supEmail;
 			
-			$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
+			//$body = '<p><b>Please ignore if you are not part of the test group.</b><br/></p>';
 			$body .= '<p>Hi '.trim($row->fname).',</p>';
 			$body .= '<p>This is an auto email to remind you that you do not have time out recorded for today\'s schedule <b>'.date('h:i a', strtotime($row->schedIn)).' - '.date('h:i a', strtotime($row->schedOut)).'</b>.</p>';
 			$body .= '<p><i>Kindly ignore this message if you already clocked out or click <a href="'.$this->config->base_url().'timecard/timelogs/">here</a> to view your timelogs.</i></p>';
@@ -342,7 +342,7 @@ class Emailmodel extends CI_Model {
 					}
 					$log .= '</ul>';
 					
-					$body = '<p><b>Please ignore if you are not part of the test group.</b><br/><br/></p>';
+					//$body = '<p><b>Please ignore if you are not part of the test group.</b><br/><br/></p>';
 					$body .= '<p>Hi '.$emp['fname'].',</p>';
 					$body .= '<p>Please be reminded to double-check your time card logs on "<a href="'.$this->config->base_url().'timecard/">Timecard and Payroll</a>" > "<a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a>"</a> page in CareerPH. Logs on the dates below are not yet published to payroll for the pay period <b>'.strtoupper(date('M d', strtotime($dateStart)).' - '.date('M d', strtotime($dateEnd))).'</b>.</p>';
 					$body .= $log;
