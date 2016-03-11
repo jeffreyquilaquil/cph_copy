@@ -89,12 +89,11 @@ class Staff extends MY_Controller {
 			//Valentines Day Special
 			elseif ($_POST['submitType'] == 'sendvalentines') {
 				$empID = $this->dbmodel->getSingleField('staffs', 'empID', 'username = "'.$_POST['to'].'"');
-				$message = "This Valentines Message is from: ".$_POST['from']."<br/>";
+				$message = "This personal message is from: ".$_POST['from']."<br/>";
 				$message .= $_POST['message'];
 				if($empID){
 					$message .= '
 						<br/>
-						Happy Valentines Day!!<br/>
 						<img src="'.$this->config->base_url().'includes/images/'.$_POST['card'].'.jpg" />
 					';
 					$this->commonM->addMyNotif($empID, $message, 6, 1);
@@ -4317,6 +4316,12 @@ class Staff extends MY_Controller {
 												
 						$queryCode = $this->dbmodel->getQueryResults('staffCodes', '*', 'dategenerated BETWEEN "'.$start.'" AND "'.$end.'"');
 						$this->staffM->excelGenerateLeaveCodes($queryCode, $start, $end);						
+					}
+
+					if( $_POST['submitType'] == 'genAttendanceReports' ){
+						$data['report_start'] = date('Y-m-d', strtotime($_POST['dateFrom']) );
+						$data['report_end'] = date('Y-m-d', strtotime($_POST['dateTo']) );
+						$this->timeM->getAttendanceReport( $data );
 					}
 				}
 				//current calc
