@@ -303,6 +303,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function timelogs($data){
+		//$this->textM->aaa($data);
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
 								
@@ -326,204 +327,7 @@ class Timecard extends MY_Controller {
 				}
 			}
 						
-			//////////VARIABLE DECLARATIONS	
-			$data['logtypeArr'] = $this->textM->constantArr('timeLogType');								
-			$data['dayArr'] = array();
-			$displayArray = array();
-			
-			$date00 = '0000-00-00 00:00:00';
-			$dateTimeToday = date('Y-m-d H:i:s');			
-			$dateStart = date('Y-m-01', strtotime($data['today']));
-			$dateEnd = date('Y-m-t', strtotime($data['today']));
-			$dateMonthToday = date('Y-m', strtotime($data['today']));											
-			$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
-			$OUTL8 = $this->timeM->timesetting('outLate');
-			//////////END OF VARIABLE DECLARATIONS	
-			
-			////CHECK FIRST IF TIME TODAY IS LESS THAN 10AM IF IT IS GET PREVIOUS SCHEDULE TO CHECK IF SHIFT STILL IN PROGRESS
-			if(date('m', strtotime($data['currentDate'])) == date('m', strtotime($data['today'])) && strtotime($dateTimeToday)<strtotime(date('Y-m-d 13:00:00'))){
-				$rara = date('Y-m-d', strtotime($data['currentDate'].' -1 day'));
-				$schedToday = $this->timeM->getSchedToday($data['visitID'], $rara);
-				$schedArr = $this->timeM->getSchedArr($rara, ((isset($schedToday['sched']))?$schedToday['sched']:''));
-												
-				if(isset($schedArr['end']) && strtotime($dateTimeToday)<=strtotime($schedArr['end'].' '.$this->timeM->timesetting('timeAllowedClockOut'))){
-					$data['schedToday'] = $schedToday;
-					$data['schedArr'] = $schedArr;
-					$data['today'] = $schedToday['schedDate'];
-					$data['currentDate'] = $schedToday['schedDate'];
-				}
-			}			
-			if(empty($data['schedToday'])){
-				$data['schedToday'] = $this->timeM->getSchedToday($data['visitID'], $data['currentDate']);
-				$data['schedArr'] = $this->timeM->getSchedArr($data['currentDate'], ((isset($data['schedToday']['sched']))?$data['schedToday']['sched']:''));
-			}
-			
-			
-			//get all logs today
-			$data['allLogs'] = $this->timeM->getLogsToday($data['visitID'], $data['currentDate'], $data['schedToday']);				
-						
-			//this is for on leave			
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);		
-
-			foreach($querySchedule AS $leave){
-				if(isset($leave['leaveID'])){
-					$datej = date('j', strtotime($leave['schedDate']));
-					$displayArray[$datej]['leaveID'] = $leave['leaveID'];
-					if(isset($leave['leave'])) $displayArray[$datej]['leave'] = $leave['leave'];
-					if(isset($leave['pendingleave'])) $displayArray[$datej]['pendingleave'] = $leave['pendingleave']; //for pending leave
-					if(isset($leave['offset'])) $displayArray[$datej]['offset'] = $leave['offset']; //for offset
-					if(isset($leave['pendingoffset'])) $displayArray[$datej]['pendingoffset'] = $leave['pendingoffset']; //for pending offset
-					if(isset($leave['leaveStatusText'])) $displayArray[$datej]['leaveStatusText'] = $leave['leaveStatusText']; //leave status text
-				}
-			}
-				
-			//this is for logs for the calendar month			
-			$dateLogs = $this->dbmodel->getQueryResults('tcStaffLogPublish', 'slogID, empID_fk, slogDate, DAY(slogDate) AS dayLogDate, schedIn, schedOut, timeIn, timeOut, breaks, timeBreak, numBreak, offsetIn, offsetOut, publishBy, publishTimePaid, leaveID_fk, status', 'empID_fk="'.$data['visitID'].'" AND slogDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND showStatus=1');
-	
-			foreach($dateLogs AS $dl){
-				$numDay = $dl->dayLogDate;
-				
-				//check for time in, late or early in			
-				if($dl->timeIn!=$date00){
-					$displayArray[$numDay]['timeIn'] = date('h:i a', strtotime($dl->timeIn));
-										
-					if($dl->schedIn!=$date00){
-						if($dl->timeIn > date('Y-m-d H:i:s', strtotime($dl->schedIn.' +1 minutes'))) $displayArray[$numDay]['err'][] = 'isLate';
-						else if(strtotime($dl->timeIn)<= strtotime($dl->schedIn.' '.$EARLYCIN) && $dl->offsetIn==$date00)  $displayArray[$numDay]['green'][] = 'isEarlyIn';
-					}
-				}else if($dl->timeIn==$date00 && $dl->schedIn>=$dateTimeToday && $dl->schedOut>=$dateTimeToday) 
-					$displayArray[$numDay]['err'][] = 'noTimeInYet';
-				else if($dl->timeIn==$date00 && $dl->schedIn!=$date00 && $dl->timeOut==$date00 && !isset($displayArray[$numDay]['leave'])) 
-					$displayArray[$numDay]['err'][] = 'isAbsent';
-				else if(!isset($displayArray[$numDay]['leave']) && $dl->schedIn!=$date00) 
-					$displayArray[$numDay]['err'][] = 'isNoTimeIn';
-				
-				//check if paid off
-				if($dl->timeIn==$date00 && $dl->timeOut==$date00 && $dl->publishTimePaid>0 && $dl->leaveID_fk==0){
-					$displayArray[$numDay]['green'][] = 'isPaidOff';
-				}
-					
-																
-				//check for clock out
-				if($dl->timeOut!=$date00){
-					$displayArray[$numDay]['timeOut'] = date('h:i a', strtotime($dl->timeOut));
-					
-					if($dl->schedOut!=$date00){
-						if($dl->timeOut < $dl->schedOut) $displayArray[$numDay]['err'][] = 'isEarlyOut';
-						else if(strtotime($dl->timeOut)>= strtotime($dl->schedOut.' '.$OUTL8) && $dl->offsetOut==$date00)  $displayArray[$numDay]['green'][] = 'isOutLate';
-					}					
-				}else if($dl->timeIn!=$date00){
-					if($dl->timeOut==$date00 && $dl->schedOut>=$dateTimeToday) $displayArray[$numDay]['green'][] = 'shiftInProgress';
-					else$displayArray[$numDay]['err'][] = 'isNoClockOut';
-				}
-				
-				if(!empty($dl->breaks)){
-					$displayArray[$numDay]['breaks'] = $dl->timeBreak;
-					
-					if($dl->timeBreak>'01:30:00') $displayArray[$numDay]['err'][] = 'isOverBreak';
-					if($dl->numBreak%2!=0) $displayArray[$numDay]['err'][] = 'isMissingBreakIn';
-					
-				}else if($dl->timeIn!=$date00 && $dl->timeOut!=$date00) $displayArray[$numDay]['green'][] = 'isNoBreak';
-				
-				if(!empty($dl->publishBy))
-					$displayArray[$numDay]['publish'] = $dl->publishTimePaid;
-				
-				$displayArray[$numDay]['status'] = $dl->status;
-			}
-												
-			//this is for the display
-			$leaveStatArr = $this->textM->constantArr('leaveStatus');
-			foreach($displayArray AS $k=>$d){
-				$want = '';
-				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
-				if(isset($d['leaveID'])){
-					if(isset($d['leave'])){
-						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
-						$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
-						if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
-						else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
-						
-						$want .= '</div></a>';
-					}
-					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
-					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
-					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
-				}
-				
-				if(isset($d['err'])){
-					$want .= '<span class="errortext">';
-					foreach($d['err'] AS $err){
-						if($err=='isLate') $want .= 'LATE<br/>';
-						else if($err=='noTimeInYet' && !isset($d['leave'])) $want .= 'NO TIME IN YET<br/>';
-						else if($err=='isAbsent') $want .= 'ABSENT<br/>';
-						else if($err=='isNoTimeIn') $want .= 'NO TIME IN<br/>';
-						else if($err=='isEarlyOut') $want .= 'EARLY OUT<br/>';
-						else if($err=='isNoClockOut') $want .= 'NO CLOCK OUT<br/>';
-						else if($err=='isOverBreak') $want .= 'OVER BREAK<br/>';
-						else if($err=='isMissingBreakIn') $want .= 'MISSING BREAK IN<br/>';
-					}
-					$want .= '</span>';
-				}
-				
-				if(isset($d['green'])){
-					$want .= '<div style="color:green">';
-						foreach($d['green'] AS $g){
-							if($g=='isPaidOff'){
-								$want .= 'PAID OFF<br/>';
-								$want = str_replace('ABSENT<br/>','', $want);
-							} 
-							else if($g=='shiftInProgress') $want .= 'SHIFT IN PROGRESS<br/>';
-							else if($g=='isEarlyIn') $want .= 'EARLY IN<br/>';
-							else if($g=='isOutLate') $want .= 'OUT LATE<br/>';
-							else if($g=='isNoBreak') $want .= 'NO BREAK<br/>';
-						}						
-					$want .= '</div>';
-				}
-				
-				if(isset($d['timeIn'])) $want .= '<b>IN: </b>'.$d['timeIn'].'<br/>';
-				if(isset($d['timeOut'])) $want .= '<b>OUT: </b>'.$d['timeOut'].'<br/>';
-				if(isset($d['breaks'])) $want .= '<b>BREAK: </b>'.$d['breaks'].'<br/>';
-				
-				$data['dayArr'][$k] = $want;				
-			}
-												
-			//ADDING dayEditOptionArr FOR EDIT DROPDOWN
-			$checkIfUser = (($data['visitID']==$this->user->empID)?true:false);
-			if(date('m') != date('m', strtotime($data['today']))) $daddyEnd = date('t', strtotime($data['today']));
-			else $daddyEnd = date('j', strtotime($data['today']));
-				
-			for($daddy=1; $daddy<=$daddyEnd; $daddy++){
-				if($checkIfUser && isset($displayArray[$daddy]['status']) && $displayArray[$daddy]['status']==0)
-					$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'Request Update');
-				
-				$data['dayEditOptionArr'][$daddy][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.(($daddy<10)?'0':'').$daddy, 'text'=>'View Details');
-			}
-			
-			/* foreach($data['dayArr'] AS $h=>$m){
-				if($checkIfUser && isset($displayArray[$h]['status']) && $displayArray[$h]['status']==0){					
-					$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/requestupdate/?d='.$dateMonthToday.'-'.$h, 'text'=>'Request Update');
-				}					
-				
-				$data['dayEditOptionArr'][$h][] = array('link'=>$this->config->base_url().'timecard/'.$data['visitID'].'/viewlogdetails/?d='.$dateMonthToday.'-'.$h, 'text'=>'View Details');
-			} */
-			
-			
-			//CHECK FOR PENDING LOG REQUEST
-			$updateRequests = $this->dbmodel->getQueryResults('tcTimelogUpdates', '*', 'empID_fk="'.$data['visitID'].'" AND logDate BETWEEN "'.$dateMonthToday.'-01" AND "'.$dateMonthToday.'-31" AND status=1');
-			$updateArr = array();
-			if(count($updateRequests) > 0){		
-				foreach($updateRequests AS $u){
-					$uday = date('j', strtotime($u->logDate));
-					if(isset($updateArr[$uday])) $updateArr[$uday]++;
-					else $updateArr[$uday] = 1;
-				}
-				
-				foreach($updateArr AS $k=>$u2){
-					$ttext = '<b class="errortext">Pending ('.$u2.')</b><br/>';
-					if(isset($data['dayArr'][$k])) $data['dayArr'][$k] = $data['dayArr'][$k].$ttext;
-					else $data['dayArr'][$k] = $ttext;
-				}
-			}			
+			$data = $this->timeM->_getTimeLogs( $data );		
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -655,6 +459,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function calendar($data){
+		//$this->textM->aaa($data);
 		$data['content'] = 'v_timecard/v_calendar';	
 		$data['tpage'] = 'calendar';		
 		
@@ -666,82 +471,10 @@ class Timecard extends MY_Controller {
 				exit;
 			}
 		
-			$dateStart = date('Y-m-01', strtotime($data['today']));
-			$dateEnd = date('Y-m-t', strtotime($data['today']));
-			
-			//for schedule history
-			$data['timeArr'] = $this->commonM->getSchedTimeArray();			
-			$data['schedData'] = $this->dbmodel->getQueryResults('tcStaffSchedules', 'schedID, empID_fk, tcCustomSched_fk, effectivestart, effectiveend, schedName, sunday, monday, tuesday, wednesday, thursday, friday, saturday, workhome', 'empID_fk="'.$data['visitID'].'"', 'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate DESC'); 
-									
-			//this is for link on the dates
-			$data['dayEditOptionArr'] = array();
-			$month = date('m', strtotime($data['today']));
-			$year = date('Y', strtotime($data['today']));
-			$dEnd = date('t', strtotime($data['today']));
-			$strcurrrentdate = strtotime($data['currentDate']);
-			$canfilelessthan5days = strtotime($data['currentDate'].' -5 days'); //enable file leave/offset option if date is greater than 7 days before today
-			for($i=1; $i<=$dEnd; $i++){
-				$dtoday = date('Y-m-d', strtotime($year.'-'.$month.'-'.$i));
-				$strdatetoday = strtotime($dtoday);
-				
-				//if($this->access->accessFullHR===true && $strdatetoday>=$strcurrrentdate)
-				if($this->access->accessFullHR===true)
-					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'schedules/customizebyday/'.$data['visitID'].'/'.$dtoday.'/', 'text'=>'Edit Schedule');
-				
-				if($this->user->empID==$data['visitID'] && $strdatetoday>=$canfilelessthan5days)
-					$data['dayEditOptionArr'][$i][] = array('link'=>$this->config->base_url().'fileleave/', 'text'=>'File Leave/Offset');
-			}
-			
-			$data['datelink'] = $this->config->base_url().'timecard/'.$data['visitID'].'/calendar/';
-				
-			//getting calendar schedule			
-			$dayCurrentDate = strtotime($data['currentDate']);
-			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-										
-			foreach($querySchedule AS $k=>$yoyo){
-				$sched = '';
-				if(isset($yoyo['holiday'])){
-					$sched = '<div class="daysbox dayholiday"><b>'.$yoyo['holidayType'].':</b><br/>'.$yoyo['holiday'].'</div>';	
-				}
-				
-				if(isset($yoyo['sched']) && $yoyo['sched']!='On Leave'){
-					//if($this->access->accessFullHR==true && $dayCurrentDate<=strtotime($yoyo['schedDate'])){
-						$sched .= '<div class="daysbox dayEditable ';							
-							if(isset($yoyo['custom'])) $sched .= 'daycustomsched';
-							else if(isset($yoyo['suspend'])) $sched .= 'daysuspend';
-							else $sched .= 'daysched';							
-						$sched .= '" onClick="checkRemove(\''.$yoyo['schedDate'].'\', \''.$yoyo['sched'].'\', '.((isset($yoyo['custom']))?1:0).')">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					/* }else{
-						$sched .= '<div class="daysbox '.((isset($yoyo['custom']))?'daycustomsched':'daysched').'">'.$yoyo['sched'].' '.((isset($yoyo['workhome']))?'<br/>WORK HOME':'').'</div>';
-					} */
-				}
-				
-				if(isset($yoyo['suspend'])){
-					$sched .= '<a href="'.$this->config->base_url().'detailsNTE/'.$yoyo['suspend'].'/" class="iframe tanone"><div class="daysbox dayonleave">SUSPENDED</div></a>';
-				}else{
-					if(isset($yoyo['leave'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';
-					}
-					
-					if(isset($yoyo['pendingleave'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$yoyo['pendingleave'].'</div></a>';
-					}
-					
-					if(isset($yoyo['offset'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
-					}
-					
-					if(isset($yoyo['pendingoffset'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$yoyo['pendingoffset'].'</div></a>';
-					}
-				}			
-								
-				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd && $yoyo['schedDate']>=$dateStart)
-					$data['dayArr'][$k] = $sched;	
-			}	
-		}	
+			$data = $this->timeM->_getCalendar( $data );
+		}			
+		$this->load->view('includes/template', $data);	
 		
-		$this->load->view('includes/template', $data);
 	}
 	
 	public function scheduling($data){	
@@ -1738,26 +1471,11 @@ class Timecard extends MY_Controller {
 			}
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
-				$data['dateArr'] = $this->payrollM->getArrayPeriodDates($data['periodFrom'], $data['periodTo']);	
-				$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
-				'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$data['periodFrom'].'" AND "'.$data['periodTo'].'" AND status!=3 AND pstatus=1', 
-				'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
-			
-				$data['dataMonthItems'] = array();
-				if(count($data['dataMonth'])>0){
-					$slipID = '';
-					foreach($data['dataMonth'] AS $m){
-						$slipID .= $m->payslipID.',';
-					}
-					if(!empty($slipID)){
-						$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
-						if(count($queryItems)>0){
-							foreach($queryItems AS $item){
-								$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
-							}
-						}
-					}
-				}
+				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo']);
+				$data['dateArr'] = $datum['dateArr'];
+				$data['dataMonth'] = $datum['dataMonth'];
+				$data['dataMonthItems'] = $datum['dataMonthItems'];
+
 			}
 							
 			///THIS IS FOR THE PDF
@@ -1800,14 +1518,7 @@ class Timecard extends MY_Controller {
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
 							case 'bir':
-									// var_dump($payInfo = $data['payInfo']);
-									// var_dump($periodFrom = $data['periodFrom']);
-									// var_dump($periodTo = $data['periodTo']);
-									// var_dump($dataBracket = $data['dataBracket']);
-									// var_dump($staffInfo = $data['staffInfo']);
-									// var_dump($dateArr = $data['dateArr']);
-									// var_dump($dataMonth = $data['dataMonth']);
-									// var_dump($dataMonthItems = $data['dataMonthItems']);
+							 		//$this->textM->aaa($data);
 							 		$this->payrollM->pdfBIR($data);
 							break;
 							case 'coe': //coe
@@ -1828,6 +1539,54 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
+	public function alphalist(){
+		$data['content'] = 'v_timecard/v_alphalist';
+		if( $this->user != FALSE ){
+			if( $this->access->accessFullFinance == FALSE ) {
+				$data['access'] = false;
+			} else {
+				$data['which'] = ( $_GET['which'] == 'end' ) ? 'separated' : 'active'; //possible value is end or start | end means separate employees | start means active
+				$data['monthFullArray'] = $this->textM->constantArr('monthFullArray');
+				$data['yearFullArray'] = $this->textM->constantArr('yearFullArray');				
+				foreach( $_POST as $key => $val ){
+					$data[ $key ] = $val;
+				}
+				
+
+				//post
+				if( isset($_POST) AND !empty($_POST) ){
+					
+					if( isset($_POST['which_report']) AND $_POST['which_report'] == 'gen_alphalist' ){
+						$from_ = date('Y-m-d', strtotime( $data['from_year'].'-'.$data['from_month'].'-01'  ) );
+						$to_ = date('Y-m-d', strtotime( $data['to_year'].'-'.$data['to_month'].'-31' ) );
+						$data = array();
+						//check which to pull from
+						switch( $_POST['which_from'] ){
+							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk'); break;
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '/*alphalist*/ *', 'active = 1 AND office = "PH-Cebu"');
+							break;
+						}
+						//$this->textM->aaa($data['dataQuery']);						
+						foreach( $data['dataQuery'] as $key => $val ){
+							$datum = $this->payrollM->getPayslipOnTimeRange($val->empID, $from_, $to_);
+							$data['dataQuery'][$key]->dateArr = $datum['dateArr'];
+							$data['dataQuery'][$key]->dataMonth = $datum['dataMonth'];
+							$data['dataQuery'][$key]->dataMonthItems = $datum['dataMonthItems'];
+						}
+
+
+						$this->textM->aaa($data);
+						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
+						$this->payrollM->getAlphaList( $data['dataQuery'], $filename );
+					}
+				}
+			}
+		}
+		$this->output->enable_profiler(true);
+		//$this->textM->aaa($data);
+		$this->load->view('includes/template', $data);
+	}
+
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
 		

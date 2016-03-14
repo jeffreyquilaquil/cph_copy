@@ -720,6 +720,12 @@ class Textmodel extends CI_Model {
 			$arr = array('sunday'=>'sun', 'monday'=>'mon', 'tuesday'=>'tue', 'wednesday'=>'wed', 'thursday'=>'thu', 'friday'=>'fri', 'saturday'=>'sat');
 		}else if($a=='monthArray'){
 			$arr = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
+		}else if( $a == 'monthFullArray' ){
+			$arr = array(1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December');			
+		}else if( $a == 'yearFullArray' ){
+			for( $year = 2014; $year <= 2017; $year++ ){
+				$arr[ $year ] = $year;
+			}		
 		}else if($a=='statusMaternityLeave'){
 			$arr = array(0=>'', 1=>'Requested to Shorten Leave', 2=>'HR Approved - Pending Supervisor\'s Approval', 3=>'HR Disapproved', 4=>'SHORTENED', 5=>'Disapproved by Supervisor',6=>'SHORTENED - PayrollHero Updated');
 		}else if($a=='recommendations'){

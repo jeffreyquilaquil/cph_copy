@@ -30,7 +30,7 @@
 <ul class="tabs">
 	<li class="tab-link current" data-tab="tab-1">Generated Leave Codes</li>
 	<li class="tab-link" data-tab="tab-2">Compensation Reports</li>
-	
+	<li class="tab-link" data-tab="tab-3">Generate Attendance Report</li>
 </ul>
 <div id="tab-1" class="tab-content current">
 <h3>Generated Leave Codes</h3>
@@ -101,7 +101,28 @@ Average Leader Salary
 	} ?>
 </div>
 </div>
+<div id="tab-3" class="tab-content">
+<h3>Generate Attendance Reports</h3>
 
+		<form action="" method="POST">
+		<table style="border:1px solid #000" cellpadding=5>
+			<tr>
+				<td>Date From:</td>
+				<td><?= $this->textM->formfield('text', 'dateFrom', '', 'datepick', '', 'required width:250px;'); ?></td>
+			</tr>
+			<tr>
+				<td>Date To:</td>
+				<td><?= $this->textM->formfield('text', 'dateTo', '', 'datepick', '', 'required width:250px;'); ?></td>
+			</tr>
+			<tr>
+				<td><br/></td>
+				<td><button class="btnclass btngreen">Generate</button></td>
+			</tr>
+		</table>
+		<?= $this->textM->formfield('hidden', 'submitType', 'genAttendanceReports'); ?>
+		</form>
+
+</div>
 <script>
 $(function(){
 	$('div.past_calc_div').hide();

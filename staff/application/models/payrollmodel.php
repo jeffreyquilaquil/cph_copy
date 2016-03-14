@@ -811,6 +811,34 @@ class Payrollmodel extends CI_Model {
 			}
 		}
 	}
+
+	/** 
+		get payslips items on time range
+	**/
+	public function getPayslipOnTimeRange( $empID, $from, $to ){
+		$data = array();
+		$data['dateArr'] = $this->payrollM->getArrayPeriodDates($from, $to);	
+		$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
+		'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$from.'" AND "'.$to.'" AND status!=3 AND pstatus=1', 
+		'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
+	
+		$data['dataMonthItems'] = array();
+		if(count($data['dataMonth'])>0){
+			$slipID = '';
+			foreach($data['dataMonth'] AS $m){
+				$slipID .= $m->payslipID.',';
+			}
+			if(!empty($slipID)){
+				$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+				if(count($queryItems)>0){
+					foreach($queryItems AS $item){
+						$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
+					}
+				}
+			}
+		}
+		return $data;
+	}
 	
 	public function generate13thmonth($periodFrom, $periodTo, $empIDs, $includeEndMonth=0){
 		$dataEmp = explode(',', rtrim($empIDs, ','));
@@ -1086,7 +1114,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setSourceFile(PDFTEMPLATES_DIR.'BIR2316.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 284.07783333333, 367.63325, true);
-		$pdf->SetAutoPageBreak(auto,1);
+		$pdf->SetAutoPageBreak(true,1);
 			
 		//SET DEFAULT FONT TO ARIAL BOLD size 12PT
 		$pdf->SetFont('Arial','B',12);
@@ -1139,15 +1167,16 @@ class Payrollmodel extends CI_Model {
 		$pdf->Write(0, $staffInfo->zip);
 
 		//FOR EMPLOYEES TAX STATUS
-		$ts = $staffInfo->taxStatus;
-		if($ts < 6){
-			$pdf->setXY(62, 107);
+		if( isset($staffInfo->taxStatus) ){
+			$ts = $staffInfo->taxStatus;
+			if($ts < 6){
+				$pdf->setXY(62, 107);
+			}
+			else{
+				$pdf->setXY(95, 107);
+			}
+			$pdf->Write(0, 'x');
 		}
-		else{
-			$pdf->setXY(95, 107);
-		}
-		$pdf->Write(0, 'x');
-
 
 		//FOR EMPLOYEE'S BDATE
 		$pdf->setXY(45,97);
@@ -1225,75 +1254,10 @@ class Payrollmodel extends CI_Model {
 		//var_dump($payArr);
 				
 		$month13c = 0;
-		foreach($dateArr AS $date){
-			$payDate .= date('d-M-Y', strtotime($date))."\n";
-			
-			if(isset($payArr[$date])){
-				$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
-				$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
-				
-				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
-				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
-				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
-				
-				//add all adjustments
-				//"nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday"
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiff']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiff']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['overTime']))?$dataMonthItems[$payArr[$date]->payslipID]['overTime']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']))?$dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
-				
-				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
-				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
-				$attendance .= $this->textM->convertNumFormat($regTaken)."\n";
-				$adjustment .= $this->textM->convertNumFormat($payArr[$date]->adjustment)."\n";
-				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
-				$bonus .= $this->textM->convertNumFormat($payArr[$date]->bonus)."\n";
-				$deminimis .= $this->textM->convertNumFormat($payArr[$date]->allowance)."\n";
-				$taxWithheld .= $incomeTax."\n";
-								
-				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-				
-				if($staffInfo->endDate>=date('Y').'-01-25'){
-					if( isset($payArra[$date]->deductions) ){
-						$month13c = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
-					}
-					
-				}				
-				
-				$month13 .= $this->textM->convertNumFormat($month13c)."\n";
-				$netPay .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
-									
-				$totalIncome += $payArr[$date]->earning;
-				$totalSalary += $payArr[$date]->basePay;
-				$totalDeduction += $regTaken;
-				$totalTaxable += $payArr[$date]->totalTaxable;					
-				$totalTaxWithheld += $incomeTax;	
-				$totalBonus += $payArr[$date]->bonus;
-				$totalAdjustment += $payArr[$date]->adjustment;
-				$totalAllowance += $payArr[$date]->allowance;
-				
-				$total13th += $month13c;					
-				$totalNet += $payArr[$date]->net;					
-			}else{
-				$gross .= "0.00\n";
-				$basicSal .= "0.00\n";
-				$attendance .= "0.00\n";
-				$adjustment .= "0.00\n";
-				$taxIncome .= "0.00\n";
-				$bonus .= "0.00\n";
-				$taxWithheld .= "0.00\n";
-				$month13 .= "0.00\n";
-				$deminimis .= "0.00\n";
-				$netPay .= "0.00\n";
-			}
+		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
+		//$this->textM->aaa($data_items);
+		foreach( $data_items as $di_key => $di_val ){
+			$$di_key = $di_val;
 		}
 		/****************************************
 		*										*
@@ -1428,7 +1392,7 @@ class Payrollmodel extends CI_Model {
 
 		//FOR 56
 		$pdf->setXY(55, 317);
-		$pdf->Cell(75, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
+		$pdf->Cell(75, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
 
 		//FOR 56
 		$pdf->setXY(55, 342);
@@ -1437,15 +1401,155 @@ class Payrollmodel extends CI_Model {
 		//FOR 59
 		$pdf->setXY(157, 352);
 		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
-		$pdf->Cell(68, 5, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname, 0,2,'C');
+		$pdf->Cell(68, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');
 
 	}
+
+	//bir alpha list which is tied to pdfBIR
+	public function getAlphaList( $dataQuery, $filename ){
+		
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/bir_alphalist_.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$sequence = 1;
+		$cell_counter = 17;
+		foreach( $dataQuery as $key => $val ){
+		
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $this->textM->decryp( $dataQuery->tin ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, strtoupper( $dataQuery->lname.', '.$dataQuery->fname.' '.$dataQuery->mname ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $dataQuery->startDate );
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $dataQuery->endDate );
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, '6');
+			$cell_counter++;
+			$sequence++;
+		}
+		
+		
+		
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$filename.'".xls"');
+		$objWriter->save('php://output');
+
+	}
 	
 	public function formatNum($d){
 		return $this->textM->convertNumFormat($d);
+	}
+
+	public function _getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems ){
+		$data = array();
+		$data['gross'] = '';
+		$data['basicSal'] = '';
+		$data['attendance'] = '';
+		$data['adjustment'] = '';
+		$data['taxIncome'] = '';
+		$data['bonus'] = '';
+		$data['taxWithheld'] = '';
+		$data['month13'] = '';
+		$data['deminimis'] = '';
+		$data['netPay'] = '';
+		$data['payDate'] = '';
+		$data['totalIncome'] = 0;
+		$data['totalSalary'] = 0;
+		$data['totalDeduction'] = 0;
+		$data['totalTaxable'] = 0;
+		$data['totalTaxWithheld'] = 0;
+		$data['total13th'] = 0;
+		$data['totalNet'] = 0;
+		$data['totalSSS'] = 0;
+		$data['totalPhilhealth'] = 0;
+		$data['totalPagIbig'] = 0;
+		$data['totalBonus'] = 0;
+		$data['totalAdjustment'] = 0;
+		$data['totalAllowance'] = 0;
+		$data['personalExemption'] = 50000;
+		$data['incomeTax'] = 0;
+		$data['month13c'] = 0;
+		$data['regTaken'] = 0;
+
+		foreach($dateArr AS $date){
+			$data['payDate'] .= date('d-M-Y', strtotime($date))."\n";
+			
+			if(isset($payArr[$date])){
+				$data['regTaken'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+				$data['incomeTax'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
+				
+				$data['totalSSS'] += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
+				$data['totalPhilhealth'] += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
+				$data['totalPagIbig'] += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
+				
+				//add all adjustments
+				//"nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday"
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiff']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiff']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['overTime']))?$dataMonthItems[$payArr[$date]->payslipID]['overTime']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']))?$dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
+				
+				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning);
+				$data['basicSal'] .= $this->textM->convertNumFormat($payArr[$date]->basePay);
+				$data['attendance'] .= $this->textM->convertNumFormat($data['regTaken']);
+				$data['adjustment'] .= $this->textM->convertNumFormat($payArr[$date]->adjustment);
+				$data['taxIncome'] .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable);
+				$data['bonus'] .= $this->textM->convertNumFormat($payArr[$date]->bonus);
+				$data['deminimis'] .= $this->textM->convertNumFormat($payArr[$date]->allowance);
+				$data['taxWithheld'] .= $data['incomeTax'];
+								
+				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
+				
+				if($staffInfo->endDate>=date('Y').'-01-25'){
+					if( isset($payArra[$date]->deductions) ){
+						$data['month13c'] = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+					}
+					
+				}				
+				
+				$data['month13'] .= $this->textM->convertNumFormat($data['month13c']);
+				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net);
+									
+				$data['totalIncome'] += $payArr[$date]->earning;
+				$data['totalSalary'] += $payArr[$date]->basePay;
+				$data['totalDeduction'] += $data['regTaken'];
+				$data['totalTaxable'] += $payArr[$date]->totalTaxable;					
+				$data['totalTaxWithheld'] += $data['incomeTax'];	
+				$data['totalBonus'] += $payArr[$date]->bonus;
+				$data['totalAdjustment'] += $payArr[$date]->adjustment;
+				$data['totalAllowance'] += $payArr[$date]->allowance;
+				
+				$data['total13th'] += $data['month13c'];					
+				$data['totalNet'] += $payArr[$date]->net;					
+			}else{
+				$data['gross'] .= "0.00";
+				$data['basicSal'] .= "0.00";
+				$data['attendance'] .= "0.00";
+				$data['adjustment'] .= "0.00";
+				$data['taxIncome'] .= "0.00";
+				$data['bonus'] .= "0.00";
+				$data['taxWithheld'] .= "0.00";
+				$data['month13'] .= "0.00";
+				$data['deminimis'] .= "0.00";
+				$data['netPay'] .= "0.00";
+			}
+		}
+		return $data;
 	}
 	
 	public function pdfLastPay($data){
@@ -1520,75 +1624,9 @@ class Payrollmodel extends CI_Model {
 		//var_dump($payArr);
 				
 		$month13c = 0;
-		foreach($dateArr AS $date){
-			$payDate .= date('d-M-Y', strtotime($date))."\n";
-			
-			if(isset($payArr[$date])){
-				$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
-				$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
-				
-				$totalSSS += ((isset($dataMonthItems[$payArr[$date]->payslipID]['sss']))?$dataMonthItems[$payArr[$date]->payslipID]['sss']:0);
-				$totalPhilhealth += ((isset($dataMonthItems[$payArr[$date]->payslipID]['philhealth']))?$dataMonthItems[$payArr[$date]->payslipID]['philhealth']:0);
-				$totalPagIbig += ((isset($dataMonthItems[$payArr[$date]->payslipID]['pagIbig']))?$dataMonthItems[$payArr[$date]->payslipID]['pagIbig']:0);
-				
-				//add all adjustments
-				//"nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday"
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiff']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiff']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['overTime']))?$dataMonthItems[$payArr[$date]->payslipID]['overTime']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']))?$dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['specialPHLHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
-				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
-				
-				$gross .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
-				$basicSal .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
-				$attendance .= $this->textM->convertNumFormat($regTaken)."\n";
-				$adjustment .= $this->textM->convertNumFormat($payArr[$date]->adjustment)."\n";
-				$taxIncome .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
-				$bonus .= $this->textM->convertNumFormat($payArr[$date]->bonus)."\n";
-				$deminimis .= $this->textM->convertNumFormat($payArr[$date]->allowance)."\n";
-				$taxWithheld .= $incomeTax."\n";
-								
-				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-				
-				if($staffInfo->endDate>=date('Y').'-01-25'){
-					if( isset($payArra[$date]->deductions) ){
-						$month13c = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
-					}
-					
-				}				
-				
-				$month13 .= $this->textM->convertNumFormat($month13c)."\n";
-				$netPay .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
-									
-				$totalIncome += $payArr[$date]->earning;
-				$totalSalary += $payArr[$date]->basePay;
-				$totalDeduction += $regTaken;
-				$totalTaxable += $payArr[$date]->totalTaxable;					
-				$totalTaxWithheld += $incomeTax;	
-				$totalBonus += $payArr[$date]->bonus;
-				$totalAdjustment += $payArr[$date]->adjustment;
-				$totalAllowance += $payArr[$date]->allowance;
-				
-				$total13th += $month13c;					
-				$totalNet += $payArr[$date]->net;					
-			}else{
-				$gross .= "0.00\n";
-				$basicSal .= "0.00\n";
-				$attendance .= "0.00\n";
-				$adjustment .= "0.00\n";
-				$taxIncome .= "0.00\n";
-				$bonus .= "0.00\n";
-				$taxWithheld .= "0.00\n";
-				$month13 .= "0.00\n";
-				$deminimis .= "0.00\n";
-				$netPay .= "0.00\n";
-			}
+		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
+		foreach( $data_items as $di_key => $di_val ){
+			$$di_key = $di_val;
 		}
 		
 		$dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');

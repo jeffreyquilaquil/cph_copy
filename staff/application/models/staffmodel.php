@@ -1366,6 +1366,22 @@ class Staffmodel extends CI_Model {
 		header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
 		$objWriter->save('php://output');
 	}
+
+	public function getAttendanceReport($start, $end){
+
+		//get all employee
+		//$all_staff = $this->dbmodel->getQueryResults('staffs', 'empID, fname, lname, idNum', 'active = 1 AND office = "PH-Cebu" AND exclude_schedule = 0');
+		
+		$data_array = array();
+		//foreach( $all_staff as $staff ){
+			$staff_time_logs = $this->timeM->getCalendarSchedule( $start, $end, 97 );			
+			$data_array[ 97 ]['time_logs'] = $staff_time_logs;
+		//	$data_array[ $staff->empID ]['staff_info'] = $staff;
+		//}
+
+		$this->textM->aaa($data_array);
+		//$this->timeM->getAllStaffAttendance( $start, $end );
+	}
 	
 }
 
