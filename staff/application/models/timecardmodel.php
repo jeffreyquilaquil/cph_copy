@@ -925,11 +925,12 @@ class Timecardmodel extends CI_Model {
 	public function getAttendanceReport($data){
 
 		ini_set('memory_limit', '128M');
+		$format = '%h:%i:%s';
 
 		$data_array = array();
 
 		if( !isset($data['visitID']) AND empty($data['visitID']) ){
-			$all_staff = $this->dbmodel->getQueryResults('staffs', 'empID', 'active = 1 AND office = "PH-Cebu" AND exclude_schedule = 0');
+			$all_staff = $this->dbmodel->getQueryResults('staffs', 'empID', 'active = 1 AND office = "PH-Cebu" AND exclude_schedule = 0 AND idNum > 0');
 			foreach( $all_staff as $staff ){
 				$data['visitID'][] = $staff->empID;
 			}			
@@ -943,11 +944,69 @@ class Timecardmodel extends CI_Model {
 			$data_array[ $staff_logs->empID ]['lname'] = $staff_logs->lname;
 			$data_array[ $staff_logs->empID ]['mname'] = $staff_logs->mname;
 			$data_array[ $staff_logs->empID ]['idNum'] = $staff_logs->idNum;
-			$data_array[ $staff_logs->empID ]['staff_logs'][ $staff_logs->slogDate ] = $staff_logs;
+			$data_array[ $staff_logs->empID ]['staff_logs'][ $staff_logs->slogDate ] = $staff_logs;			
+		}
+		//check for holidays
+		$holidays = $this->dbmodel->getQueryResults('staffHolidays', 'holidayType, holidayDate, holidaySched', '1');
+		foreach( $holidays as $key => $val ){
+			$holidays[ $val->holidayDate ] = $val->holidaySched;
 		}
 
-		//$this->textM->aaa($data_array);
-		$this->output->enable_profiler(true);
+		//filter data and output
+		$data_excel = array();
+		foreach( $data_array as $empID => $staff_logs ){
+			//$this->textM->aaa($staff_logs, false);
+			$data_excel[ $empID ]['fname'] = $staff_logs['fname'];
+			$data_excel[ $empID ]['lname'] = $staff_logs['lname'];
+			$data_excel[ $empID ]['mname'] = $staff_logs['mname'];
+			$data_excel[ $empID ]['idNum'] = $staff_logs['idNum'];
+
+			foreach( $staff_logs['staff_logs'] as $date => $log ){
+
+				$isHoliday = false;
+				//recurring holidays 
+				$r_holidays = date('0000-m-d', strtotime($date) );
+				//one time holidays
+				if( isset($holidays[ $date ]) ){
+					$isHoliday = true;
+				} else if( isset($holidays[$r_holidays]) AND $holidays[$r_holidays] == 0 ){
+					$isHoliday = true;
+				}
+
+				$excel_array = new stdClass;
+
+				
+				if( ($log->leaveID_fk > 0 OR $isHoliday == false) AND $log->timeIn != '0000-00-00 00:00:00' ){
+					$excel_array->schedIn = $log->schedIn;
+					$excel_array->schedOut = $log->schedOut;
+					$excel_array->timeIn = $log->timeIn;
+					if( $log->timeOut != '0000-00-00 00:00:00' ){
+						$excel_array->timeOut = $log->timeOut;
+						$excel_array->total_time_at_work = $this->commonM->dateDifference( $log->timeIn, $log->timeOut, $format);						
+						$excel_array->over_schedule = $this->commonM->dateDifference( $log->schedOut, $log->timeOut, $format);
+					}
+					if( $log->numBreak > 0 ){
+						$excel_array->timeBreak = $log->timeBreak;
+					}
+					if( $log->numBreak > 0 AND isset($excel_array->total_time_at_work) ){					
+						$excel_array->total_time_less_break = $this->commonM->dateDifference( $excel_array->total_time_at_work, abs($log->timeBreak), $format);
+					}
+					
+					if( strtotime($log->timeIn) > strtotime($log->schedIn) ){
+						$excel_array->late_total = $this->commonM->dateDifference( $log->schedIn, $log->timeIn, $format);	
+					}
+					
+
+					$excel_array->night_diff = $this->payrollM->getNightDiffTime( $log );
+
+					$data_excel[ $empID ]['staff_logs'][ $date ] = $excel_array;
+				}
+
+			}
+		}
+
+		//$this->textM->aaa($data_excel);
+		//$this->output->enable_profiler(true);
 		
 		//excel reports
 		require_once('includes/excel/PHPExcel/IOFactory.php');
@@ -958,6 +1017,7 @@ class Timecardmodel extends CI_Model {
 		$objReader = PHPExcel_IOFactory::createReader($fileType);
 		$objPHPExcel = $objReader->load($fileName);
 
+		$vars = array('timeBreak', 'total_time_at_work', 'over_schedule', 'total_time_less_break', 'late_total');
 
 		// Change the file
 		$objPHPExcel->setActiveSheetIndex(0);
@@ -966,20 +1026,18 @@ class Timecardmodel extends CI_Model {
 		$objPHPExcel->getActiveSheet()->setCellValue('A1', 'ATTENDANCE REPORT - '.date('F d, Y', strtotime($data['report_start'])).' - '.date('F d, Y', strtotime($data['report_end'])));
 		//we are starting at row 2
 		$cnt = 2;			
-		foreach( $data_array as $empID => $staff_logs ){
+		foreach( $data_excel as $empID => $staff_logs ){
 			//headers
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$cnt.':P'.$cnt)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$cnt.':N'.$cnt)->getFont()->setBold(true);
 			//header 1
 			$objPHPExcel->getActiveSheet()->mergeCells('A'.$cnt.':D'.$cnt);
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cnt, ucwords( $staff_logs['fname'].' '.$staff_logs['lname'] ) );
 			$objPHPExcel->getActiveSheet()->mergeCells('E'.$cnt.':F'.$cnt);
 			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cnt, 'Scheduled' );
 			$objPHPExcel->getActiveSheet()->mergeCells('G'.$cnt.':H'.$cnt);
-			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, 'Resolved' );
-			$objPHPExcel->getActiveSheet()->mergeCells('I'.$cnt.':J'.$cnt);
-			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, 'Actual' );
-			$objPHPExcel->getActiveSheet()->mergeCells('K'.$cnt.':P'.$cnt);
-			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, 'Summary' );			
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, 'Actual' );
+			$objPHPExcel->getActiveSheet()->mergeCells('I'.$cnt.':M'.$cnt);			
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, 'Summary' );			
 
 			$cnt++;
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$cnt.':P'.$cnt)->getFont()->setBold(true);
@@ -995,42 +1053,61 @@ class Timecardmodel extends CI_Model {
 			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, 'Time In' );
 			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cnt, 'Time Out' );
 
-			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, 'Time In' );
-			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cnt, 'Time Out' );
-
-			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, 'Break Total' );
-			$objPHPExcel->getActiveSheet()->setCellValue('L'.$cnt, 'Total Time At Work' );
-			$objPHPExcel->getActiveSheet()->setCellValue('M'.$cnt, 'Total Time Less Break' );
-			$objPHPExcel->getActiveSheet()->setCellValue('N'.$cnt, 'Late Total' );
-			$objPHPExcel->getActiveSheet()->setCellValue('O'.$cnt, 'Hours Over Schedule Total' );
-			$objPHPExcel->getActiveSheet()->setCellValue('P'.$cnt, 'Night Differential' );
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, 'Break Total' );
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cnt, 'Total Time At Work' );
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, 'Total Time Less Break' );
+			$objPHPExcel->getActiveSheet()->setCellValue('L'.$cnt, 'Late Total' );
+			$objPHPExcel->getActiveSheet()->setCellValue('M'.$cnt, 'Hours Over Schedule Total' );
+			$objPHPExcel->getActiveSheet()->setCellValue('N'.$cnt, 'Night Differential' );
 
 			$cnt++;
 			//end of headers
-			foreach( $staff_logs['staff_logs'] as $date => $log ){
-				$empID = sprintf("%'.03d", $log->idNum);
-				$objPHPExcel->getActiveSheet()->setCellValue('A'.$cnt, $empID );
-				$objPHPExcel->getActiveSheet()->setCellValue('B'.$cnt, date('D', strtotime($date) ) );
-				$objPHPExcel->getActiveSheet()->setCellValue('C'.$cnt, date('N', strtotime($date) ) );
-				$objPHPExcel->getActiveSheet()->setCellValue('D'.$cnt, $date  );
+			if( isset($staff_logs['staff_logs']) ){
+				foreach( $staff_logs['staff_logs'] as $date => $log ){
+					
 
-				$objPHPExcel->getActiveSheet()->setCellValue('E'.$cnt, date('h:i a', strtotime($log->schedIn) ) );
-				$objPHPExcel->getActiveSheet()->setCellValue('F'.$cnt, date('h:i a', strtotime($log->schedOut) ) );
+					$empID = sprintf("%'.03d", $staff_logs['idNum']);
+					$objPHPExcel->getActiveSheet()->setCellValue('A'.$cnt, $empID );
+					$objPHPExcel->getActiveSheet()->setCellValue('B'.$cnt, date('D', strtotime($date) ) );
+					$objPHPExcel->getActiveSheet()->setCellValue('C'.$cnt, date('N', strtotime($date) ) );
+					$objPHPExcel->getActiveSheet()->setCellValue('D'.$cnt, $date  );
 
-				$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, 'Time In' );
-				$objPHPExcel->getActiveSheet()->setCellValue('H'.$cnt, 'Time Out' );
+					$objPHPExcel->getActiveSheet()->setCellValue('E'.$cnt, date('h:i a', strtotime($log->schedIn) ) );
+					$objPHPExcel->getActiveSheet()->setCellValue('F'.$cnt, date('h:i a', strtotime($log->schedOut) ) );
+					$objPHPExcel->getActiveSheet()->setCellValue('G'.$cnt, date('h:i a', strtotime($log->timeIn) ) );
+					if( isset($log->timeBreak) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('H'.$cnt, date('h:i a', strtotime($log->timeOut) ) );
+					}
 
-				$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, date('h:i a', strtotime($log->timeIn) ) );
-				$objPHPExcel->getActiveSheet()->setCellValue('J'.$cnt, date('h:i a', strtotime($log->timeOut) ) );
 
-				$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, 'Break Total' );
-				$objPHPExcel->getActiveSheet()->setCellValue('L'.$cnt, 'Total Time At Work' );
-				$objPHPExcel->getActiveSheet()->setCellValue('M'.$cnt, 'Total Time Less Break' );
-				$objPHPExcel->getActiveSheet()->setCellValue('N'.$cnt, 'Late Total' );
-				$objPHPExcel->getActiveSheet()->setCellValue('O'.$cnt, 'Hours Over Schedule Total' );
-				$objPHPExcel->getActiveSheet()->setCellValue('P'.$cnt, 'Night Differential' );
-				$cnt++;
+					if( isset($log->timeBreak) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('I'.$cnt, $log->timeBreak );
+					}
+					if( isset($log->total_time_at_work) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('J'.$cnt, $log->total_time_at_work );
+					}
+					if( isset($log->total_time_less_break) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, $log->total_time_less_break );
+					} else {
+						$objPHPExcel->getActiveSheet()->setCellValue('K'.$cnt, $log->total_time_at_work );
+					}
+					if( isset($log->late_total) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('L'.$cnt, $log->late_total );
+					}
+					if( isset($log->over_schedule) ){
+						$objPHPExcel->getActiveSheet()->setCellValue('M'.$cnt, $log->over_schedule );
+					}
+					
+					if( $log->night_diff > 0 ){
+						$objPHPExcel->getActiveSheet()->setCellValue('N'.$cnt, $log->night_diff );	
+					}
+					
+
+					
+					$cnt++;
+				}
 			}
+			
 
 
 
