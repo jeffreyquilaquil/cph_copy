@@ -1,3 +1,6 @@
+<div style="float:right;">
+	<button class="btnclass">Generate Alphalist</button>
+</div>
 <h2>Manage Last Pay</h2>
 <hr/>
 <table class="datatable display stripe hover">
@@ -43,3 +46,10 @@
 	}
 ?>
 </table>
+<script>
+ $(function(){
+ 	$('.btnclass').click(function(){
+ 		window.location = '<?php echo $this->config->base_url(); ?>timecard/alphalist/?which=end';
+ 	});
+ });
+ </script>
