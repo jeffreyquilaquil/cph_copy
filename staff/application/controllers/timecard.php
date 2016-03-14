@@ -325,11 +325,18 @@ class Timecard extends MY_Controller {
 					if($_POST['logtype']=='Z') $this->cronDailyLogs(); ///CALL TO INSERT LOG
 					exit;
 				}
+				if( $_POST['attendance_report'] == 'Generate Attendance Report' ){
+					$data['report_start'] = date('Y-m-d', strtotime($_POST['report_start']) );
+					$data['report_end'] = date('Y-m-d', strtotime($_POST['report_end']) );
+					$data['visitID'] = $_POST['visitID'];
+					$this->timeM->getAttendanceReport( $data );
+					exit();
+				}
 			}
 						
 			$data = $this->timeM->_getTimeLogs( $data );		
 		}
-	
+		
 		$this->load->view('includes/template', $data);
 	}
 	
