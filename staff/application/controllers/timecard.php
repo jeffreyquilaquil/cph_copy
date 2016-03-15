@@ -1313,7 +1313,7 @@ class Timecard extends MY_Controller {
 			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id.' AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 			$data['totalGross'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(earning)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalDeduction'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(deduction)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
-			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'" AND status = 1');
+			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'" AND pstatus = 1');
 		}
 		
 		$this->load->view('includes/template', $data);
