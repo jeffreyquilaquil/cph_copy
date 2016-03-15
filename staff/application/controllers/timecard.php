@@ -325,11 +325,18 @@ class Timecard extends MY_Controller {
 					if($_POST['logtype']=='Z') $this->cronDailyLogs(); ///CALL TO INSERT LOG
 					exit;
 				}
+				if( $_POST['attendance_report'] == 'Generate Attendance Report' ){
+					$data['report_start'] = date('Y-m-d', strtotime($_POST['report_start']) );
+					$data['report_end'] = date('Y-m-d', strtotime($_POST['report_end']) );
+					$data['visitID'] = $_POST['visitID'];
+					$this->timeM->getAttendanceReport( $data );
+					exit();
+				}
 			}
 						
 			$data = $this->timeM->_getTimeLogs( $data );		
 		}
-	
+		
 		$this->load->view('includes/template', $data);
 	}
 	
@@ -1306,7 +1313,7 @@ class Timecard extends MY_Controller {
 			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id.' AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 			$data['totalGross'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(earning)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalDeduction'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(deduction)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
-			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
+			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'" AND pstatus = 1');
 		}
 		
 		$this->load->view('includes/template', $data);

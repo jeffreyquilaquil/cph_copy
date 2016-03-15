@@ -403,6 +403,34 @@ class Commonmodel extends CI_Model {
 		}
 		
 	}
+
+	//compute difference of two dates and format
+	//////////////////////////////////////////////////////////////////////
+	//PARA: Date Should In YYYY-MM-DD Format
+	//RESULT FORMAT:
+	// '%y Year %m Month %d Day %h Hours %i Minute %s Seconds'        =>  1 Year 3 Month 14 Day 11 Hours 49 Minute 36 Seconds
+	// '%y Year %m Month %d Day'                                    =>  1 Year 3 Month 14 Days
+	// '%m Month %d Day'                                            =>  3 Month 14 Day
+	// '%d Day %h Hours'                                            =>  14 Day 11 Hours
+	// '%d Day'                                                        =>  14 Days
+	// '%h Hours %i Minute %s Seconds'                                =>  11 Hours 49 Minute 36 Seconds
+	// '%i Minute %s Seconds'                                        =>  49 Minute 36 Seconds
+	// '%h Hours                                                    =>  11 Hours
+	// '%a Days                                                        =>  468 Days
+	//////////////////////////////////////////////////////////////////////
+	public function dateDifference( $date1, $date2, $format = '%a'){
+
+		$date1 = date('Y-m-d H:i:s', strtotime($date1) );
+		$date2 = date('Y-m-d H:i:s', strtotime($date2) );
+
+		$date1 = date_create( $date1 );
+		$date2 = date_create( $date2 );	
+
+		$diff = date_diff( $date1, $date2 );
+		
+		$return =  $diff->format( $format );
+		return date('H:i:s', strtotime($return));
+	}
 	
 	
 }

@@ -4322,6 +4322,7 @@ class Staff extends MY_Controller {
 						$data['report_start'] = date('Y-m-d', strtotime($_POST['dateFrom']) );
 						$data['report_end'] = date('Y-m-d', strtotime($_POST['dateTo']) );
 						$this->timeM->getAttendanceReport( $data );
+						exit();
 					}
 				}
 				//current calc
