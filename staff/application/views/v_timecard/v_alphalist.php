@@ -42,7 +42,6 @@
 			} else if( from_year > to_year ){
 				alert('`From` Year should not be greater than the `To` Year');
 			} else {
-				
 				$('#frm_alphalist').submit();
 			}
 		});

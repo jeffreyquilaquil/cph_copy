@@ -1422,18 +1422,144 @@ class Payrollmodel extends CI_Model {
 		$sequence = 1;
 		$cell_counter = 17;
 		foreach( $dataQuery as $key => $val ){
-		
+			// echo "<pre>";
+			// var_dump($val);
+			// echo "</pre>";
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
-			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $this->textM->decryp( $dataQuery->tin ) );
-			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, strtoupper( $dataQuery->lname.', '.$dataQuery->fname.' '.$dataQuery->mname ) );
-			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $dataQuery->startDate );
-			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $dataQuery->endDate );
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $this->textM->decryptText( $val->tin ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, strtoupper( $val->lname.', '.$val->fname.' '.$val->mname ) );
+			$stDate = $val->startDate;
+			if( date('Y-m-d', strtotime($stDate) ) < '2016-01-01' )
+				$stDate = '2016-01-01';
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $stDate );
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $val->endDate );
 			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, '6');
+
+			/****************************************************************
+			**															   **
+			**			PAY LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOP			   **										
+			**															   **
+			****************************************************************/
+			$payDate = '';
+			$gross = '';
+			$basicSal = '';
+			$attendance = '';
+			$adjustment = '';
+			$taxIncome = '';
+			$bonus = '';
+			$taxWithheld = '';
+			$month13 = '';
+			$deminimis = '';
+			$netPay = '';
+			
+			$totalIncome = 0;
+			$totalSalary = 0;
+			$totalDeduction = 0;
+			$totalTaxable = 0;
+			$totalTaxWithheld = 0;
+			$total13th = 0;
+			$totalNet = 0;
+			$totalSSS = 0;
+			$totalPhilhealth = 0;
+			$totalPagIbig = 0;
+			$totalBonus = 0;
+			$totalAdjustment = 0;
+			$totalAllowance = 0;
+			$personalExemption = 50000;	
+
+			$payArr = array();
+			foreach($val->dataMonth AS $m){
+				$payArr[$m->payDate] = $m;
+			}
+
+			$staffInfo = $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, 
+				idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits, taxStatus', 'username = "'.$val->username.'"');
+
+
+			$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
+
+			$month13c = 0;
+			$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $val->dateArr, $val->dataMonth, $val->dataMonthItems );
+			foreach( $data_items as $di_key => $di_val ){
+				$$di_key = $di_val;
+			}
+			/****************************************
+			*										*
+			*			END OF PAY LOOP				*
+			*									    *
+			****************************************/
+			/*
+			* Now you can use variables for:
+			* $gross
+			* $totalSSS, $totalPhilhealth, $totalPagIbig, $total13th, $totalAllowance, $totalIncome
+			*/
+
+			$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
+			$tnt = $this->textM->convertNumFormat($total13th+$totalAllowance+$spp);
+			$tsal = $totalSalary - $totalDeduction - $spp;
+
+			
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $this->formatNum($totalIncome) );
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $this->formatNum($total13th) );
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $this->formatNum($totalAllowance) );
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $this->formatNum($spp) );
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, '' );
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $this->formatNum($tnt) );
+			$objPHPExcel->getActiveSheet()->setCellValue('L'.$cell_counter, $this->formatNum($tsal) );
+
+			$excs = '';
+			if($total13th > 82000)
+				$excs = $this->formatNum($total13th-82000);
+
+			$objPHPExcel->getActiveSheet()->setCellValue('M'.$cell_counter, $this->formatNum($excs) );
+			$objPHPExcel->getActiveSheet()->setCellValue('N'.$cell_counter, $this->formatNum($totalAdjustment));
+			$n55 = $tsal+$totalAdjustment;
+			$objPHPExcel->getActiveSheet()->setCellValue('O'.$cell_counter, $this->formatNum($n55) );
+
+			$taxstatus = $this->textM->constantArr('taxstatus');
+			preg_match('#\((.*?)\)#', $taxstatus[$staffInfo->taxStatus], $match);
+
+			$objPHPExcel->getActiveSheet()->setCellValue('P'.$cell_counter, $match[1]);
+
+			$n26 = $dependents+$personalExemption;
+			$objPHPExcel->getActiveSheet()->setCellValue('Q'.$cell_counter, $this->formatNum($n26));
+
+
+			$objPHPExcel->getActiveSheet()->setCellValue('R'.$cell_counter, $this->formatNum(0));
+
+			$n25 = ($tsal+$totalAdjustment) + $payInfo->taxFromPrevious;
+
+			$n28 = $n25-$n26;
+			if($n28 < 0)
+				$n28 = 0;
+			$objPHPExcel->getActiveSheet()->setCellValue('S'.$cell_counter, $this->formatNum($n28));
+
+			$n30a = $n30b = $n31 = 0;
+			$n29 = $payInfo->taxDue;
+
+			if( $n29 > 0 && $payInfo->taxWithheldFromPrevious == 0 ){
+				$n30a = $n31 = $n29;
+			}
+			if( $n29 > 0 && $payInfo->taxWithheldFromPrevious > 0 ){
+				$n31 = $n29;
+				$n30b = $payInfo->taxWithheldFromPrevious;
+				$n30a = $n29 - $n30b;
+			}
+
+			$objPHPExcel->getActiveSheet()->setCellValue('T'.$cell_counter, $this->formatNum($n29) );
+
+			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(0) );
+
+			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($n31) );
+
+			$objPHPExcel->getActiveSheet()->setCellValue('W'.$cell_counter, $this->formatNum(0) );
+
+			$objPHPExcel->getActiveSheet()->setCellValue('X'.$cell_counter, $this->formatNum($n31) );
+			$objPHPExcel->getActiveSheet()->setCellValue('Y'.$cell_counter, 'Y' );
+			
 			$cell_counter++;
 			$sequence++;
 		}
-		
-		
 		
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 		ob_end_clean();
@@ -1441,7 +1567,6 @@ class Payrollmodel extends CI_Model {
 		header('Content-type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment; filename="'.$filename.'".xls"');
 		$objWriter->save('php://output');
-
 	}
 	
 	public function formatNum($d){
