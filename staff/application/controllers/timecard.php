@@ -1592,14 +1592,14 @@ class Timecard extends MY_Controller {
 						}
 
 
-						//$this->textM->aaa($data);
+						$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
 						$this->payrollM->getAlphaList( $data['dataQuery'], $filename );
 					}
 				}
 			}
 		}
-		//$this->output->enable_profiler(true);
+		$this->output->enable_profiler(true);
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
@@ -1808,7 +1808,7 @@ class Timecard extends MY_Controller {
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
-			$fileName = 'includes/templates/payrollDistributionReport.xls';
+			$fileName = 'includes/templates/payrollDistributionReport__.xls';
 
 			// Read the file
 			$objReader = PHPExcel_IOFactory::createReader($fileType);
