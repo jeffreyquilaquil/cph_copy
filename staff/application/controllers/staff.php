@@ -4338,6 +4338,11 @@ class Staff extends MY_Controller {
 		
 		$this->load->view('includes/template', $data);
 	}
+	public function alphalist(){
+		$data['content'] = 'alphalist';
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
 	
 }
 

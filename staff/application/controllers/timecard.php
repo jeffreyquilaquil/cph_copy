@@ -1592,14 +1592,14 @@ class Timecard extends MY_Controller {
 						}
 
 
-						$this->textM->aaa($data);
+						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
 						$this->payrollM->getAlphaList( $data['dataQuery'], $filename );
 					}
 				}
 			}
 		}
-		$this->output->enable_profiler(true);
+		//$this->output->enable_profiler(true);
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
