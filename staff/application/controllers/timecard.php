@@ -325,18 +325,11 @@ class Timecard extends MY_Controller {
 					if($_POST['logtype']=='Z') $this->cronDailyLogs(); ///CALL TO INSERT LOG
 					exit;
 				}
-				if( $_POST['attendance_report'] == 'Generate Attendance Report' ){
-					$data['report_start'] = date('Y-m-d', strtotime($_POST['report_start']) );
-					$data['report_end'] = date('Y-m-d', strtotime($_POST['report_end']) );
-					$data['visitID'] = $_POST['visitID'];
-					$this->timeM->getAttendanceReport( $data );
-					exit();
-				}
 			}
 						
 			$data = $this->timeM->_getTimeLogs( $data );		
 		}
-		
+	
 		$this->load->view('includes/template', $data);
 	}
 	
@@ -1313,7 +1306,7 @@ class Timecard extends MY_Controller {
 			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id.' AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 			$data['totalGross'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(earning)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalDeduction'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(deduction)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
-			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'" AND pstatus = 1');
+			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -1519,13 +1512,26 @@ class Timecard extends MY_Controller {
 								$this->payrollM->pdfLastPay($data);									
 							break;
 							case 'release': //release waiver and quitclam
-							
 								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
 								$this->payrollM->pdfReleaseClaim($staff_details);	
 							break;
 							case 'bir':
 							 		//$this->textM->aaa($data);
+									//for active employee
+									if( isset($_GET['is_active']) ){
+										$sDate = $data['staffInfo']->startDate;
+										if( $sDate < '2016-01-01' )
+											$sDate = '2016-01-01';
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, $sDate, date('Y-12-31') );
+										$data['dataArr'] = $datum['dateArr'];
+										$data['dataMonth'] = $datum['dataMonth'];
+										$data['dataMonthItems'] = $datum['dataMonthItems'];
+										$data['staffInfo']->endDate = date('Y-12-31');
+									}
+									// echo "<pre>";
+									// var_dump($data);
+									// echo "</pre>";
 							 		$this->payrollM->pdfBIR($data);
 							break;
 							case 'coe': //coe
@@ -1566,11 +1572,20 @@ class Timecard extends MY_Controller {
 					if( isset($_POST['which_report']) AND $_POST['which_report'] == 'gen_alphalist' ){
 						$from_ = date('Y-m-d', strtotime( $data['from_year'].'-'.$data['from_month'].'-01'  ) );
 						$to_ = date('Y-m-d', strtotime( $data['to_year'].'-'.$data['to_month'].'-31' ) );
+						//initialize endDate
+						//if employee is active, end date will be the same as $to_
+						//else endDate will be their separation date: (initialize it to 0000-00-00)
+						$endDate = '0000-00-00';
+						$is_active = FALSE;
+
+
 						$data = array();
 						//check which to pull from
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk'); break;
 							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '/*alphalist*/ *', 'active = 1 AND office = "PH-Cebu"');
+								$endDate = $to_;
+								$is_active = TRUE;
 							break;
 						}
 						//$this->textM->aaa($data['dataQuery']);						
@@ -1581,10 +1596,9 @@ class Timecard extends MY_Controller {
 							$data['dataQuery'][$key]->dataMonthItems = $datum['dataMonthItems'];
 						}
 
-
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
-						$this->payrollM->getAlphaList( $data['dataQuery'], $filename );
+						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
 					}
 				}
 			}
