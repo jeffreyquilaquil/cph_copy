@@ -1815,72 +1815,160 @@ class Timecard extends MY_Controller {
 			$objPHPExcel = $objReader->load($fileName);
 			
 			//based on template
-			$column_start = 'D';
+			$column_start = 'C';
 			$row_start = 3;
 
-			/*$arrCell = array();			
-			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
-			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);*/
+			
 			// Change the file
 			$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'PAYROLL DISTRIBUTION REPORT - '.date('F d, Y', strtotime($dataPayroll->payPeriodStart)).' - '.date('F d, Y', strtotime($dataPayroll->payPeriodEnd)));
 			
 			//headers based on payslip items details
-
-			foreach( $payslip_items_array as $payID => $payDetails ){
-				$objPHPExcel->getActiveSheet()->setCellValue($column_start.'2', $payDetails->payName);				
-				$objPHPExcel->getActiveSheet()->getStyle($column_start.'2')->getFont()->setBold(true);
+			$header_array_sequence = $header_col =  array( 
+				'12' => 'Regular Taken',
+				'12HR' => 'Regular Taken (hours) ',
+				'22' => 'Regular Worked',
+				'22HR' => 'Regular Worked (hours)',
+				'28' => 'Regular Hours Added',
+				'28HR' => 'Regular Hours Added (hours)',
+				'37' => 'Regular Hours Deducted',
+				'37HR' => 'Regular Hours Deducted (hours)',
+				'basePay' => 'Base Pay',
+				'10' => 'ND:Regular',
+				'10HR' => 'ND:Regular (hours)',
+				'29' => 'Night Differentail Added',
+				'29HR' => 'Night Differential (hours)',
+				'35' => 'ND:Regular PHL Holiday',
+				'35HR' => 'ND:Regular PHL Holiday (hours)',
+				'34' => 'ND:Special PHL Holiday',
+				'34HR' => 'ND:Special PHL Holiday (hours)',
+				'25' => 'Regular PHL Holiday Worked',
+				'25HR' => 'Regular PHL Holiday Worked (hours)',
+				'24' => 'Special PHL Holiday Worked',
+				'24HR' => 'Special PHL Holiday Worked (hours)',
+				'26' => 'Regular US Holiday Worked',
+				'26HR' => 'Regular US Holiday Worked (hours)',
+				'11' => 'Over Time Worked',
+				'11HR' => 'Over Time Worked (hours)',
+				'42' => 'OT Hours Added',
+				'42HR' => 'OT Hours Added (hours)',
+				'41' => 'Job Position Adjustment',
+				'16' => 'Performance Incentive',
+				'earning' => 'Gross Pay',
+				'9' => 'Pag-ibig Contribution',
+				'8' => 'SSS Contribution',
+				'7' => 'Philhealth Contribution',
+				'totalTaxable' => 'Taxable Pay',
+				'33' => 'Medicine Reimbursement',
+				'2' => 'Clothing Allowance',
+				'3' => 'Laundry Allowance',
+				'4' => 'Meal Allowance',
+				'5' => 'Medical Cash Allowance',
+				'1' => 'Rice Allowances',
+				'44' => 'Pro-rated Allowance',
+				'14' => 'Performance Bonus',
+				'15' => 'Kudos Bonus',
+				'31' => 'Discrepancy on Previous Bonus',
+				'21' => 'Vacation Pay',
+				'30' => 'Cost of Vaccines',
+				'43' => 'Tax Refund',
+				'20' => 'Tax Deficit',
+				'18' => 'Sun Life',
+				'17' => 'Healthcare Dependent/s',
+				'19' => 'Pag-ibig Loan',
+				'13' => 'SSS Loan',
+				'39' => 'Loan Adjustment',
+				'40' => 'Payslip Adjustment',
+				'36' => '13th Month Adjustment',
+				'38' => 'Cost of Community Tax Certificate',
+				'6' => 'BIR',
+				'net' => 'Net Pay',
+				'net_' => 'Cheque Payroll',
+				'earning_' => 'Gross Compensation',
+				'32' => 'Additional Pag-ibig Contribution',
+				'eCompensation' => 'SSS Employer Compensation',
+				'employerShare' => 'SSS Employer Share');
+			foreach( $header_array_sequence as $key => $label ){
+				$objPHPExcel->getActiveSheet()->setCellValue($column_start.'2', $label);
+				$objPHPExcel->getActiveSheet()->getStyle($column_start.'2')->getFont()->setBold(true);	
+				$objPHPExcel->getActiveSheet()->getColumnDimension($column_start)->setWidth(15);
 				$column_start++;
-			}			
-			$objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(45);
+			}
+			$objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(55);
 			
-			//unset the basePay
-			unset( $payslip_items_array[22] );
-			//$this->textM->aaa($payInfo);
-			$counter = 3;
-			foreach($payInfo AS $pay){
-			 	$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$pay->payslipID.'" AND payValue!="0.00"',
-			 	'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
-				
-				$id_num = sprintf("%03d", $pay->idNum);
-				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, $pay->lname.', '.$pay->fname); //employee name
-				$objPHPExcel->getActiveSheet()->setCellValue('B'.$counter, $id_num); //employee id
-				$objPHPExcel->getActiveSheet()->setCellValue('C'.$counter, $pay->net); //employee base pay
-				$objPHPExcel->getActiveSheet()->setCellValue('D'.$counter, $pay->basePay); //employee base pay
+			//unset which isn't needed
+			$data_from_payInfo = array('name', 'id_num', 'net', 'earning', 'eCompensation', 'employerShare', 'totalTaxable', 'basePay');
+			foreach( $data_from_payInfo as $val ){
+				unset( $header_array_sequence[ $val ] );
+			}
+			//end unset
 
-				$items_array = array();
-				
+			$data_excel = array();
+			foreach( $payInfo as $pay_info ){
+				$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$pay_info->payslipID.'" AND payValue!="0.00"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
+
+				$data_excel_array = array();
+
+				$data_excel_array['name'] = $pay_info->lname.', '.$pay_info->fname;
+				$data_excel_array['id_num'] = $pay_info->idNum;
+				$data_excel_array['net'] = $pay_info->net;
+				$data_excel_array['net_'] = $pay_info->net;
+				$data_excel_array['earning'] = $pay_info->basePay;
+				$data_excel_array['earning_'] = $pay_info->basePay;
+				$data_excel_array['eCompensation'] = '-'.$pay_info->eCompensation;
+				$data_excel_array['employerShare'] = '-'.$pay_info->employerShare;
+				$data_excel_array['totalTaxable'] = $pay_info->totalTaxable;
+				$data_excel_array['basePay'] = $pay_info->basePay;
+
 				foreach( $dataItems as $item ){
-					$items_array[ $item->payID ] = $item;
-				}
-				$column_header = 'E';
-				foreach( $payslip_items_array as $payID => $payDetails ){
-
-					if( isset( $items_array[ $payID ] ) AND !empty( $items_array[ $payID ] ) ){
-						if( $items_array[ $payID ]->payType == 'debit' ){
-							$items_array[ $payID ]->payValue = '-'.$items_array[ $payID ]->payValue;
-						}
-						$objPHPExcel->getActiveSheet()->setCellValue($column_header.$counter, $items_array[$payID]->payValue);
+					if( $item->payType == 'debit')	{
+						$item->payValue = '-'.$item->payValue;
 					}
-					$column_header++;
+					if( isset($header_array_sequence[ $item->payID ] ) ){
+						$key = $item->payID;
+						$data_excel_array[ $key ]= $item->payValue;
+					}
+					if( $item->numHR > 0 ){
+						$key = $item->payID.'HR';
+						$data_excel_array[ $key ] = $item->numHR;
+					}
+				}
+				if( !isset($data_excel_array['22HR']) ){
+					unset($data_excel_array['22']);
+				}
 
-				}			
-			 	$counter++;
+
+				$data_excel[$pay_info->empID_fk] = $data_excel_array;
+			}
+
+			//$this->textM->aaa($data_excel);
+			$counter = 3;
+			foreach($data_excel AS $data_){
+			
+				$id_num = sprintf("%03d", $data_['id_num']);
+				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, $data_['name']); //employee name
+				$objPHPExcel->getActiveSheet()->setCellValue('B'.$counter, $id_num); //employee id
+				
+				$col_header = 'C';
+				foreach( $header_col as $keys_ => $vals_ ){
+					if( isset($data_[ $keys_ ] ) ){
+						$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, $data_[ $keys_ ]);						
+					}
+					$col_header++;
+				}
+				$counter++;
 			}
 			
 			//TOTALS			
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, 'TOTALS:');
 			$last_row = $counter - 1;
-			//total net pay
-			$objPHPExcel->getActiveSheet()->setCellValue('C'.$counter, '=SUM(C3:C'.$last_row.')');
-			$objPHPExcel->getActiveSheet()->setCellValue('D'.$counter, '=SUM(D3:D'.$last_row.')');
-			$column_header = 'E';
-			foreach( $payslip_items_array as $payID => $payDetails ){
-				$objPHPExcel->getActiveSheet()->setCellValue($column_header.$counter, '=SUM('.$column_header.'3:'.$column_header.$last_row.')');
-				$column_header++;
+			$col_header = 'C';
+			foreach( $header_col as $payID => $payDetails ){
+				$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
+				$col_header++;
 			}
 			
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':'.$column_header.$counter)->getFont()->setBold(true);
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':'.$column_header.$counter)->applyFromArray(
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':'.$col_header.$counter)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$counter.':'.$col_header.$counter)->applyFromArray(
 			array('fill' 	=> array(
 										'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
 										'color'		=> array('argb' => 'FFF000')
