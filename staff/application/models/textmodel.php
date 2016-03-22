@@ -496,7 +496,9 @@ class Textmodel extends CI_Model {
 		else if($t=='timeIn') $txt = 'Time In';			
 		else if($t=='breakIn') $txt = 'Break In';			
 		else if($t=='breakOut') $txt = 'Break Out';			
-		
+		else if($t=='txt_emergency_person') $txt = 'Emergency Contact Person';
+		else if($t=='txt_emergency_number') $txt = 'Emergency Contact Number';
+		else if($t=='txt_emergency_address') $txt = 'Emergency Contact Address';
 		return $txt;
 	}
 	
