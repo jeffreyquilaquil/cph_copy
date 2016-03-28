@@ -1950,6 +1950,9 @@ class Timecard extends MY_Controller {
 				if( !isset($data_excel_array['22HR']) ){
 					unset($data_excel_array['22']);
 				}
+				if( isset($data_excel_array['22']) ){
+					unset($data_excel_array['basePay']);
+				}
 
 
 				$data_excel[$pay_info->empID_fk] = $data_excel_array;
@@ -1967,6 +1970,8 @@ class Timecard extends MY_Controller {
 				foreach( $header_col as $keys_ => $vals_ ){
 					if( isset($data_[ $keys_ ] ) ){
 						$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, $data_[ $keys_ ]);						
+					} else {
+						$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, 0);
 					}
 					$col_header++;
 				}
