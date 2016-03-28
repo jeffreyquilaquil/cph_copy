@@ -121,9 +121,10 @@ class Timecardmodel extends CI_Model {
 			$dayArr[$day]['holidayType'] = $holidayTypeArr[$holiday->holidayType];
 			$dayArr[$day]['schedDate'] = $year.date('-m-d', strtotime($holiday->holidayDate));			
 			
-			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
+			//to show all leaves even if holidays
+			/*if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
 				unset($dayArr[$day]['sched']);
-			}				
+			}*/				
 		}
 						
 		//check for custom schedule. This will show schedule even if holiday with work
