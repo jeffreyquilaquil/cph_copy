@@ -1927,8 +1927,8 @@ class Timecard extends MY_Controller {
 				$data_excel_array['id_num'] = $pay_info->idNum;
 				$data_excel_array['net'] = $pay_info->net;
 				$data_excel_array['net_'] = $pay_info->net;
-				$data_excel_array['earning'] = $pay_info->basePay;
-				$data_excel_array['earning_'] = $pay_info->basePay;
+				$data_excel_array['earning'] = $pay_info->earning;
+				$data_excel_array['earning_'] = $pay_info->earning;
 				$data_excel_array['eCompensation'] = '-'.$pay_info->eCompensation;
 				$data_excel_array['employerShare'] = '-'.$pay_info->employerShare;
 				$data_excel_array['totalTaxable'] = $pay_info->totalTaxable;
