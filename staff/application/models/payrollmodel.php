@@ -1629,14 +1629,14 @@ class Payrollmodel extends CI_Model {
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
 				
-				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning);
-				$data['basicSal'] .= $this->textM->convertNumFormat($payArr[$date]->basePay);
-				$data['attendance'] .= $this->textM->convertNumFormat($data['regTaken']);
-				$data['adjustment'] .= $this->textM->convertNumFormat($payArr[$date]->adjustment);
-				$data['taxIncome'] .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable);
-				$data['bonus'] .= $this->textM->convertNumFormat($payArr[$date]->bonus);
-				$data['deminimis'] .= $this->textM->convertNumFormat($payArr[$date]->allowance);
-				$data['taxWithheld'] .= $data['incomeTax'];
+				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
+				$data['basicSal'] .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
+				$data['attendance'] .= $this->textM->convertNumFormat($data['regTaken'])."\n";
+				$data['adjustment'] .= $this->textM->convertNumFormat($payArr[$date]->adjustment)."\n";
+				$data['taxIncome'] .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
+				$data['bonus'] .= $this->textM->convertNumFormat($payArr[$date]->bonus)."\n";
+				$data['deminimis'] .= $this->textM->convertNumFormat($payArr[$date]->allowance)."\n";
+				$data['taxWithheld'] .= $data['incomeTax']."\n";
 								
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
 				
@@ -1647,8 +1647,8 @@ class Payrollmodel extends CI_Model {
 					
 				}				
 				
-				$data['month13'] .= $this->textM->convertNumFormat($data['month13c']);
-				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net);
+				$data['month13'] .= $this->textM->convertNumFormat($data['month13c'])."\n";
+				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									
 				$data['totalIncome'] += $payArr[$date]->earning;
 				$data['totalSalary'] += $payArr[$date]->basePay;
@@ -1750,6 +1750,7 @@ class Payrollmodel extends CI_Model {
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
+		
 		foreach( $data_items as $di_key => $di_val ){
 			$$di_key = $di_val;
 		}
