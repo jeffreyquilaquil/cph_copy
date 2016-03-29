@@ -1946,6 +1946,12 @@ class Timecard extends MY_Controller {
 						$key = $item->payID.'HR';
 						$data_excel_array[ $key ] = $item->numHR;
 					}
+					//for tax refund
+					//deduct tax refund from gross pay
+					if( isset($item->payID) AND $item->payID == 43 ){
+						$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
+						$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
+					}
 				}
 				if( !isset($data_excel_array['22HR']) ){
 					unset($data_excel_array['22']);
