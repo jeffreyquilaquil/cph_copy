@@ -6,4 +6,5 @@ staff/application/config/config.php
 staff/.htaccess
 config.php
 .htaccess
-cph_wiki/
+cph_wiki/*
+cph_wiki_/*
