@@ -40,8 +40,11 @@
 		if($this->access->accessFullHR==true) echo '<td><input type="checkbox" name="flds[]" value="sal" '.((in_array('sal',$fvalue)) ? 'checked':'').'/> Salary</td>';
 		else echo '<td><br/></td>';
 	?>
-		
+		<?php if( $this->access->accessFullHR == true ) { ?>
+			<td><input type="checkbox" name="flds[]" value="gov_record" <?= ((in_array('gov_record',$fvalue)) ? 'checked':'') ?>/> Gov. Numbers</td>
+		<?php } else { ?>
 		<td><br/></td>
+		<?php } ?>
 	</tr>
 </table>
 	<input type="submit" name="submitType" value="Submit Selection" class="btnclass"/>&nbsp;&nbsp;&nbsp;
