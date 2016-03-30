@@ -455,7 +455,7 @@ class Staff extends MY_Controller {
 			
 			if(count($data['row']) > 0){				
 				if(!empty($_POST)){			
-				$this->textM->aaa($_POST);
+				//$this->textM->aaa($_POST);
 					if($_POST['submitType']=='pdetails' || $_POST['submitType']=='jdetails' || $_POST['submitType']=='cdetails'){
 						$orig = (array)$data['row'];
 						
