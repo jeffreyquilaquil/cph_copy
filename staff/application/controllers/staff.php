@@ -333,7 +333,8 @@ class Staff extends MY_Controller {
 							else if($p=='address') $flds .= 'address, city, country, zip, ';
 							else if($p=='phone') $flds .= 'phone1, phone2, ';
 							else if($p=='supervisor') $flds .= '(SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS supervisor, ';
-							else if($p == 'gov_record' ) $flds .= 'sss, tin, philhealth, hdmf, hmoNumber, bankAccnt, ';
+							else if($p == 'gov_record' ) $flds .= 'sss, tin, philhealth, hdmf, ';
+							else if($p == 'hr_record' ) $flds .= ' hmoNumber, bankAccnt, ';
 							else $flds .= $p.', ';
 						endforeach;
 					}
@@ -357,13 +358,18 @@ class Staff extends MY_Controller {
 						if( in_array('gov_record', $_POST['flds']) ){
 							if(($key = array_search('gov_record', $_POST['flds'])) !== false) {
 								unset($_POST['flds'][$key]);
-							}
-							array_push($narr,'hmoNumber');
-							array_push($narr, 'bankAccnt');
+							}							
 							array_push($narr, 'tin');
 							array_push($narr, 'sss');
 							array_push($narr, 'hdmf');
 							array_push($narr, 'philhealth');
+						}
+						if( in_array('hr_record', $_POST['flds']) ){
+							if(($key = array_search('hr_record', $_POST['flds'])) !== false) {
+								unset($_POST['flds'][$key]);
+							}
+							array_push($narr, 'hmoNumber');
+							array_push($narr, 'bankAccnt');
 						}
 						
 						if(!isset($_POST['flds']))
