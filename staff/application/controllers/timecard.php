@@ -407,7 +407,9 @@ class Timecard extends MY_Controller {
 			
 			$strToday = strtotime(date('Y-m-d', strtotime($data['currentDate'])));			
 			foreach($attHistory AS $his){
-				if($his->scheduled!=0){
+				//display all logs
+				//if($his->scheduled!=0){
+					
 					$hisNum = date('j', strtotime($his->dateToday));
 					$data['dayEditOptionArr'][$hisNum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$his->dateToday, 'text'=>'View Details');
 						
@@ -465,7 +467,7 @@ class Timecard extends MY_Controller {
 					if(!empty($hisText)){
 						$data['dayArr'][$hisNum] =  '<div class="taleft padding5px">'.$hisText.'</div>';
 					}
-				}
+				//}
 			}
 						
 			$jnum = date('j', strtotime($data['today']));
@@ -474,7 +476,7 @@ class Timecard extends MY_Controller {
 			}
 					
 		}
-	
+		
 		$this->load->view('includes/template', $data);
 	}
 	
