@@ -126,6 +126,8 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+
+		
 		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
@@ -169,8 +171,8 @@ class Timecardmodel extends CI_Model {
 						list($s, $e) = explode(',', $o);
 						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
 							$karon = date('j', strtotime($s));
-							$dayArr[$karon]['leaveID'] = $leave->leaveID;
-							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
+							$dayArr[$karon]['leaveID'][] = $leave->leaveID;
+							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'][] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							else $dayArr[$karon]['pendingoffset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							
 							if(!isset($dayArr[$karon]['schedDate']))
@@ -667,7 +669,7 @@ class Timecardmodel extends CI_Model {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-										
+			
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -698,7 +700,12 @@ class Timecardmodel extends CI_Model {
 					}
 					
 					if(isset($yoyo['offset'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
+						$c = 0;
+						foreach( $yoyo['offset'] as $off ){
+							$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'][$c].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$off.'</div></a>';	
+							$c++;
+						}
+						
 					}
 					
 					if(isset($yoyo['pendingoffset'])){
