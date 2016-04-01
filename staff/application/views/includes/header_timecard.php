@@ -6,10 +6,10 @@
 		else if(isset($row->fname)) echo $row->fname.'\'s Timecard and Payroll';
 		else echo 'Timecard and Payroll';
 	
-	if( $this->access->accessFullHRFinance == true OR $this->user->level > 0 ){
-		echo '<form name="frm_attendance_report" method="post" action="">
-			<input type="hidden" name="report_start" value="'.date('Y-m-01', strtotime($currentDate)).'" />
-			<input type="hidden" name="report_end" value="'.date('Y-m-t', strtotime($currentDate)).'" />
+	if( ($this->access->accessFullHRFinance == true OR $this->user->level > 0) AND (isset($report_attendance) AND $report_attendance == true) ){
+		echo '<form name="frm_attendance_report" method="post" action="'.$this->config->base_url().'timecard/generate_attendance">
+			<input type="hidden" name="report_start" value="'.date('Y-m-01', strtotime($report_start)).'" />
+			<input type="hidden" name="report_end" value="'.date('Y-m-t', strtotime($report_end)).'" />
 			<input type="hidden" name="visitID[]" value="'.$visitID.'" />
 			<input type="submit" class="btnclass" name="attendance_report" value="Generate Attendance Report" />
 		</form>';

@@ -306,6 +306,16 @@ class Timecard extends MY_Controller {
 		//$this->textM->aaa($data);
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
+		$data['report_attendance'] = true;
+
+		if( isset($_GET['d']) ){
+			$data['report_start'] = date('Y-m-d', strtotime($_GET['d']) );
+			$data['report_end'] = date('Y-m-t', strtotime($_GET['d']) );
+		} else {
+			$data['report_start'] = date('Y-m-d');
+			$data['report_end'] = date('Y-m-t');
+		}
+		
 								
 		if($this->user!=false){
 			$id = $this->uri->segment(2);
@@ -326,17 +336,27 @@ class Timecard extends MY_Controller {
 					exit;
 				}
 			}
-						
+			
 			$data = $this->timeM->_getTimeLogs( $data );		
 		}
 	
 		$this->load->view('includes/template', $data);
+	}
+	//attendance report download
+	public function generate_attendance(){
+		$data['visitID'] =$this->input->post('visitID');
+		$data['report_start'] = date('Y-m-d', strtotime($this->input->post('report_start') ) );
+		$data['report_end'] = date('Y-m-d', strtotime($this->input->post('report_end') ) );
+
+		$this->timeM->getAttendanceReport($data);
+		exit();
 	}
 	
 	
 	public function attendance($data){
 		$data['content'] = 'v_timecard/v_attendance';	
 		$data['tpage'] = 'attendance';
+
 		
 		if(is_numeric($this->uri->segment(2))==true || is_numeric($this->uri->segment(3))==true){
 			header('Location:'.$this->config->base_url().'timecard/attendance/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
