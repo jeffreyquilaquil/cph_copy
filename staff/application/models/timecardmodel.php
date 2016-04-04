@@ -555,35 +555,39 @@ class Timecardmodel extends CI_Model {
 						
 			//THIS IS TO CHECK IF THERE IS AN OFFSET
 			if(isset($sArr['offset'])){
-				$offArr = $this->timeM->getSchedArr($today, $sArr['offset']);
-				if(isset($offArr['start']) && isset($offArr['end'])){
-					$insArr['offsetIn'] = $offArr['start'];
-					$insArr['offsetOut'] = $offArr['end'];
-					$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
-					if($insArr['offsetHour']==9) $insArr['offsetHour']=8; 
-					
-					if(!isset($insArr['schedIn'])){ //if no schedule for today
-						$insArr['slogDate'] = $today;
-						$insArr['empID_fk'] = $empID;
+				//offset is an array
+				foreach( $sArr['offset'] as $offset ){
+					$offArr = $this->timeM->getSchedArr($today, $offset);
+					if(isset($offArr['start']) && isset($offArr['end'])){
+						$insArr['offsetIn'] = $offArr['start'];
+						$insArr['offsetOut'] = $offArr['end'];
+						$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
+						if($insArr['offsetHour']==9) $insArr['offsetHour']=8; 
 						
-						$insArr['schedIn'] = $offArr['start'];
-						$insArr['schedOut'] = $offArr['end'];
-						$insArr['schedHour'] = $insArr['offsetHour'];
-						
-						unset($insArr['offsetIn']);
-						unset($insArr['offsetOut']);
-						unset($insArr['offsetHour']);
-					}else{
-						if($insArr['schedOut']==$offArr['start']){
-							$insArr['schedOut'] = $offArr['end']; //if timeOut equals to start of offset
-							$insArr['schedHour'] += $insArr['offsetHour'];
-						} 
-						if($insArr['schedIn']==$offArr['end']){
-							$insArr['schedIn'] = $offArr['start']; //if timeIn equals to end of offset
-							$insArr['schedHour'] += $insArr['offsetHour'];
+						if(!isset($insArr['schedIn'])){ //if no schedule for today
+							$insArr['slogDate'] = $today;
+							$insArr['empID_fk'] = $empID;
+							
+							$insArr['schedIn'] = $offArr['start'];
+							$insArr['schedOut'] = $offArr['end'];
+							$insArr['schedHour'] = $insArr['offsetHour'];
+							
+							unset($insArr['offsetIn']);
+							unset($insArr['offsetOut']);
+							unset($insArr['offsetHour']);
+						}else{
+							if($insArr['schedOut']==$offArr['start']){
+								$insArr['schedOut'] = $offArr['end']; //if timeOut equals to start of offset
+								$insArr['schedHour'] += $insArr['offsetHour'];
+							} 
+							if($insArr['schedIn']==$offArr['end']){
+								$insArr['schedIn'] = $offArr['start']; //if timeIn equals to end of offset
+								$insArr['schedHour'] += $insArr['offsetHour'];
+							}
 						}
-					}
-				}					
+					}	
+				}
+								
 			}
 			
 			///INSERTION
@@ -850,7 +854,14 @@ class Timecardmodel extends CI_Model {
 						$want .= '</div></a>';
 					}
 					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
-					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
+					if(isset($d['offset'])) {
+						$c_ = 0;
+						foreach( $d['offset'] as $offset ){
+							$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'][$c_].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$offset.'</div></a>';	
+							$c_++;
+						}
+						
+					}
 					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
 				}
 				
