@@ -75,7 +75,7 @@ $query_builder = TRUE;
 
 //default database is PT
 
-$db['default'] = array(
+$db['pt'] = array(
 	'dsn'	=> '',
 	'hostname' => 'ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com',
 	'username' => 'pt',
@@ -96,22 +96,14 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
-/*
+
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'sql01.tatepublishing.net',
 	'username' => 'inv_app01',
 	'password' => 'Fz90FuBEBBkVOCa',
 	'database' => 'tate_inventory',
-	'dbdriver' => 'pdo'
-);
-$db['default'] = array(
-	'dsn'	=> '',
-	'hostname' => 'ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com',
-	'username' => 'pt',
-	'password' => 'januaryRun&34',
-	'database' => 'projectTracker',
-	'dbdriver' => 'mysqli'
+	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
@@ -125,4 +117,4 @@ $db['default'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE
-);*/
+);
