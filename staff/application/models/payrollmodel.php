@@ -1756,6 +1756,7 @@ class Payrollmodel extends CI_Model {
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
+		
 		foreach( $data_items as $di_key => $di_val ){
 			$$di_key = $di_val;
 		}

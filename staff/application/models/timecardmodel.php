@@ -106,39 +106,7 @@ class Timecardmodel extends CI_Model {
 			}
 		}
 				
-		//check for holidays
-		$holidayTypeArr = $this->textM->constantArr('holidayTypes');
-		if($single===true) $holidayCondition = '(holidayDate LIKE "'.date('0000-m-d', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-d', strtotime($dateStart)).'%"';
-		else $holidayCondition = '(holidayDate LIKE "'.date('0000-m-', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-', strtotime($dateStart)).'%"';
 		
-		//get staff holiday schedule PH-0 US-1
-		$myHoliday = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$empID.'"');
-		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, phWork, usWork, holidayDate', $holidayCondition);	
-	
-		foreach($queryHoliday AS $holiday){
-			$day = date('j', strtotime($holiday->holidayDate));
-			$dayArr[$day]['holiday'] = $holiday->holidayName;
-			$dayArr[$day]['holidayType'] = $holidayTypeArr[$holiday->holidayType];
-			$dayArr[$day]['schedDate'] = $year.date('-m-d', strtotime($holiday->holidayDate));			
-			
-			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
-				unset($dayArr[$day]['sched']);
-			}				
-		}
-						
-		//check for custom schedule. This will show schedule even if holiday with work
-		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
-		
-		foreach($queryCustomSched AS $yeye){
-			$d = date('j', strtotime($yeye->dateToday));
-			if($yeye->status==1){
-				$dayArr[$d]['sched'] = $yeye->timeText;	
-				$dayArr[$d]['schedHour'] = $yeye->timeHours;	
-				$dayArr[$d]['schedDate'] = $yeye->dateToday;	
-				$dayArr[$d]['custom'] = true;	
-				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
-			}else if($yeye->status==0) unset($dayArr[$d]);		
-		}
 		
 		//CHECK FOR LEAVES
 		if($dateStart==$dateEnd){
@@ -158,6 +126,8 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+
+		
 		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
@@ -201,8 +171,8 @@ class Timecardmodel extends CI_Model {
 						list($s, $e) = explode(',', $o);
 						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
 							$karon = date('j', strtotime($s));
-							$dayArr[$karon]['leaveID'] = $leave->leaveID;
-							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
+							$dayArr[$karon]['leaveID'][] = $leave->leaveID;
+							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'][] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							else $dayArr[$karon]['pendingoffset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							
 							if(!isset($dayArr[$karon]['schedDate']))
@@ -256,6 +226,40 @@ class Timecardmodel extends CI_Model {
 			
 			if(isset($dayArr[$k]['suspend']) && isset($dayArr[$k]['schedHour']))
 				$dayArr[$k]['schedHour'] = 0;
+		}
+		//check for holidays
+		$holidayTypeArr = $this->textM->constantArr('holidayTypes');
+		if($single===true) $holidayCondition = '(holidayDate LIKE "'.date('0000-m-d', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-d', strtotime($dateStart)).'%"';
+		else $holidayCondition = '(holidayDate LIKE "'.date('0000-m-', strtotime($dateStart)).'%") OR holidayDate LIKE "'.date('Y-m-', strtotime($dateStart)).'%"';
+		
+		//get staff holiday schedule PH-0 US-1
+		$myHoliday = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$empID.'"');
+		$queryHoliday = $this->dbmodel->getQueryResults('staffHolidays', 'holidayID, holidayName, holidayType, phWork, usWork, holidayDate', $holidayCondition);	
+	
+		foreach($queryHoliday AS $holiday){
+			$day = date('j', strtotime($holiday->holidayDate));
+			$dayArr[$day]['holiday'] = $holiday->holidayName;
+			$dayArr[$day]['holidayType'] = $holidayTypeArr[$holiday->holidayType];
+			$dayArr[$day]['schedDate'] = $year.date('-m-d', strtotime($holiday->holidayDate));			
+			
+			//to show all leaves even if holidays
+			if(!empty($dayArr[$day]['sched']) && (($holiday->phWork==0 && $myHoliday==0) || ($holiday->usWork==0 && $myHoliday==1))){
+				unset($dayArr[$day]['sched']);
+			}
+		}
+						
+		//check for custom schedule. This will show schedule even if holiday with work
+		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
+		
+		foreach($queryCustomSched AS $yeye){
+			$d = date('j', strtotime($yeye->dateToday));
+			if($yeye->status==1){
+				$dayArr[$d]['sched'] = $yeye->timeText;	
+				$dayArr[$d]['schedHour'] = $yeye->timeHours;	
+				$dayArr[$d]['schedDate'] = $yeye->dateToday;	
+				$dayArr[$d]['custom'] = true;	
+				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
+			}else if($yeye->status==0) unset($dayArr[$d]);		
 		}
 		
 		return $dayArr;	
@@ -551,35 +555,39 @@ class Timecardmodel extends CI_Model {
 						
 			//THIS IS TO CHECK IF THERE IS AN OFFSET
 			if(isset($sArr['offset'])){
-				$offArr = $this->timeM->getSchedArr($today, $sArr['offset']);
-				if(isset($offArr['start']) && isset($offArr['end'])){
-					$insArr['offsetIn'] = $offArr['start'];
-					$insArr['offsetOut'] = $offArr['end'];
-					$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
-					if($insArr['offsetHour']==9) $insArr['offsetHour']=8; 
-					
-					if(!isset($insArr['schedIn'])){ //if no schedule for today
-						$insArr['slogDate'] = $today;
-						$insArr['empID_fk'] = $empID;
+				//offset is an array
+				foreach( $sArr['offset'] as $offset ){
+					$offArr = $this->timeM->getSchedArr($today, $offset);
+					if(isset($offArr['start']) && isset($offArr['end'])){
+						$insArr['offsetIn'] = $offArr['start'];
+						$insArr['offsetOut'] = $offArr['end'];
+						$insArr['offsetHour'] = (strtotime($offArr['end'])-strtotime($offArr['start']))/3600;
+						if($insArr['offsetHour']==9) $insArr['offsetHour']=8; 
 						
-						$insArr['schedIn'] = $offArr['start'];
-						$insArr['schedOut'] = $offArr['end'];
-						$insArr['schedHour'] = $insArr['offsetHour'];
-						
-						unset($insArr['offsetIn']);
-						unset($insArr['offsetOut']);
-						unset($insArr['offsetHour']);
-					}else{
-						if($insArr['schedOut']==$offArr['start']){
-							$insArr['schedOut'] = $offArr['end']; //if timeOut equals to start of offset
-							$insArr['schedHour'] += $insArr['offsetHour'];
-						} 
-						if($insArr['schedIn']==$offArr['end']){
-							$insArr['schedIn'] = $offArr['start']; //if timeIn equals to end of offset
-							$insArr['schedHour'] += $insArr['offsetHour'];
+						if(!isset($insArr['schedIn'])){ //if no schedule for today
+							$insArr['slogDate'] = $today;
+							$insArr['empID_fk'] = $empID;
+							
+							$insArr['schedIn'] = $offArr['start'];
+							$insArr['schedOut'] = $offArr['end'];
+							$insArr['schedHour'] = $insArr['offsetHour'];
+							
+							unset($insArr['offsetIn']);
+							unset($insArr['offsetOut']);
+							unset($insArr['offsetHour']);
+						}else{
+							if($insArr['schedOut']==$offArr['start']){
+								$insArr['schedOut'] = $offArr['end']; //if timeOut equals to start of offset
+								$insArr['schedHour'] += $insArr['offsetHour'];
+							} 
+							if($insArr['schedIn']==$offArr['end']){
+								$insArr['schedIn'] = $offArr['start']; //if timeIn equals to end of offset
+								$insArr['schedHour'] += $insArr['offsetHour'];
+							}
 						}
-					}
-				}					
+					}	
+				}
+								
 			}
 			
 			///INSERTION
@@ -665,7 +673,7 @@ class Timecardmodel extends CI_Model {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-										
+			
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -696,7 +704,12 @@ class Timecardmodel extends CI_Model {
 					}
 					
 					if(isset($yoyo['offset'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$yoyo['offset'].'</div></a>';
+						$c = 0;
+						foreach( $yoyo['offset'] as $off ){
+							$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'][$c].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$off.'</div></a>';	
+							$c++;
+						}
+						
 					}
 					
 					if(isset($yoyo['pendingoffset'])){
@@ -841,7 +854,14 @@ class Timecardmodel extends CI_Model {
 						$want .= '</div></a>';
 					}
 					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
-					if(isset($d['offset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$d['offset'].'</div></a>';
+					if(isset($d['offset'])) {
+						$c_ = 0;
+						foreach( $d['offset'] as $offset ){
+							$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'][$c_].'/" class="iframe tanone"><div class="daysbox dayoffset">Offset<br/>'.$offset.'</div></a>';	
+							$c_++;
+						}
+						
+					}
 					if(isset($d['pendingoffset'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Offset<br/>'.$d['pendingoffset'].'</div></a>';
 				}
 				

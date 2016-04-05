@@ -8,7 +8,12 @@
 		<td><input type="checkbox" name="flds[]" value="email" <?= ((in_array('email',$fvalue)) ? 'checked':'') ?>/> Company Email</td>
 		<td><input type="checkbox" name="flds[]" value="pemail" <?= ((in_array('pemail',$fvalue)) ? 'checked':'') ?>/> Personal Email</td>
 		<td><input type="checkbox" name="flds[]" value="gender" <?= ((in_array('gender',$fvalue)) ? 'checked':'') ?>/> Gender</td>
-		<td><input type="checkbox" name="flds[]" value="idNum" <?= ((in_array('idNum',$fvalue)) ? 'checked':'') ?>/> Payroll ID</td>	
+		<td><input type="checkbox" name="flds[]" value="idNum" <?= ((in_array('idNum',$fvalue)) ? 'checked':'') ?>/> Payroll ID</td>
+		<?php if( $this->access->accessFullHR == true ) { ?>
+			<td><input type="checkbox" name="flds[]" value="hr_record" <?= ((in_array('gov_record',$fvalue)) ? 'checked':'') ?>/> HR Numbers (HMO, Bank Account)</td>
+		<?php } else { ?>
+		<td><br/></td>
+		<?php } ?>	
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="flds[]" value="title" <?= ((in_array('title',$fvalue)) ? 'checked':'') ?>/> Title</td>
@@ -30,7 +35,7 @@
 		<td><input type="checkbox" name="flds[]" value="address" <?= ((in_array('address',$fvalue)) ? 'checked':'') ?>/> Address</td>			
 		<td><input type="checkbox" name="flds[]" value="maritalStatus" <?= ((in_array('maritalStatus',$fvalue)) ? 'checked':'') ?>/> Marital Status</td>
 		<td><input type="checkbox" name="flds[]" value="leaveCredits" <?= ((in_array('leaveCredits',$fvalue)) ? 'checked':'') ?>/> Leave Credits</td>
-		<td><br/></td>
+		
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="flds[]" value="active" <?= ((in_array('active',$fvalue)) ? 'checked':'') ?>/> Active</td>
@@ -40,8 +45,11 @@
 		if($this->access->accessFullHR==true) echo '<td><input type="checkbox" name="flds[]" value="sal" '.((in_array('sal',$fvalue)) ? 'checked':'').'/> Salary</td>';
 		else echo '<td><br/></td>';
 	?>
-		
+		<?php if( $this->access->accessFullHR == true ) { ?>
+			<td><input type="checkbox" name="flds[]" value="gov_record" <?= ((in_array('gov_record',$fvalue)) ? 'checked':'') ?>/> Gov. Numbers (TIN, SSS, HDMF)</td>
+		<?php } else { ?>
 		<td><br/></td>
+		<?php } ?>
 	</tr>
 </table>
 	<input type="submit" name="submitType" value="Submit Selection" class="btnclass"/>&nbsp;&nbsp;&nbsp;

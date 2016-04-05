@@ -101,6 +101,10 @@
 				echo $this->staffM->displayInfo('pdetails', 'tin', $row->tin, true,'000-000-000-0000');
 				echo $this->staffM->displayInfo('pdetails', 'philhealth', $row->philhealth, true,'00-000000000-0');
 				echo $this->staffM->displayInfo('pdetails', 'hdmf', $row->hdmf, true,'0000-0000-0000');
+
+				echo $this->staffM->displayInfo('pdetails', 'emergency_person', $row->emergency_person, true);
+				echo $this->staffM->displayInfo('pdetails', 'emergency_number', $row->emergency_number, true,'0000-000-0000');
+				echo $this->staffM->displayInfo('pdetails', 'emergency_address', $row->emergency_address, true );
 			}
 			echo $this->staffM->displayInfo('pdetails', 'email', $row->email, false);
 			echo $this->staffM->displayInfo('pdetails', 'skype', $row->skype, true);

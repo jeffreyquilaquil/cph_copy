@@ -306,6 +306,16 @@ class Timecard extends MY_Controller {
 		//$this->textM->aaa($data);
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
+		$data['report_attendance'] = true;
+
+		if( isset($_GET['d']) ){
+			$data['report_start'] = date('Y-m-d', strtotime($_GET['d']) );
+			$data['report_end'] = date('Y-m-t', strtotime($_GET['d']) );
+		} else {
+			$data['report_start'] = date('Y-m-d');
+			$data['report_end'] = date('Y-m-t');
+		}
+		
 								
 		if($this->user!=false){
 			$id = $this->uri->segment(2);
@@ -326,17 +336,27 @@ class Timecard extends MY_Controller {
 					exit;
 				}
 			}
-						
+			
 			$data = $this->timeM->_getTimeLogs( $data );		
 		}
 	
 		$this->load->view('includes/template', $data);
+	}
+	//attendance report download
+	public function generate_attendance(){
+		$data['visitID'] =$this->input->post('visitID');
+		$data['report_start'] = date('Y-m-d', strtotime($this->input->post('report_start') ) );
+		$data['report_end'] = date('Y-m-d', strtotime($this->input->post('report_end') ) );
+
+		$this->timeM->getAttendanceReport($data);
+		exit();
 	}
 	
 	
 	public function attendance($data){
 		$data['content'] = 'v_timecard/v_attendance';	
 		$data['tpage'] = 'attendance';
+
 		
 		if(is_numeric($this->uri->segment(2))==true || is_numeric($this->uri->segment(3))==true){
 			header('Location:'.$this->config->base_url().'timecard/attendance/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
@@ -387,7 +407,9 @@ class Timecard extends MY_Controller {
 			
 			$strToday = strtotime(date('Y-m-d', strtotime($data['currentDate'])));			
 			foreach($attHistory AS $his){
-				if($his->scheduled!=0){
+				//display all logs
+				//if($his->scheduled!=0){
+					
 					$hisNum = date('j', strtotime($his->dateToday));
 					$data['dayEditOptionArr'][$hisNum][] = array('link'=>$this->config->base_url().'timecard/attendancedetails/?d='.$his->dateToday, 'text'=>'View Details');
 						
@@ -445,7 +467,7 @@ class Timecard extends MY_Controller {
 					if(!empty($hisText)){
 						$data['dayArr'][$hisNum] =  '<div class="taleft padding5px">'.$hisText.'</div>';
 					}
-				}
+				//}
 			}
 						
 			$jnum = date('j', strtotime($data['today']));
@@ -454,7 +476,7 @@ class Timecard extends MY_Controller {
 			}
 					
 		}
-	
+		
 		$this->load->view('includes/template', $data);
 	}
 	
@@ -1316,7 +1338,7 @@ class Timecard extends MY_Controller {
 			$data['dataPayroll'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, empID_fk, earning, deduction, net, CONCAT(lname,", ",fname) AS name', 'payrollsID_fk='.$id.' AND pstatus=1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
 			$data['totalGross'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(earning)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
 			$data['totalDeduction'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(deduction)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
-			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'"');
+			$data['totalNet'] = $this->dbmodel->getSingleField('tcPayslips', 'SUM(net)', 'payrollsID_fk="'.$data['info']->payrollsID.'" AND pstatus = 1 ');
 		}
 		
 		$this->load->view('includes/template', $data);
@@ -1927,8 +1949,8 @@ class Timecard extends MY_Controller {
 				$data_excel_array['id_num'] = $pay_info->idNum;
 				$data_excel_array['net'] = $pay_info->net;
 				$data_excel_array['net_'] = $pay_info->net;
-				$data_excel_array['earning'] = $pay_info->basePay;
-				$data_excel_array['earning_'] = $pay_info->basePay;
+				$data_excel_array['earning'] = $pay_info->earning;
+				$data_excel_array['earning_'] = $pay_info->earning;
 				$data_excel_array['eCompensation'] = '-'.$pay_info->eCompensation;
 				$data_excel_array['employerShare'] = '-'.$pay_info->employerShare;
 				$data_excel_array['totalTaxable'] = $pay_info->totalTaxable;
@@ -1946,9 +1968,18 @@ class Timecard extends MY_Controller {
 						$key = $item->payID.'HR';
 						$data_excel_array[ $key ] = $item->numHR;
 					}
+					//for tax refund
+					//deduct tax refund from gross pay
+					if( isset($item->payID) AND $item->payID == 43 ){
+						$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
+						$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
+					}
 				}
 				if( !isset($data_excel_array['22HR']) ){
 					unset($data_excel_array['22']);
+				}
+				if( isset($data_excel_array['22']) ){
+					unset($data_excel_array['basePay']);
 				}
 
 
@@ -1967,6 +1998,8 @@ class Timecard extends MY_Controller {
 				foreach( $header_col as $keys_ => $vals_ ){
 					if( isset($data_[ $keys_ ] ) ){
 						$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, $data_[ $keys_ ]);						
+					} else {
+						$objPHPExcel->getActiveSheet()->setCellValue($col_header.$counter, 0);
 					}
 					$col_header++;
 				}

@@ -41,7 +41,7 @@
 					echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
 					echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
 					
-					if($this->user->level>0 || $this->access->accessFullHR==true) 
+					if($this->user->level>0 || $this->access->accessFullHRFinance==true) 
 						echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
 					
 					
@@ -54,7 +54,7 @@
 					if($this->access->accessFullHRFinance==true)
 						echo '<li '.(($content=='sched_schedules')?'class="current"':'').'><a href="'.$this->config->base_url().'schedules/">Schedules Settings</a></li>';
 					
-					if($this->access->accessFullHR==true){
+					if($this->access->accessFullHRFinance==true){
 						$unpublished = $this->commonM->countResults('unpublishedLogs');
 						
 						echo '<li '.(($segment2=='unpublishedlogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/unpublishedlogs/">Unpublished Logs <b>'.(($unpublished>0)?'['.$unpublished.']':'').'</b></a></li>';

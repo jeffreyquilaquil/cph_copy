@@ -159,7 +159,10 @@ $(function () {
 				philhealth:$('#philhealth').val(),
 				hdmf:$('#hdmf').val(),
 				skype:$('#skype').val(),
-				google:$('#google').val()
+				google:$('#google').val(),
+				emergency_person:$('#emergency_person').val(),
+				emergency_number:$('#emergency_number').val(),
+				emergency_address:$('#emergency_address').val()
 			},function(){
 				window.location.reload();
 			});
