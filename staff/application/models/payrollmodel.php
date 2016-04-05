@@ -1106,6 +1106,10 @@ class Payrollmodel extends CI_Model {
 		$dataMonth = $data['dataMonth'];
 		$dataMonthItems = $data['dataMonthItems'];
 
+		// echo "<pre>";
+		// var_dump($dataMonthItems);
+		// echo "</pre>";
+
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		$pdf = new FPDI();	
@@ -1250,8 +1254,8 @@ class Payrollmodel extends CI_Model {
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
-		//echo '<pre>';
-		//var_dump($payArr);
+		// echo '<pre>';
+		// var_dump($payArr);
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
@@ -1277,7 +1281,7 @@ class Payrollmodel extends CI_Model {
 		
 		//MISC COMPUTATIONS
 		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
-		$tnt = $this->textM->convertNumFormat($total13th+$totalAllowance+$spp);
+		$tnt = $this->textM->convertNumFormat($payInfo->add13th+$totalAllowance+$spp);
 
 		//FOR 21
 		$pdf->setXY(94, 229);
@@ -1351,7 +1355,7 @@ class Payrollmodel extends CI_Model {
 
 		//FOR 37
 		$pdf->setXY(194, 100);
-		$pdf->Cell(48, 5, $this->formatNum($total13th), 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($payInfo->add13th), 0,2,'R');		
 
 		//FOF 38
 		$pdf->setXY(194, 110);
@@ -1409,7 +1413,7 @@ class Payrollmodel extends CI_Model {
 	}
 
 	//bir alpha list which is tied to pdfBIR
-	public function getAlphaList( $dataQuery, $filename ){
+	public function getAlphaList( $dataQuery, $filename, $startDate, $endDate, $is_active = FALSE ){
 		
 		require_once('includes/excel/PHPExcel/IOFactory.php');
 		$fileType = 'Excel5';
@@ -1428,11 +1432,14 @@ class Payrollmodel extends CI_Model {
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
 			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $this->textM->decryptText( $val->tin ) );
 			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, strtoupper( $val->lname.', '.$val->fname.' '.$val->mname ) );
+			
 			$stDate = $val->startDate;
-			if( date('Y-m-d', strtotime($stDate) ) < '2016-01-01' )
-				$stDate = '2016-01-01';
+			if( date('Y-m-d', strtotime($stDate) ) < $startDate )
+				$stDate = $startDate;
+
 			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $stDate );
-			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $val->endDate );
+			$eD = ($is_active) ? $endDate: $val->endDate; 
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $eD);
 			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, '6');
 
 			/****************************************************************
@@ -1495,7 +1502,7 @@ class Payrollmodel extends CI_Model {
 			*/
 
 			$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
-			$tnt = $this->textM->convertNumFormat($total13th+$totalAllowance+$spp);
+			$tnt = $this->textM->convertNumFormat($payInfo->add13th+$totalAllowance+$spp);
 			$tsal = $totalSalary - $totalDeduction - $spp;
 
 			
@@ -1603,6 +1610,7 @@ class Payrollmodel extends CI_Model {
 		$data['incomeTax'] = 0;
 		$data['month13c'] = 0;
 		$data['regTaken'] = 0;
+		//var_dump($payArr);
 
 		foreach($dateArr AS $date){
 			$data['payDate'] .= date('d-M-Y', strtotime($date))."\n";
@@ -1629,26 +1637,25 @@ class Payrollmodel extends CI_Model {
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
 				
-				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning);
-				$data['basicSal'] .= $this->textM->convertNumFormat($payArr[$date]->basePay);
-				$data['attendance'] .= $this->textM->convertNumFormat($data['regTaken']);
-				$data['adjustment'] .= $this->textM->convertNumFormat($payArr[$date]->adjustment);
-				$data['taxIncome'] .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable);
-				$data['bonus'] .= $this->textM->convertNumFormat($payArr[$date]->bonus);
-				$data['deminimis'] .= $this->textM->convertNumFormat($payArr[$date]->allowance);
-				$data['taxWithheld'] .= $data['incomeTax'];
+				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning)."\n";
+				$data['basicSal'] .= $this->textM->convertNumFormat($payArr[$date]->basePay)."\n";
+				$data['attendance'] .= $this->textM->convertNumFormat($data['regTaken'])."\n";
+				$data['adjustment'] .= $this->textM->convertNumFormat($payArr[$date]->adjustment)."\n";
+				$data['taxIncome'] .= $this->textM->convertNumFormat($payArr[$date]->totalTaxable)."\n";
+				$data['bonus'] .= $this->textM->convertNumFormat($payArr[$date]->bonus)."\n";
+				$data['deminimis'] .= $this->textM->convertNumFormat($payArr[$date]->allowance)."\n";
+				$data['taxWithheld'] .= $data['incomeTax']."\n";
 								
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-				
-				if($staffInfo->endDate>=date('Y').'-01-25'){
-					if( isset($payArra[$date]->deductions) ){
-						$data['month13c'] = ($payArr[$date]->basePay - $payArr[$date]->deductions)/12;
+				if($staffInfo->endDate >= date('Y').'-01-25'){
+					if( isset($payArr[$date]->deduction) ){
+						$data['month13c'] = ($payArr[$date]->basePay - $data['regTaken'] /*$payArr[$date]->deduction*/)/12;
 					}
 					
 				}				
-				
-				$data['month13'] .= $this->textM->convertNumFormat($data['month13c']);
-				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net);
+
+				$data['month13'] .= $this->textM->convertNumFormat($data['month13c'])."\n";
+				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									
 				$data['totalIncome'] += $payArr[$date]->earning;
 				$data['totalSalary'] += $payArr[$date]->basePay;
@@ -1658,8 +1665,7 @@ class Payrollmodel extends CI_Model {
 				$data['totalBonus'] += $payArr[$date]->bonus;
 				$data['totalAdjustment'] += $payArr[$date]->adjustment;
 				$data['totalAllowance'] += $payArr[$date]->allowance;
-				
-				$data['total13th'] += $data['month13c'];					
+				$data['total13th'] += $data['month13'];					
 				$data['totalNet'] += $payArr[$date]->net;					
 			}else{
 				$data['gross'] .= "0.00";
@@ -1779,7 +1785,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(100, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalTaxable),0,'C',false);
 		$pdf->setXY(117.5, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalBonus),0,'C',false);
 		$pdf->setXY(135.5, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalTaxWithheld),0,'C',false);
-		$pdf->setXY(153, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($total13th),0,'C',false);
+		$pdf->setXY(153, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($payInfo->add13th),0,'C',false);
 		$pdf->setXY(171, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalAllowance),0,'C',false);
 		$pdf->setXY(188, 168.5); $pdf->MultiCell(18, 3.7, $this->textM->convertNumFormat($totalNet),0,'C',false);
 		
