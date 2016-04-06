@@ -1,0 +1,118 @@
+p{
+	margin: 6px 0;
+}
+
+.side-nav{
+	height: 95%;
+}
+
+.clear {
+	clear: both;
+}
+	
+.form-signup {
+	float: left;
+	width: 100%;
+	padding: 15px;
+	margin: 0 auto;
+}
+
+.form-signup input, .form-signup select, .form-signup textarea {
+	margin-bottom: 4px;
+	width: 100%;
+}
+
+.form-signup div {
+	border: 1px solid #DDD;
+	min-height: 24px;
+}
+
+.form-signup textarea {
+	height: 360px;
+}
+
+.error{
+	color: #FF0000;
+}
+
+.success{
+	font-weight: bold;
+	color: #5CB85C;
+}
+
+.warning{
+	color: #EC971F;
+}
+
+.hand{
+	cursor: hand;
+	cursor: pointer;
+}
+
+.layout-cell{
+	padding-left: 3px;
+    padding-right: 6px;
+}
+
+.jumbotron{
+	font-size: 14px;
+}
+
+a{
+	cursor: pointer;
+	cursor: hand;
+	outline: none !important;
+}
+
+#accordion h3{
+	cursor: pointer;
+	cursor: hand;
+	outline: none !important;
+	background-color: #EEE;
+	padding: 18px 15px;
+}
+.navbar-inverse{
+	background-color: #BF2831;
+}
+.navbar-inverse .navbar-nav>li>a:hover,.navbar-inverse .navbar-nav>li>a:focus{
+	background-color: #52050C;
+}
+.form-head-title{
+	margin-left: 16.6667%;
+}
+
+ul.tabs{
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+ul.tabs li{
+	background: none;
+	color: #222;
+	display: inline-block;
+	padding: 10px 15px;
+	cursor: pointer;
+	border: 1px solid #ccc;
+	border-radius: 10px 10px 0 0;
+	border-bottom-style: none;
+}
+
+ul.tabs li.current{
+	background: #ededed;
+	color: #222;
+	border-radius: 10px 10px 0 0;
+}
+
+.tab-content{
+	display: none;
+	background: #ededed;
+	padding: 15px;
+}
+
+.tab-content.current{
+	display: inherit;
+}
+
+.oposDivDesc{
+	display:none;
+}

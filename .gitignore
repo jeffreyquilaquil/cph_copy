@@ -25,3 +25,14 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 *.stTheme.cache
 *.sublime-workspace
 *.sublime-project
+=======
+uploads/
+staff/uploads/
+staff2/uploads/
+staff/application/config/database.php
+staff/application/config/config.php
+staff/.htaccess
+config.php
+.htaccess
+cph_wiki/*
+cph_wiki_/*
