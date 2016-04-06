@@ -50,8 +50,8 @@ $active_record = TRUE;
 
 $db['default']['hostname'] = 'sql01.tatepublishing.net';
 $db['default']['username'] = 'cph_app01';
-$db['default']['password'] = 'UADyB5dVTs3k3zc7';
-$db['default']['database'] = 'careerph_prod';
+$db['default']['password'] = '40n6LtpCmqT7';
+$db['default']['database'] = 'careerph_dev';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = FALSE;
@@ -66,7 +66,7 @@ $db['default']['stricton'] = FALSE;
 
 $db['defaultdev']['hostname'] = 'localhost';
 $db['defaultdev']['username'] = 'root';
-$db['defaultdev']['password'] = 'summer28Thing';
+$db['defaultdev']['password'] = '945DmB2EazkE';
 $db['defaultdev']['database'] = 'tatecareerph_db';
 $db['defaultdev']['dbdriver'] = 'mysql';
 $db['defaultdev']['dbprefix'] = '';
@@ -83,7 +83,7 @@ $db['defaultdev']['stricton'] = FALSE;
 
 $db['projectTracker']['hostname'] = 'ptracker.clhfapw0bgm7.us-east-1.rds.amazonaws.com';
 $db['projectTracker']['username'] = 'pt';
-$db['projectTracker']['password'] = 'januaryRun&34';
+$db['projectTracker']['password'] = 'WD4000FFYZ';
 $db['projectTracker']['database'] = 'projectTracker';
 $db['projectTracker']['dbdriver'] = 'mysql';
 $db['projectTracker']['dbprefix'] = '';
