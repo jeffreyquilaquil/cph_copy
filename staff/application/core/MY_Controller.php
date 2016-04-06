@@ -5,9 +5,6 @@ class MY_Controller extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 		
-		if($this->config->item('devmode')===true)
-			$this->db = $this->load->database('defaultdev', TRUE);
-		else
 			$this->db = $this->load->database('default', TRUE);
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
 		
