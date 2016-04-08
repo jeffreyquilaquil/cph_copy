@@ -8,10 +8,25 @@ class Ask_hr extends CI_Model {
 		//$this->load->model('timecardmodel', 'timeM');
     }
 
-   function askhr($data){
+   function askhr($table,$data){
    		date_default_timezone_set("Asia/Manila");
-   		$str = $this->db->insert_string('hr_cs_post', $data);
-   		return $this->db->insert_id();
+   				if(count($data) > 0){
+			$sql = "INSERT INTO $table (";
+			$cols = '';
+			$vals = '';
+			foreach($data AS $k => $v){
+				$cols .= '`'.$k.'`,';
+				if($v=='NOW()')
+					$vals .= $v.',';
+				else
+					$vals .= '"'.$v.'",';
+			}
+			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
+			
+			$this->db->query($sql);
+			return $this->db->insert_id();
+		}
+   		
 
    }
   // function get_new_max_ID(){
