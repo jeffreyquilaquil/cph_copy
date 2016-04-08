@@ -13,7 +13,7 @@
 
 	<div class = 'submission-form'>
 
-		<form>
+		<form method="POST" action="<?php base_url()?>hr_cs/askhr">
 			<table>
 				<tr>
 					<td>SUBJECT<br><small>What is your concern all about?</small></td>

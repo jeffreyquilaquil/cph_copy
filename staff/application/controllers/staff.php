@@ -4367,6 +4367,7 @@ class Staff extends MY_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
+
 	
 }
 
