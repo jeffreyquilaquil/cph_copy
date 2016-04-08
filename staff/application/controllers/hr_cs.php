@@ -18,7 +18,8 @@
 
 		public function askhr(){
 			if(isset($_POST) AND !empty($POST)){
-
+                var_dump($_POST);
+                exit();
 			//checking if there is session data
 			$empID = $this->user->empID;
 			$subj = $this->input->post('hr_subject');
@@ -104,7 +105,7 @@
 						$data3['msg_newID']=$this->ask->insertQuery('hr_cs_msg',$data2);
 					}
 
-
+                    $this->output->enable_profiler(true);
 				}
 
 
