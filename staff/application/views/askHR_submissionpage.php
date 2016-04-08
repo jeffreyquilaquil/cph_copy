@@ -25,13 +25,8 @@
 
 	<div>
 
-<<<<<<< HEAD
 		<form method="POST" action="<?php $this->config->base_url();?>hr_cs">
 			<table class="tableInfo">
-=======
-		<form method="POST" action="<?php echo  $this->config->base_url();?>hr_cs/askhr">
-			<table>
->>>>>>> 6a3cb74ccd2bd917f1df070bc7a42c929c0ee9d3
 				<tr>
 					<td>SUBJECT<br><small>What is your concern all about?</small></td>
 					<td><input type="text" name="hr_subject"></td>
