@@ -12,8 +12,8 @@
 			}
 
 		public function index(){
-
-			$this->load->view('askHR_submissionpage');
+            $data['content']='askHR_submissionpage';
+			$this->load->view('includes/templatecolorbox',$data);
 		}
 
 		public function askhr(){
