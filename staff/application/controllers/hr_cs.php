@@ -13,7 +13,7 @@
 
 		public function index(){
 
-			this->load->view('askHR_submissionpage');
+			$this->load->view('askHR_submissionpage');
 		}
 
 		public function askhr(){
