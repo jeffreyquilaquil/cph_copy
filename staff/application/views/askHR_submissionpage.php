@@ -1,20 +1,32 @@
 <style>
-	input[type="text"]{
+	
+	 input[type="text"]{
 		height: 30px;
-		width:380px;
+		width:100%;
 	}
 	td{
 		padding-bottom: 15px;
 
 	}
 
+	.button {
+    background-color: #006600;
+    border: none; 
+    color: white;
+    padding: 7px 30px 7px 30px;
+    margin-top:5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
 
+ 
+}
 </style>
 
-	<div class = 'submission-form'>
+	<div>
 
-		<form method="POST" action="<?php $this->config->base_url();?>hr_cs/askhr">
-			<table>
+		<form method="POST" action="<?php $this->config->base_url();?>hr_cs">
+			<table class="tableInfo">
 				<tr>
 					<td>SUBJECT<br><small>What is your concern all about?</small></td>
 					<td><input type="text" name="hr_subject"></td>
@@ -24,33 +36,23 @@
 				</tr>
 				<tr>
 					<td style="vertical-align: top">DETAILS<br><small>Please explain the details of your concern</small></td>
-					<td><textarea style="width: 380px; height: 170px; resize:none " name="hr_details"></textarea></td>
+					<td><textarea style="height: 170px; resize:none " name="hr_details"></textarea></td>
 				</tr>
 				<tr>
-					<td></td>
-					<td align="right">
-
-					<!--
-						<input type="file" name="attachment[]" id="attachment" onchange="document.getElementById('moreAttachmentLink').style.display = 'block';" />
-						<div id="moreAttachment"></div>
-						<div id="moreAttachmentLink" style="display:none;"><a href="javascript:add_anotherattachment();">+ Add another attachment</a></div> 					
-					
-
-					-->
-
+					<td>
+						
+					</td>
+					<td align="right">	
 						<div class="sup_docs_div">
-							<input type="file" name="supporting_docs[]" class="sup_docs" /><br/>
+							<input type="file" name="arr_attachments[]" class="sup_docs" /><br/>
 						</div>
 
 						<div class="add_docs_label">
-							<a href="#" class="label_add_docs">+ Add another documents</a>
+							<a href="#" class="label_add_docs">+ Add another attachment</a>
 						</div>
 
+						<input type="submit" class="button" value="SEND">
 					</td>	
-				</tr>
-				<tr>
-					<td></td>
-					<td align="right"><input type="submit" value="SEND"></td>
 				</tr>
 				</tr>
 			</table>		
@@ -58,43 +60,24 @@
 		
 	</div>
 
-	<script type="text/javascript">
-		 
-		/*
-		var upload_number=1;
-		
-		function add_anotherattachment() {
-		
-		var div= document.createElement("div");
-		var input = document.createElement("input");
-		
-		input.setAttribute("type", "file");
-		input.setAttribute("name", "attachment[]"+upload_number);
-		
-		div.appendChild(input);
-		document.getElementById("moreAttachment").appendChild(div);
-		
-		upload_number++;
-		}
+	<script>
 
-		*/
-
-		(function(){
+		$(function(){
 		var sup_counter = 1;
-		('a.label_add_docs').hide();
+		$('a.label_add_docs').hide();
 		
-		('a.label_add_docs').click(function(){
+		$('a.label_add_docs').click(function(){
 			sup_counter += 1;			
 			if( sup_counter <= 5 ){				
-				('.sup_docs_div').append('<input type="file" name="supporting_docs[]" class="sup_docs" /><br/>');
+				$('.sup_docs_div').append('<input type="file" name="arr_attachments[]" class="sup_docs" /><br/>');
 				if( sup_counter == 5 ){
-					('a.label_add_docs').hide();								
+					$('a.label_add_docs').hide();								
 				}
 			} 
 		});
-		('.sup_docs').change(function(){
+		$('.sup_docs').change(function(){
 			if( sup_counter = 1 ){
-				('a.label_add_docs').show();
+				$('a.label_add_docs').show();
 			}			
 		});
 	});
