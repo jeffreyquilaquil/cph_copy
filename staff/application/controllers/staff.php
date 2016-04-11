@@ -4367,8 +4367,14 @@ class Staff extends MY_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
-	
-}
 
-?>
+	public function hdmf(){
+
+		$this->staffM->hdmf_loan( $this->user->empID );
+		exit();
+	}
+	
+} //end class
+
+
 

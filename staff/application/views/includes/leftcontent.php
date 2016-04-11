@@ -83,6 +83,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'medrequest/" class="iframe">Request for Medicine Reimbursement</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'hdmf/" class="iframe">File a PAG-IBIG loan</a></li>';
 		}
 		if(($content=='staffinfo' || $this->uri->segment(1)=='timecard') && $this->user->username != $row->username && ($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username))){
 			echo '<li><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/" '.(($content=='staffinfo')?'class="current"':'').'>'.trim($row->fname).'\'s Info</a></li>';
