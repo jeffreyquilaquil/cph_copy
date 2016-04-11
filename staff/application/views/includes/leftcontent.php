@@ -74,7 +74,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	
 	echo '<ul id="leftMenu">';
 		if($this->user->username == $row->username){
-			echo '<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask HR</a></li>';
+			
 			echo '<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>';
 			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
@@ -109,6 +109,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	
 		echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';	
 		echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
+		echo '<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask an HR Question</a></li>';
 	echo '</ul>';	
 	echo '</center>';
 	
