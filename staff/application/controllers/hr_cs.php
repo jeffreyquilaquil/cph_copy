@@ -17,7 +17,7 @@
 		}
 
 		public function askhr(){
-			//if(isset($_POST) AND !empty($POST)){
+			if(isset($_POST) AND !empty($POST)){
 
 			//checking if there is session data
 			$empID = $this->user->empID;
@@ -47,11 +47,11 @@
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text']= $this->input->post('hr_details');
 
-			//}
+			}
 			if( $this->isSetNotEmpty($_FILES) )
 			{
 						$files = $_FILES;					
-						/* config data */
+						// config data 
 						$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
 						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc';
 						$upload_config['max_size']	= '2048';
@@ -95,7 +95,7 @@
 								$docs_url[] = $val['full_path'];
 							}
 							$data2['cs_msg_attachment'] = json_encode( $docs_url );
-							$data2['cs_msg_attachment'] = addslashes($insert_array['cs_msg_attachment']);
+							$data2['cs_msg_attachment'] = addslashes($data2['cs_msg_attachment']);
 						}					
 					} // end of file upload
 

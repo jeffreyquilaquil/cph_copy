@@ -23,7 +23,8 @@ class Ask_hr extends CI_Model {
 			}
 			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
 			
-			$this->db->query($sql);
+			/*$sql = "Insert into $table (cs_post_empID_fk,cs_post_subject,cd_post_other_empID_fk,cs_post_date_submitted,cs_post_status) VALUES ('$data['cs_post_empID_fk']','$data['cs_post_subject']', $data['cd_post_other_empID_fk']', $data['cs_post_date_submitted']', $data['cs_post_status']' )";
+			$this->db->query($sql);*/
 			return $this->db->insert_id();
 		}
    		
