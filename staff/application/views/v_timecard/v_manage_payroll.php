@@ -78,6 +78,7 @@
 		</tr>
 		</thead>
 	<?php
+		var_dump($pagepayroll);
 		foreach($dataStaffs AS $staff){
 			echo '<tr>';
 				echo '<td>'.$this->textM->formfield('checkbox', 'checkMe[]', $staff->empID, 'classCheckMe').'</td>';
@@ -90,6 +91,7 @@
 							echo '<ul class="dropleft">';
 								echo '<li><a href="'.$this->config->base_url().'timecard/computelastpay/?empID='.$staff->empID.'" class="iframe">Compute Last Pay</a></li>';
 								echo '<li><a href="'.$this->config->base_url().'timecard/generate13thmonth/?empIDs='.$staff->empID.'" class="iframe">Generate 13th Month</a></li>';
+								echo '<li><a href="'.$this->config->base_url().'timecard/computelastpay/?is_active=yes&show=pdf&which_pdf=bir&empID='.$staff->empID.'" target="_blank">BIR 2316</a></li>';
 							echo '</ul>';
 						echo '</li>';
 					echo '</ul>';
