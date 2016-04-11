@@ -1382,7 +1382,115 @@ class Staffmodel extends CI_Model {
 		$this->textM->aaa($data_array);
 		//$this->timeM->getAllStaffAttendance( $start, $end );
 	}
-	
-}
 
-?>
+	public function hdmf_loan( $empID ){
+
+		$employee_info = $this->dbmodel->getSingleInfo('staffs', '*', 'empID = '. $empID );
+		
+		
+		$lf_name = strtoupper($employee_info->lname.' '.$employee_info->fname);
+		$fl_name = strtoupper($employee_info->fname.' '.$employee_info->lname);
+		$lfm_name = strtoupper($employee_info->lname.'          '.$employee_info->fname.'          '.$employee_info->mname);
+		$address = strtoupper( $employee_info->address.' '.$employee_info->city.' '.$employee_info->zip);
+
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'hmdf_loan.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		//set font
+		$pdf->SetFont('Arial','B',8);
+		$pdf->SetTextColor(0, 0, 255);
+
+		//defaults values
+		$company_name = 'TATE PUBLISHING AND ENTERPRISES (PHILIPPINES), INC.';
+		$pdf->setXY(10, 62); 
+		$pdf->Write(0, $company_name);
+
+		$pdf->setXY(10, 68);
+		$pdf->MultiCell(105, 4, '4F JY SQUARE DISCOVERY MALL, SALINAS DRIVE, LAHUG, CEBU CITY 6000', 0, 'L');
+
+		$pdf->setXY(117,70);
+		$pdf->Cell(0, 0, '(032) 318-2586');
+
+		$pdf->setXY(10, 129); 
+		$pdf->setFontSize(7);
+		$pdf->Write(0, $company_name);
+
+		$pdf->setFontSize(8);
+		$pdf->setXY(153, 161); 
+		$pdf->Cell(0, 0, 'DIANA ROSE BARTULIN');
+
+		$pdf->setXY(153, 187); 
+		$pdf->Cell(0, 0, 'DIRECTOR OF OPERATIONS');
+
+		$pdf->setXY(140, 197); 
+		$pdf->Cell(0, 0, '06-1762759-1');
+		//end of defaults
+
+		//infos
+		$pdf->setXY(10, 30);
+		$pdf->Cell(0, 0, $lfm_name );
+
+		$pdf->setXY(10, 36);
+		$pdf->MultiCell(105, 4, $address, 0, 'L');
+
+		//gender
+		switch( $employee_info->gender ){
+			case 'M': $pdf->setXY(119, 37); break;
+			case 'F': $pdf->setXY(119, 40); break;
+		}		
+		$pdf->Cell(0, 0, '/');
+
+		//civil status
+		switch( $employee_info->maritalStatus ){
+			case 'Single': $pdf->setXY(135, 37); break;
+			case 'Married': $pdf->setXY(135, 40); break;
+			case 'Widowed': $pdf->setXY(150, 37); break;
+			case 'Separated': $pdf->setXY(150, 40); break;
+			case 'Divorced': $pdf->setXY(168, 37); break;
+		}
+		$pdf->Cell(0, 0, '/');
+
+		$pdf->setXY(188, 37);
+		$pdf->Cell(0, 0, $employee_info->idNum);
+
+		$pdf->setXY(117, 47);
+		$pdf->Cell(0, 0, $employee_info->phone1);
+
+		$pdf->setXY(177, 47);
+		$pdf->Cell(0, 0, $this->textM->decryptText($employee_info->tin));
+
+		$pdf->setXY(117, 55);
+		$pdf->Cell(0, 0, $this->textM->decryptText($employee_info->hdmf));
+
+		$pdf->setXY(163, 55);
+		$pdf->Cell(0, 0, $this->textM->decryptText($employee_info->sss));
+
+		//birthdate
+		$birth_date = explode('-', $employee_info->bdate);
+		$pdf->setXY(10, 55.5);
+		$pdf->Cell(0, 0, $birth_date[1]);		
+
+		$pdf->setXY(20, 55.5);
+		$pdf->Cell(0, 0, $birth_date[2]);		
+
+		$pdf->setXY(30, 55.5);
+		$pdf->Cell(0, 0, $birth_date[0]);		
+
+		//end infos
+
+
+		//page 2
+		$pdf->AddPage();
+		$tplIdx = $pdf->importPage(2);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+
+		$pdf->Output('hdmf_load_'.$employee_info->username.'.pdf', 'I');
+	}
+	
+} //end class
+

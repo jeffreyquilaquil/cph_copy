@@ -95,7 +95,8 @@
 				echo $this->staffM->displayInfo('pdetails', 'bdate', (($row->bdate!='0000-00-00')? date('F d, Y',strtotime($row->bdate)) : ''), true);
 				echo $this->staffM->displayInfo('pdetails', 'gender', $row->gender, true);
 				echo $this->staffM->displayInfo('pdetails', 'maritalStatus', ucfirst($row->maritalStatus), true);			
-				echo $this->staffM->displayInfo('pdetails', 'spouse', ucfirst($row->spouse), true);			
+				echo $this->staffM->displayInfo('pdetails', 'spouse', ucfirst($row->spouse), true);				
+				echo $this->staffM->displayInfo('pdetails', 'maiden_name', ucfirst($row->maiden_name), true, '', 'pdetailshide');				
 				echo $this->staffM->displayInfo('pdetails', 'dependents', ucfirst($row->dependents), true);	
 				echo $this->staffM->displayInfo('pdetails', 'sss', $row->sss, true,'00-0000000-0');
 				echo $this->staffM->displayInfo('pdetails', 'tin', $row->tin, true,'000-000-000-0000');

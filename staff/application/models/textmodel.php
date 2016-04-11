@@ -455,6 +455,7 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_bdate') $txt = 'Birthday';
 		else if($t=='txt_gender') $txt = 'Gender';
 		else if($t=='txt_maritalStatus') $txt = 'Marital Status';
+		else if($t=='txt_maiden_name') $txt = 'Maiden Name';
 		else if($t=='txt_spouse') $txt = 'Spouse';
 		else if($t=='txt_dependents') $txt = 'Dependents';
 		else if($t=='txt_sss') $txt = 'SSS';

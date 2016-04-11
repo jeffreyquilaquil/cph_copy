@@ -23,10 +23,13 @@ $(function () {
 		if($('#maritalStatus').val() == 'Single'){
 			$('#spouse').parents('tr').addClass('hidden');
 			$('#dependents').parents('tr').addClass('hidden');
+			$('#maiden_name').parents('tr').addClass('hidden');
 			$('#spouse').val('');
 			$('#dependents').val('');
+			$('#maiden_name').val('');
 		}else{
 			$('#spouse').parents('tr').removeClass('hidden');
+			$('#maiden_name').parents('tr').removeClass('hidden');
 			$('#dependents').parents('tr').removeClass('hidden');
 		}
 	});
@@ -162,7 +165,8 @@ $(function () {
 				google:$('#google').val(),
 				emergency_person:$('#emergency_person').val(),
 				emergency_number:$('#emergency_number').val(),
-				emergency_address:$('#emergency_address').val()
+				emergency_address:$('#emergency_address').val(),
+				maiden_name:$('#maiden_name').val()
 			},function(){
 				window.location.reload();
 			});
