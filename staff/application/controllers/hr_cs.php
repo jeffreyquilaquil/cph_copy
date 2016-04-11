@@ -36,8 +36,8 @@
 
 			// getting posted data
 			$data['cs_post_empID_fk'] = $empID;
-			$data['cs_post_subject'] = $this->input->post('hr_subject');
-			$data['cd_post_other_empID_fk']= $this->input->post('hr_cc');
+			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
+			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
 			$data['cs_post_date_submitted']= date('Y-m-d');
 			$data['cs_post_status']= 0; 
 
