@@ -90,17 +90,18 @@
 						What's your inquiry/report to HR about? 
 					</td>
 					<td align="center">
-						<input type="text" name="hr_details" style="width: 100%">
+						<input type="text" name="cs_post_subject" style="width: 100%">
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2">
 						Select the urgency of this request: <br>		
-							<input type="radio" class="radio-pos" name="hr_cc" value="I am not able to continue working/department work will stop if this inquiry is not resolvd."> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
-							<input type="radio" class="radio-pos" name="hr_cc" value="This can wait, but work will be delayed if this is not resolved soon"> This can wait, but work will be delayed if this is not resolved soon <br>
-							<input type="radio" class="radio-pos"name="hr_cc" value="Take your time. I can wait for this information"> Take your time. I can wait for this information.	
+							<input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent"> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
+							<input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention"> This can wait, but work will be delayed if this is not resolved soon <br>
+							<input type="radio" class="radio-pos"name="cs_post_urgency" value="Not Urgent"> Take your time. I can wait for this information.	
 					</td>
 				</tr>
+				<tr>
 					<td colspan="2">
 						Explain the details of your inquiry in the box below:<br>
 							<textarea id="textarea_AskHR" class="hidden tiny" style="height:350px;"></textarea>
@@ -109,7 +110,7 @@
 				<tr>
 					<td>
 						<div class="sup_docs_div">
-							<input type="file" name="arr_attachments[]" class="sup_docs" /><br/>
+							<input type="file" name="arr_attachments[]" class="sup_docs" /><br>
 						</div>
 						<div class="add_docs_label">
 							<a href="#" class="label_add_docs">+ Add another attachment</a>
@@ -120,18 +121,13 @@
 					</td>
 				</tr>
 				
-				
-
 			</table>		
 		</form>	
-
-		<a id="myElement" href="javascript;">Alert</a>
 		
 	</div>
 
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
-<script type="text/javascript" src="<?= $this->config->base_url() ?>js/simplemodal/simplemodal.js"></script>
 
 <script type="text/javascript">
 
@@ -195,14 +191,6 @@ $(function(){
 	});
 });
 
-
-$("myElement").addEvent("click", function(){
-	  var SM = new SimpleModal({"btn_ok":"Alert button"});
-	      SM.show({
-	        "title":"Title",
-	        "contents":"Your message..."
-	      });
-	});
 
 </script>
 
