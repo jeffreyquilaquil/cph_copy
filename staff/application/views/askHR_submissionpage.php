@@ -124,11 +124,15 @@
 
 			</table>		
 		</form>	
+
+		<a id="myElement" href="javascript;">Alert</a>
 		
 	</div>
 
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
+<script type="text/javascript" src="<?= $this->config->base_url() ?>js/simplemodal/simplemodal.js"></script>
+
 <script type="text/javascript">
 
 $(function () { 
@@ -191,6 +195,14 @@ $(function(){
 	});
 });
 
+
+$("myElement").addEvent("click", function(){
+	  var SM = new SimpleModal({"btn_ok":"Alert button"});
+	      SM.show({
+	        "title":"Title",
+	        "contents":"Your message..."
+	      });
+	});
 
 </script>
 
