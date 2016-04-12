@@ -19,7 +19,7 @@
 </style>
 
 	<div>
-	<form>
+	<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/askhr" enctype="multipart/form-data">
 		<table class="tableInfo">
 
 			<tr>
@@ -42,7 +42,8 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					Select the urgency of this request: <br>		
+					Select the urgency of this request: <br>
+
 						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent"> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
 						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention"> This can wait, but work will be delayed if this is not resolved soon <br>
 						<input type="radio" class="radio-pos"name="cs_post_urgency" value="Not Urgent"> Take your time. I can wait for this information.	

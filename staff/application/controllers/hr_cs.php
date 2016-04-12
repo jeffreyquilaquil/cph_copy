@@ -17,7 +17,7 @@
 		}
 
 		public function askhr(){
-			if(isset($_POST) AND !empty($POST)){
+			//if(isset($_POST) AND !empty($POST)){
 
 			//checking if there is session data
 			$empID = $this->user->empID;
@@ -33,26 +33,20 @@
 			if($this->ask->askhr($data)){
 			$details = $this->input->post('hr_details');
 			$rslt = $this->ask->get_new_max_ID();*/
-
 			// getting posted data
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
 			$data['cs_post_date_submitted']= date('Y-m-d');
 			$data['cs_post_status']= 0; 
-
 			
-			$data2['cs_msg_postID_fk'] = $this->ask_hr->insertQuery('hr_cs_post',$data);
-			$data2['cs_msg_date_submitted']=$data['cs_post_date_submitted'];
-			$data2['cs_msg_type']=1;
-			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
-			}
+			//}
 			if( $this->isSetNotEmpty($_FILES) )
 			{
 						$files = $_FILES;					
 						// config data 
-						$upload_config['upload_path'] = FCPATH .'uploads/medrequest';
+						$upload_config['upload_path'] = FCPATH .'uploads/cs_hr_attachments';
 						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc';
 						$upload_config['max_size']	= '2048';
 						$upload_config['overwrite']	= 'FALSE';					
@@ -68,7 +62,7 @@
 							$_FILES['to_upload']['error'] = $files['arr_attachments']['error'][$x];
 							$_FILES['to_upload']['size'] = $files['arr_attachments']['size'][$x];
 
-							$ext = pathinfo( $_FILES['to_upload']['na*me'], PATHINFO_EXTENSION );
+							$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
 							$uniq_id = uniqid();
 							$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
 							
@@ -99,16 +93,23 @@
 						}					
 					} // end of file upload
 
+					$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
+					$data2['cs_msg_date_submitted']= date('Y-m-d');
+					$data2['cs_msg_type']=1;
+					$data2['cs_msg_text']= $this->input->post('askHR_details');
 
-					if(isset($data2['cs_msg_attachment']))
-					{
+					
+
+					if(isset($data2['cs_msg_postID_fk']) && !empty($data2)){
 						$data3['msg_newID']=$this->ask_hr->insertQuery('hr_cs_msg',$data2);
+
 			 
 					}
+					$this->load->view('askHR_submissionpage'$data3);
 
-
-
-            }
+					//redirect($this->config->base_url(), 'refresh');
+				
+            } // end of function
 
 }
 
