@@ -41,9 +41,14 @@
 			$data['cs_post_date_submitted']= date('Y-m-d');
 			$data['cs_post_status']= 0; 
 			
+			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
+			$data2['cs_msg_date_submitted']= date('Y-m-d');
+			$data2['cs_msg_type']=1;
+			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
 			//}
-			if( $this->isSetNotEmpty($_FILES) )
+			if( $this->isSetNotEmpty($_FILES))
+			//if(!empty($_FILES))
 			{
 						$files = $_FILES;					
 						// config data 
@@ -97,14 +102,9 @@
 
 					} // end of file upload
 
-					$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
-					$data2['cs_msg_date_submitted']= date('Y-m-d');
-					$data2['cs_msg_type']=1;
-					$data2['cs_msg_text']= $this->input->post('askHR_details');
-
-					
+									
 					$data3['msg_newID']=0;
-					if(isset($data2['cs_msg_postID_fk']) && !empty($data2['cs_msg_attachment'])){
+					if(isset($data2['cs_msg_postID_fk'])){
 						$data3['msg_newID']=$this->ask_hr->insertQuery('hr_cs_msg',$data2);
 
 			 
