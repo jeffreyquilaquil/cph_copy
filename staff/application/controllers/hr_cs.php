@@ -34,7 +34,7 @@
 			$details = $this->input->post('hr_details');
 			$rslt = $this->ask->get_new_max_ID();*/
 
-			// getting posted data
+			/// getting posted data
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
