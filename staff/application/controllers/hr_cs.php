@@ -13,6 +13,7 @@
 
 		public function index(){
             $data['content']='askHR_submissionpage';
+            $data['msg_newID']=0;
 			$this->load->view('includes/templatecolorbox',$data);
 		}
 
@@ -91,6 +92,9 @@
 							$data2['cs_msg_attachment'] = json_encode( $docs_url );
 							$data2['cs_msg_attachment'] = addslashes($data2['cs_msg_attachment']);
 						}					
+					}else{
+						$data2['cs_msg_attachment'] = null;
+
 					} // end of file upload
 
 					$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
@@ -99,13 +103,14 @@
 					$data2['cs_msg_text']= $this->input->post('askHR_details');
 
 					
-
-					if(isset($data2['cs_msg_postID_fk']) && !empty($data2)){
+					$data3['msg_newID']=0;
+					if(isset($data2['cs_msg_postID_fk']) && !empty($data2['cs_msg_attachment'])){
 						$data3['msg_newID']=$this->ask_hr->insertQuery('hr_cs_msg',$data2);
 
 			 
 					}
-					$this->load->view('askHR_submissionpage'$data3);
+					
+					$this->load->view('askHR_submissionpage',$data3);
 
 					//redirect($this->config->base_url(), 'refresh');
 				
