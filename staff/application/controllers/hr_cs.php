@@ -34,7 +34,7 @@
 			$details = $this->input->post('hr_details');
 			$rslt = $this->ask->get_new_max_ID();*/
 
-			/// getting posted data
+			// getting posted data
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
@@ -42,7 +42,7 @@
 			$data['cs_post_status']= 0; 
 
 			
-			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
+			$data2['cs_msg_postID_fk'] = $this->ask_hr->insertQuery('hr_cs_post',$data);
 			$data2['cs_msg_date_submitted']=$data['cs_post_date_submitted'];
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text']= $this->input->post('hr_details');
