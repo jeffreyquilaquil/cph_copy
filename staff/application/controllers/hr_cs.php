@@ -45,7 +45,7 @@
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->insertQuery('hr_cs_post',$data);
 			$data2['cs_msg_date_submitted']=$data['cs_post_date_submitted'];
 			$data2['cs_msg_type']=1;
-			$data2['cs_msg_text']= $this->input->post('hr_details');
+			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
 			}
 			if( $this->isSetNotEmpty($_FILES) )
@@ -59,14 +59,14 @@
 						$this->load->library('upload');	
 
 
-						$upload_count = count( $_FILES['attachment']['name'] );
+						$upload_count = count( $_FILES['arr_attachments']['name'] );
 						for( $x = 0; $x < $upload_count; $x++ )
 						{
-							$_FILES['to_upload']['name'] = $files['attachment']['name'][$x];
-							$_FILES['to_upload']['type'] = $files['attachment']['type'][$x];
-							$_FILES['to_upload']['tmp_name'] = $files['attachment']['tmp_name'][$x];
-							$_FILES['to_upload']['error'] = $files['attachment']['error'][$x];
-							$_FILES['to_upload']['size'] = $files['attachment']['size'][$x];
+							$_FILES['to_upload']['name'] = $files['arr_attachments']['name'][$x];
+							$_FILES['to_upload']['type'] = $files['arr_attachments']['type'][$x];
+							$_FILES['to_upload']['tmp_name'] = $files['arr_attachments']['tmp_name'][$x];
+							$_FILES['to_upload']['error'] = $files['arr_attachments']['error'][$x];
+							$_FILES['to_upload']['size'] = $files['arr_attachments']['size'][$x];
 
 							$ext = pathinfo( $_FILES['to_upload']['na*me'], PATHINFO_EXTENSION );
 							$uniq_id = uniqid();
