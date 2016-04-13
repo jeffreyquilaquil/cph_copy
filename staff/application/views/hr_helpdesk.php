@@ -18,21 +18,22 @@
 	 }
 	
 </style>
+
 <h2>HR HelpDesk</h2>
 <hr/>
 
 <ul class="tabs">
-	<li class="tab-link" data-tab="tab-1">New</li>
+	<li class="tab-link current" data-tab="tab-1">New</li>
 	<li class="tab-link" data-tab="tab-2">Active</li>
 	<li class="tab-link" data-tab="tab-3">Resolved</li>
 	<li class="tab-link" data-tab="tab-4">Cancelled</li>
 </ul>
 
-<div id="tab-1" class="tab-content"><br/>
+<div id="tab-1" class="tab-content current">
 <!-- <?php echo $this->textM->reimbursementTableDisplay($data_query_medical, 'pending_med'); ?> -->
-
-  <table class="table" style="margin-top: 20px">
-      	<tr class="tr tr-bordered">
+  <br>
+  <table class="tableInfo fs11px">
+      	<tr>
       		<th>Incident #</th>
       		<th>Customer</th>
       		<th>Date Submitted</th>
@@ -55,6 +56,7 @@
 	      	</tr>   
       </table>
 
+      <br>
       <h2>SETTINGS</h2><br>
       <table>
       	<tr>
@@ -67,21 +69,18 @@
 
 </div>
 
-<div id="tab-2" class="tab-content"><br/>
+<div id="tab-2" class="tab-content">
 <!-- <?php echo $this->textM->reimbursementTableDisplay($data_query_accounting, 'pending_accounting'); ?> -->
-
-
+B
 </div>
 
-<div id="tab-3" class="tab-content"><br/>
-
-	
+<div id="tab-3" class="tab-content">
+C
 </div>
 
-<div id="tab-4" class="tab-content"><br/>
+<div id="tab-4" class="tab-content">
 <!-- <?php echo $this->textM->reimbursementTableDisplay($data_query_medical, 'pending_med'); ?> -->
-
-
+D
 </div>
 
 
