@@ -30,10 +30,10 @@ class Ask_hr extends CI_Model {
 		}
      } //end of askhr function
 
-     function hrhelpdesk($table, $fields, $where=1, $join='', $orderby=''){
+     function hrhelpdesk($fields, $table, $join='', $orderby=''){
      	$arr = array();
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
-		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." WHERE ".$where." ".$orderby);
+		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." ".$orderby);
 		foreach($query->result() AS $q):
 			$arr[] = $q;
 		endforeach;
