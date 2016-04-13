@@ -101,13 +101,18 @@
       			</tr>
       		</thead>
       		<tbody>
+
+                  <?php 
+                        foreach( $HrHelpDesk as $key => $val ) { ?>
+                   
       			<tr class="odd">
-      				<td>1</td>
-      				<td>Shem</td>
-      				<td>04/14/16</td>
-      				<td>A</td>
-      				<td>B</td>
+      				<td><?php echo $val->cs_post_id; ?></td>
+      				<td><?php echo $val->fname; ?></td>
+      				<td><?php echo $val->cs_post_date_submitted; ?></td>
+      				<td><?php echo $val->cs_post_subject; ?></td>
+      				<td><?php echo $val->cs_post_urgency; ?></td>
       			</tr>
+                        <?php } ?>
       		</tbody>
       	</table>
       <div class="dataTables_info" id="tbl_570dd9e4944c7_info" role="status" aria-live="polite">Showing 0 to 0 of 0 entries</div>
