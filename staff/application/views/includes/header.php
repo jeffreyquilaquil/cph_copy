@@ -125,6 +125,7 @@
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
+						echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_helpdesk/">HR HelpDesk '.(($hr_helpdesk>0)?'<b>['.$hr_helpdesk.']</b>':'').'</a></li>';
 					}
 						
 					echo '</ul>';
