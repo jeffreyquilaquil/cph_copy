@@ -83,7 +83,46 @@
       		entries
       		</label>
       	</div>
+      	<div id="tbl_570dc0bf52069_filter" class="dataTables_filter">
+      		<label>
+      			Search
+      			<input type="search" class placeholder aria-controls="tbl_570dd53cac70d">
+      		</label>
+      	</div>
+
+      	<table class="tableInfo fs11px dataTable no-footer" id="tbl_570dd53cac70d" role="grid" aria-describedby="tbl_570dd53cac70d_info">
+      		<thead>
+      			<tr role="row">
+      				<th class="sorting_asc" tabindex="0" aria-controls="tbl_570dd770149b1" rowspan="1" colspan="1" aria-label="Incident # activate to sort column ascending" style="width: 164px;" aria-sort="descending">Incident #</th>
+      				<th class="sorting" tabindex="0" aria-controls="tbl_570dd770149b1" rowspan="1" colspan="1" aria-label="Customer activate to sort column ascending" style="width: 173px;">Customer</th>
+      				<th class="sorting" tabindex="0" aria-controls="tbl_570dd770149b1" rowspan="1" colspan="1" aria-label="Date Submitted activate to sort column ascending" style="width: 169px;">Date Submitted</th>
+      				<th class="sorting" tabindex="0" aria-controls="tbl_570dd770149b1" rowspan="1" colspan="1" aria-label="Subject activate to sort column ascending" style="width: 188px;">Subject</th>
+      				<th class="sorting" tabindex="0" aria-controls="tbl_570dd770149b1" rowspan="1" colspan="1" aria-label="Priority activate to sort column ascending" style="width: 79px;">Priority</th>
+      			</tr>
+      		</thead>
+      		<tbody>
+      			<tr class="odd">
+      				<td>1</td>
+      				<td>Shem</td>
+      				<td>04/14/16</td>
+      				<td>A</td>
+      				<td>B</td>
+      			</tr>
+      		</tbody>
+      	</table>
+      <div class="dataTables_info" id="tbl_570dd9e4944c7_info" role="status" aria-live="polite">Showing 0 to 0 of 0 entries</div>
+      <div class="dataTables_paginate paging_simple_numbers" id="tbl_570dd9e4944c7_paginate">
+	      	<a class="paginate_button previous disabled" aria-controls="tbl_570dd9e4944c7" data-dt-idx="0" tabindex="0" id="tbl_570dd9e4944c7_previous">Previous</a><span></span>
+	      	<a class="paginate_button next disabled" aria-controls="tbl_570dd9e4944c7" data-dt-idx="1" tabindex="0" id="tbl_570dd9e4944c7_next">Next</a>
       </div>
+      
+      </div>
+
+      <script type="text/javascript">
+		$(function(){
+			$("table#tbl_570dd9e4944c7").dataTable();					
+		});
+      </script>
 
       <br>
       <h2>SETTINGS</h2><br>
