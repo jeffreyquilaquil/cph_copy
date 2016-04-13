@@ -17,13 +17,21 @@
 	}
 
 	.askhr-notif{
-		margin-top: 120px;
 		padding: 40px;
 		background-color: #800000;
 		color: white;
-		height: 30%;
 		font-family: Calibri;
+		margin-top: 140px;
 
+	}
+
+	a.askhr-notif-link:link, a.askhr-notif-link:active, a.askhr-notif-link:visited{
+		color: white;
+		text-decoration: none;
+	}
+	a.askhr-notif-link:hover{
+		color: red;
+		text-decoration: none;
 	}
 
 </style>
@@ -36,7 +44,7 @@
 			<tr>
 				<td colspan="2" style="font-style: italic">
 					<img src="https://app01.tatepublishing.net/~shem/staff/css/images/logo.png" style="float: left; margin-right: 8px;">							
-					<h3>Welcome to HR!</h3>
+					<h1>Welcome to HR!</h1>
 					WAIT! Before sending your question to HR, please check <a href="#">employee.tatepublishing.net</a> first. Your question may already
 					be answered there. If your question is already answered in employee.tatepublishing.net, HR shall reply with the link to the answer.
 				</td>
@@ -92,7 +100,7 @@
 		<h2><?php  echo $msg_newID; ?></h2>
 
 		When following on your request, please use the incident number above. Please expect to recieve feedback on this incident within
-		24 hours. You may monitor the progress of your HR incidents in your <a href="#">career.tatepublishing.net/staff</a> homepage.
+		24 hours. You may monitor the progress of your HR incidents in your <a href="#" class="askhr-notif-link">career.tatepublishing.net/staff</a> homepage.
 	</div>
 
 	<?php } ?>
