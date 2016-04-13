@@ -129,23 +129,19 @@
       		<th>Priority</th>
       	</thead>
       	<tbody>
+      	<?php foreach ($HrHelpDesk as $key => $value) { ?>
       		<tr>
-	      		<td>1 <div>Insert your code here!</div></td>
-	      		<td>Shem</td>
-	      		<td>04/12/16</td>
-	      		<td>Char lang</td>
-	      		<td>Needs Attention</td>
-      		</tr>
-      		<tr>
-	      		<td>2</td>
-	      		<td>Chavez</td>
-	      		<td>04/12/16</td>
-	      		<td>Char lang</td>
-	      		<td>Needs Attention</td>
-	      	</tr>   
+	      		<td><?php echo $value->cs_post_id; ?></td>
+	      		<td><?php echo $value->fname; ?></td>
+	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
+	      		<td><?php echo $value->cs_post_subject ?></td>
+	      		<td><?php echo $value->cs_post_urgency; ?></td>
+      		</tr>	     
+
+      		<?php } ?> 		
       	</tbody>
       </table>
-      
+
 <script type="text/javascript">
 	$(function(){
 		$("table#dt_new").dataTable();					
