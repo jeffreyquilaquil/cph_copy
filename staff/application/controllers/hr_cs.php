@@ -15,7 +15,7 @@
             $data['content']='askHR_submissionpage';
             $data['msg_newID']=0;
 			$this->load->view('includes/templatecolorbox',$data);
-		}
+		} // end of index function
 
 		public function askhr(){
 			//if(isset($_POST) AND !empty($POST)){
@@ -47,9 +47,7 @@
 			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
 			//}
-			if( $this->isSetNotEmpty($_FILES))
-			//if(!empty($_FILES))
-			{
+			if( $this->isSetNotEmpty($_FILES)){
 						$files = $_FILES;					
 						// config data 
 						$upload_config['upload_path'] = FCPATH .'uploads/cs_hr_attachments';
@@ -80,7 +78,7 @@
 								$upload_data[$x] = $this->upload->data();
 							}
 
-						}
+						} // end of fro loop
 
 						//if we have error, throw it to views
                         if( isset($error_data) AND !empty($error_data) ){
@@ -105,7 +103,7 @@
 									
 					$data3['msg_newID']=0;
 					if(isset($data2['cs_msg_postID_fk'])){
-						$data3['msg_newID']=$this->ask_hr->insertQuery('hr_cs_msg',$data2);
+						$data3['msg_newID']=$this->ask_hr->askhr('hr_cs_msg',$data2);
 
 			 
 					}
@@ -114,9 +112,9 @@
 
 					//redirect($this->config->base_url(), 'refresh');
 				
-            } // end of function
+            } // end of askhr function
 
-}
+} // end of class
 
 
 
