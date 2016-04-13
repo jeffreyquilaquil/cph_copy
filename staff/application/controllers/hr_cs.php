@@ -116,8 +116,18 @@
 
             public function HrHelpDesk()
             {
+            	//for viewing
             	$data['content']='hr_helpdesk';;
 				$this->load->view('includes/templatecolorbox',$data);
+				//getting data from db
+				//for New incident data
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post','*','cs_post_status = 0','LEFT JOIN staff ON empID = cs_post_empID_fk');
+				$data1['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post','*','cs_post_status = 1','LEFT JOIN staff ON empID = cs_post_empID_fk');
+				$data2['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post','*','cs_post_status = 2','LEFT JOIN staff ON empID = cs_post_empID_fk');
+				$data3['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post','*','cs_post_status = 3','LEFT JOIN staff ON empID = cs_post_empID_fk');
+				$data4['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post','*','cs_post_status = 4','LEFT JOIN staff ON empID = cs_post_empID_fk');	
+
+
 
 
             }//end of HrHelpDesk
