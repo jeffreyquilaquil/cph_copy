@@ -69,7 +69,7 @@
       </table>
 
       -->
-
+      <!--
       <div id="tbl_570dc0bf52069_wrapper" class="dataTables_wrapper no-footer">
       	<div class="dataTables_length" id="tbl_570dc0bf52069_length">
       		<label>
@@ -101,18 +101,13 @@
       			</tr>
       		</thead>
       		<tbody>
-
-                  <?php 
-                        foreach( $HrHelpDesk as $key => $val ) { ?>
-                   
       			<tr class="odd">
-      				<td><?php echo $val->cs_post_id; ?></td>
-      				<td><?php echo $val->fname; ?></td>
-      				<td><?php echo $val->cs_post_date_submitted; ?></td>
-      				<td><?php echo $val->cs_post_subject; ?></td>
-      				<td><?php echo $val->cs_post_urgency; ?></td>
+      				<td>1</td>
+      				<td>Shem</td>
+      				<td>04/14/16</td>
+      				<td>A</td>
+      				<td>B</td>
       			</tr>
-                        <?php } ?>
       		</tbody>
       	</table>
       <div class="dataTables_info" id="tbl_570dd9e4944c7_info" role="status" aria-live="polite">Showing 0 to 0 of 0 entries</div>
@@ -123,11 +118,39 @@
       
       </div>
 
-      <script type="text/javascript">
-		$(function(){
-			$("table#tbl_570dd9e4944c7").dataTable();					
-		});
-      </script>
+      -->
+
+      <table id="dt_new">
+      	<thead>
+      		<th>Incident #</th>
+      		<th>Customer</th>
+      		<th>Date Submitted</th>
+      		<th>Subject</th>
+      		<th>Priority</th>
+      	</thead>
+      	<tbody>
+      		<tr>
+	      		<td>1 <div>Insert your code here!</div></td>
+	      		<td>Shem</td>
+	      		<td>04/12/16</td>
+	      		<td>Char lang</td>
+	      		<td>Needs Attention</td>
+      		</tr>
+      		<tr>
+	      		<td>2</td>
+	      		<td>Chavez</td>
+	      		<td>04/12/16</td>
+	      		<td>Char lang</td>
+	      		<td>Needs Attention</td>
+	      	</tr>   
+      	</tbody>
+      </table>
+      
+<script type="text/javascript">
+	$(function(){
+		$("table#dt_new").dataTable();					
+	});
+</script>
 
       <br>
       <h2>SETTINGS</h2><br>
