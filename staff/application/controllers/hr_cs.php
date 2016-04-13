@@ -114,6 +114,14 @@
 				
             } // end of askhr function
 
+            public function HrHelpDesk()
+            {
+            	$data['content']='hr_helpdesk';;
+				$this->load->view('includes/templatecolorbox',$data);
+
+
+            }//end of HrHelpDesk
+
 } // end of class
 
 
