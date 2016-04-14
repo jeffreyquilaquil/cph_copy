@@ -18,23 +18,11 @@
 		} // end of index function
 
 		public function askhr(){
-			//if(isset($_POST) AND !empty($POST)){
+			
 
 			//checking if there is session data
 			$empID = $this->user->empID;
-			/*$subj = $this->input->post('hr_subject');
-			$cc = $this->input->post('hr_cc');
 			
-			$data =array('cs_post_empID_fk'=>$empID,
-						  'cs_post_subject'=>$subj,
-						  'cd_post_other_empID_fk'=>$cc,
-						  'cs_post_date_submitted'=>date('Y-m-d'),
-					  'cs_post_status'=>0);
-			
-			if($this->ask->askhr($data)){
-			$details = $this->input->post('hr_details');
-			$rslt = $this->ask->get_new_max_ID();*/
-			// getting posted data
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
@@ -46,7 +34,7 @@
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
-			//}
+			
 			if( $this->isSetNotEmpty($_FILES)){
 						$files = $_FILES;					
 						// config data 
@@ -123,6 +111,7 @@
 				//getting data from db
 				//for New incident data HR HELP DESK
 				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
+				
 
 				$this->load->view('includes/template',$data);
 
@@ -132,11 +121,21 @@
 
             public function HrIncident()
             {
-            	/*$data['HrIncident']=$this->ask_hr->funtion_name('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk','hr_cs_post.cs_post_id');*/
-
+            	
             	$data['content']='hr_incidentinfo';
+
+            	$insedent_id = $this->input->get('id');
+
+            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
+
+            	
 				$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
+
+            function test(){ // this for testing function
+            	$data = $this->input->get('id');
+            	echo $data;
+            }
 
 } // end of class
 

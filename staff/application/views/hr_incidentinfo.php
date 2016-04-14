@@ -6,29 +6,34 @@
 </style>
 
 <div>
+
+		<?php foreach ($HrIncident as $key => $value): ?>
+				
+		<?php endforeach ?>
+
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
-				<h2>HR Incident Number 000003<br><small>You have owned responsibility for incident number 000003</small></h2>
+				<h2>HR Incident Number <?php echo $value->cs_post_id; ?> <br><small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small></h2>
 
 			</td>
 			<td></td>
 		</tr>
 		<tr>
 			<td >Customer</td>
-			<td>Ann Margaret Yap</td>
+			<td><?php echo $value->fname." ". $value->lname; ?> </td>
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
-			<td>6 March, 2015, 01:56</td>
+			<td><?php echo $value->cs_post_date_submitted; ?></td>
 		</tr>
 		<tr>
 			<td>Subject</td>
-			<td>Immediate Supervisor update inquiry</td>
+			<td><?php echo $value->cs_post_subject; ?></td>
 		</tr>
 		<tr>
 			<td>Customer selected Priority Level</td>
-			<td>Needs attention</td>
+			<td><?php echo $value->cs_post_urgency; ?></td>
 		</tr>
 		<tr>
 			<td>Assign Category</td>
@@ -64,12 +69,10 @@
 		<tr>
 			<td valign="top">Details of the incident</td>
 			<td>
-			Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-			tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-			quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-			consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-			cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-			proident, sunt in culpa qui officia deserunt mollit anim id est laborum.			
+			
+				<?php echo $value->cs_msg_text; ?>
+
+
 			<br><br>
 			<span class="note">
 				Instruction to HR: Search <a href="#">www.employee.tatepublishing.net</a> first to see if the
