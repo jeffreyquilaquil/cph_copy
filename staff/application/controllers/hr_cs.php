@@ -135,7 +135,7 @@
             	/*$data['HrIncident']=$this->ask_hr->funtion_name('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk','hr_cs_post.cs_post_id');*/
 
             	$data['content']='hr_incidentinfo';
-				$this->load->view('includes/template',$data);
+				$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
 
 } // end of class
