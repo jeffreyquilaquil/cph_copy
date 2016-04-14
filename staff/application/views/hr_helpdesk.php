@@ -84,8 +84,8 @@
       	<?php foreach ($HrHelpDesk as $key => $value) { ?>
       		<tr>
 	      		<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident" class="iframe">
-	      				<?php echo $value->cs_post_id; ?>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $value->cs_post_id; ?>" class="iframe">
+	      				<?php echo $value->cs_post_id; ?> 
 	      			</a>
       			<div class="show_details">
       				Details of the incident
