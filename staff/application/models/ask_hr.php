@@ -30,7 +30,7 @@ class Ask_hr extends CI_Model {
 		}
      } //end of askhr function
 
-     function hrhelpdesk($fields, $table, $join='', $orderby=''){
+     function hrhelpdesk($fields, $table, $join='', $orderby=''){ // query with join
      	$arr = array();
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
 		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." ".$orderby);
@@ -39,6 +39,16 @@ class Ask_hr extends CI_Model {
 		endforeach;
 		return $arr;
      } // end of hrelpdesk function
+
+     function hrinsedentform($field, $table, $where=''){ // query without join
+     	$arr = array();
+     	if($where!='')$where = 'WHERE '.$where;
+     	$quary = $this->db->query("SELECT".$field."FROM".$table." ".$where);
+     	foreach ($query->result() as $value) {
+     		$arr[] = $value;
+     	}
+     	return $arr;
+     }
    
 } // end of class
 
