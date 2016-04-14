@@ -6,7 +6,7 @@
 	 	text-align: center;
 	 }
 
-	 a:link, a:visited, a:hover, a:active{
+	 a.other_links:link, a.other_links:visited, a.other_links:hover, a.other_links:active{
 	 	color: black;
 	 	text-decoration: none;
 	 	background-color: #CCCCCC; 
@@ -21,6 +21,8 @@
 	 	float: right; 
 	 	margin-top: 12.5px;
 	 }
+
+	 
 	
 </style>
 
@@ -32,8 +34,8 @@
 	<li class="tab-link" data-tab="tab-4">Cancelled</li>
 
 	<div class="options-right">
-		<a href="#">Generate Reports</a>	
-		<a href="#">HR Customer CSatResults</a>
+		<a class="other_links" href="#">Generate Reports</a>	
+		<a class="other_links" href="#">HR Customer CSatResults</a>
 	</div>
 	
 </ul>
@@ -54,7 +56,7 @@
       	<tbody>
       	<?php foreach ($HrHelpDesk as $key => $value) { ?>
       		<tr>
-	      		<td><?php echo $value->cs_post_id; ?></td>
+	      		<td><a href="'.$this->config->base_url().'hr_incidentinfo/" class="iframe"><?php echo $value->cs_post_id; ?></a></td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
@@ -75,10 +77,10 @@
       <h2>SETTINGS</h2><br>
 	
 	<div class="settings-bottom">
-		<a href="#">Add Categories</a>
-  		<a href="#">Edit HR User Permissions</a>
-  		<a href="#">Edit Message Templates</a>
-  		<a href="#">Add a Redirection Department</a>
+		<a class="other_links" href="#">Add Categories</a>
+  		<a class="other_links" href="#">Edit HR User Permissions</a>
+  		<a class="other_links" href="#">Edit Message Templates</a>
+  		<a class="other_links" href="#">Add a Redirection Department</a>
 	</div>    	
 </div>
 
