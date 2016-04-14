@@ -69,6 +69,7 @@ class Timecardmodel extends CI_Model {
 							'empID_fk="'.$empID.'" AND '.$this->timeM->getTodayBetweenSchedCondition($dateStart, $dateEnd), 
 							'LEFT JOIN tcCustomSched ON custSchedID=tcCustomSched_fk', 'assigndate');
 		
+
 		//if dateStart is greater than dateEnd
 		if($ival>=$dEnd){
 			foreach($queryMainSched AS $sched){
@@ -126,8 +127,8 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
-
-		
+		//$this->textM->aaa($dayArr, false);
+		//$this->textM->aaa($queryLeaves, false);
 		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
@@ -249,8 +250,8 @@ class Timecardmodel extends CI_Model {
 		}
 						
 		//check for custom schedule. This will show schedule even if holiday with work
-		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'"');		
-		
+		$queryCustomSched = $this->dbmodel->getQueryResults('tcStaffScheduleByDates', 'dateToday, timeText, timeHours, status, workhome', 'empID_fk="'.$empID.'" AND dateToday>="'.$dateStart.'" AND dateToday<="'.$dateEnd.'" AND status = 1');		
+		//$this->textM->aaa($queryCustomSched, false);
 		foreach($queryCustomSched AS $yeye){
 			$d = date('j', strtotime($yeye->dateToday));
 			if($yeye->status==1){
@@ -261,7 +262,7 @@ class Timecardmodel extends CI_Model {
 				if($yeye->workhome==1) $dayArr[$d]['workhome'] = true;	
 			}else if($yeye->status==0) unset($dayArr[$d]);		
 		}
-		
+		//$this->textM->aaa($dayArr);
 		return $dayArr;	
 	}
 	
