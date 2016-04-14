@@ -100,6 +100,10 @@ class Textmodel extends CI_Model {
 	public function convertNumFormat($n){
 		return number_format((double)str_replace(',','',$n),2);
 	}
+
+	public function numFormat($i){
+		return number_format( $i, 2, '.', ',');
+	}
 	
 	function convertTimeToMinHours($tdiff, $numOnly=false){
 		$tText = '';
@@ -833,6 +837,22 @@ class Textmodel extends CI_Model {
 					'4' => 'Disapproved by accounting',
 					'5' => 'Cancelled'
 			);
+		}else if($a == 'hdmf_loan_purpose'){
+			$arr = array(
+				1 => 'Minor home improvement/home renovation/upgrades', 
+				2 => 'Livelihood/additional capital in small business', 
+				3 => 'Tuition/education expense', 
+				4 => 'Health and wellness', 
+				5 => 'Purchase of appliance and furniture/electronic gadgets', 
+				6 => 'Bill/credit card payment', 
+				7 => 'Vacation/travel', 
+				8 => 'Special events', 
+				9 => 'Car repair', 
+				10 => 'Balance transfer/debt consolidation', 
+				11 => 'Other needs');
+		} else if( $a == 'hdmf_loan_status' ){
+			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
+
 		}
 		
 		return $arr;
@@ -1152,9 +1172,42 @@ class Textmodel extends CI_Model {
 		
 		return $string;
 	}
-	
-	
-		
-}
 
-?>
+	//render table universal	
+	public function renderTable( $headers, $col_options, $data_query, $data_table = true, $display = true ){
+
+		$table = '';
+		$dataTable = ( $data_table == true ) ? 'class="datatable"' : '';
+		$table .= '<table '.$dataTable.' style="width: 100%;">';
+		//thead
+		$table .= '<thead><tr>';
+			foreach( $headers as $val ){
+				$table .= '<td>'.ucwords( $val ).'</td>'; 
+			}
+		$table .= '</tr></thead>';
+		//tbody
+		$table .= '<tbody>';
+		if( isset($data_query) AND !empty($data_query) ){
+			unset($data_query['headers']);
+			foreach( $data_query as $val ){
+				$table .= '<tr>';
+				foreach( $headers as $val_ ){
+					$table .= '<td>'.$val[ $val_ ].'</td>'; 		
+				}				
+				$table .= '</tr>';
+			}
+		}
+			
+		$table .= '</tbody>';
+
+		$table .= '</table>';
+
+		if( $display == true ){
+			echo $table;
+		} else {
+			return $table;
+		}
+	}
+
+		
+} //end class

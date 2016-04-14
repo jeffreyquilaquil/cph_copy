@@ -1640,7 +1640,7 @@ class Staff extends MY_Controller {
 				}
 				
 				//check for duplicate insert leave data
-				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0 AND iscancelled != 1 ');
+				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0');
 				if(count($dupQuery)>0){
 					echo 'There is a duplicate entry of this leave. Click <a href="'.$this->config->base_url().'staffleaves/'.$dupQuery->leaveID.'/">here</a> to view duplicate leave entry or check "Time Off Details" on My HR Info page if filed leave exists or inform IT if no duplicate entry and you can\'t file leave.';
 					exit;
@@ -4369,9 +4369,212 @@ class Staff extends MY_Controller {
 	}
 
 	public function hdmf(){
+		$data['content'] = 'hdmf_loan';
+		$data['loan_purpose_array'] = $this->textM->constantArr('hdmf_loan_purpose');
+		$this->load->library('form_validation');
 
-		$this->staffM->hdmf_loan( $this->user->empID );
-		exit();
+		if( $this->input->post('loan_id') ) {			
+			//upload
+			if( isset($_FILES) AND !empty($_FILES) ){
+				$upload_config['upload_path'] = FCPATH .'uploads/staffs/'.$this->input->post('username');
+				$upload_config['allowed_types'] = 'gif|jpg|png|pdf';
+				$upload_config['max_size']	= '2048';
+				$upload_config['overwrite']	= 'FALSE';								
+
+				$ext = pathinfo( $_FILES['loan_voucher']['name'], PATHINFO_EXTENSION );				
+				$upload_config['file_name'] = 'HDMF_loan_voucher.'.$ext;
+				$this->load->library('upload', $upload_config);					
+				//upload
+				if( $this->upload->do_upload('loan_voucher') ){
+					//update the table 
+					$upload_data = $this->upload->data();
+					$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $this->input->post('loan_id')), array('hdmf_loan_voucher_url' => $upload_data['full_path']));
+					$data['msg'] = 'Voucher has been uploaded.';
+				} else {
+					$data['upload_error'] = $this->upload->display_errors();
+				}
+			}
+		} 
+		//for accounting
+		if( $this->input->post('empID') ){
+			//add item to payslip and filter out discrepancies
+			$payslip_array = $_POST;
+			if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
+			if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
+			if(!empty($payslip_array['payStart'])) $payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStart']));
+			if(!empty($payslip_array['payEnd'])) $payslip_array['payEnd'] = date('Y-m-d', strtotime($payslip_array['payEnd']));
+			if($payslip_array['payAmount']=='regularHoliday') $payslip_array['payPercent'] = $payslip_array['selectPayPercent'];
+			if($payslip_array['payAmount']=='specialHoliday') $payslip_array['payPercent'] = 2;
+			if($payslip_array['payPeriod']=='once' && !empty($payslip_array['payStartOnce'])){
+				$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
+				$payslip_array['payEnd'] = $payslip_array['payStart'];
+			}
+			$payslip_array['empID_fk'] = $payslip_array['empID'];
+			$payslip_array['payID_fk'] = $payslip_array['payID'];
+			
+			unset($payslip_array['empID']);
+			unset($payslip_array['submit']);
+			unset($payslip_array['submitType']);
+			unset($payslip_array['payID']);
+			unset($payslip_array['inputPayAmount']);
+			unset($payslip_array['payAmountHourly']);
+			unset($payslip_array['payStartOnce']);
+			unset($payslip_array['selectPayPercent']);		
+			
+			if( isset($payslip_array) AND !empty($payslip_array) ){
+				$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
+				//add notification to user that medicine requisition has been approved	
+				if( isset($insID) AND !empty($insID) ){
+					$ntexts = 'Salary deduction for Pag-IBIG loan has updated';
+					$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);
+				}				
+			}
+		}
+
+
+		$id = $this->uri->segment(2);
+		if( isset($id) AND !empty($id) ){
+
+			$info = $this->dbmodel->getSingleInfo('staff_hdmf_loan', 'staff_hdmf_loan.*, username', 'hdmf_loan_id = '.$id, 'LEFT JOIN staffs ON empID = empID_fk');
+			//prep the data
+			$data['loan_id'] = $info->hdmf_loan_id;
+			$data['loan_type'] =  $info->hdmf_loan_type;
+			$data['loan_amt'] =  $info->hdmf_loan_amt;
+			$data['loan_purpose'] =  $info->hdmf_loan_purpose;
+			$data['birth_place'] =  $info->hdmf_loan_birth_place;
+			$data['mo_maiden_name'] =  $info->hdmf_loan_mo_maiden_name;
+			$data['employer_1'] =  json_decode(stripslashes($info->hdmf_loan_employer_1), true);
+			$data['employer_2'] =  json_decode(stripslashes($info->hdmf_loan_employer_2), true);
+			$data['date_submitted'] = $info->hdmf_loan_date_submitted;
+			$data['empID'] = $info->empID_fk;
+			$data['username'] = $info->username;
+			
+
+			if( $this->input->get('a') == 'upload' ){
+				$data['upload'] = true;	
+			} else if( $this->input->get('a') == 'accounting' ) {
+				$data['accounting'] = true;
+				$data_config['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="19"');
+				$data_config['dynamic_call'] = true;
+				$data_config['pageType'] = 'empUpdate';				
+                $data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
+			} else {
+				$this->staffM->hdmf_loan( $info->empID_fk, $data );
+			}
+
+		} else {
+
+			
+			$rules = array(
+					array('field' => 'loan_type', 'label' => '`Loan Type`', 'rules' => 'required'),
+					array('field' => 'loan_amt', 'label' => '`Loan Amount`', 'rules' => 'required'),
+					array('field' => 'loan_purpose' , 'label' => '`Loan Purpose`', 'rules' => 'required|callback_loan_purpose_check'),
+					array('field' => 'birth_place' , 'label' => '`Birth Place`', 'rules' => 'required|xss_clean'),
+					array('field' => 'mo_maiden_name' , 'label' => '`Mother\'s Maiden Name`', 'rules' => 'required|xss_clean'),
+					array('field' => 'employer_1' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+				);
+			$this->form_validation->set_rules( $rules );
+			$this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+			if( isset($_POST) AND !empty($_POST) ){
+				
+				if( $this->form_validation->run() == TRUE ){
+					//insert the records to db
+					$insert_array = array(
+						'empID_fk' => $this->user->empID, 
+						'hdmf_loan_type' => $this->input->post('loan_type'),
+						'hdmf_loan_amt' => $this->input->post('loan_amt'),
+						'hdmf_loan_purpose' => $this->input->post('loan_purpose'),
+						'hdmf_loan_birth_place' => $this->input->post('birth_place'),
+						'hdmf_loan_mo_maiden_name' => $this->input->post('mo_maiden_name'),
+						'hdmf_loan_employer_1' => addslashes(json_encode($this->input->post('employer_1'))),
+						'hdmf_loan_employer_2' => addslashes(json_encode($this->input->post('employer_2'))),
+						'hdmf_loan_date_submitted' => date('Y-m-d H:i:s')
+					);
+					$insert_id = $this->dbmodel->insertQuery('staff_hdmf_loan', $insert_array);
+					$data['msg'] = 'Application has been submitted. You can view the form <a href="'.$this->config->base_url().'hdmf/'.$insert_id.'" target="_blank">here</a>';
+
+				} 			
+			}
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+		
+	}
+
+	//validator call back
+	public function loan_purpose_check(){
+		if( $this->input->post('loan_purpose') == 0 ){
+			$this->form_validation->set_message('loan_purpose_check', 'Please select a loan purpose.');
+			return FALSE;
+		} else {
+			return TRUE;
+		}
+	}
+
+	//management page
+	public function hdmfs(){
+		$data['content'] = 'hdmf_loans';
+		
+		$data['headers'] =  array('applicant', 'loan type', 'status', 'file');
+		$data['hdmf_loan_status'] = $this->textM->constantArr('hdmf_loan_status');
+		$data['col_options'] = '';
+
+		//check for post
+		if( $this->input->is_ajax_request() ){
+			$id = $this->input->post('id');
+			$status = $this->input->post('status');
+			if( isset($id) AND !empty($id) ){
+
+				$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $id), array('hdmf_loan_status' => $status) );
+
+				$ntexts = 'Update on your Pag-IBIG loan application. Click <a href="'.$this->config->base_url().'hdmf/'.$id.'">here</a> to view the application';
+				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);	
+			}
+		}
+
+		$data_query = $this->dbmodel->getQueryResults('staff_hdmf_loan', 'staff_hdmf_loan.*, CONCAT(fname, " ", lname) AS "applicant", username', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+
+		foreach( $data_query as $val ){
+			$info = array();
+			$data['data_query_'. $val->hdmf_loan_status ]['headers'] = array('applicant', 'loan type', 'status', 'file');
+			$info['applicant'] = $val->applicant;
+			$info['loan type'] = $val->hdmf_loan_type;
+			$info['status'] = $this->textM->formfield('selectoption', 'hdmf_loan_status', $val->hdmf_loan_status, 'stat_select', '', 'data-id="'.$val->hdmf_loan_id.'" data-empid="'.$val->empID_fk.'"', $data['hdmf_loan_status']);
+
+			if( $val->hdmf_loan_status == 3 ){
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
+				if( !empty($val->hdmf_loan_voucher_url) ){
+					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+				} else {
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=upload">Upload voucher</a>';
+				}				
+			}
+			if( $val->hdmf_loan_status == 4 ){
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'action');
+				if( !empty($val->hdmf_loan_voucher_url) ){
+					
+					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+				} else {
+					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
+				}					
+				$info['action'] = ' <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=accounting">Payroll Setting</a>';
+			}
+
+			if( $val->hdmf_loan_status < 3 AND ($key = array_search( array('voucher', 'action'), $data['data_query_'.$val->hdmf_loan_status]['headers'] ) !== false ) ){
+				unset( $data['data_query_'. $val->hdmf_loan_status ]['headers'][$key] );
+			}
+
+			$info['file'] = '<a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+
+			$data['data_query_'. $val->hdmf_loan_status ][] = $info;
+		}
+		
+		//$this->textM->aaa($data);
+		$this->load->view('includes/template', $data);
 	}
 	
 } //end class
