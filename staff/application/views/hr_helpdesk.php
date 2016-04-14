@@ -22,8 +22,42 @@
 	 	margin-top: 12.5px;
 	 }
 
-	 
-	
+	.td_hover {
+	    position: relative;
+	    display: inline-block;
+	    text-align: center;
+	}
+
+.td_hover .show_details {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    left: 110%;
+}
+
+.td_hover .show_details::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+}
+.td_hover:hover .show_details {
+    visibility: visible;
+} 
+
+
+
 </style>
 
 <h2>HR HelpDesk</h2>
@@ -56,7 +90,14 @@
       	<tbody>
       	<?php foreach ($HrHelpDesk as $key => $value) { ?>
       		<tr>
-	      		<td><a href="'.$this->config->base_url().'hr_incidentinfo/" class="iframe"><?php echo $value->cs_post_id; ?></a></td>
+	      		<td class="td_hover">
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_incidentinfo" class="iframe">
+	      				<?php echo $value->cs_post_id; ?>
+	      			</a>
+      			<div class="show_details">
+      				Details of the incident
+      			</div>
+	      		</td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
