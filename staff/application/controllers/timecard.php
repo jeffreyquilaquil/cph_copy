@@ -1976,7 +1976,7 @@ class Timecard extends MY_Controller {
 					}
 					//for tax refund
 					//deduct tax refund from gross pay
-					if( isset($item->payID) )
+					if( isset($item->payID) ) {
 						if( in_array( $item->payID, array(43, 46) ) ){
 							$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
 							$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
