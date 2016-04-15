@@ -42,10 +42,10 @@ class Ask_hr extends CI_Model {
 		return $arr;
      } // end of hrelpdesk function
 
-     function hrinsedentform($field, $table, $where=''){ // query without join
+     function getdata($field, $table, $where=''){ // query without join
      	$arr = array();
      	if($where!='')$where = 'WHERE '.$where;
-     	$quary = $this->db->query("SELECT".$field."FROM".$table." ".$where);
+     	$query = $this->db->query("SELECT ".$field." FROM ".$table." ".$where);
      	foreach ($query->result() as $value) {
      		$arr[] = $value;
      	}

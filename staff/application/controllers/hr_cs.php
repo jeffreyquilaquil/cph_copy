@@ -14,6 +14,7 @@
 		public function index(){
             $data['content']='askHR_submissionpage';
             $data['msg_newID']=0;
+
 			$this->load->view('includes/templatecolorbox',$data);
 		} // end of index function
 
@@ -26,11 +27,11 @@
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
-			$data['cs_post_date_submitted']= date('Y-m-d');
+			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');
 			$data['cs_post_status']= 0; 
 			
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
-			$data2['cs_msg_date_submitted']= date('Y-m-d');
+			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text']= $this->input->post('askHR_details');
 
@@ -110,8 +111,8 @@
 				
 				//getting data from db
 				//for New incident data HR HELP DESK
-				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
-				
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0');
+
 
 				$this->load->view('includes/template',$data);
 
@@ -119,23 +120,39 @@
 
             }//end of HrHelpDesk function
 
-            public function HrIncident()
-            {
+            public function HrIncident(){
             	
             	$data['content']='hr_incidentinfo';
+            	if($this->input->get('id') != ''){
+            		$insedent_id = $this->input->get('id');
+            	}else{
+            		$insedent_id = $this->input->get('postid');
+            	}
 
-            	$insedent_id = $this->input->get('id');
+            	
 
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
+
+            	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
 
             	
 				$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
+            
+            function addcategory(){
+            	$data['categorys'] = $this->input->post('category_name');
+            	
+  			   $this->ask_hr->askhr('assign_category',$data);
+  			   $data2['content']='hr_incidentinfo';
+  			  $this->load->view('includes/templatecolorbox',$data2);
+
+            }// end insertion new category
+
 
             function test(){ // this for testing function
-            	$data = $this->input->get('id');
-            	echo $data;
-            }
+            	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+            	echo json_encode($data);
+            }// end test function
 
 } // end of class
 

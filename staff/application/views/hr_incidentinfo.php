@@ -17,6 +17,7 @@
 	}
 </style>
 
+
 <div>
 
 <?php foreach ($HrIncident as $key => $value): ?>
@@ -49,16 +50,22 @@
 		<td>Assign Category</td>
 		<td>
 			<select required>
-			<option value="">Compensation and Benefits</option>
 			<option></option>
+			<?php foreach ($category as $key => $val): ?>
+
+				<option><?php echo $val->categorys; ?></option>
+
+			<?php endforeach ?>
+			
 		</select>
 		<br>
 		<span id="add_category" style="text-decoration: underline;cursor: pointer;">Add Category</span>
 		
 		<div id="show_add_category">
 		<br>
-			<form>
-				Category name: <input type="text" name="category_name"> <input type="submit" value="Add">
+			<form id="form" name="form">
+				<input type="hidden" name="postid" value="<?php echo $value->cs_post_id; ?>">
+				Category name: <input id="newcategory" type="text" name="category_name" required> <input id="submit" type="submit" value="Add">
 			</form>	
 		</div>
 		</td>
@@ -136,6 +143,7 @@
 	</tr>
 </table>
 </div>
+	
 
 <script type="text/javascript">
 	$(function(){
@@ -160,4 +168,25 @@
 		});
 	
 	});
+ 
+	$(document).ready(function() { // jquery for insertion new category
+		$("#submit").click(function() {
+			var category = $("#newcategory").val();
+			
+			if (category == '') {
+				alert("Insert new category!");
+			} else {
+	// Returns successful data submission message when the entered information is stored in database.
+			$.post("<?php echo $this->config->base_url(); ?>hr_cs/addcategory", {
+				category_name: category,
+				
+	}, function(data) {
+		alert("New Category Inserted!");
+			$('#form')[0].reset(); // To reset form fields
+			});
+			}
+		});
+	}); //end funtion
+
+
 </script>
