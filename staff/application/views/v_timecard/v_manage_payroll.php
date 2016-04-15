@@ -78,7 +78,7 @@
 		</tr>
 		</thead>
 	<?php
-		var_dump($pagepayroll);
+		
 		foreach($dataStaffs AS $staff){
 			echo '<tr>';
 				echo '<td>'.$this->textM->formfield('checkbox', 'checkMe[]', $staff->empID, 'classCheckMe').'</td>';
