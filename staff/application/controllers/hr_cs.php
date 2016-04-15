@@ -111,7 +111,7 @@
 				
 				//getting data from db
 				//for New incident data HR HELP DESK
-				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0');
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
 
 
 				$this->load->view('includes/template',$data);
@@ -138,7 +138,7 @@
             	
 				$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
-            
+
             function addcategory(){
             	$data['categorys'] = $this->input->post('category_name');
             	

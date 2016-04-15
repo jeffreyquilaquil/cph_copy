@@ -32,7 +32,7 @@ class Ask_hr extends CI_Model {
 
      function hrhelpdesk($fields, $table, $join='', $orderby=''){ // query with join
      	$arr = array();
-		if($orderby!='') $orderby = 'ORDER BY '.$orderby;
+		if($orderby!='') $orderby = 'ORDER BY '.$orderby. ' ASC';
 
 		$query = $this->db->query("SELECT ".$fields." FROM ".$table." ".$join." ".$orderby);
 		

@@ -55,7 +55,7 @@
 
 <h2>HR HelpDesk</h2>
 <ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">New</li>
+	<li class="tab-link current" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($HrHelpDesk)?> )</font></li>
 	<li class="tab-link" data-tab="tab-2">Active</li>
 	<li class="tab-link" data-tab="tab-3">Resolved</li>
 	<li class="tab-link" data-tab="tab-4">Cancelled</li>
@@ -72,7 +72,7 @@
 <div id="tab-1" class="tab-content current">
   <br>
 
-      <table id="dt_new">
+      <table id="new" class="datatable">
       	<thead>
       		<th>Incident #</th>
       		<th>Customer</th>
@@ -80,7 +80,7 @@
       		<th>Subject</th>
       		<th>Priority</th>
       	</thead>
-      	<tbody>
+
       	<?php foreach ($HrHelpDesk as $key => $value) { ?>
       		<tr>
 	      		<td class="td_hover">
@@ -98,16 +98,16 @@
       		</tr>	     
 
       		<?php } ?> 		
-      	</tbody>
+  
       </table>
 
 <script type="text/javascript">
-	$(function(){
-		$("#dt_new").dataTable({
-			aaSorting: [[2, 'asc']],
-		
+	/*$(function(){
+		$("#new").dataTable({
+			aaSorting: [[2, 'asc']]
+			
 		}); 
-	});
+	}); */
 </script>
 
       <br>
