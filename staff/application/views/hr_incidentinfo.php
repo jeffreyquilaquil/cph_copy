@@ -115,17 +115,17 @@
 			
 			<br>
 			
-			<span id="found_answer" class="resol_link"></span>
+			<span id="found_answer" class="resol_link">The answer can be found in employee.tatepublishing.net</span>
 			
 			<br>
 			<br>
 			
-			<span id="custom_answer" class="resol_link"></span>
+			<span id="custom_answer" class="resol_link">Send custom resolution response</span>
 			
 			<br>
 			<br>
 			
-			<span id="not_found_answer" class="resol_link"></span>
+			<span id="not_found_answer" class="resol_link">This is not an HR inquiry. Redirect to another department.</span>
 			
 			<br>
 			<br>
