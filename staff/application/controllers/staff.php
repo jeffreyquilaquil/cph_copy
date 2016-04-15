@@ -2334,7 +2334,7 @@ class Staff extends MY_Controller {
 				$updatetext = array();
 				$updateArr = array();
 				if( !empty($_POST['staffHolidaySched']) ){
-					$updateArr['staffHolidaySched'] = $data['holidaySched_array'][ $_POST['staffHolidaySched'] ];
+					$updateArr['staffHolidaySched'] = $_POST['staffHolidaySched'];
 					$updatetext['staffHolidaySched'] = array(
 							'c' => $data['holidaySched_array'][ $data['row']->staffHolidaySched ],
 							'n' => $data['holidaySched_array'][ $_POST['staffHolidaySched'] ]
