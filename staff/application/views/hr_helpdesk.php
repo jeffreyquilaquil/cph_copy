@@ -103,7 +103,8 @@
 
 <script type="text/javascript">
 	$(function(){
-		$("table#dt_new").dataTable();					
+		$("table#dt_new").dataTable();	
+		 aaSorting: [[2, 'asc']],				
 	});
 </script>
 
