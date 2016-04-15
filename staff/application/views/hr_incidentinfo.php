@@ -158,7 +158,7 @@
 <div id="found_answer_form">
 	<table class="tableInfo">
 		<tr>
-			<td colspan="2">
+			<td>
 				<h2>
 					HR Incident Number <?php echo $value->cs_post_id; ?> 
 
@@ -196,7 +196,7 @@
 <div id="custom_answer_form">
 	<table class="tableInfo">
 		<tr>
-			<td colspan="2">
+			<td>
 				<h2>
 					HR Incident Number <?php echo $value->cs_post_id; ?> 
 
@@ -222,31 +222,50 @@
 	</table>
 </div>
 
+<div id="notfound_answer_form">
+	<table class="tableInfo">
+		<tr>
+			<td colspan="2">
+				<h2>
+					HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+					<br>
+
+					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+				</h2>
+			</td>	
+		</tr>
+		<tr>
+			<td>To what deparment does this person need to be redirected to?</td>
+			<td>
+				<select required>
+					<option></option>
+					<option>Accounting Team (accounting.cebu@tatepublishing.net)</option>
+					<option>IT Team (helpdesk.cebu@tatepublishing.net)</option>
+					<option>Immeadiate Supervisor (Immeadiate supervisors'email add)</option>
+				</select>
+			</td>	
+		</tr>
+		<tr>
+			<td valign="top">Add custom message</td>
+			<td><textarea style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<span  id="add_redirect_dept" class="resol_link">Add redirection department</span>
+				<input type="button" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Resolve incident">
+			</td>
+		</tr>
+		
+
+	</table>
+</div>
+
+
 
 <script type="text/javascript">
-	$(function(){
 
-		$("#appear_furtherinfo").hide();
-		
-		$("#yes").click(function(){
-	    	$("#appear_furtherinfo").show();
-		});
-	
-		$("#no").click(function(){
-		    $("#appear_furtherinfo").hide();
-		});
-	});	
-
-	$(function(){
-
-		$("#show_add_category").hide();
-		
-		$("#add_category").click(function(){
-	    	$("#show_add_category").show();
-		});
-	
-	});
- 
 	$(document).ready(function() { // jquery for insertion new category
 		$("#submit").click(function() {
 			var category = $("#newcategory").val();
@@ -268,23 +287,36 @@
 
 $(document).ready(function(){
 
-		$("#hr_incidentinfo_form").show();
-		$("#found_answer_form").hide();
-		$("#custom_answer_form").hide();
+	$("#show_add_category").hide();
+	
+	// ===== sHOW ADD CATEGORY ======
+	$("#add_category").click(function(){$("#show_add_category").show();});
 
-		// ===== SHOW FOUND ANSWER FORM =====
-		$("#found_answer").click(function(){
-	    	
-	    	$("#hr_incidentinfo_form").hide();
-	    	$("#found_answer_form").show();
-		});
+	$("#appear_furtherinfo").hide();
+	// ===== SHOW FURTHER INFO LINK =====
+	$("#yes").click(function(){$("#appear_furtherinfo").show();});
+	
+	// ===== HIDE FURTHER INFO LINK =====
+	$("#no").click(function(){$("#appear_furtherinfo").hide();});
 
-		// ===== SHOW CUSTOM ANSWER FORM =====
-		$("#custom_answer").click(function(){
-	    	
-	    	$("#hr_incidentinfo_form").hide();
-	    	$("#custom_answer_form").show();
-		});
+	$("#hr_incidentinfo_form").show();
+	$("#found_answer_form").hide();
+	$("#custom_answer_form").hide();
+
+	// ===== SHOW FOUND ANSWER FORM =====
+	$("#found_answer").click(function(){
+
+	$("#hr_incidentinfo_form").hide();
+	$("#found_answer_form").show();
+	
 	});
+
+	// ===== SHOW CUSTOM ANSWER FORM =====
+	$("#custom_answer").click(function(){
+    	
+    	$("#hr_incidentinfo_form").hide();
+    	$("#custom_answer_form").show();
+	});
+});
 
 </script>
