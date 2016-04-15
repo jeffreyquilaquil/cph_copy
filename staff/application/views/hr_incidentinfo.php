@@ -15,10 +15,18 @@
 		text-decoration: red;
 		cursor: pointer;
 	}
+
+
+	.btn_ans{
+		background-color: #CCCCCC; 
+		font-weight: bold;
+		width: 100%;
+		padding: 3px;
+	}
 </style>
 
 
-<div>
+<div id="hr_incidentinfo_form">
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
@@ -50,19 +58,20 @@
 		<td>Assign Category</td>
 		<td>
 			<select required>
-			<option></option>
-			<?php foreach ($category as $key => $val): ?>
-
-				<option><?php echo $val->categorys; ?></option>
-
-			<?php endforeach ?>
-			
+					<option></option>
+				<?php foreach ($category as $key => $val): ?>
+					<option><?php echo $val->categorys; ?></option>
+				<?php endforeach ?>
 		</select>
+		
 		<br>
+		
 		<span id="add_category" style="text-decoration: underline;cursor: pointer;">Add Category</span>
 		
 		<div id="show_add_category">
+		
 		<br>
+
 			<form id="form" name="form">
 				<input type="hidden" name="postid" value="<?php echo $value->cs_post_id; ?>">
 				Category name: <input id="newcategory" type="text" name="category_name" required> <input id="submit" type="submit" value="Add">
@@ -71,11 +80,13 @@
 		</td>
 	</tr>
 	<tr>
-		<td>Inverstigation Required:</td>
+		<td>Investigation Required:</td>
 		<td>
 			<input id="yes" type="radio" name="investigation_required_radio" value="" required> Yes
 			<input id="no" type="radio" name="investigation_required_radio" value=""> No
+			
 			<br>
+
 			<span class="note">
 				Note to HR: If you are able to provide answer to the question within 24 hours,
 				select <b>NO</b> if you need to involve or collect information from other departments,
@@ -104,17 +115,17 @@
 			
 			<br>
 			
-			<span id="found_answer" class="resol_link"></span>
+			<span id="found_answer" class="resol_link">The answer can be found in employee.tatepublishing.net</span>
 			
 			<br>
 			<br>
 			
-			<span id="custom_answer" class="resol_link"></span>
+			<span id="custom_answer" class="resol_link">Send custom resolution response</span>
 			
 			<br>
 			<br>
 			
-			<span id="not_found_answer" class="resol_link"></span>
+			<span id="not_found_answer" class="resol_link">This is not an HR inquiry. Redirect to another department.</span>
 			
 			<br>
 			<br>
@@ -144,6 +155,73 @@
 </table>
 </div>
 	
+<div id="found_answer_form">
+	<table class="tableInfo">
+		<tr>
+			<td colspan="2">
+				<h2>
+					HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+					<br>
+
+					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+				</h2>
+			</td>	
+		</tr>
+		<tr>
+			<td>
+				<small>Please place below the link to the page in employee.tatepublishing.net</small>
+
+				<br>
+
+				<input type="text" style="width: 100%">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<small>You may right below an additional custom message to the customer (optional):</small>
+
+				<br>
+
+				<textarea style="height:200px; resize: none;"></textarea>
+
+				<br><br>
+
+				<input type="button" class="btn_ans" value="Resolve Incident">
+			</td>
+		</tr>
+	</table>
+</div>
+
+<div id="custom_answer_form">
+	<table class="tableInfo">
+		<tr>
+			<td colspan="2">
+				<h2>
+					HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+					<br>
+
+					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+				</h2>
+			</td>	
+		</tr>
+		<tr>
+			<td>
+				<small>Please write below your resolution message to employee:</small>
+
+				<br>
+
+				<textarea style="height:200px; resize: none;"></textarea>
+
+				<br><br>
+
+				<input type="button" class="btn_ans" value="Resolve Incident">
+			</td>
+		</tr>
+	</table>
+</div>
+
 
 <script type="text/javascript">
 	$(function(){
@@ -188,5 +266,25 @@
 		});
 	}); //end funtion
 
+$(document).ready(function(){
+
+		$("#hr_incidentinfo_form").show();
+		$("#found_answer_form").hide();
+		$("#custom_answer_form").hide();
+
+		// ===== SHOW FOUND ANSWER FORM =====
+		$("#found_answer").click(function(){
+	    	
+	    	$("#hr_incidentinfo_form").hide();
+	    	$("#found_answer_form").show();
+		});
+
+		// ===== SHOW CUSTOM ANSWER FORM =====
+		$("#custom_answer").click(function(){
+	    	
+	    	$("#hr_incidentinfo_form").hide();
+	    	$("#custom_answer_form").show();
+		});
+	});
 
 </script>
