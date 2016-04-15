@@ -212,6 +212,10 @@ class Textmodel extends CI_Model {
 				$c = json_decode($a->changes);
 				$cnt = 0;
 				$arr = array();
+				if(isset($c->staffHolidaySched)){
+					$arr[$cnt][0] = 'Holiday Schedule'; $arr[$cnt][1] = $c->staffHolidaySched->c; $arr[$cnt][2] = $c->staffHolidaySched->n;
+					$cnt++;
+				}
 				if(isset($c->position)){
 					$arr[$cnt][0] = 'Position Title'; $arr[$cnt][1] = $c->position->c; $arr[$cnt][2] = $c->position->n;
 					$cnt++;

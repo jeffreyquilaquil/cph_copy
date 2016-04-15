@@ -269,6 +269,20 @@ class Staffmodel extends CI_Model {
 		$pdf->SetFont('Arial','I',10);	
 		
 		$nextY = 85;
+		if(isset($changes->staffHolidaySched)){
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Holiday Schedule",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4, $changes->staffHolidaySched->c,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->staffHolidaySched->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();			
+		}
+
 		if(isset($changes->position)){
 			$y = $nextY;
 			$pdf->setXY(18, $y);

@@ -6,15 +6,35 @@ if($updated==false && count($row)>0){
 <table class="tableInfo">
 	<tr class="trlabel"><td colspan=2>Select the information to be updated</td></tr>
 	<tr><td colspan=2>
-		<input type="checkbox" id="title" <? if(isset($wonka->fieldname) && $wonka->fieldname=='title'){ echo 'checked'; } ?>> Position Title <br/>
-		<input type="checkbox" id="office" <? if(isset($wonka->fieldname) && $wonka->fieldname=='office'){ echo 'checked'; } ?>> Office branch <br/>
-		<input type="checkbox" id="shift" <? if(isset($wonka->fieldname) && $wonka->fieldname=='shift'){ echo 'checked'; } ?>> Shift Schedule <br/>
-		<input type="checkbox" id="isup"> Immediate Supervisor <br/>
-	<?php if($row->endDate!='0000-00-00'){ ?><input type="checkbox" id="enddate"> Separation Date <br/><? } ?>
-		<input type="checkbox" id="empstatus" <? if(isset($wonka->fieldname) && $wonka->fieldname=='regDate'){ echo 'checked'; } ?>> Employment Status / Regularization Date <br/>
-		<input type="checkbox" id="salary" <? if(isset($wonka->fieldname) && $wonka->fieldname=='sal'){ echo 'checked'; } ?>> Basic Salary <br/>
+		<input type="checkbox" id="holiday" <? if(isset($wonka->fieldname) && $wonka->fieldname=='holiday'){ echo 'checked'; } ?>><label for="holiday">Holiday Schedule</label> <br/>
+		<input type="checkbox" id="title" <? if(isset($wonka->fieldname) && $wonka->fieldname=='title'){ echo 'checked'; } ?>> <label for="title">Position Title</label> <br/>
+		<input type="checkbox" id="office" <? if(isset($wonka->fieldname) && $wonka->fieldname=='office'){ echo 'checked'; } ?>> <label for="office">Office branch</label> <br/>
+		<input type="checkbox" id="shift" <? if(isset($wonka->fieldname) && $wonka->fieldname=='shift'){ echo 'checked'; } ?>> <label for="shift">Shift Schedule</label> <br/>
+		<input type="checkbox" id="isup"> <label for="isup">Immediate Supervisor</label> <br/>
+	<?php if($row->endDate!='0000-00-00'){ ?><input type="checkbox" id="enddate"> <label for="enddate"> Separation Date</label> <br/><? } ?>
+		<input type="checkbox" id="empstatus" <? if(isset($wonka->fieldname) && $wonka->fieldname=='regDate'){ echo 'checked'; } ?>> <label for="empstatus"> Employment Status / Regularization Date</label> <br/>
+		<input type="checkbox" id="salary" <? if(isset($wonka->fieldname) && $wonka->fieldname=='sal'){ echo 'checked'; } ?>> <label for="salary">Basic Salary</label> <br/>
 	</td></tr>
 <form action="" method="POST" onSubmit="return validateform();">
+	<!----- Holiday Schedule ---->
+	<tr class="trholiday trblank hidden"><td colspan="2"><br/></td></tr>
+	<tr class="trlabel trholiday hidden">
+		<td width="40%">Current holiday schedule</td>
+		<td>Select new holiday schedule</td>
+	</tr>
+	<tr class="trholiday hidden">
+		<td><?php echo $holidaySched_array[ $row->staffHolidaySched ]; ?></td>
+		<td>
+			<select class="forminput" name="staffHolidaySched" id="valholiday">
+				<option value=""></option>
+				<?php foreach( $holidaySched_array as $key => $val){
+						echo '<option value="'.$key.'">'.$val.'</option>';
+					}
+				?>
+			</select>
+		</td>
+	</tr>
+
 	<!-------------------------------			TITLE				---------->
 	<tr class="trtitle trblank hidden"><td colspan=2><br/></td></tr>
 	<tr class="trlabel trtitle hidden">
@@ -169,6 +189,7 @@ if($updated==false && count($row)>0){
 		showhide('enddate');
 		showhide('empstatus');
 		showhide('salary');
+		showhide('holiday');
 		
 		$('#title').click(function(){ showhide('title'); });
 		$('#office').click(function(){ showhide('office'); });
@@ -176,7 +197,9 @@ if($updated==false && count($row)>0){
 		$('#isup').click(function(){ showhide('isup'); });
 		$('#enddate').click(function(){ showhide('enddate'); });
 		$('#empstatus').click(function(){ showhide('empstatus'); });
-		$('#salary').click(function(){ showhide('salary'); });	
+		$('#salary').click(function(){ showhide('salary'); });
+		$('#holiday').click(function(){ showhide('holiday'); });
+			
 	});
 	
 	function showhide(id){
@@ -261,6 +284,12 @@ echo '<table class="tableInfo">';
 	$cnum=0;
 	$cval = array();
 	$changes = json_decode($row->changes);	
+	if(isset($changes->staffHolidaySched)){
+		echo '<tr class="trhead"><td colspan=2>Change in Holiday Schedule</td></tr>';
+		echo '<tr><td width="30%">Current Info</td><td>'.$changes->staffHolidaySched->c.'</td></tr>';
+		echo '<tr><td width="30%">New Info</td><td class="errortext">'.$changes->staffHolidaySched->n.'</td></tr>';
+		echo '<tr><td colspan=2><br/></td></tr>';
+	}
 	if(isset($changes->position)){
 		echo '<tr class="trhead"><td colspan=2>Change in Position Title</td></tr>';
 		echo '<tr><td width="30%">Current Info</td><td>'.$changes->position->c.'</td></tr>';

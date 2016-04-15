@@ -2322,15 +2322,24 @@ class Staff extends MY_Controller {
 	public function generatecis(){	
 		$data['content'] = 'generatecis';
 		$data['updated'] = false;
-			
+		$data['holidaySched_array']	= $this->textM->constantArr('staffHolidaySched');
+
 		if($this->user!=false){
 			$id = $this->uri->segment(2);	
 				
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) as name, title, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) as name, title, staffHolidaySched, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
 									
 			if(!empty($_POST)){
+				//$this->textM->aaa($_POST);
 				$updatetext = array();
 				$updateArr = array();
+				if( !empty($_POST['staffHolidaySched']) ){
+					$updateArr['staffHolidaySched'] = $data['holidaySched_array'][ $_POST['staffHolidaySched'] ];
+					$updatetext['staffHolidaySched'] = array(
+							'c' => $data['holidaySched_array'][ $data['row']->staffHolidaySched ],
+							'n' => $data['holidaySched_array'][ $_POST['staffHolidaySched'] ]
+						);
+				}
 				if(!empty($_POST['position'])){
 					$p = explode('|',$_POST['position']);
 					$updateArr['position'] = $p[0];
@@ -2440,7 +2449,7 @@ class Staff extends MY_Controller {
 	public function updatecis(){
 		$data['content'] = 'generatecis';
 		$data['updated'] = true;
-		
+		$data['holidaySched_array']	= $this->textM->constantArr('staffHolidaySched');
 		if($this->user!=false){
 			$cisID = $this->uri->segment(2);
 			$data['row'] = $this->dbmodel->getSingleInfo('staffCIS','staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffCIS.preparedby) AS prepName', 'cisID="'.$cisID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
