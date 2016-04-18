@@ -23,7 +23,12 @@
 
 			//checking if there is session data
 			$empID = $this->user->empID;
-			
+
+			/*$this->load->flibrary('form_validation');
+			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
+			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');*/
+
+			$this->load->helper('security');
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
@@ -34,6 +39,7 @@
 			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text']= $this->input->post('askHR_details');
+			$data = $this->security->xss_clean($data2['cs_msg_text']);
 
 			
 			if( $this->isSetNotEmpty($_FILES)){
