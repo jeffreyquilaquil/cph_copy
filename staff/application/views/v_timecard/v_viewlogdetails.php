@@ -76,7 +76,12 @@
 			echo '<b>Schedule Today:</b> <b class="errortext">'.$schedToday['sched'].'</b><br/>';
 		} 
 		if(isset($schedToday['offset'])){
-			echo '<b>Offset Schedule:</b> <b class="errortext">'.$schedToday['offset'].'</b><br/>';
+			if( is_array($schedToday['offset']) ){
+				foreach( $schedToday['offset'] as $offset ){
+					echo '<b>Offset Schedule:</b> <b class="errortext">'.$offset.'</b><br/>';		
+				}
+			}
+			
 		} 
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
