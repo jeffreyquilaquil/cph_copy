@@ -160,7 +160,7 @@
             	$found_answer = $this->input->post('found_answer_link');
             	       
             		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['sulotion'] = $found_answer;
+            		$data['sulotion_link'] = $found_answer;
             		$data['message'] = $this->input->post('found_answer_custom');
             		$data['assign_category'] = $this->input->post('assign_category');
             		
@@ -172,10 +172,10 @@
 
             }
             public function custom_answer_sulotion(){
-            	$custom_answer = $this->input->post('custom_answer_msg');
+            	$custom_answer = $this->input->post('found_answer_custom');
 
-            	$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['sulotion'] = null;
+            		$data['insedent_id'] = $this->input->post('insedentid');
+            		
             		$data['message'] = $custom_answer;
             		$data['assign_category'] = $this->input->post('assign_category');
 
@@ -186,9 +186,10 @@
             }
 
             public function notfound_answe_sulotion(){
-            	$not_found_answer = $this->input->post('not_found_answer_msg');
-            	$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['sulotion'] = $this->input->post('redirect_department');
+            	$not_found_answer = $this->input->post('notfound_answer_custom');
+
+            		$data['insedent_id'] = $this->input->post('insedentid');
+            		$data['redirect_link'] = $this->input->post('redirect_department');
             		$data['message'] = $not_found_answer;
             		$data['assign_category'] = $this->input->post('assign_category');
 
@@ -198,19 +199,7 @@
 
             }
 
-            public function FunctionName($value='')
-            {
-            	$further_ans_msg = $this->input->post('further_answer_msg');
-            	$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['sulotion'] = null;
-            		$data['message'] = $further_ans_msg;
-            		$data['assign_category'] = $this->input->post('assign_category');
-
-            		$this->ask_hr->askhr('insedent_answer',$data);
-            		$data2['content']='hr_helpdesk';
-	  				$this->load->view('includes/template',$data2);
-
-            }
+           
 
             function test(){ // this for testing function
             	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');

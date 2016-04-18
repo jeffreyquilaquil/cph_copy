@@ -25,8 +25,6 @@
 	}
 </style>
 
-<form id="form_answer">
-
 <div id="hr_incidentinfo_form"> <!-- ===== INCEDENT INFORMATION FORM ===== -->
 
 <?php foreach ($HrIncident as $key => $value): ?>
@@ -158,7 +156,7 @@
 
 	
 <div id="found_answer_form"> <!-- ======================== FOUND ANSWER FORM =========================== -->
-
+<form id="found_answer_forms">
 	<input id="insedentid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 
 	<table class="tableInfo">
@@ -180,7 +178,7 @@
 
 				<br>
 
-				<input type="text" id="found_answer_link" name="found_answer_link" style="width: 100%">
+				<input type="text" id="found_answer_link" name="found_answer_link" style="width: 100%" required>
 			</td>
 		</tr>
 		<tr>
@@ -197,10 +195,11 @@
 			</td>
 		</tr>
 	</table>
-
+</form>
 </div>
 
 <div id="custom_answer_form"> <!-- =================== Custom ANSWER FORM ====================== -->
+<form id="custom_ans_form">
 	<table class="tableInfo">
 		<tr>
 			<td>
@@ -227,9 +226,11 @@
 			</td>
 		</tr>
 	</table>
+	</form>
 </div>
 
 <div id="notfound_answer_form"> <!-- ===================== NOT FOUND ANSWER FORM ============================ -->
+<form id="not_found_ans_form">
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
@@ -267,9 +268,11 @@
 		
 
 	</table>
+	</form>
 </div>
 
 <div id="further_answer_form"> <!-- ====================== FURTHER ANSWER FORM ============================= -->
+<form id="further_ans_form">
 	<table class="tableInfo">
 		<tr>
 			<td>
@@ -298,86 +301,154 @@
 			</td>
 		</tr>
 	</table>
+	</form>
 </div>
-
-</form>
 
 
 <script type="text/javascript">
 
 $(document).ready(function() { // jquery for insertion Found answer in link
-		$("#custom_answer_submit").click(function() {
-			var ins_id = $("#insedentid").val();
-			var custom_ans = $("#custom_answer_msg").val();
-			var found_ans_custom = null;
-			var ass_categ = $("#assign_category").val();
-			
-			if (found_answer_link == '') {
-				alert("Fill the link!");
-			} else {
-	// Returns successful data submission message when the entered information is stored in database.
-			$.post("<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion", {
-				insedentid: ins_id,
-				custom_answer_msg: custom_ans,
-				assign_category: ass_categ
-
-				
-	}, function(data) {
-		alert("New Category Inserted!");
-			$('#form_answer')[0].reset(); // To reset form fields
-			});
-			}
-		});
-	}); //end funtion
-
-	$(document).ready(function() { // jquery for insertion Found answer in link
 		$("#found_answer_submit").click(function() {
 			var ins_id = $("#insedentid").val();
-			var found_ans_link = $("#found_answer_link").val();
-			var found_ans_custom = $("#found_answer_custom").val();
 			var ass_categ = $("#assign_category").val();
+			var fnd_answer_link = $("#found_answer_link").val();
+			var custom_ans = $("#found_answer_custom").val();
+
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans;
 			
-			if (found_answer_link == '') {
-				alert("Fill the link!");
-			} else {
-	// Returns successful data submission message when the entered information is stored in database.
-			$.post("<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion", {
-				insedentid: ins_id,
-				found_answer_link: found_ans_link,
-				found_answer_custom: found_ans_custom,
-				assign_category: ass_categ
-				
-	}, function(data) {
-		alert("New Category Inserted!");
-			$('#form_answer')[0].reset(); // To reset form fields
-			});
-			}
-		});
-	}); //end funtion
+			
+			if (fnd_answer_link == '') {
+				alert("Some Field is Empty!");
+			}else{
+				// AJAX Code To Submit Form.
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion",
+				data: dataString,
+				cache: false,
+				success: function(result){
+				alert("Success!");
+				$('#found_answer_forms')[0].reset(); // To reset form fields
+				}
+				});
+				}
+				return false;
+				});
+
+		$("#custom_answer_submit").click(function() {
+			var ins_id = $("#insedentid").val();
+			var ass_categ = $("#assign_category").val();
+			var fnd_answer_link = null;
+			var custom_ans = $("#custom_answer_msg").val();
+
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+			
+			
+			if (custom_ans == '') {
+				alert("Some Field is Empty!");
+			}else{
+				// AJAX Code To Submit Form.
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+				data: dataString,
+				cache: false,
+				success: function(result){
+				alert("Success!");
+				$('#custom_ans_form')[0].reset(); // To reset form fields
+				}
+				});
+				}
+				return false;
+				});
+
+
+		$("#not_found_answer_submit").click(function() {
+
+			var ins_id = $("#insedentid").val();
+			var ass_categ = $("#assign_category").val();
+			var redirect = $("#redirect_department option:selected").val();
+			var custom_ans = $("#not_found_custom_msg").val();
+
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect;
+			
+			
+			if (redirect == '' || custom_ans== '') {
+				alert("Some Field is Empty!");
+			}else{
+				// AJAX Code To Submit Form.
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_sulotion",
+				data: dataString,
+				cache: false,
+				success: function(result){
+				alert("Success!");
+				$('#not_found_ans_form')[0].reset(); // To reset form fields
+				}
+				});
+				}
+				return false;
+				}); 
+
+
+		$("#furder_submit").click(function() {
+			var ins_id = $("#insedentid").val();
+			var ass_categ = $("#assign_category").val();
+			var custom_ans = $("#further_answer_msg").val();
+
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+			
+			if (custom_ans == '') {
+				alert("Some Field is Empty!");
+			}else{
+				// AJAX Code To Submit Form.
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+				data: dataString,
+				cache: false,
+				success: function(result){
+				alert("Success!");
+				$('#further_ans_form')[0].reset(); // To reset form fields
+				}
+				});
+				}
+				return false;
+				});
+
+		//}); //end funtion
 
 
 
 
-	$(document).ready(function() { // jquery for insertion new category
+
+	//$(document).ready(function() { // jquery for insert new category
 		$("#submit").click(function() {
 			var category = $("#newcategory").val();
+
+			var datacategorys = 'category_name='+ category;
 			
 			if (category == '') {
 				alert("Insert new category!");
 			} else {
-	// Returns successful data submission message when the entered information is stored in database.
-			$.post("<?php echo $this->config->base_url(); ?>hr_cs/addcategory", {
-				category_name: category
-				
-	}, function(data) {
-		alert("New Category Inserted!");
-			$('#form')[0].reset(); // To reset form fields
-			});
-			}
-		});
-	}); //end funtion
 
-$(document).ready(function(){
+				// AJAX Code To Submit Form.
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
+				data: datacategorys,
+				cache: false,
+				success: function(result){
+				alert("Success!");
+				$('#form')[0].reset(); // To reset form fields
+				}
+				});
+				}
+		});
+	//}); //end funtion
+
+//$(document).ready(function(){
 
 	$("#show_add_category").hide();
 	
