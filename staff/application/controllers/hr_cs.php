@@ -123,31 +123,88 @@
             public function HrIncident(){
             	
             	$data['content']='hr_incidentinfo';
-            	if($this->input->get('id') != ''){
-            		$insedent_id = $this->input->get('id');
-            	}else{
-            		$insedent_id = $this->input->get('postid');
-            	}
+
+	            	if($this->input->get('id') != ''){
+	            		$insedent_id = $this->input->get('id');
+	            	}else{
+	            		$insedent_id = $this->input->get('postid');
+	            	}
 
             	
 
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
 
-            	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+            		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
 
             	
-				$this->load->view('includes/templatecolorbox',$data);
+					$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
 
-            function addcategory(){
-            	$data['categorys'] = $this->input->post('category_name');
-            	
-  			   $this->ask_hr->askhr('assign_category',$data);
-  			   $data2['content']='hr_incidentinfo';
-  			  $this->load->view('includes/templatecolorbox',$data2);
+	        function addcategory(){
+	            	$data['categorys'] = $this->input->post('category_name');
+	            	
+	  			   	$this->ask_hr->askhr('assign_category',$data);
+	  			   	$data2['content']='hr_incidentinfo';
+	  			  	$this->load->view('includes/templatecolorbox',$data2);
 
             }// end insertion new category
 
+            public function found_answer_sulotion(){
+
+            	$found_answer = $this->input->post('found_answer_link');
+            	       
+            		$data['insedent_id'] = $this->input->post('insedentid');
+            		$data['sulotion'] = $found_answer;
+            		$data['message'] = $this->input->post('found_answer_custom');
+            		$data['assign_category'] = $this->input->post('assign_category');
+            		
+
+            	$this->ask_hr->askhr('insedent_answer',$data);
+            	$data2['content']='hr_helpdesk';
+	  			$this->load->view('includes/template',$data2);
+
+
+            }
+            public function custom_answer_sulotion(){
+            	$custom_answer = $this->input->post('custom_answer_msg');
+
+            	$data['insedent_id'] = $this->input->post('insedentid');
+            		$data['sulotion'] = null;
+            		$data['message'] = $custom_answer;
+            		$data['assign_category'] = $this->input->post('assign_category');
+
+            		$this->ask_hr->askhr('insedent_answer',$data);
+            		$data2['content']='hr_helpdesk';
+	  				$this->load->view('includes/template',$data2);
+
+            }
+
+            public function notfound_answe_sulotion(){
+            	$not_found_answer = $this->input->post('not_found_answer_msg');
+            	$data['insedent_id'] = $this->input->post('insedentid');
+            		$data['sulotion'] = $this->input->post('redirect_department');
+            		$data['message'] = $not_found_answer;
+            		$data['assign_category'] = $this->input->post('assign_category');
+
+            		$this->ask_hr->askhr('insedent_answer',$data);
+            		$data2['content']='hr_helpdesk';
+	  				$this->load->view('includes/template',$data2);
+
+            }
+
+            public function FunctionName($value='')
+            {
+            	$further_ans_msg = $this->input->post('further_answer_msg');
+            	$data['insedent_id'] = $this->input->post('insedentid');
+            		$data['sulotion'] = null;
+            		$data['message'] = $further_ans_msg;
+            		$data['assign_category'] = $this->input->post('assign_category');
+
+            		$this->ask_hr->askhr('insedent_answer',$data);
+            		$data2['content']='hr_helpdesk';
+	  				$this->load->view('includes/template',$data2);
+
+            }
 
             function test(){ // this for testing function
             	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');

@@ -25,8 +25,9 @@
 	}
 </style>
 
+<form id="form_answer">
 
-<div id="hr_incidentinfo_form">
+<div id="hr_incidentinfo_form"> <!-- ===== INCEDENT INFORMATION FORM ===== -->
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
@@ -57,10 +58,10 @@
 	<tr>
 		<td>Assign Category</td>
 		<td>
-			<select required>
+			<select id="assign_category" name="assign_category">
 					<option></option>
 				<?php foreach ($category as $key => $val): ?>
-					<option><?php echo $val->categorys; ?></option>
+					<option value="<?php echo $val->categorys; ?>"><?php echo $val->categorys; ?></option>
 				<?php endforeach ?>
 		</select>
 		
@@ -82,8 +83,8 @@
 	<tr>
 		<td>Investigation Required:</td>
 		<td>
-			<input id="yes" type="radio" name="investigation_required_radio" value="" required> Yes
-			<input id="no" type="radio" name="investigation_required_radio" value=""> No
+			<input id="yes" type="radio" name="investigation_required_radio" value="yes" required> Yes
+			<input id="no" type="radio" name="investigation_required_radio" value="no" checked="true"> No
 			
 			<br>
 
@@ -154,12 +155,17 @@
 	</tr>
 </table>
 </div>
+
 	
-<div id="found_answer_form">
+<div id="found_answer_form"> <!-- ======================== FOUND ANSWER FORM =========================== -->
+
+	<input id="insedentid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+
 	<table class="tableInfo">
 		<tr>
 			<td>
 				<h2>
+
 					HR Incident Number <?php echo $value->cs_post_id; ?> 
 
 					<br>
@@ -174,7 +180,7 @@
 
 				<br>
 
-				<input type="text" style="width: 100%">
+				<input type="text" id="found_answer_link" name="found_answer_link" style="width: 100%">
 			</td>
 		</tr>
 		<tr>
@@ -183,17 +189,18 @@
 
 				<br>
 
-				<textarea style="height:200px; resize: none;"></textarea>
+				<textarea style="height:200px; resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
 
 				<br><br>
 
-				<input type="button" class="btn_ans" value="Resolve Incident">
+				<input id="found_answer_submit" type="submit" class="btn_ans" value="Resolve Incident">
 			</td>
 		</tr>
 	</table>
+
 </div>
 
-<div id="custom_answer_form">
+<div id="custom_answer_form"> <!-- =================== Custom ANSWER FORM ====================== -->
 	<table class="tableInfo">
 		<tr>
 			<td>
@@ -212,17 +219,17 @@
 
 				<br>
 
-				<textarea style="height:200px; resize: none;"></textarea>
+				<textarea id="custom_answer_msg" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
 
 				<br><br>
 
-				<input type="button" class="btn_ans" value="Resolve Incident">
+				<input type="submit" id="custom_answer_submit" class="btn_ans" value="Resolve Incident">
 			</td>
 		</tr>
 	</table>
 </div>
 
-<div id="notfound_answer_form">
+<div id="notfound_answer_form"> <!-- ===================== NOT FOUND ANSWER FORM ============================ -->
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
@@ -238,7 +245,7 @@
 		<tr>
 			<td>To what deparment does this person need to be redirected to?</td>
 			<td>
-				<select required>
+				<select id="redirect_department" name="redirect_department" required>
 					<option></option>
 					<option>Accounting Team (accounting.cebu@tatepublishing.net)</option>
 					<option>IT Team (helpdesk.cebu@tatepublishing.net)</option>
@@ -248,13 +255,13 @@
 		</tr>
 		<tr>
 			<td valign="top">Add custom message</td>
-			<td><textarea style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
+			<td><textarea id="not_found_custom_msg" name="not_found_custom_msg" style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
 		</tr>
 		<tr>
 			<td></td>
 			<td>
 				<span  id="add_redirect_dept" class="resol_link">Add redirection department</span>
-				<input type="button" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Resolve incident">
+				<input type="submit" id="not_found_answer_submit" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Resolve incident">
 			</td>
 		</tr>
 		
@@ -262,9 +269,94 @@
 	</table>
 </div>
 
+<div id="further_answer_form"> <!-- ====================== FURTHER ANSWER FORM ============================= -->
+	<table class="tableInfo">
+		<tr>
+			<td>
+				<h2>
+					HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+					<br>
+
+					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+				</h2>
+			</td>	
+		</tr>
+		<tr>
+			<td>
+				<small>Please write below your update to the customer as to what information is requoired to resolve the matter</small>
+
+				<br>
+
+				<textarea id="further_answer_msg" name="further_answer_msg" style="height:200px; resize: none;"></textarea>
+
+				<br><br>
+				<a href="#">Send email to another department / staff</a>
+				<br><br>
+
+				<input type="submit" id="furder_submit" class="btn_ans" value="Submit">
+			</td>
+		</tr>
+	</table>
+</div>
+
+</form>
 
 
 <script type="text/javascript">
+
+$(document).ready(function() { // jquery for insertion Found answer in link
+		$("#custom_answer_submit").click(function() {
+			var ins_id = $("#insedentid").val();
+			var custom_ans = $("#custom_answer_msg").val();
+			var found_ans_custom = null;
+			var ass_categ = $("#assign_category").val();
+			
+			if (found_answer_link == '') {
+				alert("Fill the link!");
+			} else {
+	// Returns successful data submission message when the entered information is stored in database.
+			$.post("<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion", {
+				insedentid: ins_id,
+				custom_answer_msg: custom_ans,
+				assign_category: ass_categ
+
+				
+	}, function(data) {
+		alert("New Category Inserted!");
+			$('#form_answer')[0].reset(); // To reset form fields
+			});
+			}
+		});
+	}); //end funtion
+
+	$(document).ready(function() { // jquery for insertion Found answer in link
+		$("#found_answer_submit").click(function() {
+			var ins_id = $("#insedentid").val();
+			var found_ans_link = $("#found_answer_link").val();
+			var found_ans_custom = $("#found_answer_custom").val();
+			var ass_categ = $("#assign_category").val();
+			
+			if (found_answer_link == '') {
+				alert("Fill the link!");
+			} else {
+	// Returns successful data submission message when the entered information is stored in database.
+			$.post("<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion", {
+				insedentid: ins_id,
+				found_answer_link: found_ans_link,
+				found_answer_custom: found_ans_custom,
+				assign_category: ass_categ
+				
+	}, function(data) {
+		alert("New Category Inserted!");
+			$('#form_answer')[0].reset(); // To reset form fields
+			});
+			}
+		});
+	}); //end funtion
+
+
+
 
 	$(document).ready(function() { // jquery for insertion new category
 		$("#submit").click(function() {
@@ -275,7 +367,7 @@
 			} else {
 	// Returns successful data submission message when the entered information is stored in database.
 			$.post("<?php echo $this->config->base_url(); ?>hr_cs/addcategory", {
-				category_name: category,
+				category_name: category
 				
 	}, function(data) {
 		alert("New Category Inserted!");
@@ -302,6 +394,8 @@ $(document).ready(function(){
 	$("#hr_incidentinfo_form").show();
 	$("#found_answer_form").hide();
 	$("#custom_answer_form").hide();
+	$("#notfound_answer_form").hide();
+	$("#further_answer_form").hide();
 
 	// ===== SHOW FOUND ANSWER FORM =====
 	$("#found_answer").click(function(){
@@ -316,6 +410,18 @@ $(document).ready(function(){
     	
     	$("#hr_incidentinfo_form").hide();
     	$("#custom_answer_form").show();
+	});
+	// ===== SHOW NOT FOUND ANSWER FORM =====
+	$("#not_found_answer").click(function(){
+    	
+    	$("#hr_incidentinfo_form").hide();
+    	$("#notfound_answer_form").show();
+	});
+
+	$("#further_answer").click(function(){
+    	
+    	$("#hr_incidentinfo_form").hide();
+    	$("#further_answer_form").show();
 	});
 });
 

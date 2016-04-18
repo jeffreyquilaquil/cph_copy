@@ -50,26 +50,29 @@
 	.td_hover:hover .show_details {
 	    visibility: visible;
 	}
+	.dbold{
+		font-weight: bold;
+	}
 
 </style>
 
 <h2>HR HelpDesk</h2>
 <ul class="tabs">
-	<li class="tab-link current" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($HrHelpDesk)?> )</font></li>
-	<li class="tab-link" data-tab="tab-2">Active</li>
-	<li class="tab-link" data-tab="tab-3">Resolved</li>
-	<li class="tab-link" data-tab="tab-4">Cancelled</li>
+	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($HrHelpDesk)?> )</font></li>
+	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active</li>
+	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
+	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
 
-	<div class="options-right">
+	<div class=" dbold options-right">
 		<a class="other_links" href="#">Generate Reports</a>	
-		<a class="other_links" href="#">HR Customer CSatResults</a>
+		<a class="other_links" id="activ_hide" href="#">HR Customer CSatResults</a>
 	</div>
 	
 </ul>
 
 
 <hr/>
-<div id="tab-1" class="tab-content current">
+<div id="tab-1" class="tab-content current">  <!--========= NEW TAB ==============-->
   <br>
 
       <table id="new" class="datatable">
@@ -101,34 +104,67 @@
   
       </table>
 
-<script type="text/javascript">
-	/*$(function(){
-		$("#new").dataTable({
-			aaSorting: [[2, 'asc']]
-			
-		}); 
-	}); */
-</script>
 
       <br>
       <h2>SETTINGS</h2><br>
 	
-	<div class="settings-bottom">
-		<a class="other_links" href="#">Add Categories</a>
-  		<a class="other_links" href="#">Edit HR User Permissions</a>
-  		<a class="other_links" href="#">Edit Message Templates</a>
-  		<a class="other_links" href="#">Add a Redirection Department</a>
+	<div class=" dbold settings-bottom">
+		<a class="other_links" href="#"><b>Add Categories</b></a>
+  		<a class="other_links" href="#"><b>Edit HR User Permissions</b></a>
+  		<a class="other_links" href="#"><b>Edit Message Templates</b></a>
+  		<a class="other_links" href="#"><b>Add a Redirection Department</b></a>
 	</div>    	
 </div>
 
-<div id="tab-2" class="tab-content">
+<div id="tab-2" class="tab-content"> <!--=========ACTIVE TAB ==============-->
 
-B
+  <br>
 
-<div class="tiptext">Text
-<div class="description"> Here is the big fat description box</div>
-</div>
+      <table id="new" class="datatable">
+      	<thead>
+      		<th>Incident #</th>
+      		<th>Customer</th>
+      		<th>Date Submitted</th>
+      		<th>Category</th>
+      		<th>Subject</th>
+      		<th>Priority</th>
+      		<th>Assigned SLA</th>
+      		<th>Owner</th>
+      		<th>Last Update</th>
+      		<th>Give Update</th>
+      	</thead>
 
+      	
+      		<tr>
+	      		<td class="td_hover">
+	      			Insedent #
+      			<div class="show_details">
+      				Details of the incident
+      			</div>
+	      		</td>
+	      		<td>fname</td>
+	      		<td>date submitid</td>
+	      		<td>ctegory</td>
+	      		<td>subject</td>
+	      		<td>priority</td>
+	      		<td>assigned SAL</td>
+	      		<td>Owner</td>
+	      		<td>Last Update</td>
+	      		<td>Give Update</td>
+      		</tr>	     
+	
+  
+      </table>
+
+
+      <br>
+      <h2>SETTINGS</h2><br>
+	
+	<div class=" dbold settings-bottom">
+		<a class="other_links" href="#">Add Categories</a>
+  		<a class="other_links" href="#">Edit HR User Permissions</a>
+  		<a class="other_links" href="#">Edit Message Templates</a>
+	</div> 
 
 </div>
 
@@ -140,3 +176,25 @@ C
 
 D
 </div>
+
+<script type="text/javascript">
+	
+	$(document).ready(function(){
+
+	$("#activ_hide").show();
+
+	// ===== SHOW FOUND ANSWER FORM =====
+	$("#active_tab").click(function(){
+
+	$("#activ_hide").hide();
+	
+	});
+	$("#new_tab").click(function(){
+
+	$("#activ_hide").show();
+	
+	});
+
+
+	});
+</script>

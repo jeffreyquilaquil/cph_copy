@@ -56,14 +56,14 @@
 					What's your inquiry/report to HR about? 
 				</td>
 				<td align="center">
-					<input type="text" name="cs_post_subject" style="width: 100%">
+					<input type="text" name="cs_post_subject" style="width: 100%" required>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
 					Select the urgency of this request: <br>
 
-						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent"> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
+						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent" checked="true"> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
 						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention"> This can wait, but work will be delayed if this is not resolved soon <br>
 						<input type="radio" class="radio-pos"name="cs_post_urgency" value="Not Urgent"> Take your time. I can wait for this information.	
 				</td>
