@@ -3,7 +3,7 @@
 	if($this->access->accessFull==true || ($this->user->empID!=$visitID && $this->access->accessHRFinance==true)){
 		$editAccess = true;
 	}
-		
+	//var_dump($editAccess);
 	$date00 = '0000-00-00 00:00:00';
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
@@ -227,7 +227,7 @@
 			echo '</form>';
 		}
 						
-		if((isset($schedToday['sched']) && $schedToday['sched']!='On Leave') || $dataLog->timeIn!=$date00 || $dataLog->timeOut!=$date00){
+		if((isset($schedToday['sched']) && $schedToday['sched']!='On Leave') || $dataLog->timeIn!=$date00 || $dataLog->timeOut!=$date00 OR isset($schedToday['offset'])){
 			echo '<table id="tblinsertedlog" class="tableInfo" style="margin-top:10px;">';
 				///INSERTED LOGS RECORD
 				echo '<tr class="trlabel"><td colspan=4>INSERTED LOG TODAY ';
