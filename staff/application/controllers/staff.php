@@ -307,7 +307,7 @@ class Staff extends MY_Controller {
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
 										
-				if($this->access->accessFullHRFinance==false){
+				if($this->access->accessFullHRFinance==false OR $this->access->accessMedPerson == true){
 					$ids = '"",'; //empty value for staffs with no under yet
 					$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
 					foreach($myStaff AS $m):
