@@ -42,7 +42,7 @@
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
-
+<input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
 <table class="tableInfo">
 	<tr>
 		<td colspan="2">
@@ -85,7 +85,7 @@
 		<br>
 
 			<form id="form" name="form">
-				<input type="hidden" name="postid" value="<?php echo $value->cs_post_id; ?>">
+				<input type="hidden" id="insedentid" name="postid" value="<?php echo $value->cs_post_id; ?>">
 				Category name: <input id="newcategory" type="text" name="category_name" required> <input id="submit" type="submit" value="Add">
 			</form>	
 		</div>
@@ -170,7 +170,8 @@
 <!-- ===== FOUND ANSWER  ===== -->
 <div id="found_answer_form"> 
 	<form id="found_answer_forms">
-		<input id="insedentid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+		<input id="foundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+		<input id="foundcategid" type="hidden" name="insedentcategid" value="<?php echo $value->cs_post_id; ?> ">
 
 		<table class="tableInfo">
 			<tr>
@@ -214,6 +215,8 @@
 <!-- ===== CUSTOM ANSWER  ===== -->
 <div id="custom_answer_form"> 
 	<form id="custom_ans_form">
+	<input id="customid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+	<input id="customcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 		<table class="tableInfo">
 			<tr>
 				<td>
@@ -246,6 +249,8 @@
 <!-- ===== NOT FOUND ANSWER  ===== -->
 <div id="notfound_answer_form"> 
 <form id="not_found_ans_form">
+<input id="notfoundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+<input id="notfoundcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
@@ -345,11 +350,14 @@
 		<br>
 
 		<span id="back_to_add_redirect" class="resol_link">Add redirection department</span>
+
 	</div>
 
 <!-- ====== FURTHER ANSWER  ====== -->
 <div id="further_answer_form"> 
 	<form id="further_ans_form">
+	<input id="furtherid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+	<input id="furthercategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 		<table class="tableInfo">
 			<tr>
 				<td>
@@ -425,26 +433,29 @@ $(document).ready(function() {
 	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
 	$("#found_answer_submit").click(function() {
 
-		var ins_id = $("#insedentid").val();
+		var ins_id = $("#foundid").val();
+		var inscateg_id = $("#categoryid").val();
 		var ass_categ = $("#assign_category").val();
 		var fnd_answer_link = $("#found_answer_link").val();
 		var custom_ans = $("#found_answer_custom").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id +'&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans +'&categid=' + inscateg_id;
 		
 		
+
 		if (fnd_answer_link == '') {
 			alert("Some Field is Empty!");
 		}else{
+			alert(dataString);
 		
 				// ===== AJAX CODE TO SUBMIT FORM =====
 				$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_solution",
 					data: dataString,
 					cache: false,
 						success: function(result){
-						alert("Success!");
+						alert('success!');
 						// ===== TO RESET FORM FIELDS =====
 						$('#found_answer_forms')[0].reset(); 
 						}
@@ -457,12 +468,12 @@ $(document).ready(function() {
 	// ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
 	$("#custom_answer_submit").click(function() {
 		
-		var ins_id = $("#insedentid").val();
-		var ass_categ = $("#assign_category").val();
-		var fnd_answer_link = null;
+		var ins_id = $("#customid").val();
+		var inscateg_id = $("#customcategid").val();
+		var ass_categ = $("#assign_category option:selected").val();
 		var custom_ans = $("#custom_answer_msg").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&customcategid=' + inscateg_id;
 		
 		
 			if (custom_ans == '') {
@@ -473,7 +484,7 @@ $(document).ready(function() {
 					// ===== AJAX CODE TO SUBMIT FORM =====
 					$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
 					data: dataString,
 					cache: false,
 						success: function(result){
@@ -488,12 +499,13 @@ $(document).ready(function() {
 	// ===== JQUERY FOR INSERTION NOT FOUND ANSWER IN LINK =====
 	$("#not_found_answer_submit").click(function() {
 
-		var ins_id = $("#insedentid").val();
+		var ins_id = $("#notfoundid").val();
+		var inscateg_id = $("#notfoundcategid").val();
 		var ass_categ = $("#assign_category").val();
-		var redirect = $("#redirect_department option:selected").val();
+		var redirect = $("#redirect_department").val();
 		var custom_ans = $("#not_found_custom_msg").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect;
+		var dataString = 'insedentid=' + ins_id + '&assign_category=' + ass_categ + '&notfound_answer_custom=' + custom_ans + '&redirect_department=' + redirect + '&notfoundcategid=' + inscateg_id;
 		
 			if (redirect == '' || custom_ans== '') {
 
@@ -503,7 +515,7 @@ $(document).ready(function() {
 					// ===== AJAX CODE TO SUBMIT FORM =====
 					$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_solution",
 					data: dataString,
 					cache: false,
 					
@@ -519,11 +531,12 @@ $(document).ready(function() {
 
 	// ===== JQUERY FOR INSERTION FURTHER ANSWER IN LINK =====
 	$("#furder_submit").click(function() {
-		var ins_id = $("#insedentid").val();
-		var ass_categ = $("#assign_category").val();
+		var ins_id = $("#furtherid").val();
+		var inscateg_id = $("#furthercategid").val();
+		var ass_categ = $("#assign_category option:selected").val();
 		var custom_ans = $("#further_answer_msg").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans +'&furthercategid=' + inscateg_id;
 		
 		if (custom_ans == '') {
 			alert("Some Field is Empty!");
@@ -532,7 +545,7 @@ $(document).ready(function() {
 			// ===== AJAX CODE TO SUBMIT FORM =====
 			$.ajax({
 			type: "POST",
-			url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+			url: "<?php echo $this->config->base_url(); ?>hr_cs/further_investigation",
 			data: dataString,
 			cache: false,
 			

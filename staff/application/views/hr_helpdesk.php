@@ -64,8 +64,9 @@
 	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
 
 	<div class=" dbold options-right">
+		<a class="other_links" id="activ_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR Customer CSatResults</a>
 		<a class="other_links" href="#">Generate Reports</a>	
-		<a class="other_links" id="activ_hide" href="#">HR Customer CSatResults</a>
+		
 	</div>
 	
 </ul>

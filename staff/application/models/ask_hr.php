@@ -51,6 +51,12 @@ class Ask_hr extends CI_Model {
      	}
      	return $arr;
      } // end hrinsedentform
+
+     function updatestatus($table,$set,$where){ //update any status
+     	$sql = ("UPDATE ".$table." SET ".$set." WHERE ".$where." ");
+     	$this->db->query($sql);
+
+     }// end update function
    
 } // end of class
 

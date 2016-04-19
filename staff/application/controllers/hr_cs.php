@@ -117,7 +117,7 @@
 				
 				//getting data from db
 				//for New incident data HR HELP DESK
-				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','LEFT JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
 
 
 				$this->load->view('includes/template',$data);
@@ -157,35 +157,46 @@
 
             public function found_answer_solution(){
 
-            	       
-            		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['assign_category'] = $this->input->post('assign_category');
-            		$data['type_solution'] = $this->input->post('typ_solution');
 
-            		$data['sulotion_link'] = $this->input->post('found_answer_link');
-            		$data['sulotion_link'] = $this->security->xss_clean($data['sulotion_link']);
+            		$id = $this->input->post('insedentid');
 
-					$data['message'] = $this->input->post('found_answer_custom');
-            		$data['message'] = $this->security->xss_clean($data['message']);
+               		$link = $this->input->post('found_answer_link');
+            		$message = $this->input->post('found_answer_custom');
+            		$cus_message = $this->security->xss_clean($message);
+
             		
+            		$data['cs_msg_postID_fk'] =  $id;
+            		$data['cs_msg_text'] = $link.'<br>'.$cus_message;
+            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+					$this->ask_hr->askhr('hr_cs_msg',$data);
 
-            	$this->ask_hr->askhr('insedent_answer',$data);
-            	$data2['content']='hr_helpdesk';
-	  			$this->load->view('includes/template',$data2);
+					
+            		$categ = $this->input->post('assign_category');
+
+            		if($categ != ''){
+            		$id_msg = $this->input->post('categid');
+					$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
+            		}
+
+
+	            	$data3['content']='hr_helpdesk';
+		  			$this->load->view('includes/template',$data3);
 
 
             }
             public function custom_answer_solution(){
-            	
+            		$id = $this->input->post('insedentid');
 
-            		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['assign_category'] = $this->input->post('assign_category');
-            		$data['type_solution'] = $this->input->post('typ_solution');
+            		$data['cs_msg_postID_fk'] =  $id;
+            		$custommessage=  $this->input->post('custom_answer_msg');
+            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-            		$data['message'] =  $this->input->post('found_answer_custom');
-            		$data['message'] = $this->security->xss_clean($data['message']);
+            		$id_msg = $this->input->post('customcategid');
+	            	$categ = $this->input->post('assign_category');
+					$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
 
-            		$this->ask_hr->askhr('insedent_answer',$data);
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
 
@@ -193,17 +204,49 @@
 
             public function notfound_answe_solution(){
             
-            		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['redirect_link'] = $this->input->post('redirect_department');           		
-            		$data['assign_category'] = $this->input->post('assign_category');
-            		$data['type_solution'] = $this->input->post('typ_solution');
+            		$id = $this->input->post('insedentid');
 
-            		$data['message'] = $this->input->post('notfound_answer_custom');
-            		$data['message'] = $this->security->xss_clean($data['message']);
+            		$direct_email = $this->input->post('redirect_department'); 
+            		$message = $this->input->post('notfound_answer_custom');
+            		$cus_message = $this->security->xss_clean($message);
 
-            		$this->ask_hr->askhr('insedent_answer',$data);
+            		$data['cs_msg_postID_fk'] =  $id;
+            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
+            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+            		$id_msg = $this->input->post('notfoundcategid');
+	            	$categ = $this->input->post('assign_category');
+	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);	
+
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
+
+            }
+
+             public function further_investigation(){
+            	
+
+            		$id = $this->input->post('insedentid');
+
+            		$data['cs_msg_postID_fk'] =  $id;
+            		$data['cs_msg_text'] =  $this->input->post('found_answer_custom');
+            		$data['cs_msg_text'] = $this->security->xss_clean($data['cs_msg_text']);
+            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+					$id_msg = $this->input->post('furthercategid');
+	            	$categ = $this->input->post('assign_category');
+	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
+
+            		$data2['content']='hr_helpdesk';
+	  				$this->load->view('includes/template',$data2);
+
+            }
+
+            function hr_custom_satisfaction(){
+            	$data['content']='hr_cust_satisfaction_survey';
+	  			$this->load->view('includes/template',$data);
 
             }
 
