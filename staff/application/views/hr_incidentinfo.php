@@ -266,9 +266,68 @@
 			</td>
 		</tr>
 		
-
 	</table>
 	</form>
+
+</div>
+
+<!--  ADD A REDIRECTION DEPARTMENT -->
+<div id="add_redirect_dept_form">
+	<table class="tableInfo">
+		<tr>
+			<td><h2>Add a Redirection Department</h2></td>
+		</tr>
+		<tr>
+			<td>
+				<small>Name of the department/team customers can be directed to:</small>
+
+				<br>
+				
+				<input type="text" style="width: 100%" required>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<small>What is the email address/es that the employee can</small>
+
+				<br>
+				
+				<input type="text" style="width: 100%" required>
+
+			</td>
+		</tr>
+		<tr>
+			<td align="left"><span id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</span></td>
+			<td align="right"><input type="submit" id="not_found_answer_submit" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Submit"></td>
+		</tr>
+	</table>
+</div>
+
+<!-- ALL DIRECTION DEPARTMENTS -->
+<div id="see_all_redirect_dept_form">
+
+	<table class="tableInfo">
+		<tr>
+			<td colspan="2"><h2>All Direction Departments</h2></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>Department Name</td>
+			<td>Email Address</td>
+			<td>Edit</td>
+			<td>Delete</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+
+	<br>
+
+	<span id="back_to_add_redirect" class="resol_link">Add redirection department</span>
 </div>
 
 <div id="further_answer_form"> <!-- ====================== FURTHER ANSWER FORM ============================= -->
@@ -307,193 +366,267 @@
 
 <script type="text/javascript">
 
-$(document).ready(function() { // jquery for insertion Found answer in link
-		$("#found_answer_submit").click(function() {
-			var ins_id = $("#insedentid").val();
-			var ass_categ = $("#assign_category").val();
-			var fnd_answer_link = $("#found_answer_link").val();
-			var custom_ans = $("#found_answer_custom").val();
+$(document).ready(function() { 
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans;
-			
-			
-			if (fnd_answer_link == '') {
-				alert("Some Field is Empty!");
-			}else{
-				// AJAX Code To Submit Form.
+	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
+	$("#found_answer_submit").click(function() {
+
+		var ins_id = $("#insedentid").val();
+		var ass_categ = $("#assign_category").val();
+		var fnd_answer_link = $("#found_answer_link").val();
+		var custom_ans = $("#found_answer_custom").val();
+
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans;
+		
+		
+		if (fnd_answer_link == '') {
+			alert("Some Field is Empty!");
+		}else{
+		
+				// ===== AJAX CODE TO SUBMIT FORM =====
 				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion",
-				data: dataString,
-				cache: false,
-				success: function(result){
-				alert("Success!");
-				$('#found_answer_forms')[0].reset(); // To reset form fields
-				}
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion",
+					data: dataString,
+					cache: false,
+						success: function(result){
+						alert("Success!");
+						// ===== TO RESET FORM FIELDS =====
+						$('#found_answer_forms')[0].reset(); 
+						}
 				});
-				}
-				return false;
-				});
+			}
 
-		$("#custom_answer_submit").click(function() {
-			var ins_id = $("#insedentid").val();
-			var ass_categ = $("#assign_category").val();
-			var fnd_answer_link = null;
-			var custom_ans = $("#custom_answer_msg").val();
+			return false;
+	});
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
-			
-			
+	// ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
+	$("#custom_answer_submit").click(function() {
+		
+		var ins_id = $("#insedentid").val();
+		var ass_categ = $("#assign_category").val();
+		var fnd_answer_link = null;
+		var custom_ans = $("#custom_answer_msg").val();
+
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		
+		
 			if (custom_ans == '') {
+
 				alert("Some Field is Empty!");
 			}else{
-				// AJAX Code To Submit Form.
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
-				data: dataString,
-				cache: false,
-				success: function(result){
-				alert("Success!");
-				$('#custom_ans_form')[0].reset(); // To reset form fields
-				}
-				});
+
+					// ===== AJAX CODE TO SUBMIT FORM =====
+					$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+					data: dataString,
+					cache: false,
+						success: function(result){
+						alert("Success!");
+						$('#custom_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+						}
+					});
 				}
 				return false;
-				});
+		});
 
+	// ===== JQUERY FOR INSERTION NOT FOUND ANSWER IN LINK =====
+	$("#not_found_answer_submit").click(function() {
 
-		$("#not_found_answer_submit").click(function() {
+		var ins_id = $("#insedentid").val();
+		var ass_categ = $("#assign_category").val();
+		var redirect = $("#redirect_department option:selected").val();
+		var custom_ans = $("#not_found_custom_msg").val();
 
-			var ins_id = $("#insedentid").val();
-			var ass_categ = $("#assign_category").val();
-			var redirect = $("#redirect_department option:selected").val();
-			var custom_ans = $("#not_found_custom_msg").val();
-
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect;
-			
-			
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect;
+		
 			if (redirect == '' || custom_ans== '') {
+
 				alert("Some Field is Empty!");
 			}else{
-				// AJAX Code To Submit Form.
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_sulotion",
-				data: dataString,
-				cache: false,
+
+					// ===== AJAX CODE TO SUBMIT FORM =====
+					$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_sulotion",
+					data: dataString,
+					cache: false,
+					
+						success: function(result){
+						alert("Success!");
+						$('#not_found_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+						}
+					});
+				}
+
+			return false;
+	}); 
+
+	// ===== JQUERY FOR INSERTION FURTHER ANSWER IN LINK =====
+	$("#furder_submit").click(function() {
+		var ins_id = $("#insedentid").val();
+		var ass_categ = $("#assign_category").val();
+		var custom_ans = $("#further_answer_msg").val();
+
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		
+		if (custom_ans == '') {
+			alert("Some Field is Empty!");
+		}else{
+			
+			// ===== AJAX CODE TO SUBMIT FORM =====
+			$.ajax({
+			type: "POST",
+			url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+			data: dataString,
+			cache: false,
+			
 				success: function(result){
 				alert("Success!");
-				$('#not_found_ans_form')[0].reset(); // To reset form fields
+				$('#further_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
 				}
 				});
-				}
-				return false;
-				}); 
+			}
+
+			return false;
+	});
 
 
-		$("#furder_submit").click(function() {
-			var ins_id = $("#insedentid").val();
-			var ass_categ = $("#assign_category").val();
-			var custom_ans = $("#further_answer_msg").val();
+	// ====== INSERT NEW CATEGORY =====
+	$("#submit").click(function() {
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
-			
-			if (custom_ans == '') {
-				alert("Some Field is Empty!");
-			}else{
-				// AJAX Code To Submit Form.
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
-				data: dataString,
-				cache: false,
-				success: function(result){
-				alert("Success!");
-				$('#further_ans_form')[0].reset(); // To reset form fields
-				}
-				});
-				}
-				return false;
-				});
+		var category = $("#newcategory").val();
 
-		//}); //end funtion
+		var datacategorys = 'category_name='+ category;
+		
+		if (category == '') {
+			alert("Insert new category!");
+		} else {
 
-
-
-
-
-	//$(document).ready(function() { // jquery for insert new category
-		$("#submit").click(function() {
-			var category = $("#newcategory").val();
-
-			var datacategorys = 'category_name='+ category;
-			
-			if (category == '') {
-				alert("Insert new category!");
-			} else {
-
-				// AJAX Code To Submit Form.
+			// ===== AJAX CODE TO SUBMIT FORM =====
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
 				data: datacategorys,
 				cache: false,
-				success: function(result){
-				alert("Success!");
-				$('#form')[0].reset(); // To reset form fields
-				}
-				});
-				}
-		});
-	//}); //end funtion
+					success: function(result){
+					alert("Success!");
+					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+					}
+					});
+			}
+	});
 
-//$(document).ready(function(){
-
+	// ====== DEFAULT HIDE ADD CATEGORY =====
 	$("#show_add_category").hide();
 	
-	// ===== sHOW ADD CATEGORY ======
-	$("#add_category").click(function(){$("#show_add_category").show();});
+		// ===== CLICK TO sHOW ADD CATEGORY ======
+		$("#add_category").click(function(){
+			$("#show_add_category").show();
+		});
 
+	// ===== DEFAULT HIDE FURTHER INFO LINK =====
 	$("#appear_furtherinfo").hide();
-	// ===== SHOW FURTHER INFO LINK =====
-	$("#yes").click(function(){$("#appear_furtherinfo").show();});
-	
-	// ===== HIDE FURTHER INFO LINK =====
-	$("#no").click(function(){$("#appear_furtherinfo").hide();});
 
+		// ===== CLICK TO SHOW FURTHER INFO LINK =====
+		$("#yes").click(function(){
+			$("#appear_furtherinfo").show();
+		});
+		
+		// ===== CLICK TO HIDE FURTHER INFO LINK =====
+		$("#no").click(function(){
+			$("#appear_furtherinfo").hide();
+		});
+
+	// ===== DEFAULT SHOW HR INCIDENT INFO FORM ===== 
 	$("#hr_incidentinfo_form").show();
+
+	// ===== HIDE LINK FOUND ANSWER =====
 	$("#found_answer_form").hide();
+
+		// ===== CLICK TO SHOW FOUND ANSWER FORM =====
+		$("#found_answer").click(function(){
+ 
+		$("#hr_incidentinfo_form").hide();
+		$("#found_answer_form").show();
+		
+		});
+
+	// ===== HIDE LINK CUSTOME ANSWER =====
 	$("#custom_answer_form").hide();
+
+		// ===== CLICK TO SHOW CUSTOM ANSWER FORM =====
+		$("#custom_answer").click(function(){
+	    	
+	    	$("#hr_incidentinfo_form").hide();
+	    	$("#custom_answer_form").show();
+		});
+
+	// ===== HIDE LINK NOT FOUND ANSWER =====
 	$("#notfound_answer_form").hide();
+
+		// ===== CLICK TO SHOW NOT FOUND ANSWER FORM =====
+		$("#not_found_answer").click(function(){
+	    	
+	    	$("#hr_incidentinfo_form").hide();
+	    	$("#notfound_answer_form").show();
+		});
+
+	// ===== HIDE LINK FURTHER ANSWER =====
 	$("#further_answer_form").hide();
-
-	// ===== SHOW FOUND ANSWER FORM =====
-	$("#found_answer").click(function(){
-
-	$("#hr_incidentinfo_form").hide();
-	$("#found_answer_form").show();
 	
-	});
+		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
+		$("#further_answer").click(function(){
+	    	
+	    	$("#hr_incidentinfo_form").hide();
+	    	$("#further_answer_form").show();
+		});
 
-	// ===== SHOW CUSTOM ANSWER FORM =====
-	$("#custom_answer").click(function(){
-    	
-    	$("#hr_incidentinfo_form").hide();
-    	$("#custom_answer_form").show();
-	});
-	// ===== SHOW NOT FOUND ANSWER FORM =====
-	$("#not_found_answer").click(function(){
-    	
-    	$("#hr_incidentinfo_form").hide();
-    	$("#notfound_answer_form").show();
-	});
+		// ===== HIDE LINK FURTHER ANSWER =====
+		$("#add_redirect_dept_form").hide();
+	
+		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
+		$("#add_redirect_dept").click(function(){
+	    	
+	    	$("#notfound_answer_form").hide();
+	    	$("#add_redirect_dept_form").show();
+		});
 
-	$("#further_answer").click(function(){
-    	
-    	$("#hr_incidentinfo_form").hide();
-    	$("#further_answer_form").show();
-	});
+		// ===== HIDE LINK FURTHER ANSWER =====
+		$("#see_all_redirect_dept_form").hide();
+	
+		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
+		$("#see_all_redirect_dept").click(function(){
+	    	
+	    	$("#add_redirect_dept_form").hide();
+	    	$("#see_all_redirect_dept_form").show();
+		});
+
+		// ===== CLICK TO SHOW ADD REDIRECT DEPARTMENT FORM =====
+		$("#add_redirect_dept_form").hide();
+		$("#add_redirect_dept").click(function(){
+	    	
+	    	$("#notfound_answer_form").hide();
+	    	$("#add_redirect_dept_form").show();
+		});
+
+		// ===== CLICK TO SHOW SEE ALL REDIRECT DEPT FORM =====
+		$("#see_all_redirect_dept_form").hide();
+		$("#see_all_redirect_dept").click(function(){
+	    	
+	    	$("#add_redirect_dept_form").hide();
+	    	$("#see_all_redirect_dept_form").show();
+
+		});
+
+		$("#back_to_add_redirect").click(function(){
+	    	
+	    	$("#see_all_redirect_dept_form").hide();
+	    	$("#add_redirect_dept_form").show();
+
+		});
+		
 });
 
 </script>
