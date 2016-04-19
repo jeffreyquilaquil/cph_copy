@@ -300,14 +300,15 @@ class Staff extends MY_Controller {
 	
 	public function manageStaff(){
 		$data['content'] = 'manageStaff';
-				
+		///$this->textM->aaa($this->user, false);
+		//$this->textM->aaa($this->access, true);
 		if($this->user!=false){		
-			if($this->user->access=='' && $this->user->level==0){
+			if($this->user->access=='' AND $this->user->level==0){
 				$data['access'] = false;
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
 										
-				if($this->access->accessFullHRFinance==false OR $this->access->accessMedPerson == true){
+				if($this->access->accessFullHRFinance==false AND $this->access->accessMedPerson == false){
 					$ids = '"",'; //empty value for staffs with no under yet
 					$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
 					foreach($myStaff AS $m):
@@ -321,7 +322,7 @@ class Staff extends MY_Controller {
 					}
 					
 					if($condition!='') $condition .= ' AND ';
-					$condition .= 'empID IN ('.rtrim($ids,',').')';							
+					$condition .= 'empID IN ('.rtrim($ids,',').') /*fullHR*/';							
 				}
 								
 				$flds = 'CONCAT(lname,", ",fname) AS name, ';
@@ -426,7 +427,7 @@ class Staff extends MY_Controller {
 				}				
 			}
 		}		
-		
+		//$this->output->enable_profiler(true);
 		$this->load->view('includes/template', $data);			
 	}
 			
