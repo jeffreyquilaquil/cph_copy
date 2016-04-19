@@ -446,9 +446,7 @@ $(document).ready(function() {
 		if (fnd_answer_link == '') {
 			alert("Some Field is Empty!");
 		}else{
-			alert(dataString);
-		
-				// ===== AJAX CODE TO SUBMIT FORM =====
+		// ===== AJAX CODE TO SUBMIT FORM =====
 				$.ajax({
 					type: "POST",
 					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_solution",

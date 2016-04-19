@@ -175,7 +175,7 @@
 
             		if($categ != ''){
             		$id_msg = $this->input->post('categid');
-					$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
+					$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
             		}
 
 
@@ -195,7 +195,7 @@
 
             		$id_msg = $this->input->post('customcategid');
 	            	$categ = $this->input->post('assign_category');
-					$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
+					$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
 
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
@@ -217,7 +217,7 @@
 
             		$id_msg = $this->input->post('notfoundcategid');
 	            	$categ = $this->input->post('assign_category');
-	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);	
+	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = "' .$categ. '"','cs_post_id = '.$id_msg);	
 
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
@@ -237,7 +237,7 @@
 
 					$id_msg = $this->input->post('furthercategid');
 	            	$categ = $this->input->post('assign_category');
-	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = '.$categ,'cs_post_id = '.$id_msg);
+	            	$this->ask_hr->updatestatus('hr_cs_post','assign_category = "' .$categ. '"','cs_post_id = '.$id_msg);
 
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
