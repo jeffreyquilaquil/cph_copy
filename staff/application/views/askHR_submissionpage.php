@@ -71,7 +71,7 @@
 			<tr>
 				<td colspan="2">
 					Explain the details of your inquiry in the box below:<br>
-						<textarea class="hidden tiny" name="askHR_details" style="height:350px;" required ></textarea>
+						<textarea class="hidden tiny" name="askHR_details" style="height:350px;"></textarea>
 				</td>
 			</tr>
 			<tr>

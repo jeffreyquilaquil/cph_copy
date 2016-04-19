@@ -6,7 +6,7 @@
 
 		public function __construct(){
 		parent::__construct();
-		
+		$this->load->helper('security');
 		$this->load->model('ask_hr');		
 		
 			}
@@ -28,7 +28,7 @@
 			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
 			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');*/
 
-			$this->load->helper('security');
+			
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
@@ -38,8 +38,8 @@
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
 			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
 			$data2['cs_msg_type']=1;
-			$data2['cs_msg_text']= $this->input->post('askHR_details');
-			$data = $this->security->xss_clean($data2['cs_msg_text']);
+			$data2['cs_msg_text'] = $this->input->post('askHR_details');
+			$data2['cs_msg_text'] = $this->security->xss_clean($data2['cs_msg_text']);
 
 			
 			if( $this->isSetNotEmpty($_FILES)){
@@ -155,14 +155,18 @@
 
             }// end insertion new category
 
-            public function found_answer_sulotion(){
+            public function found_answer_solution(){
 
-            	$found_answer = $this->input->post('found_answer_link');
             	       
             		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['sulotion_link'] = $found_answer;
-            		$data['message'] = $this->input->post('found_answer_custom');
             		$data['assign_category'] = $this->input->post('assign_category');
+            		$data['type_solution'] = $this->input->post('typ_solution');
+
+            		$data['sulotion_link'] = $this->input->post('found_answer_link');
+            		$data['sulotion_link'] = $this->security->xss_clean($data['sulotion_link']);
+
+					$data['message'] = $this->input->post('found_answer_custom');
+            		$data['message'] = $this->security->xss_clean($data['message']);
             		
 
             	$this->ask_hr->askhr('insedent_answer',$data);
@@ -171,13 +175,15 @@
 
 
             }
-            public function custom_answer_sulotion(){
-            	$custom_answer = $this->input->post('found_answer_custom');
+            public function custom_answer_solution(){
+            	
 
             		$data['insedent_id'] = $this->input->post('insedentid');
-            		
-            		$data['message'] = $custom_answer;
             		$data['assign_category'] = $this->input->post('assign_category');
+            		$data['type_solution'] = $this->input->post('typ_solution');
+
+            		$data['message'] =  $this->input->post('found_answer_custom');
+            		$data['message'] = $this->security->xss_clean($data['message']);
 
             		$this->ask_hr->askhr('insedent_answer',$data);
             		$data2['content']='hr_helpdesk';
@@ -185,13 +191,15 @@
 
             }
 
-            public function notfound_answe_sulotion(){
-            	$not_found_answer = $this->input->post('notfound_answer_custom');
-
+            public function notfound_answe_solution(){
+            
             		$data['insedent_id'] = $this->input->post('insedentid');
-            		$data['redirect_link'] = $this->input->post('redirect_department');
-            		$data['message'] = $not_found_answer;
+            		$data['redirect_link'] = $this->input->post('redirect_department');           		
             		$data['assign_category'] = $this->input->post('assign_category');
+            		$data['type_solution'] = $this->input->post('typ_solution');
+
+            		$data['message'] = $this->input->post('notfound_answer_custom');
+            		$data['message'] = $this->security->xss_clean($data['message']);
 
             		$this->ask_hr->askhr('insedent_answer',$data);
             		$data2['content']='hr_helpdesk';

@@ -429,8 +429,9 @@ $(document).ready(function() {
 		var ass_categ = $("#assign_category").val();
 		var fnd_answer_link = $("#found_answer_link").val();
 		var custom_ans = $("#found_answer_custom").val();
+		var typ_sol = 0;
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans + 'typ_solution='+ typ_sol;
 		
 		
 		if (fnd_answer_link == '') {
@@ -440,7 +441,7 @@ $(document).ready(function() {
 				// ===== AJAX CODE TO SUBMIT FORM =====
 				$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_solution",
 					data: dataString,
 					cache: false,
 						success: function(result){
@@ -461,8 +462,9 @@ $(document).ready(function() {
 		var ass_categ = $("#assign_category").val();
 		var fnd_answer_link = null;
 		var custom_ans = $("#custom_answer_msg").val();
+		var typ_sol = 1;
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans + 'typ_solution='+ typ_sol;
 		
 		
 			if (custom_ans == '') {
@@ -473,7 +475,7 @@ $(document).ready(function() {
 					// ===== AJAX CODE TO SUBMIT FORM =====
 					$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
 					data: dataString,
 					cache: false,
 						success: function(result){
@@ -492,8 +494,9 @@ $(document).ready(function() {
 		var ass_categ = $("#assign_category").val();
 		var redirect = $("#redirect_department option:selected").val();
 		var custom_ans = $("#not_found_custom_msg").val();
+		var typ_sol = 2;
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&notfound_answer_custom='+ custom_ans + '&redirect_department=' + redirect + 'typ_solution='+ typ_sol;
 		
 			if (redirect == '' || custom_ans== '') {
 
@@ -503,7 +506,7 @@ $(document).ready(function() {
 					// ===== AJAX CODE TO SUBMIT FORM =====
 					$.ajax({
 					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_sulotion",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_solution",
 					data: dataString,
 					cache: false,
 					
@@ -522,8 +525,9 @@ $(document).ready(function() {
 		var ins_id = $("#insedentid").val();
 		var ass_categ = $("#assign_category").val();
 		var custom_ans = $("#further_answer_msg").val();
+		var typ_sol = 3;
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans + 'typ_solution='+ typ_sol;
 		
 		if (custom_ans == '') {
 			alert("Some Field is Empty!");
@@ -532,7 +536,7 @@ $(document).ready(function() {
 			// ===== AJAX CODE TO SUBMIT FORM =====
 			$.ajax({
 			type: "POST",
-			url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_sulotion",
+			url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
 			data: dataString,
 			cache: false,
 			
