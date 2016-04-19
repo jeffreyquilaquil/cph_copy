@@ -23,9 +23,22 @@
 		width: 100%;
 		padding: 3px;
 	}
+
+	.btn_ans_small{
+		background-color: #CCCCCC; 
+		font-weight: bold; padding: 3px;
+	}
+
+	input[type=text]{
+
+		width: 100%;
+
+
+	}
 </style>
 
-<div id="hr_incidentinfo_form"> <!-- ===== INCEDENT INFORMATION FORM ===== -->
+<!-- ===== INCIDENT INFORMATION  ===== -->
+<div id="hr_incidentinfo_form"> 
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
@@ -129,7 +142,7 @@
 			<br>
 			<br>
 			
-			<!-- APPEAR ONLY IF HR STAFF SELECT YES TO INVESTIGATION REQUIRED ITEM REMOVE -->
+			<!-- ====== APPEAR ONLY IF HR STAFF SELECT YES TO INVESTIGATION REQUIRED ITEM REMOVE ====== -->
 			
 			<div id="appear_furtherinfo">
 				<span id="further_answer" class="resol_link">Further information (investigation) is required</span>
@@ -154,82 +167,84 @@
 </table>
 </div>
 
-	
-<div id="found_answer_form"> <!-- ======================== FOUND ANSWER FORM =========================== -->
-<form id="found_answer_forms">
-	<input id="insedentid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+<!-- ===== FOUND ANSWER  ===== -->
+<div id="found_answer_form"> 
+	<form id="found_answer_forms">
+		<input id="insedentid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 
-	<table class="tableInfo">
-		<tr>
-			<td>
-				<h2>
+		<table class="tableInfo">
+			<tr>
+				<td>
+					<h2>
 
-					HR Incident Number <?php echo $value->cs_post_id; ?> 
+						HR Incident Number <?php echo $value->cs_post_id; ?> 
 
-					<br>
+						<br>
 
-					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
-				</h2>
-			</td>	
-		</tr>
-		<tr>
-			<td>
-				<small>Please place below the link to the page in employee.tatepublishing.net</small>
-
-				<br>
-
-				<input type="text" id="found_answer_link" name="found_answer_link" style="width: 100%" required>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<small>You may right below an additional custom message to the customer (optional):</small>
-
-				<br>
-
-				<textarea style="height:200px; resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
-
-				<br><br>
-
-				<input id="found_answer_submit" type="submit" class="btn_ans" value="Resolve Incident">
-			</td>
-		</tr>
-	</table>
-</form>
-</div>
-
-<div id="custom_answer_form"> <!-- =================== Custom ANSWER FORM ====================== -->
-<form id="custom_ans_form">
-	<table class="tableInfo">
-		<tr>
-			<td>
-				<h2>
-					HR Incident Number <?php echo $value->cs_post_id; ?> 
+						<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+					</h2>
+				</td>	
+			</tr>
+			<tr>
+				<td>
+					<small>Please place below the link to the page in employee.tatepublishing.net</small>
 
 					<br>
 
-					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
-				</h2>
-			</td>	
-		</tr>
-		<tr>
-			<td>
-				<small>Please write below your resolution message to employee:</small>
+					<input type="text" id="found_answer_link" name="found_answer_link" required>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<small>You may right below an additional custom message to the customer (optional):</small>
 
-				<br>
+					<br>
 
-				<textarea id="custom_answer_msg" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
+					<textarea style="height:200px; resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
 
-				<br><br>
+					<br><br>
 
-				<input type="submit" id="custom_answer_submit" class="btn_ans" value="Resolve Incident">
-			</td>
-		</tr>
-	</table>
+					<input id="found_answer_submit" type="submit" class="btn_ans" value="Resolve Incident">
+				</td>
+			</tr>
+		</table>
 	</form>
 </div>
 
-<div id="notfound_answer_form"> <!-- ===================== NOT FOUND ANSWER FORM ============================ -->
+<!-- ===== CUSTOM ANSWER  ===== -->
+<div id="custom_answer_form"> 
+	<form id="custom_ans_form">
+		<table class="tableInfo">
+			<tr>
+				<td>
+					<h2>
+						HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+						<br>
+
+						<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+					</h2>
+				</td>	
+			</tr>
+			<tr>
+				<td>
+					<small>Please write below your resolution message to employee:</small>
+
+					<br>
+
+					<textarea id="custom_answer_msg" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
+
+					<br><br>
+
+					<input type="submit" id="custom_answer_submit" class="btn_ans" value="Resolve Incident">
+				</td>
+			</tr>
+		</table>
+		</form>
+</div>
+
+<!-- ===== NOT FOUND ANSWER  ===== -->
+<div id="notfound_answer_form"> 
 <form id="not_found_ans_form">
 	<table class="tableInfo">
 		<tr>
@@ -242,11 +257,12 @@
 					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
 				</h2>
 			</td>	
+			<td></td>
 		</tr>
 		<tr>
 			<td>To what deparment does this person need to be redirected to?</td>
 			<td>
-				<select id="redirect_department" name="redirect_department" required>
+				<select id="redirect_department" name="redirect_department" required style="width: 100%">
 					<option></option>
 					<option>Accounting Team (accounting.cebu@tatepublishing.net)</option>
 					<option>IT Team (helpdesk.cebu@tatepublishing.net)</option>
@@ -260,9 +276,9 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td>
-				<span  id="add_redirect_dept" class="resol_link">Add redirection department</span>
-				<input type="submit" id="not_found_answer_submit" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Resolve incident">
+			<td> 
+				<span id="add_redirect_dept" class="resol_link">Add redirection department</span>
+				<input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Resolve incident">
 			</td>
 		</tr>
 		
@@ -271,99 +287,137 @@
 
 </div>
 
-<!--  ADD A REDIRECTION DEPARTMENT -->
-<div id="add_redirect_dept_form">
-	<table class="tableInfo">
-		<tr>
-			<td><h2>Add a Redirection Department</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<small>Name of the department/team customers can be directed to:</small>
+	<!--  ====== ADD A REDIRECTION DEPARTMENT ===== -->
+	<div id="add_redirect_dept_form">
+		<table class="tableInfo">
+			<tr>
+				<td colspan="2"><h2>Add a Redirection Department</h2></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<small>Name of the department/team customers can be directed to:</small>
 
-				<br>
-				
-				<input type="text" style="width: 100%" required>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<small>What is the email address/es that the employee can</small>
+					<br>
+					
+					<input type="text" required>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<small>What is the email address/es that the employee can</small>
 
-				<br>
-				
-				<input type="text" style="width: 100%" required>
+					<br>
+					
+					<input type="text" required>
 
-			</td>
-		</tr>
-		<tr>
-			<td align="left"><span id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</span></td>
-			<td align="right"><input type="submit" id="not_found_answer_submit" style="background-color: #CCCCCC; font-weight: bold; padding: 3px" value="Submit"></td>
-		</tr>
-	</table>
-</div>
+				</td>
+			</tr>
+			<tr>
+				<td align="left" colspan="2"><span id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</span></td>
+				<td align="right"><input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Submit"></td>
+			</tr>
+		</table>
+	</div>
 
-<!-- ALL DIRECTION DEPARTMENTS -->
-<div id="see_all_redirect_dept_form">
+	<!-- ====== ALL DIRECTION DEPARTMENTS ===== -->
+	<div id="see_all_redirect_dept_form">
 
-	<table class="tableInfo">
-		<tr>
-			<td colspan="2"><h2>All Direction Departments</h2></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>Department Name</td>
-			<td>Email Address</td>
-			<td>Edit</td>
-			<td>Delete</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
-	</table>
+		<table class="tableInfo">
+			<tr>
+				<td colspan="2"><h2>All Direction Departments</h2></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Department Name</td>
+				<td>Email Address</td>
+				<td>Edit</td>
+				<td>Delete</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
 
-	<br>
+		<br>
 
-	<span id="back_to_add_redirect" class="resol_link">Add redirection department</span>
-</div>
+		<span id="back_to_add_redirect" class="resol_link">Add redirection department</span>
+	</div>
 
-<div id="further_answer_form"> <!-- ====================== FURTHER ANSWER FORM ============================= -->
-<form id="further_ans_form">
-	<table class="tableInfo">
-		<tr>
-			<td>
-				<h2>
-					HR Incident Number <?php echo $value->cs_post_id; ?> 
+<!-- ====== FURTHER ANSWER  ====== -->
+<div id="further_answer_form"> 
+	<form id="further_ans_form">
+		<table class="tableInfo">
+			<tr>
+				<td>
+					<h2>
+						HR Incident Number <?php echo $value->cs_post_id; ?> 
+
+						<br>
+
+						<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
+					</h2>
+				</td>	
+			</tr>
+			<tr>
+				<td>
+					<small>Please write below your update to the customer as to what information is requoired to resolve the matter</small>
 
 					<br>
 
-					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
-				</h2>
-			</td>	
-		</tr>
-		<tr>
-			<td>
-				<small>Please write below your update to the customer as to what information is requoired to resolve the matter</small>
+					<textarea id="further_answer_msg" name="further_answer_msg" style="height:200px; resize: none;"></textarea>
 
-				<br>
+					<br><br>
+					<a id="send_email_to_another" href="#">Send email to another department/staff</a>
+					<br><br>
 
-				<textarea id="further_answer_msg" name="further_answer_msg" style="height:200px; resize: none;"></textarea>
-
-				<br><br>
-				<a href="#">Send email to another department / staff</a>
-				<br><br>
-
-				<input type="submit" id="furder_submit" class="btn_ans" value="Submit">
-			</td>
-		</tr>
-	</table>
+					<input type="submit" id="furder_submit" class="btn_ans" value="Submit">
+				</td>
+			</tr>
+		</table>
 	</form>
 </div>
 
+	<div id="send_email_to_another_form">
+		<table class="tableInfo">
+			<tr>
+				<td colspan="2"><h2>Send Email</h2></td>
+			</tr>
+			<tr>
+				<td>From:</td>
+				<td>hr.cebu@tatepublishing.net</td>
+			</tr>
+			<tr>
+				<td>To:</td>
+				<td>
+					<input type="text" name="" value="" placeholder="" >
+					<br>
+					<small><i>Seperate email address with commas</i></small>
+				</td>
+			</tr>
+			<tr>
+				<td>Subject:</td>
+				<td>
+					<input type="text" name="" value="" placeholder="">
+				</td>
+			</tr>
+			<tr>
+				<td>CC</td>
+				<td><!-- Default customer email address --></td>
+			</tr>
+			<tr>
+				<td colspan="2"><textarea class="hidden tiny" style="height:200px; resize: none;"></textarea></td>
+			</tr>
+			<tr>
+				<td colspan="2" align="left"><input type="submit" name="" value="Send" class="btn_ans_small"></td>
+			</tr>
+		</table>
+	</div>
 
+<script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 
 $(document).ready(function() { 
@@ -619,14 +673,33 @@ $(document).ready(function() {
 	    	$("#see_all_redirect_dept_form").show();
 
 		});
-
+		// ===== BACK TO ADD REDIRECT DEPARTMETN ====== 
 		$("#back_to_add_redirect").click(function(){
 	    	
 	    	$("#see_all_redirect_dept_form").hide();
 	    	$("#add_redirect_dept_form").show();
 
 		});
+
+		// ===== CLICK TO SHOW SEND EMAIL =====
+		$("#send_email_to_another_form").hide();
+		$("#send_email_to_another").click(function(){
+	    	
+	    	$("#further_ans_form").hide();
+	    	$("#send_email_to_another_form").show();
+
+		});
 		
+});
+
+// ====== DISPLAY TOOLBARS IN TEXTAREA =====
+$(function () { 
+		
+	tinymce.init({
+		selector: "textarea.tiny",	
+		menubar : false,
+		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
+	});	
 });
 
 </script>
