@@ -1,4 +1,5 @@
 <style type="text/css">
+
 	th{
 	 	background-color: #CCCCCC;
 	 }
@@ -26,30 +27,6 @@
 	 	margin-top: 12.5px;
 	 }
 
-	.td_hover {
-	    position: relative;
-	    display: block;
-	    
-	}
-
-	.td_hover .show_details {
-	    visibility: hidden;
-	    width: 200px;
-	    background-color: black;
-	    color: #fff;
-	    text-align: center;
-	    border-radius: 6px;
-	    padding: 20px;
-	    position: absolute;
-	    z-index: 1;
-	    top: -5px;
-	    left: 110%;
-	}
-
-
-	.td_hover:hover .show_details {
-	    visibility: visible;
-	}
 	.dbold{
 		font-weight: bold;
 	}
@@ -64,101 +41,99 @@
 	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
 
 	<div class=" dbold options-right">
-		<a class="other_links" id="activ_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR Customer CSatResults</a>
+		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR Customer CSatResults</a>
 		<a class="other_links" href="#">Generate Reports</a>	
-		
 	</div>
-	
 </ul>
 
-
 <hr/>
-<div id="tab-1" class="tab-content current">  <!--========= NEW TAB ==============-->
-  <br>
 
-      <table id="new" class="datatable">
-      	<thead>
-      		<th>Incident #</th>
-      		<th>Customer</th>
-      		<th>Date Submitted</th>
-      		<th>Subject</th>
-      		<th>Priority</th>
-      	</thead>
+<!-- ====== NEW TAB ====== --> 
+<div id="tab-1" class="tab-content current">
 
-      	<?php foreach ($HrHelpDesk as $key => $value) { ?>
-      		<tr>
+<br>
+
+	<table class="datatable">
+	  	<thead>
+		  	<tr>
+			  	<th>Incident #</th>
+		  		<th>Customer</th>
+		  		<th>Date Submitted</th>
+		  		<th>Subject</th>
+		  		<th>Priority</th>	
+		  	</tr>
+	  	</thead>
+
+	  	<?php foreach ($HrHelpDesk as $key => $value) { ?>
+
+	  		<tr>
 	      		<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $value->cs_post_id; ?>" class="iframe">
-	      				<?php echo $value->cs_post_id; ?> 
-	      			</a>
-      			<div class="show_details">
-      				Details of the incident
-      			</div>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $value->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="Detail of incident" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->cs_post_urgency; ?></td>
-      		</tr>	     
+	  		</tr>	     
 
-      		<?php } ?> 		
-  
-      </table>
-
+	  	<?php } ?> 		
+	    
+	</table>
 
       <br>
-      <h2>SETTINGS</h2><br>
+
+      <h2>SETTINGS</h2>
+
+      <br>
 	
 	<div class=" dbold settings-bottom">
 		<a class="other_links" href="#"><b>Add Categories</b></a>
-  		<a class="other_links" href="#"><b>Edit HR User Permissions</b></a>
-  		<a class="other_links" href="#"><b>Edit Message Templates</b></a>
-  		<a class="other_links" href="#"><b>Add a Redirection Department</b></a>
+		<a class="other_links" href="#"><b>Edit HR User Permissions</b></a>
+		<a class="other_links" href="#"><b>Edit Message Templates</b></a>
+		<a class="other_links" href="#"><b>Add a Redirection Department</b></a>
 	</div>    	
 </div>
 
-<div id="tab-2" class="tab-content"> <!--=========ACTIVE TAB ==============-->
+<!-- ===== ACTIVE TAB ===== -->
+<div id="tab-2" class="tab-content"> 
 
-  <br>
+<br>
 
-      <table id="new" class="datatable">
-      	<thead>
-      		<th>Incident #</th>
-      		<th>Customer</th>
-      		<th>Date Submitted</th>
-      		<th>Category</th>
-      		<th>Subject</th>
-      		<th>Priority</th>
-      		<th>Assigned SLA</th>
-      		<th>Owner</th>
-      		<th>Last Update</th>
-      		<th>Give Update</th>
-      	</thead>
+	<table id="new" class="datatable">
+		<thead>
+			<tr>
+				<th>Incident #</th>
+				<th>Customer</th>
+				<th>Date Submitted</th>
+				<th>Category</th>
+				<th>Subject</th>
+				<th>Priority</th>
+				<th>Assigned SLA</th>
+				<th>Owner</th>
+				<th>Last Update</th>
+				<th>Give Update</th>
+			</tr>
+		</thead>
 
-      	
-      		<tr>
-	      		<td class="td_hover">
-	      			Insedent #
-      			<div class="show_details">
-      				Details of the incident
-      			</div>
-	      		</td>
-	      		<td>fname</td>
-	      		<td>date submitid</td>
-	      		<td>ctegory</td>
-	      		<td>subject</td>
-	      		<td>priority</td>
-	      		<td>assigned SAL</td>
-	      		<td>Owner</td>
-	      		<td>Last Update</td>
-	      		<td>Give Update</td>
-      		</tr>	     
-	
-  
-      </table>
-
+		<tr>
+			<td class="td_hover">
+				Insident #
+				<div class="show_details">Details of the incident</div>
+			</td>
+			<td>fname</td>
+			<td>date submitid</td>
+			<td>ctegory</td>
+			<td>subject</td>
+			<td>priority</td>
+			<td>assigned SAL</td>
+			<td>Owner</td>
+			<td>Last Update</td>
+			<td>Give Update</td>
+		</tr>	     
+	</table>
 
       <br>
+
       <h2>SETTINGS</h2><br>
 	
 	<div class=" dbold settings-bottom">
@@ -166,36 +141,36 @@
   		<a class="other_links" href="#">Edit HR User Permissions</a>
   		<a class="other_links" href="#">Edit Message Templates</a>
 	</div> 
-
 </div>
 
+<!-- ===== RESOLVE TAB ===== -->
 <div id="tab-3" class="tab-content">
-C
-</div>
 
+</div>
+<!--===== CANCELLED TAB ===== -->
 <div id="tab-4" class="tab-content">
 
-D
 </div>
 
 <script type="text/javascript">
 	
-	$(document).ready(function(){
+$(document).ready(function(){
 
-	$("#activ_hide").show();
+	$("#active_hide").show();
 
 	// ===== SHOW FOUND ANSWER FORM =====
 	$("#active_tab").click(function(){
 
-	$("#activ_hide").hide();
-	
+	$("#active_hide").hide();
+
 	});
+
 	$("#new_tab").click(function(){
 
-	$("#activ_hide").show();
-	
-	});
-
+	$("#active_hide").show();
 
 	});
+
+});
+
 </script>

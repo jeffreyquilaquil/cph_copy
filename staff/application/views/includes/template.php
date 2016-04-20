@@ -13,6 +13,7 @@
 	echo '<link href="'.$this->config->base_url().'css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/colorbox.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/main.style.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/balloon.css" rel="stylesheet" type="text/css" />';
 	
 	if(isset($showtemplatefull))
 		echo '<link href="'.$this->config->base_url().'css/templatefull.style.css" rel="stylesheet" type="text/css" />';
