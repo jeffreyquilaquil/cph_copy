@@ -4,19 +4,6 @@
 		font-size: x-small;
 	}
 
-	.resol_link{
-		color: #660808;
-		text-decoration: underline;
-		cursor: pointer;
-	}
-
-	.resol_link:hover{
-		color: red;
-		text-decoration: red;
-		cursor: pointer;
-	}
-
-
 	.btn_ans{
 		background-color: #CCCCCC; 
 		font-weight: bold;
@@ -33,7 +20,14 @@
 
 		width: 100%;
 
+	}
 
+	a{
+		text-decoration: underline;
+	}
+
+	table{
+		width: 100%;
 	}
 </style>
 
@@ -76,9 +70,9 @@
 				<?php endforeach ?>
 		</select>
 		
-		<br>
-		
-		<span id="add_category" style="text-decoration: underline;cursor: pointer;">Add Category</span>
+		&nbsp;
+
+		<a id="add_category">Add Category</a>
 		
 		<div id="show_add_category">
 		
@@ -86,7 +80,11 @@
 
 			<form id="form" name="form">
 				<input type="hidden" id="insedentid" name="postid" value="<?php echo $value->cs_post_id; ?>">
-				Category name: <input id="newcategory" type="text" name="category_name" required> <input id="submit" type="submit" value="Add">
+				Category name: <input id="newcategory" type="text" name="category_name" required style="width: 123px">
+				
+				&nbsp;
+
+				<input id="submit" type="submit" value="Add">
 			</form>	
 		</div>
 		</td>
@@ -127,17 +125,17 @@
 			
 			<br>
 			
-			<span id="found_answer" class="resol_link">The answer can be found in employee.tatepublishing.net</span>
+			<a id="found_answer">The answer can be found in employee.tatepublishing.net</a>
 			
 			<br>
 			<br>
 			
-			<span id="custom_answer" class="resol_link">Send custom resolution response</span>
+			<a id="custom_answer">Send custom resolution response</a>
 			
 			<br>
 			<br>
 			
-			<span id="not_found_answer" class="resol_link">This is not an HR inquiry. Redirect to another department.</span>
+			<a id="not_found_answer">This is not an HR inquiry. Redirect to another department.</a>
 			
 			<br>
 			<br>
@@ -145,7 +143,7 @@
 			<!-- ====== APPEAR ONLY IF HR STAFF SELECT YES TO INVESTIGATION REQUIRED ITEM REMOVE ====== -->
 			
 			<div id="appear_furtherinfo">
-				<span id="further_answer" class="resol_link">Further information (investigation) is required</span>
+				<a id="further_answer">Further information (investigation) is required</a>
 
 				<br>
 				
@@ -201,14 +199,21 @@
 
 					<br>
 
-					<textarea style="height:200px; resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
+					<textarea style="height:200px;  resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
 
 					<br><br>
 
-					<input id="found_answer_submit" type="submit" class="btn_ans" value="Resolve Incident">
+					<input id="found_answerer_submit" type="submit" class="btn_ans" value="Resolve Incident">
 				</td>
 			</tr>
 		</table>
+
+		<br>
+
+		<a href="">Back</a>
+
+		<br>
+
 	</form>
 </div>
 
@@ -243,17 +248,25 @@
 				</td>
 			</tr>
 		</table>
+
+		<br>
+
+		<a  href="">Back</a>
+
+		<br>
+
 		</form>
 </div>
 
 <!-- ===== NOT FOUND ANSWER  ===== -->
 <div id="notfound_answer_form"> 
 <form id="not_found_ans_form">
+
 <input id="notfoundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 <input id="notfoundcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 	<table class="tableInfo">
 		<tr>
-			<td colspan="2">
+			<td>
 				<h2>
 					HR Incident Number <?php echo $value->cs_post_id; ?> 
 
@@ -262,7 +275,6 @@
 					<small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small>
 				</h2>
 			</td>	
-			<td></td>
 		</tr>
 		<tr>
 			<td>To what deparment does this person need to be redirected to?</td>
@@ -282,13 +294,19 @@
 		<tr>
 			<td></td>
 			<td> 
-				<span id="add_redirect_dept" class="resol_link">Add redirection department</span>
-				<input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Resolve incident">
+				<a id="add_redirect_dept">Add redirection department</a>
+				<input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Resolve incident" style="float:right">
 			</td>
 		</tr>
-		
 	</table>
-	</form>
+
+	<br>
+
+	<a href="">Back</a>
+
+	<br>
+
+</form>
 
 </div>
 
@@ -297,7 +315,6 @@
 		<table class="tableInfo">
 			<tr>
 				<td colspan="2"><h2>Add a Redirection Department</h2></td>
-				<td></td>
 			</tr>
 			<tr>
 				<td colspan="2">
@@ -319,19 +336,24 @@
 				</td>
 			</tr>
 			<tr>
-				<td align="left" colspan="2"><span id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</span></td>
+				<td align="left">
+					<a id="back_to_notfound">Back</a>
+					
+					&nbsp;
+
+					<a id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</a>
+				</td>
 				<td align="right"><input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Submit"></td>
 			</tr>
 		</table>
 	</div>
 
-	<!-- ====== ALL DIRECTION DEPARTMENTS ===== -->
+	<!-- ====== SEE ALL DIRECTION DEPARTMENTS ===== -->
 	<div id="see_all_redirect_dept_form">
 
 		<table class="tableInfo">
 			<tr>
-				<td colspan="2"><h2>All Direction Departments</h2></td>
-				<td></td>
+				<td colspan="4"><h2>All Direction Departments</h2></td>
 			</tr>
 			<tr>
 				<td>Department Name</td>
@@ -349,7 +371,7 @@
 
 		<br>
 
-		<span id="back_to_add_redirect" class="resol_link">Add redirection department</span>
+		<a id="back_to_add">Add redirection department</a>
 
 	</div>
 
@@ -384,8 +406,15 @@
 
 					<input type="submit" id="furder_submit" class="btn_ans" value="Submit">
 				</td>
-			</tr>
+			</tr>	
 		</table>
+
+		<br>
+
+		<a href="">BACK</a>
+
+		<br>
+
 	</form>
 </div>
 
@@ -430,6 +459,133 @@
 
 $(document).ready(function() { 
 
+	// ====== DEFAULT HIDE ADD CATEGORY =====
+	$('#show_add_category').hide();
+	
+		// ===== CLICK TO sHOW ADD CATEGORY ======
+		$('#add_category').click(function(){
+
+			$('#show_add_category').toggle();
+
+				if ($.trim($(this).text()) === 'Hide Category') {
+					
+					$(this).text('Add Category');
+				}
+
+				else{
+					$(this).text('Hide Category');
+				}
+		});
+
+	// ===== DEFAULT HIDE FURTHER INFO LINK =====
+	$('#appear_furtherinfo').hide();
+
+		// ===== CLICK TO SHOW FURTHER INFO LINK =====
+		$('#yes').click(function(){
+			$('#appear_furtherinfo').show();
+		});
+		
+		// ===== CLICK TO HIDE FURTHER INFO LINK =====
+		$('#no').click(function(){
+			$('#appear_furtherinfo').hide();
+		});
+
+	// ===== DEFAULT SHOW HR INCIDENT INFO ===== 
+	$('#hr_incidentinfo_form').show();
+
+	// ===== HIDE LINK FOUND ANSWER =====
+	$('#found_answer_form').hide();
+
+		// ===== CLICK TO SHOW FOUND ANSWER =====
+		$('#found_answer').click(function(){
+ 
+		$('#hr_incidentinfo_form').hide();
+		$('#found_answer_form').show();
+		
+		});
+
+	// ===== HIDE LINK CUSTOM ANSWER =====
+	$('#custom_answer_form').hide();
+
+		// ===== CLICK TO SHOW CUSTOM ANSWER =====
+		$('#custom_answer').click(function(){
+	    	
+	    	$('#hr_incidentinfo_form').hide();
+	    	$('#custom_answer_form').show();
+		});
+
+	// ===== HIDE LINK NOT FOUND ANSWER =====
+	$('#notfound_answer_form').hide();
+
+		// ===== CLICK TO SHOW NOT FOUND ANSWER =====
+		$('#not_found_answer').click(function(){
+	    	
+	    	$('#hr_incidentinfo_form').hide();
+	    	$('#notfound_answer_form').show();
+		});
+
+	// ===== HIDE LINK FURTHER ANSWER =====
+	$('#further_answer_form').hide();
+	
+		// ===== CLICK TO SHOW FURTHER ANSWER =====
+		$('#further_answer').click(function(){
+	    	
+	    	$('#hr_incidentinfo_form').hide();
+	    	$('#further_answer_form').show();
+		});
+
+		// ===== DEFAULT HIDE ADD REDIRECT DEPARTMENT =====
+		$('#add_redirect_dept_form').hide();
+	
+		// ===== SHOW ADD REDIRECT DEPARTMENT =====
+		$('#add_redirect_dept').click(function(){
+	    	
+	    	$('#notfound_answer_form').hide();
+	    	$('#add_redirect_dept_form').show();
+		});
+
+			// ===== BACK TO NOT FOUND ANSWER ======
+			$('#back_to_notfound').click(function() {
+				$('#add_redirect_dept_form').hide();
+				$('#notfound_answer_form').show();
+			});
+
+		// ===== DEFAULT HIDE SEE ALL REDIRECT DEPARTMENT =====
+		$('#see_all_redirect_dept_form').hide();
+	
+			// ===== SHOW SEE ALL REDIRECT DEPARTMENT =====
+			$('#see_all_redirect_dept').click(function(){
+		    	
+		    	$('#add_redirect_dept_form').hide();
+		    	$('#see_all_redirect_dept_form').show();
+			});
+
+			// ===== BACK TO ADD REDIRECT DEPARTMENT =====
+			$('#back_to_add').click(function() {
+
+				$('#see_all_redirect_dept_form').hide();
+				$('#add_redirect_dept_form').show();
+			});
+	
+
+		$('#send_email_to_another_form').hide();
+		$('#send_email_to_another').click(function(){
+
+			$('#further_answer_form').hide();
+			$('#send_email_to_another_form').show();
+		});
+
+		// ===== DISPLAY TOOLBAR IN TEXTAREA =====
+		tinymce.init({
+		selector: "textarea.tiny",	
+		menubar : false,
+		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
+		});	
+		
+});
+
+$(function(){
+
 	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
 	$("#found_answer_submit").click(function() {
 
@@ -462,6 +618,7 @@ $(document).ready(function() {
 
 			return false;
 	});
+
 
 	// ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
 	$("#custom_answer_submit").click(function() {
@@ -551,12 +708,11 @@ $(document).ready(function() {
 				alert("Success!");
 				$('#further_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
 				}
-				});
-			}
+			});
+		}
 
 			return false;
 	});
-
 
 	// ====== INSERT NEW CATEGORY =====
 	$("#submit").click(function() {
@@ -579,138 +735,10 @@ $(document).ready(function() {
 					alert("Success!");
 					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
 					}
-					});
+				});
 			}
 	});
 
-	// ====== DEFAULT HIDE ADD CATEGORY =====
-	$("#show_add_category").hide();
-	
-		// ===== CLICK TO sHOW ADD CATEGORY ======
-		$("#add_category").click(function(){
-			$("#show_add_category").show();
-		});
-
-	// ===== DEFAULT HIDE FURTHER INFO LINK =====
-	$("#appear_furtherinfo").hide();
-
-		// ===== CLICK TO SHOW FURTHER INFO LINK =====
-		$("#yes").click(function(){
-			$("#appear_furtherinfo").show();
-		});
-		
-		// ===== CLICK TO HIDE FURTHER INFO LINK =====
-		$("#no").click(function(){
-			$("#appear_furtherinfo").hide();
-		});
-
-	// ===== DEFAULT SHOW HR INCIDENT INFO FORM ===== 
-	$("#hr_incidentinfo_form").show();
-
-	// ===== HIDE LINK FOUND ANSWER =====
-	$("#found_answer_form").hide();
-
-		// ===== CLICK TO SHOW FOUND ANSWER FORM =====
-		$("#found_answer").click(function(){
- 
-		$("#hr_incidentinfo_form").hide();
-		$("#found_answer_form").show();
-		
-		});
-
-	// ===== HIDE LINK CUSTOME ANSWER =====
-	$("#custom_answer_form").hide();
-
-		// ===== CLICK TO SHOW CUSTOM ANSWER FORM =====
-		$("#custom_answer").click(function(){
-	    	
-	    	$("#hr_incidentinfo_form").hide();
-	    	$("#custom_answer_form").show();
-		});
-
-	// ===== HIDE LINK NOT FOUND ANSWER =====
-	$("#notfound_answer_form").hide();
-
-		// ===== CLICK TO SHOW NOT FOUND ANSWER FORM =====
-		$("#not_found_answer").click(function(){
-	    	
-	    	$("#hr_incidentinfo_form").hide();
-	    	$("#notfound_answer_form").show();
-		});
-
-	// ===== HIDE LINK FURTHER ANSWER =====
-	$("#further_answer_form").hide();
-	
-		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
-		$("#further_answer").click(function(){
-	    	
-	    	$("#hr_incidentinfo_form").hide();
-	    	$("#further_answer_form").show();
-		});
-
-		// ===== HIDE LINK FURTHER ANSWER =====
-		$("#add_redirect_dept_form").hide();
-	
-		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
-		$("#add_redirect_dept").click(function(){
-	    	
-	    	$("#notfound_answer_form").hide();
-	    	$("#add_redirect_dept_form").show();
-		});
-
-		// ===== HIDE LINK FURTHER ANSWER =====
-		$("#see_all_redirect_dept_form").hide();
-	
-		// ===== CLICK TO SHOW FURTHER ANSWER FORM =====
-		$("#see_all_redirect_dept").click(function(){
-	    	
-	    	$("#add_redirect_dept_form").hide();
-	    	$("#see_all_redirect_dept_form").show();
-		});
-
-		// ===== CLICK TO SHOW ADD REDIRECT DEPARTMENT FORM =====
-		$("#add_redirect_dept_form").hide();
-		$("#add_redirect_dept").click(function(){
-	    	
-	    	$("#notfound_answer_form").hide();
-	    	$("#add_redirect_dept_form").show();
-		});
-
-		// ===== CLICK TO SHOW SEE ALL REDIRECT DEPT FORM =====
-		$("#see_all_redirect_dept_form").hide();
-		$("#see_all_redirect_dept").click(function(){
-	    	
-	    	$("#add_redirect_dept_form").hide();
-	    	$("#see_all_redirect_dept_form").show();
-
-		});
-		// ===== BACK TO ADD REDIRECT DEPARTMETN ====== 
-		$("#back_to_add_redirect").click(function(){
-	    	
-	    	$("#see_all_redirect_dept_form").hide();
-	    	$("#add_redirect_dept_form").show();
-
-		});
-
-		// ===== CLICK TO SHOW SEND EMAIL =====
-		$("#send_email_to_another_form").hide();
-		$("#send_email_to_another").click(function(){
-	    	
-	    	$("#further_ans_form").hide();
-	    	$("#send_email_to_another_form").show();
- 
-		});
-		
-});
-
-// ====== DISPLAY TOOLBARS IN TEXTAREA =====
-$(function () { 
-		
-	tinymce.init({
-		selector: "textarea.tiny",	
-		menubar : false,
-		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
-	});	
 });
 
 </script>
