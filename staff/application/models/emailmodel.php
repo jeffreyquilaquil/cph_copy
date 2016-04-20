@@ -76,7 +76,7 @@ class Emailmodel extends CI_Model {
 	//send email notification notice
 	public function emailSeparationNotice($empID){
 		$dateToday = date('Y-m-d');
-		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail', 'empID="'.$empID.'"','LEFT JOIN newPositions ON posID=position');
+		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, gender, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT CONCAT(fname, " ", lname) FROM staffs  s WHERE s.empID=staffs.supervisor) AS supName', 'empID="'.$empID.'"','LEFT JOIN newPositions ON posID=position');
 		
 		//On separation date send Separation Date Alert
 		if($info->endDate==$dateToday){
@@ -124,6 +124,30 @@ class Emailmodel extends CI_Model {
 		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');		
+
+		$pronoun = ( $info->gender == 'M' ) ? 'he' : 'she';
+		$possesive_pronoun = ( $info->gender == 'M' ) ? 'his' : 'her';
+		//send email to leaders
+		$sender = 'careers.cebu@tatepublishing.net';
+		$receiver = 'management.us@tatepublishing.net,leaders.cebu@tatepublishing.net,'.$info->supEmail;
+		$msg = '<p>Hello Tate Leaders!</p>
+		<p>We are sorry to announce that '. $info->name .' is leave Tate Publishing.</p>
+		<p>A separation date has been entered for '. $info->name .' and '.  $possesive_pronoun .' last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
+		<p>This is an automatic notification using data that is captured on CareerPH system.</p>
+		<p style="text-style: underline;">Please cascade this information to anyone in your team who may need to be informed.</p>
+		<br/><br/>
+
+		<p style="font-weight: bold;">Dear immediate supervisor '.$info->supName.'</p>
+		<p>Please reply to this email with information on:<br/>
+		<ul>
+			<li>who will be responsible for the tasks that were assigned to '.$info->name.'</li>
+			<li>whether a requisition will be opened to find a replacement.</li>
+			<li>other process changes related to this offboarding.</li>
+		</ul>
+		<p>Thank you very much,</p>
+		<p>The Human Resources Team</p>
+		';
+		$this->emailM->sendEmail($sender, $receiver, $sujet, $msg, 'CareerPH');
 	}
 	
 	//send email if access end date is today AND deactivate staff and PT accesses
