@@ -8,7 +8,7 @@
 	
 	<link href="<?= $this->config->base_url() ?>css/main.style.css" rel="stylesheet" type="text/css" />
 	<link href="<?= $this->config->base_url() ?>css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />
-	
+	<link href="<?= $this->config->base_url() ?>css/jquery.dataTables.css" rel="stylesheet" type="text/css" />';
 	<script src="<?= $this->config->base_url() ?>js/jquery.js" type="text/javascript"></script>
 	<script src="<?= $this->config->base_url() ?>js/jquery.datetimepicker.js" type="text/javascript"></script>
 </head>
