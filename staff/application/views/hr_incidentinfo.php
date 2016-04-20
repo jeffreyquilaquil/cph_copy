@@ -566,7 +566,7 @@ $(document).ready(function() {
 				$('#see_all_redirect_dept_form').hide();
 				$('#add_redirect_dept_form').show();
 			});
-	
+	 
 
 		$('#send_email_to_another_form').hide();
 		$('#send_email_to_another').click(function(){
