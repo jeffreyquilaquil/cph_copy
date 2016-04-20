@@ -24,6 +24,7 @@
 
 	a{
 		text-decoration: underline;
+		cursor: pointer;
 	}
 
 	table{
