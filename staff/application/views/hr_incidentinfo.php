@@ -282,9 +282,11 @@
 			<td>
 				<select id="redirect_department" name="redirect_department" required style="width: 100%">
 					<option></option>
-					<option>Accounting Team (accounting.cebu@tatepublishing.net)</option>
-					<option>IT Team (helpdesk.cebu@tatepublishing.net)</option>
-					<option>Immeadiate Supervisor (Immeadiate supervisors'email add)</option>
+
+					<?php foreach ($department_email as $k => $v): ?>
+					<option value="<?php echo $v->email; ?>"><?php echo $v->department." (".$v->email.")"; ?></option>
+				<?php endforeach ?>
+
 				</select>
 			</td>	
 		</tr>
@@ -313,6 +315,7 @@
 
 	<!--  ====== ADD A REDIRECTION DEPARTMENT ===== -->
 	<div id="add_redirect_dept_form">
+	<form id="add_new_department_form">
 		<table class="tableInfo">
 			<tr>
 				<td colspan="2"><h2>Add a Redirection Department</h2></td>
@@ -323,7 +326,7 @@
 
 					<br>
 					
-					<input type="text" required>
+					<input id="name_department" type="text" required>
 				</td>
 			</tr>
 			<tr>
@@ -332,7 +335,7 @@
 
 					<br>
 					
-					<input type="text" required>
+					<input id="email_department" type="text" required>
 
 				</td>
 			</tr>
@@ -344,9 +347,10 @@
 
 					<a id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</a>
 				</td>
-				<td align="right"><input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Submit"></td>
+				<td align="right"><input type="submit" id="submit_add_department" class="btn_ans_small" value="Submit"></td>
 			</tr>
 		</table>
+		</form>
 	</div>
 
 	<!-- ====== SEE ALL DIRECTION DEPARTMENTS ===== -->
@@ -586,6 +590,37 @@ $(document).ready(function() {
 });
 
 $(function(){
+
+
+
+	// ===== JQUERY FOR ADD NEW DEPARTMENT =====
+	$("#submit_add_department").click(function() {
+
+		var name_dep = $("#name_department").val();
+		var email_dep = $("#email_department").val();
+		
+
+		var dataString = 'name_department='+ name_dep +'&email_department=' + email_dep;	
+
+		if (name_dep == '' || email_dep == '') {
+			alert("Some Field is Empty!");
+		}else{
+		// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/addnewdeparment",
+					data: dataString,
+					cache: false,
+						success: function(result){
+						alert('success!');
+						// ===== TO RESET FORM FIELDS =====
+						$('#add_new_department_form')[0].reset(); 
+						}
+				});
+			}
+
+			return false;
+	});
 
 	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
 	$("#found_answer_submit").click(function() {
