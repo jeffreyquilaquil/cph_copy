@@ -355,23 +355,24 @@
 
 	<!-- ====== SEE ALL DIRECTION DEPARTMENTS ===== -->
 	<div id="see_all_redirect_dept_form">
-
-		<table class="tableInfo">
-			<tr>
-				<td colspan="4"><h2>All Direction Departments</h2></td>
-			</tr>
-			<tr>
-				<td>Department Name</td>
-				<td>Email Address</td>
-				<td>Edit</td>
-				<td>Delete</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-			</tr>
+		<h2>All Direction Departments</h2>
+		<table class="datatable">
+			<thead>
+				<tr>
+					<th>Department Name</th>
+					<th>Email Address</th>
+					<th>Edit</th>
+					<th>Delete</th>
+			</tr>	
+			</thead>
+			<tbody>
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
 		</table>
 
 		<br>

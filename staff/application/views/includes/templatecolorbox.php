@@ -34,10 +34,13 @@
 <?php
 	if($_SERVER['HTTP_HOST']=='129.3.252.99')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
+
+echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.min.js" type="text/javascript"></script>';
 ?>
+
 <script type="text/javascript">
 	$( function () {
-		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
+		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });		
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
 		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });
 		
@@ -50,6 +53,10 @@
 		$('#please_wait').removeClass('hidden');
 		$('#colorboxcontent').addClass('hidden');
 	}
+
+	$(document).ready(function(){
+		$('.datatable').DataTable();
+	})
 </script>
 </body>
 </html>
