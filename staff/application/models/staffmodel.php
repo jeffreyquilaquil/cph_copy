@@ -1426,7 +1426,7 @@ class Staffmodel extends CI_Model {
 		$address = strtoupper( $employee_info->address.' '.$employee_info->city.' '.$employee_info->zip);
 
 		$payslip_info = $this->payrollM->getPayslipOnTimeRange($empID, $from, $to, true);
-		$this->textM->aaa($payslip_info);		
+		//$this->textM->aaa($payslip_info);		
 
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -1647,7 +1647,7 @@ class Staffmodel extends CI_Model {
 
 		$pdf->Output('hdmf_loan_'.$employee_info->username.'.pdf', 'I');
 
-		redirect( $this->config->base_url() );
+		//redirect( $this->config->base_url() );
 		return true;
 	}
 	
