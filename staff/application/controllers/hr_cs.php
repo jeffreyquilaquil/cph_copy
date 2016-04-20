@@ -143,7 +143,7 @@
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
 
             	
-					$this->load->view('includes/template',$data);
+					$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
 
 	        function addcategory(){
