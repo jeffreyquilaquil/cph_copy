@@ -141,15 +141,25 @@
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+            		$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
 
             	
-					$this->load->view('includes/templatecolorbox',$data); 
+					$this->load->view('includes/templatecolorbox',$data);
             }//end of HrIncident function
 
 	        function addcategory(){
 	            	$data['categorys'] = $this->input->post('category_name');
 	            	
 	  			   	$this->ask_hr->askhr('assign_category',$data);
+	  			   	$data2['content']='hr_incidentinfo';
+	  			  	$this->load->view('includes/templatecolorbox',$data2);
+
+            }// end insertion new category
+            function addnewdeparment(){
+	            	$data['department'] = $this->input->post('name_department');
+	            	$data['email'] = $this->input->post('email_department');
+	            	
+	  			   	$this->ask_hr->askhr('redirection_department',$data);
 	  			   	$data2['content']='hr_incidentinfo';
 	  			  	$this->load->view('includes/templatecolorbox',$data2);
 
