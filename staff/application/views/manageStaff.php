@@ -4,7 +4,7 @@
 <form action="" method="POST">
 	<table width="100%">
 	<?php 	
-		$fields_array = array('username' => 'Username', 'email' => 'Company Email', 'pemail' => 'Personal Email', 'gender' => 'Gender', 'idNum' => 'Payroll ID', 'title' => 'Title', 'dept' => 'Department', 'grp' => 'Group', 'levelName' => 'Org Level', 'supervisor' => 'Immediate Supervisor', 'startDate' => 'Start Date', 'regDate' => 'Regularization Date', 'endDate' => 'Effective Separation Date', 'shift' => 'Shift', 'empStatus' => 'Employee Status', 'bdate' => 'Birthdate',  'phone' => 'Phone', 'address' => 'Address', 'maritalStaus' => 'Marital Status', 'leaveCredits' => 'Leave credits', 'active' => 'Active', 'accessEndDate' => 'Access End Date', 'terminationType' => 'Termination Type', 'sal' => 'Salary', 'gov_record' => 'Gov. Numbers (TIN, SSS, HDMF)', 'bankAccnt' => 'Bank Account Number', 'hmoNumber' => 'HMO',  );
+		$fields_array = array('username' => 'Username', 'email' => 'Company Email', 'pemail' => 'Personal Email', 'gender' => 'Gender', 'idNum' => 'Payroll ID', 'title' => 'Title', 'dept' => 'Department', 'grp' => 'Group', 'levelName' => 'Org Level', 'supervisor' => 'Immediate Supervisor', 'startDate' => 'Start Date', 'regDate' => 'Regularization Date', 'endDate' => 'Effective Separation Date', 'shift' => 'Shift', 'empStatus' => 'Employee Status', 'bdate' => 'Birthdate',  'phone' => 'Phone', 'address' => 'Address', 'maritalStatus' => 'Marital Status', 'leaveCredits' => 'Leave credits', 'active' => 'Active', 'accessEndDate' => 'Access End Date', 'terminationType' => 'Termination Type', 'sal' => 'Salary', 'gov_record' => 'Gov. Numbers (TIN, SSS, HDMF)', 'bankAccnt' => 'Bank Account Number', 'hmoNumber' => 'HMO',  );
 
 		$hr_fields_array = array('hmoNumber', 'sal', 'bankAccnt', 'gov_record', 'terminationType', 'accessEndDate');
 
@@ -21,7 +21,7 @@
 							echo  '</td>';	
 							
 					
-				} else {
+				} else if( $this->access->accessFullHR == false AND !in_array($key, $hr_fields_array) ){
 					echo '<td>';
 							echo '<input type="checkbox" name="flds[]" value="'.$key.'" id="'.$key.'"';
 							if( in_array($key, $fvalue) ) echo ' checked ';
