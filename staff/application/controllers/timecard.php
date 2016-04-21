@@ -1502,7 +1502,7 @@ class Timecard extends MY_Controller {
 				$data['periodTo'] = $_GET['periodTo'];
 			}
 			
-			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
+			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
 				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo']);
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
