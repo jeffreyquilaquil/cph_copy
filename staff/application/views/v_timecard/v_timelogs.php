@@ -66,7 +66,12 @@
 				else if(!empty($schedT)) echo 'Today\'s Schedule: <b>'.$schedT.'</b><br/>';
 				
 				if(isset($schedToday['offset']))
-					echo 'Offset Schedule: <b>'.$schedToday['offset'].'</b><br/>';
+					if( is_array($schedToday['offset']) ){
+						foreach( $schedToday['offset'] as $offset ){
+							echo 'Offset Schedule: <b>'.$offset.'</b><br/>';		
+						}	
+					}
+					
 								
 				if(!empty($schedT) && $schedT!='On Leave' && empty($logtimein)){
 					if($visitID==$this->user->empID) echo '<span class="errortext weightbold">'.(($visitID==$this->user->empID)?'You':$row->fname.'\'').' do not have time in yet.</span> ';

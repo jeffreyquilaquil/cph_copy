@@ -3,7 +3,7 @@
 	if($this->access->accessFull==true || ($this->user->empID!=$visitID && $this->access->accessHRFinance==true)){
 		$editAccess = true;
 	}
-		
+	//var_dump($editAccess);
 	$date00 = '0000-00-00 00:00:00';
 	$EARLYCIN = $this->timeM->timesetting('earlyClockIn');
 	$OUTL8 = $this->timeM->timesetting('outLate');
@@ -76,7 +76,12 @@
 			echo '<b>Schedule Today:</b> <b class="errortext">'.$schedToday['sched'].'</b><br/>';
 		} 
 		if(isset($schedToday['offset'])){
-			echo '<b>Offset Schedule:</b> <b class="errortext">'.$schedToday['offset'].'</b><br/>';
+			if( is_array($schedToday['offset']) ){
+				foreach( $schedToday['offset'] as $offset ){
+					echo '<b>Offset Schedule:</b> <b class="errortext">'.$offset.'</b><br/>';		
+				}
+			}
+			
 		} 
 	}else{
 		echo '<b>Schedule Today:</b> NONE ';
@@ -222,7 +227,7 @@
 			echo '</form>';
 		}
 						
-		if((isset($schedToday['sched']) && $schedToday['sched']!='On Leave') || $dataLog->timeIn!=$date00 || $dataLog->timeOut!=$date00){
+		if((isset($schedToday['sched']) && $schedToday['sched']!='On Leave') || $dataLog->timeIn!=$date00 || $dataLog->timeOut!=$date00 OR isset($schedToday['offset'])){
 			echo '<table id="tblinsertedlog" class="tableInfo" style="margin-top:10px;">';
 				///INSERTED LOGS RECORD
 				echo '<tr class="trlabel"><td colspan=4>INSERTED LOG TODAY ';

@@ -2,55 +2,45 @@
 <div style="text-align:right;" id="dfields"><a id="dispOther" href="javascript:void(0)">Display Other Fields</a><br/><br/></div>
 <div class="hidden" id="ofields">
 <form action="" method="POST">
-<table width="100%">
-	<tr>
-		<td><input type="checkbox" name="flds[]" value="username" <?= ((in_array('username',$fvalue)) ? 'checked':'') ?> /> Username</td>
-		<td><input type="checkbox" name="flds[]" value="email" <?= ((in_array('email',$fvalue)) ? 'checked':'') ?>/> Company Email</td>
-		<td><input type="checkbox" name="flds[]" value="pemail" <?= ((in_array('pemail',$fvalue)) ? 'checked':'') ?>/> Personal Email</td>
-		<td><input type="checkbox" name="flds[]" value="gender" <?= ((in_array('gender',$fvalue)) ? 'checked':'') ?>/> Gender</td>
-		<td><input type="checkbox" name="flds[]" value="idNum" <?= ((in_array('idNum',$fvalue)) ? 'checked':'') ?>/> Payroll ID</td>
-		<?php if( $this->access->accessFullHR == true ) { ?>
-			<td><input type="checkbox" name="flds[]" value="hr_record" <?= ((in_array('gov_record',$fvalue)) ? 'checked':'') ?>/> HR Numbers (HMO, Bank Account)</td>
-		<?php } else { ?>
-		<td><br/></td>
-		<?php } ?>	
-	</tr>
-	<tr>
-		<td><input type="checkbox" name="flds[]" value="title" <?= ((in_array('title',$fvalue)) ? 'checked':'') ?>/> Title</td>
-		<td><input type="checkbox" name="flds[]" value="dept" <?= ((in_array('dept',$fvalue)) ? 'checked':'') ?>/> Department</td>
-		<td><input type="checkbox" name="flds[]" value="grp" <?= ((in_array('grp',$fvalue)) ? 'checked':'') ?>/> Group</td>
-		<td><input type="checkbox" name="flds[]" value="levelName" <?= ((in_array('levelName',$fvalue)) ? 'checked':'') ?>/> Org Level</td>
-		<td><input type="checkbox" name="flds[]" value="supervisor" <?= ((in_array('supervisor',$fvalue)) ? 'checked':'') ?>/> Immediate Supervisor</td>
-	</tr>
-	<tr>
-		<td><input type="checkbox" name="flds[]" value="startDate" <?= ((in_array('startDate',$fvalue)) ? 'checked':'') ?>/> Start Date</td>
-		<td><input type="checkbox" name="flds[]" value="regDate" <?= ((in_array('regDate',$fvalue)) ? 'checked':'') ?>/> Regularization Date</td>			
-		<td><input type="checkbox" name="flds[]" value="endDate" <?= ((in_array('endDate',$fvalue)) ? 'checked':'') ?>/> Effective Separation Date</td>
-		<td><input type="checkbox" name="flds[]" value="shift" <?= ((in_array('shift',$fvalue)) ? 'checked':'') ?>/> Shift</td>
-		<td><input type="checkbox" name="flds[]" value="empStatus" <?= ((in_array('empStatus',$fvalue)) ? 'checked':'') ?>/> Employee Status</td>			
-	</tr>
-	<tr>
-		<td><input type="checkbox" name="flds[]" value="bdate" <?= ((in_array('bdate',$fvalue)) ? 'checked':'') ?>/> Birthday</td>
-		<td><input type="checkbox" name="flds[]" value="phone" <?= ((in_array('phone',$fvalue)) ? 'checked':'') ?>/> Phone Number</td>
-		<td><input type="checkbox" name="flds[]" value="address" <?= ((in_array('address',$fvalue)) ? 'checked':'') ?>/> Address</td>			
-		<td><input type="checkbox" name="flds[]" value="maritalStatus" <?= ((in_array('maritalStatus',$fvalue)) ? 'checked':'') ?>/> Marital Status</td>
-		<td><input type="checkbox" name="flds[]" value="leaveCredits" <?= ((in_array('leaveCredits',$fvalue)) ? 'checked':'') ?>/> Leave Credits</td>
-		
-	</tr>
-	<tr>
-		<td><input type="checkbox" name="flds[]" value="active" <?= ((in_array('active',$fvalue)) ? 'checked':'') ?>/> Active</td>
-		<td><input type="checkbox" name="flds[]" value="accessEndDate" <?= ((in_array('accessEndDate',$fvalue)) ? 'checked':'') ?>/> Access End Date</td>
-		<td><input type="checkbox" name="flds[]" value="terminationType" <?= ((in_array('terminationType',$fvalue)) ? 'checked':'') ?>/> Termination Reason</td>
-	<?php
-		if($this->access->accessFullHR==true) echo '<td><input type="checkbox" name="flds[]" value="sal" '.((in_array('sal',$fvalue)) ? 'checked':'').'/> Salary</td>';
-		else echo '<td><br/></td>';
-	?>
-		<?php if( $this->access->accessFullHR == true ) { ?>
-			<td><input type="checkbox" name="flds[]" value="gov_record" <?= ((in_array('gov_record',$fvalue)) ? 'checked':'') ?>/> Gov. Numbers (TIN, SSS, HDMF)</td>
-		<?php } else { ?>
-		<td><br/></td>
-		<?php } ?>
-	</tr>
+	<table width="100%">
+	<?php 	
+		$fields_array = array('username' => 'Username', 'email' => 'Company Email', 'pemail' => 'Personal Email', 'gender' => 'Gender', 'idNum' => 'Payroll ID', 'title' => 'Title', 'dept' => 'Department', 'grp' => 'Group', 'levelName' => 'Org Level', 'supervisor' => 'Immediate Supervisor', 'startDate' => 'Start Date', 'regDate' => 'Regularization Date', 'endDate' => 'Effective Separation Date', 'shift' => 'Shift', 'empStatus' => 'Employee Status', 'bdate' => 'Birthdate',  'phone' => 'Phone', 'address' => 'Address', 'maritalStatus' => 'Marital Status', 'leaveCredits' => 'Leave credits', 'active' => 'Active', 'accessEndDate' => 'Access End Date', 'terminationType' => 'Termination Type', 'sal' => 'Salary', 'gov_record' => 'Gov. Numbers (TIN, SSS, HDMF)', 'bankAccnt' => 'Bank Account Number', 'hmoNumber' => 'HMO',  );
+
+		$hr_fields_array = array('hmoNumber', 'sal', 'bankAccnt', 'gov_record', 'terminationType', 'accessEndDate');
+
+		$number_of_col = 6;
+		$counter = 1;
+		foreach( $fields_array as $key => $val ){
+			$display = false;
+			if( $counter == 1 ) echo '<tr>';
+				if( in_array($key, $hr_fields_array ) AND $this->access->accessFullHR == true ){
+						echo '<td>';
+								echo  '<input type="checkbox" name="flds[]" value="'.$key.'" id="'.$key.'"';
+								if( in_array($key, $fvalue) ) echo ' checked ';
+								echo  '/> <label for="'.$key.'">'.$val.'</label>';
+							echo  '</td>';	
+							
+					
+				} else if( $this->access->accessFullHR == false AND !in_array($key, $hr_fields_array) ){
+					echo '<td>';
+							echo '<input type="checkbox" name="flds[]" value="'.$key.'" id="'.$key.'"';
+							if( in_array($key, $fvalue) ) echo ' checked ';
+							echo '/> <label for="'.$key.'">'.$val.'</label>';
+						echo '</td>';	
+					}
+				
+				
+
+			$counter++;
+			if( $counter == $number_of_col ){
+				echo '</tr>';
+				$counter = 1;
+			}
+		}
+
+		?>
+	</table>
+
 </table>
 	<input type="submit" name="submitType" value="Submit Selection" class="btnclass"/>&nbsp;&nbsp;&nbsp;
 	<a id="sall" href="javascript:void(0)">Select All</a>&nbsp;&nbsp;&nbsp;

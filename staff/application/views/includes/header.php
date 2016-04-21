@@ -121,6 +121,7 @@
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
+						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application</a></li>';
 					}
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
