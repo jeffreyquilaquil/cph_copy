@@ -261,10 +261,11 @@
 
 <!-- ===== NOT FOUND ANSWER  ===== -->
 <div id="notfound_answer_form"> 
-<form id="not_found_ans_form">
+
 
 <input id="notfoundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
 <input id="notfoundcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
+<form id="not_found_ans_form">
 	<table class="tableInfo">
 		<tr>
 			<td>
@@ -366,12 +367,16 @@
 			</tr>	
 			</thead>
 			<tbody>
+			<?php foreach ($department_email as $name => $dep): ?>
 				<tr>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td></td>
+					<td><?php echo $dep->department; ?></td>
+					<td><?php echo $dep->email; ?></td>
+					<td align="center"><a id="edit_redirect" href="">Edit</a></td>
+					<td align="center"><a id="delete_redirect" href="">Delete</a></td>
 				</tr>
+
+				<?php endforeach ?>
+				
 			</tbody>
 		</table>
 
@@ -616,6 +621,9 @@ $(function(){
 						alert('success!');
 						// ===== TO RESET FORM FIELDS =====
 						$('#add_new_department_form')[0].reset(); 
+						$('#not_found_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+						$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+					
 						}
 				});
 			}
@@ -714,6 +722,7 @@ $(function(){
 						success: function(result){
 						alert("Success!");
 						$('#not_found_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+
 						}
 					});
 				}

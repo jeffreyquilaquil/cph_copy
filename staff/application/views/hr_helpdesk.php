@@ -116,9 +116,8 @@
 		</thead>
 
 		<tr>
-			<td class="td_hover">
+			<td>
 				Insident #
-				<div class="show_details">Details of the incident</div>
 			</td>
 			<td>fname</td>
 			<td>date submitid</td>

@@ -142,6 +142,7 @@
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
             		$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
+            		
 
             	
 					$this->load->view('includes/templatecolorbox',$data);
