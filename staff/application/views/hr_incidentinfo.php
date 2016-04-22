@@ -38,6 +38,7 @@
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
+<input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
 <table class="tableInfo">
 	<tr>
 		<td colspan="2">
@@ -633,14 +634,14 @@ $(function(){
 
 	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
 	$("#found_answer_submit").click(function() {
-
+		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#foundid").val();
 		var inscateg_id = $("#categoryid").val();
 		var ass_categ = $("#assign_category").val();
 		var fnd_answer_link = $("#found_answer_link").val();
 		var custom_ans = $("#found_answer_custom").val();
 
-		var dataString = 'insedentid='+ ins_id +'&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans +'&categid=' + inscateg_id;
+		var dataString = 'insedentid='+ ins_id +'&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans +'&categid=' + inscateg_id +'&hr_username='+ hr_sname;
 		
 		
 
@@ -667,13 +668,13 @@ $(function(){
 
 	// ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
 	$("#custom_answer_submit").click(function() {
-		
+		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#customid").val();
 		var inscateg_id = $("#customcategid").val();
 		var ass_categ = $("#assign_category option:selected").val();
 		var custom_ans = $("#custom_answer_msg").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&customcategid=' + inscateg_id;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&customcategid=' + inscateg_id +'&hr_username='+ hr_sname;
 		
 		
 			if (custom_ans == '') {
@@ -698,14 +699,14 @@ $(function(){
 
 	// ===== JQUERY FOR INSERTION NOT FOUND ANSWER IN LINK =====
 	$("#not_found_answer_submit").click(function() {
-
+		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#notfoundid").val();
 		var inscateg_id = $("#notfoundcategid").val();
 		var ass_categ = $("#assign_category").val();
 		var redirect = $("#redirect_department").val();
 		var custom_ans = $("#not_found_custom_msg").val();
 
-		var dataString = 'insedentid=' + ins_id + '&assign_category=' + ass_categ + '&notfound_answer_custom=' + custom_ans + '&redirect_department=' + redirect + '&notfoundcategid=' + inscateg_id;
+		var dataString = 'insedentid=' + ins_id + '&assign_category=' + ass_categ + '&notfound_answer_custom=' + custom_ans + '&redirect_department=' + redirect + '&notfoundcategid=' + inscateg_id +'&hr_username='+ hr_sname;
 		
 			if (redirect == '' || custom_ans== '') {
 
@@ -732,12 +733,13 @@ $(function(){
 
 	// ===== JQUERY FOR INSERTION FURTHER ANSWER IN LINK =====
 	$("#furder_submit").click(function() {
+		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#furtherid").val();
 		var inscateg_id = $("#furthercategid").val();
 		var ass_categ = $("#assign_category option:selected").val();
 		var custom_ans = $("#further_answer_msg").val();
 
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans +'&furthercategid=' + inscateg_id;
+		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans +'&furthercategid=' + inscateg_id +'&hr_username='+ hr_sname;
 		
 		if (custom_ans == '') {
 			alert("Some Field is Empty!");

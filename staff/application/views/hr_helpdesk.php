@@ -114,21 +114,22 @@
 				<th>Give Update</th>
 			</tr>
 		</thead>
-
-		<tr>
-			<td>
-				Insident #
-			</td>
-			<td>fname</td>
-			<td>date submitid</td>
-			<td>ctegory</td>
-			<td>subject</td>
-			<td>priority</td>
-			<td>assigned SAL</td>
-			<td>Owner</td>
-			<td>Last Update</td>
-			<td>Give Update</td>
-		</tr>	     
+			<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
+				<tr>
+					<td class="td_hover">
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $active_val->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="Detail of incident" data-balloon-pos="right"><?php echo "$active_val->cs_post_id";?></a>	
+	      			</td>
+					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
+					<td><?php echo $active_val->cs_post_date_submitted; ?></td>
+					<td><?php echo $active_val->assign_category; ?></td>
+					<td><?php echo $active_val->cs_post_subject; ?></td>
+					<td><?php echo $active_val->cs_post_urgency; ?></td>
+					<td><?php echo $active_val->assign_sla; ?></td>
+					<td><?php echo $active_val->hr_own_empUSER; ?></td>
+					<td><?php echo $active_val->last_update; ?></td>
+					<td>Give Update</td>
+				</tr>
+			<?php } ?>     
 	</table>
 
       <br>
