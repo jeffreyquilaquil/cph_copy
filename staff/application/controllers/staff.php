@@ -2564,9 +2564,9 @@ class Staff extends MY_Controller {
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
-				$data['pending'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['approved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['done'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=3', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['pending'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['approved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['done'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=3', 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		
@@ -4583,7 +4583,7 @@ class Staff extends MY_Controller {
 			$data['data_query_'. $val->hdmf_loan_status ][] = $info;
 		}
 		
-		//$this->textM->aaa($data);
+		$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
 	

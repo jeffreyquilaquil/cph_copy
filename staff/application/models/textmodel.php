@@ -202,6 +202,7 @@ class Textmodel extends CI_Model {
 						</th>
 						<th>Immediate Supervisor</th>
 						<th>Prepared By</th>
+						<th>Updated By</th>
 						<th><br/></th>
 						<th><br/></th>
 					</tr>
@@ -271,6 +272,7 @@ class Textmodel extends CI_Model {
 				
 				$disp .= '<td>'.$a->supName.'</td>';
 				$disp .= '<td>'.$a->prepby.'</td>';
+				$disp .= '<td>'.$a->updatedby.'</td>';
 				
 			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d')){
 				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/'.$a->signedDoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
