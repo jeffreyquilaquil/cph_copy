@@ -494,6 +494,7 @@ class Schedules extends MY_Controller {
 							$insArr['empID_fk'] = $data['schedData']['id'];
 							$insArr['assignBy'] = $this->user->empID;
 							$insArr['assignDate'] = date('Y-m-d H:i:s');
+							$insArr['timeText'] = $data['schedData']['sched'];
 							$insArr['status'] = 0;
 							$insArr['updateData'] = 'Set INACTIVE from:'.$data['schedData']['sched'].' REASON:'.$_POST['reason'].' BY:'.$this->user->username.' |';
 							$this->dbmodel->insertQuery('tcStaffScheduleByDates', $insArr);
