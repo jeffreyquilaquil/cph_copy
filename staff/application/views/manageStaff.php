@@ -21,13 +21,19 @@
 							echo  '</td>';	
 							
 					
-				} else if( $this->access->accessFullHR == false AND !in_array($key, $hr_fields_array) ){
+				} else if( ($this->access->accessMedPerson == true OR $this->user->level > 0) AND !in_array($key, $hr_fields_array) ){
 					echo '<td>';
 							echo '<input type="checkbox" name="flds[]" value="'.$key.'" id="'.$key.'"';
 							if( in_array($key, $fvalue) ) echo ' checked ';
 							echo '/> <label for="'.$key.'">'.$val.'</label>';
-						echo '</td>';	
-					}
+					echo '</td>';	
+				} else if( !in_array($key, $hr_fields_array) ){
+					echo '<td>';
+							echo '<input type="checkbox" name="flds[]" value="'.$key.'" id="'.$key.'"';
+							if( in_array($key, $fvalue) ) echo ' checked ';
+							echo '/> <label for="'.$key.'">'.$val.'</label>';
+					echo '</td>';	
+				}
 				
 				
 
