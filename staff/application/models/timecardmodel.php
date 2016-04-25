@@ -876,7 +876,7 @@ class Timecardmodel extends CI_Model {
 						
 					}
 
-					$this->textM->aaa($d, false);
+					//$this->textM->aaa($d, false);
 					if(isset($d['pendingoffset'])) {
 						if( is_array($d['leaveID']) ){
 							foreach( $d['leaveID'] as $leave ){
