@@ -4583,7 +4583,7 @@ class Staff extends MY_Controller {
 			$data['data_query_'. $val->hdmf_loan_status ][] = $info;
 		}
 		
-		$this->textM->aaa($data);
+		
 		$this->load->view('includes/template', $data);
 	}
 	
