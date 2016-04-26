@@ -226,6 +226,8 @@ class Commonmodel extends CI_Model {
 			 $cnt = $this->dbmodel->getSingleField('staffReportViolation', 'count(reportID)', 'status>=1 AND status<10', 'dateSubmitted DESC');
 		} else if( $type == 'medrequests' ){
  			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
+		} else if( $type == 'hdmf_loans' ){
+			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		}
 		
 		return $cnt;

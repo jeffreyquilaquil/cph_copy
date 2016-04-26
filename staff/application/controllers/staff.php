@@ -4502,6 +4502,14 @@ class Staff extends MY_Controller {
 						'hdmf_loan_date_submitted' => date('Y-m-d H:i:s')
 					);
 					$insert_id = $this->dbmodel->insertQuery('staff_hdmf_loan', $insert_array);
+
+					//add notification to accounting for hdmf loan application
+					$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%"');						
+					$staff_name = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname, " ", lname) AS name', 'empID = '. $this->user->empID );
+					$ntexts = $staff_name->name.' has submitted HDMF loan application.';
+					foreach( $finance_id as $key => $val ){
+						$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+					}
 					$data['msg'] = 'Application has been submitted. You can view the form <a href="'.$this->config->base_url().'hdmf/'.$insert_id.'" target="_blank">here</a>';
 
 				} 			
@@ -4526,7 +4534,7 @@ class Staff extends MY_Controller {
 	public function hdmfs(){
 		$data['content'] = 'hdmf_loans';
 		
-		$data['headers'] =  array('applicant', 'loan type', 'status', 'file');
+		$data['headers'] =  array('applicant', 'loan type', 'status', 'date submitted', 'file');
 		$data['hdmf_loan_status'] = $this->textM->constantArr('hdmf_loan_status');
 		$data['col_options'] = '';
 
@@ -4547,9 +4555,10 @@ class Staff extends MY_Controller {
 
 		foreach( $data_query as $val ){
 			$info = array();
-			$data['data_query_'. $val->hdmf_loan_status ]['headers'] = array('applicant', 'loan type', 'status', 'file');
+			$data['data_query_'. $val->hdmf_loan_status ]['headers'] = array('applicant', 'loan type', 'status', 'date submitted', 'file');
 			$info['applicant'] = $val->applicant;
 			$info['loan type'] = $val->hdmf_loan_type;
+			$info['date submitted'] = date('F d, Y', strtotime($val->hdmf_loan_date_submitted) );
 			$info['status'] = $this->textM->formfield('selectoption', 'hdmf_loan_status', $val->hdmf_loan_status, 'stat_select', '', 'data-id="'.$val->hdmf_loan_id.'" data-empid="'.$val->empID_fk.'"', $data['hdmf_loan_status']);
 
 			if( $val->hdmf_loan_status == 3 ){
@@ -4583,7 +4592,7 @@ class Staff extends MY_Controller {
 			$data['data_query_'. $val->hdmf_loan_status ][] = $info;
 		}
 		
-		
+		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
 	

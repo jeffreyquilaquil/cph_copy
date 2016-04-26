@@ -104,6 +104,7 @@
 					$nteNum = $this->commonM->countResults('nte');
 					$eval90th = $this->commonM->countResults('eval90th');
 					$medrequests = $this->commonM->countResults('medrequests');
+					$hdmf_loans = $this->commonM->countResults('hdmf_loans');
 					
 					if($this->access->accessFullHR==true){
 						$cntincidentreport = $this->commonM->countResults('incidentreport');
@@ -121,7 +122,7 @@
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
-						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application</a></li>';
+						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application '.(($hdmf_loans > 0)?'<b>['.$hdmf_loans.']</b>':'').'</a></li>';
 					}
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
