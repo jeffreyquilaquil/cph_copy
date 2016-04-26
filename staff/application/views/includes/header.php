@@ -125,7 +125,6 @@
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
-						echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR HelpDesk</a></li>';
 					
 					}
 						
@@ -139,6 +138,7 @@
 				echo '<ul class="dropdown">';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
+					echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR HelpDesk</a></li>';
 				echo '</ul>';
 				echo '</li>';
 			}

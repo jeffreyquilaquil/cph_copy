@@ -35,7 +35,7 @@
 
 <h2>HR HelpDesk</h2>
 <ul class="tabs">
-	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($HrHelpDesk)?> )</font></li>
+	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
 	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active</li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
@@ -64,11 +64,11 @@
 		  	</tr>
 	  	</thead>
 
-	  	<?php foreach ($HrHelpDesk as $key => $value) { ?>
+	  	<?php foreach ($NewIncident as $key => $value) { ?>
 
 	  		<tr>
 	      		<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $value->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="Detail of incident" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
+                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="<?php echo strip_tags($value->cs_msg_text) ?>" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
