@@ -36,7 +36,7 @@
 
 </style>
 
-	<?php if ($msg_newID->maxid == 0) { ?>
+	<?php if (empty($msg_newID->maxid)) { ?>
 	<div>
 	<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/askhr" enctype="multipart/form-data">
 		<table class="tableInfo">
