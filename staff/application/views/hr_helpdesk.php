@@ -21,7 +21,7 @@
 	 .settings-bottom{
 	 	margin-bottom: 5px;
 	 }
-
+ 
 	 .options-right{
 	 	float: right; 
 	 	margin-top: 12.5px;
