@@ -129,7 +129,7 @@ class Emailmodel extends CI_Model {
 		$possesive_pronoun = ( $info->gender == 'M' ) ? 'his' : 'her';
 		//send email to leaders
 		$sender = 'careers.cebu@tatepublishing.net';
-		$receiver = 'management.us@tatepublishing.net,leaders.cebu@tatepublishing.net,'.$info->supEmail;
+		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
 		$msg = '<p>Hello Tate Leaders!</p>
 		<p>We are sorry to announce that '. $info->name .' is leave Tate Publishing.</p>
 		<p>A separation date has been entered for '. $info->name .' and '.  $possesive_pronoun .' last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
