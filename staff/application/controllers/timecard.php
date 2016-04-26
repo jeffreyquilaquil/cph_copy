@@ -1488,7 +1488,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1553,13 +1553,14 @@ class Timecard extends MY_Controller {
 									//for active employee
 									if( isset($_GET['is_active']) ){
 										$sDate = $data['staffInfo']->startDate;
-										if( $sDate < '2016-01-01' )
-											$sDate = '2016-01-01';
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, $sDate, date('Y-12-31') );
-										$data['dataArr'] = $datum['dateArr'];
+										// if( $sDate < '2016-01-01' )
+										// 	$sDate = '2016-01-01';
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31') );
+										$data['dateArr'] = $datum['dateArr'];
 										$data['dataMonth'] = $datum['dataMonth'];
 										$data['dataMonthItems'] = $datum['dataMonthItems'];
 										$data['staffInfo']->endDate = date('Y-12-31');
+										$data['is_active'] = TRUE;
 									}
 									// echo "<pre>";
 									// var_dump($data);
@@ -1884,8 +1885,6 @@ class Timecard extends MY_Controller {
 				'24HR' => 'Special PHL Holiday Worked (hours)',
 				'26' => 'Regular US Holiday Worked',
 				'26HR' => 'Regular US Holiday Worked (hours)',
-				'27' => 'Regular Holiday Premium',
-				'27HR' => 'Regular Holiday Premium (hours)',
 				'11' => 'Over Time Worked',
 				'11HR' => 'Over Time Worked (hours)',
 				'42' => 'OT Hours Added',
@@ -1904,13 +1903,11 @@ class Timecard extends MY_Controller {
 				'5' => 'Medical Cash Allowance',
 				'1' => 'Rice Allowances',
 				'44' => 'Pro-rated Allowance',
-				'47' => 'Training Allowance',
 				'14' => 'Performance Bonus',
 				'15' => 'Kudos Bonus',
 				'31' => 'Discrepancy on Previous Bonus',
 				'21' => 'Vacation Pay',
 				'30' => 'Cost of Vaccines',
-				'46' => 'Refund on Cost of Vaccines',
 				'43' => 'Tax Refund',
 				'20' => 'Tax Deficit',
 				'18' => 'Sun Life',
@@ -1921,8 +1918,6 @@ class Timecard extends MY_Controller {
 				'40' => 'Payslip Adjustment',
 				'36' => '13th Month Adjustment',
 				'38' => 'Cost of Community Tax Certificate',
-				'45' => 'One Plus Shop',
-				'48' => 'ID Replacement',
 				'6' => 'BIR',
 				'net' => 'Net Pay',
 				'net_' => 'Cheque Payroll',
@@ -1976,17 +1971,10 @@ class Timecard extends MY_Controller {
 					}
 					//for tax refund
 					//deduct tax refund from gross pay
-					if( isset($item->payID) ) {
-						if( in_array( $item->payID, array(43, 46) ) ){
-							$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
-							$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
-						} 
-						if( $item->payID == 37 ){
-							$data_excel_array['earning'] = $data_excel_array['earning'] + $item->payValue;
-							$data_excel_array['earning_'] = $data_excel_array['earning_'] + $item->payValue;	
-						}
+					if( isset($item->payID) AND $item->payID == 43 ){
+						$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
+						$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
 					}
-					
 				}
 				if( !isset($data_excel_array['22HR']) ){
 					unset($data_excel_array['22']);

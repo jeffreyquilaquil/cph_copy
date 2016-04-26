@@ -815,7 +815,7 @@ class Payrollmodel extends CI_Model {
 	/** 
 		get payslips items on time range
 	**/
-	public function getPayslipOnTimeRange( $empID, $from, $to, $add = false ){
+	public function getPayslipOnTimeRange( $empID, $from, $to ){
 		$data = array();
 		$data['dateArr'] = $this->payrollM->getArrayPeriodDates($from, $to);	
 		$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
@@ -823,63 +823,22 @@ class Payrollmodel extends CI_Model {
 		'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
 	
 		$data['dataMonthItems'] = array();
-		$payCode_str = 'AND payCode IN ("taxRefund","philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")';
-		if( $add == true ){
-			$payCode_str = '';
-		}
 		if(count($data['dataMonth'])>0){
 			$slipID = '';
 			foreach($data['dataMonth'] AS $m){
 				$slipID .= $m->payslipID.',';
 			}
-            if(!empty($slipID)){
-                $queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue, payType, payID, payName', 'payslipID_fk IN ('.rtrim($slipID, ',').') '. $payCode_str , 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+			if(!empty($slipID)){
+				$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue, payID', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("taxRefund", "philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
 				if(count($queryItems)>0){
 					foreach($queryItems AS $item){
 						$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
-						$data['dataMonthMisc'][$item->payslipID_fk][$item->payCode.'_'.$item->payType.'_'.$item->payID.'_'.$item->payName] = $item->payValue;
 					}
 				}
 			}
 		}
-
-		$total_month = array();
-		//compute net
-		foreach( $data['dataMonth'] as $key_m => $val_m ){
-			foreach( $val_m as $key_n => $val_n ){
-				$total_month[ $key_n ] += $val_n;
-			}
-		}
-		$allowances = array();
-		$deductions = array();
-		//compute deductions and allowances
-		foreach( $data['dataMonthMisc'] as $key => $val ){
-			foreach( $val as $key_ => $val_ ){
-				//check if we have instance of the string
-				if( (strpos( $key_, 'credit') !== FALSE) OR (strpos( $key_, 'debit') !== FALSE) ){
-					$key_e = explode('_', $key_);
-					
-					if( $key_e[1] == 'credit'){
-						$allowances[ $key_e[3] ] += $val_;
-					}
-					if( $key_e[1] == 'debit' ){
-						$deductions[ $key_e[3] ] += $val_;
-					}	
-				}
-				
-			}
-		}
-		unset($allowances['Base Pay']);
-		if( $add == true ){
-			$data['total_month'] = $total_month;
-			$data['allowances'] = $allowances;
-			$data['deductions'] = $deductions;	
-		}
-		
 		return $data;
 	}
-
-
 	
 	public function generate13thmonth($periodFrom, $periodTo, $empIDs, $includeEndMonth=0){
 		$dataEmp = explode(',', rtrim($empIDs, ','));
@@ -1283,7 +1242,7 @@ class Payrollmodel extends CI_Model {
 		$totalBonus = 0;
 		$totalAdjustment = 0;
 		$totalAllowance = 0;
-		$personalExemption = 50000;	
+		$personalExemption = $this->payrollM->computeTaxExemption($staffInfo->taxstatus);	
 		
 		$salary = $payInfo->monthlyRate;
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
@@ -1295,8 +1254,8 @@ class Payrollmodel extends CI_Model {
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
-		// echo '<pre>';
-		// var_dump($payArr);
+		//echo '<pre>';
+		//var_dump($dateArr);
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems );
@@ -1315,20 +1274,24 @@ class Payrollmodel extends CI_Model {
 		* $totalSSS, $totalPhilhealth, $totalPagIbig, $total13th, $totalAllowance, $totalIncome
 		*/
 
+
 		//COMPTATION FOR DEPENDENTS
-		$dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');
-		if($dependents=='') $dependents = 0;
-		else $personalExemption += ($dependents*25000);
+		// $dependents = $this->payrollM->getTaxStatus($staffInfo->taxstatus, 'num');
+		// if($dependents=='') $dependents = 0;
+		// else $personalExemption += ($dependents*25000);
 		
 		//MISC COMPUTATIONS
 		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
-		$tnt = $this->textM->convertNumFormat($payInfo->add13th+$totalAllowance+$spp);
 		$tsal = $totalSalary - $totalDeduction - $spp;
 
 		$n55 = $tsal+$totalAdjustment;
 		$n21 = $n55+$payInfo->add13th+$totalAllowance+$spp;
 
+		$n37 = $payInfo->add13th;
+		if($data['is_active'])
+			$n37 = $total13th;
 		
+		$tnt = $this->textM->convertNumFormat($n37+$totalAllowance+$spp);
 
 		//FOR 21
 		$pdf->setXY(94, 229);
@@ -1355,7 +1318,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($n25), 0,2,'R');		
 
 		//FOR 26
-		$n26 = $dependents+$personalExemption;
+		$n26 = $personalExemption;
 		$pdf->setXY(95, 260);
 		$pdf->Cell(48, 5, $this->formatNum($n26), 0,2,'R');
 
@@ -1366,14 +1329,20 @@ class Payrollmodel extends CI_Model {
 		//FOR 28
 		$n28 = $n25-$n26;
 		if( $n28 < 0 )
-			$n28 = $this->formatNum('0');
+			$n28 = 0;
 
 		$pdf->setXY(95, 272);
-		$pdf->Cell(48, 5, $n28, 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n28), 0,2,'R');
 
 		//FOR 29, 30A, 30B, and 31
 		$n30a = $n30b = $n31 = 0;
 		$n29 = $payInfo->taxDue;
+		if($data['is_active']){
+			if($n55 > $personalExemption){
+				$deductedTax = $n55 - $personalExemption;//number 55 and 26 in BIR2316
+				$n29 = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+		}
 
 		if( $n29 > 0 && $payInfo->taxWithheldFromPrevious == 0 ){
 			$n30a = $n31 = $n29;
@@ -1401,8 +1370,10 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
 
 		//FOR 37
+		
+
 		$pdf->setXY(194, 100);
-		$pdf->Cell(48, 5, $this->formatNum($payInfo->add13th), 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($n37), 0,2,'R');		
 
 		//FOF 38
 		$pdf->setXY(194, 110);
@@ -1413,6 +1384,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($spp), 0,2,'R');		
 
 		//FOR 41
+
 		$pdf->setXY(194, 147);
 		$pdf->Cell(48, 5, $this->formatNum($tnt), 0,2,'R');			
 
@@ -1519,7 +1491,6 @@ class Payrollmodel extends CI_Model {
 			$totalBonus = 0;
 			$totalAdjustment = 0;
 			$totalAllowance = 0;
-			$personalExemption = 50000;	
 
 			$payArr = array();
 			foreach($val->dataMonth AS $m){
@@ -1528,8 +1499,10 @@ class Payrollmodel extends CI_Model {
 
 			$staffInfo = $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, 
 				idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits, taxStatus', 'username = "'.$val->username.'"');
+			
+			$personalExemption = $this->payrollM->computeTaxExemption($staffInfo->taxstatus);
 
-
+			//for separated employee
 			$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
 
 			$month13c = 0;
@@ -1548,9 +1521,22 @@ class Payrollmodel extends CI_Model {
 			* $totalSSS, $totalPhilhealth, $totalPagIbig, $total13th, $totalAllowance, $totalIncome
 			*/
 
+			// $spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
+			// $tnt = $this->textM->convertNumFormat($payInfo->add13th+$totalAllowance+$spp);
+			// $tsal = $totalSalary - $totalDeduction - $spp;
+
+
 			$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
-			$tnt = $this->textM->convertNumFormat($payInfo->add13th+$totalAllowance+$spp);
 			$tsal = $totalSalary - $totalDeduction - $spp;
+
+			$n55 = $tsal+$totalAdjustment;
+			$n21 = $n55+$payInfo->add13th+$totalAllowance+$spp;
+
+			$n37 = $payInfo->add13th;
+			if($data['is_active'])
+				$n37 = $total13th;
+			
+			$tnt = $this->textM->convertNumFormat($n37+$totalAllowance+$spp);
 
 			
 			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $this->formatNum($totalIncome) );
@@ -1653,7 +1639,7 @@ class Payrollmodel extends CI_Model {
 		$data['totalBonus'] = 0;
 		$data['totalAdjustment'] = 0;
 		$data['totalAllowance'] = 0;
-		$data['personalExemption'] = 50000;
+		//$data['personalExemption'] = $this->payrollM->computeTaxExemption($staffInfo->taxstatus);
 		$data['incomeTax'] = 0;
 		$data['month13c'] = 0;
 		$data['regTaken'] = 0;
@@ -1694,11 +1680,10 @@ class Payrollmodel extends CI_Model {
 				}
 								
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-				if($staffInfo->endDate >= date('Y').'-01-25'){
-					if( isset($payArr[$date]->deduction) ){
-						$data['month13c'] = ($payArr[$date]->basePay - $data['regTaken'] /*$payArr[$date]->deduction*/)/12;
-					}
-					
+				if( $staffInfo->active OR $staffInfo->endDate >= date('Y').'-01-25'){
+					//if( isset($payArr[$date]->deduction) ){
+					$data['month13c'] = ($payArr[$date]->basePay - $data['regTaken'] /*$payArr[$date]->deduction*/)/12;
+					//}
 				}		
 
 				$data['gross'] .= $this->textM->convertNumFormat($payArr[$date]->earning + $data['month13c'])."\n";
@@ -1711,6 +1696,7 @@ class Payrollmodel extends CI_Model {
 				$data['taxWithheld'] .= $data['incomeTax']."\n";		
 
 				$data['month13'] .= $this->textM->convertNumFormat($data['month13c'])."\n";
+
 				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									
 				$data['totalIncome'] += $payArr[$date]->earning + $data['month13c'];
@@ -1721,7 +1707,7 @@ class Payrollmodel extends CI_Model {
 				$data['totalBonus'] += $payArr[$date]->bonus;
 				$data['totalAdjustment'] += $payArr[$date]->adjustment;
 				$data['totalAllowance'] += $payArr[$date]->allowance;
-				$data['total13th'] += $data['month13'];					
+				$data['total13th'] += $data['month13c'];					
 				$data['totalNet'] += $payArr[$date]->net;					
 			}else{
 				$data['gross'] .= "0.00";
@@ -1998,6 +1984,16 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->Output('lastpay.pdf', 'I');		
 	}	
+
+	public function computeTaxExemption($taxStatus){
+		return $this->dbmodel->getSingleField('taxStatusExemption', 'taxExemption', 'taxStatus_fk = '.$taxStatus);
+	}
+
+	public function getBIRTaxDue($tax){
+		$q = $this->dbmodel->getSingleField('birTaxTable', 'taxRate', "minRange < $tax AND maxRange > $tax");
+		$s = eval("return $q;");
+		return $s;
+	}
 	
 }
 ?>
