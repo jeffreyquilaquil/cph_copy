@@ -57,10 +57,12 @@
 	  	<thead>
 		  	<tr>
 			  	<th>Incident #</th>
+		  		<th>Subject</th>	
 		  		<th>Customer</th>
-		  		<th>Date Submitted</th>
-		  		<th>Subject</th>
 		  		<th>Priority</th>	
+		  		<th>Date Submitted</th>
+		  		
+		  		
 		  	</tr>
 	  	</thead>
 
@@ -70,10 +72,10 @@
 	      		<td class="td_hover">
                     <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="<?php echo strip_tags($value->cs_msg_text) ?>" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
-	      		<td><?php echo $value->fname; ?></td>
-	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
+	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php echo $value->cs_post_urgency; ?></td>
+	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>      		
 	  		</tr>	     
 
 	  	<?php } ?> 		
@@ -103,15 +105,11 @@
 		<thead>
 			<tr>
 				<th>Incident #</th>
-				<th>Customer</th>
-				<th>Date Submitted</th>
-				<th>Category</th>
 				<th>Subject</th>
+				<th>Customer</th>
 				<th>Priority</th>
-				<th>Assigned SLA</th>
-				<th>Owner</th>
 				<th>Last Update</th>
-				<th>Give Update</th>
+				<th>Give Update</th>				
 			</tr>
 		</thead>
 			<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
@@ -119,15 +117,11 @@
 					<td class="td_hover">
 	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident?id=<?php echo $active_val->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="Detail of incident" data-balloon-pos="right"><?php echo "$active_val->cs_post_id";?></a>	
 	      			</td>
-					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
-					<td><?php echo $active_val->cs_post_date_submitted; ?></td>
-					<td><?php echo $active_val->assign_category; ?></td>
 					<td><?php echo $active_val->cs_post_subject; ?></td>
+					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 					<td><?php echo $active_val->cs_post_urgency; ?></td>
-					<td><?php echo $active_val->assign_sla; ?></td>
-					<td><?php echo $active_val->hr_own_empUSER; ?></td>
 					<td><?php echo $active_val->last_update; ?></td>
-					<td>Give Update</td>
+					<td>Give Update</td>					
 				</tr>
 			<?php } ?>     
 	</table>
