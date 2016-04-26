@@ -441,6 +441,9 @@ $(document).ready(function() {
 
 	$('#found_answer').click(function(){
 
+		$('#further_answer_form').hide();
+        $('#custom_answer_form').hide();
+        $('#found_answer_form').hide();
 		$('#found_answer_form').toggle();
 		
 	})	
@@ -449,7 +452,9 @@ $(document).ready(function() {
 	$('#custom_answer_form').hide();
 
 	$('#custom_answer').click(function(){
-
+		$('#further_answer_form').hide();
+        $('#custom_answer_form').hide();
+        $('#found_answer_form').hide();
 		$('#custom_answer_form').toggle();
 		
 	})	
@@ -457,8 +462,10 @@ $(document).ready(function() {
 	// ===== NOT FOUND ANSWER =====
 	$('#notfound_answer_form').hide();
 
-	$('#not_found_answer').click(function(){
-
+		$('#not_found_answer').click(function(){
+		$('#further_answer_form').hide();
+        $('#custom_answer_form').hide();
+        $('#found_answer_form').hide();
 		$('#notfound_answer_form').toggle();
 		
 	})	
@@ -467,7 +474,10 @@ $(document).ready(function() {
 	$('#further_answer_form ').hide();
 
 	$('#further_answer').click(function(){
-
+		
+		$('#notfound_answer_form').hide();
+	    $('#custom_answer_form').hide();
+	    $('#found_answer_form').hide();
 		$('#further_answer_form').toggle();
 		
 	})	
