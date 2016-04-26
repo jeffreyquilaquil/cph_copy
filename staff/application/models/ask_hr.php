@@ -29,6 +29,16 @@ class Ask_hr extends CI_Model {
 			return $num;
 		}
      } //end of askhr function
+	function max_id(){
+		$max = $this->db->query("SELECT MAX(cs_post_id) as maxid FROM hr_cs_post");
+		$val = $max->result();
+
+		foreach ($val as $key => $value) {
+			$v = $value;
+		}
+		
+		return $v;
+	}
 
      function hrhelpdesk($fields, $table, $join='', $orderby=''){ // query with join
      	$arr = array();

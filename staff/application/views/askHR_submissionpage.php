@@ -36,7 +36,7 @@
 
 </style>
 
-	<?php if ($msg_newID == 0) { ?>
+	<?php if ($msg_newID->maxid == 0) { ?>
 	<div>
 	<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/askhr" enctype="multipart/form-data">
 		<table class="tableInfo">
@@ -97,7 +97,7 @@
 	<div class="askhr-notif">
 		Thank you for submitting an HR inquiry/report.
 		Your HR incident number is
-		<h2><?php  echo $msg_newID; ?></h2>
+		<h2><?php  echo $msg_newID->maxid; ?></h2>
 
 		When following on your request, please use the incident number above. Please expect to recieve feedback on this incident within
 		24 hours. You may monitor the progress of your HR incidents in your <a href="#" class="askhr-notif-link">career.tatepublishing.net/staff</a> homepage.

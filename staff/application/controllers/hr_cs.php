@@ -98,11 +98,11 @@
 									
 					$data3['msg_newID']=0;
 					if(isset($data2['cs_msg_postID_fk'])){
-						$data3['msg_newID']=$this->ask_hr->askhr('hr_cs_msg',$data2);
+						$this->ask_hr->askhr('hr_cs_msg',$data2);
 
 			 
 					}
-					
+					$data3['msg_newID']= $this->ask_hr->max_id();
 					$this->load->view('askHR_submissionpage',$data3);
 
 					//redirect($this->config->base_url(), 'refresh');
@@ -117,11 +117,11 @@
 				
 				//getting data from db
 				//for New incident data HR HELP DESK
-				$data['NewIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted, cs_msg_text, hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON cs_post_id = cs_msg_postID_fk WHERE  hr_cs_post.cs_post_status = 0 GROUP BY cs_msg_postID_fk HAVING COUNT(cs_msg_postID_fk) = 1 ','hr_cs_post.cs_post_id');
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
 
-				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, cs_msg_text,  hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
+				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id INNER JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
 
-//$this->output->enable_profiler(true);
+
 				$this->load->view('includes/template',$data);
 
 
@@ -137,7 +137,7 @@
 	            	}else{
 	            		$insedent_id = $this->input->get('postid');
 	            	}
-                    $insedent_id = $this->uri->segment(3);
+
             	
 
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
@@ -289,7 +289,7 @@
            
 
             function test(){ // this for testing function
-            	$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+            	$data['category'] = $this->ask_hr->max_id();
             	echo json_encode($data);
             }// end test function
 
