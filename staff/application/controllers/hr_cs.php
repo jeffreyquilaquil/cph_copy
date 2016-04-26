@@ -150,6 +150,7 @@
 
             	
 					$this->load->view('includes/templatecolorbox',$data);
+
             }//end of HrIncident function
 
 	        function addcategory(){
@@ -285,6 +286,12 @@
             function hr_custom_satisfaction(){
             	$data['content']='hr_cust_satisfaction_survey';
 	  			$this->load->view('includes/template',$data);
+
+            }
+            function give_update(){
+            	$data['content']='give_update.php';
+            	$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
+	  			$this->load->view('includes/templatecolorbox',$data);
 
             }
 
