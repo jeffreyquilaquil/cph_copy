@@ -117,9 +117,9 @@
 				
 				//getting data from db
 				//for New incident data HR HELP DESK
-				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk AND hr_cs_post.cs_post_status = 0','hr_cs_post.cs_post_id');
+				$data['HrHelpDesk']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk WHERE hr_cs_post.cs_post_status = 0 GROUP BY cs_hr_postID_fk HAVING COUNT(cs_hr_postID_fk) = 1','hr_cs_post.cs_post_id');
 
-				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id INNER JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
+				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
 
 
 				$this->load->view('includes/template',$data);
@@ -137,7 +137,7 @@
 	            	}else{
 	            		$insedent_id = $this->input->get('postid');
 	            	}
-
+                $insedent_id = $this->uri->segment(3);
             	
 
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
