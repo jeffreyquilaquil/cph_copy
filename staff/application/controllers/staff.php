@@ -4504,7 +4504,7 @@ class Staff extends MY_Controller {
 					$insert_id = $this->dbmodel->insertQuery('staff_hdmf_loan', $insert_array);
 
 					//add notification to accounting for hdmf loan application
-					$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%"');						
+					$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%" OR access LIKE "%hr%"');						
 					$staff_name = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname, " ", lname) AS name', 'empID = '. $this->user->empID );
 					$ntexts = $staff_name->name.' has submitted HDMF loan application.';
 					foreach( $finance_id as $key => $val ){
