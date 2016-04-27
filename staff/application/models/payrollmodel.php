@@ -1199,7 +1199,9 @@ class Payrollmodel extends CI_Model {
 		//FOR EMPLOYEE'S NAME
 		$pdf->setXY(43,57);
 		$pdf->setFont('Arial', 'B', 8);
-		$pdf->Write(0, strtoupper($staffInfo->fullName));
+		$fullName = strtoupper(utf8_decode($staffInfo->fullName));
+		$fullName = $this->textM->constantText('', $fullName);
+		$pdf->Write(0, $fullName);
 
 		//FOR RDO
 		$pdf->setXY(129,57);
