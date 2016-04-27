@@ -1503,13 +1503,13 @@ class Timecard extends MY_Controller {
 			}
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
-				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo']);
+				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
-
+				$data['allowances'] = $datum['allowances'];
 			}
-							
+
 			///THIS IS FOR THE PDF
 			if(isset($_GET['show'])){
 				$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
