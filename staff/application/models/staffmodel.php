@@ -1471,7 +1471,7 @@ class Staffmodel extends CI_Model {
 		$pdf->Cell(0, 0, $complete_name );
 
 		$pdf->setXY(10, 35);
-		$pdf->MultiCell(105, 4, $address, 0, 'L');
+		$pdf->MultiCell(105, 6, $address, 0, 'L');
 
 		//gender
 		switch( $employee_info->gender ){
