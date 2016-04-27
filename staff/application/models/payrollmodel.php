@@ -844,6 +844,7 @@ class Payrollmodel extends CI_Model {
 				}
 			}
 		}
+
 		$total_month = array();
 		//compute net
 
@@ -1333,8 +1334,17 @@ class Payrollmodel extends CI_Model {
 		$n37 = $payInfo->add13th;
 		if($data['is_active'])
 			$n37 = $total13th;
+
+		$totalDeminimis = 0;
+		foreach ($data['allowances'] as $key => $value) {
+			$allowanceArray = $this->textM->constantArr('allowances');
+			if(in_array($key, $allowanceArray)){
+				//echo $key;
+				$totalDeminimis += $value;
+			}
+		}
 		
-		$tnt = $this->textM->convertNumFormat($n37+$totalAllowance+$spp);
+		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp);
 
 		//FOR 21
 		$pdf->setXY(94, 229);
@@ -1418,9 +1428,10 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 100);
 		$pdf->Cell(48, 5, $this->formatNum($n37), 0,2,'R');		
 
-		//FOF 38
+		//FOR 38
 		$pdf->setXY(194, 110);
-		$pdf->Cell(48, 5, $this->formatNum($totalAllowance), 0,2,'R');
+
+		$pdf->Cell(48, 5, $this->formatNum($totalDeminimis), 0,2,'R');
 
 		//FOR 39
 		$pdf->setXY(194, 122);
