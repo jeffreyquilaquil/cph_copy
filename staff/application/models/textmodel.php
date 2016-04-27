@@ -445,7 +445,7 @@ class Textmodel extends CI_Model {
 	}
 	
 	
-	function constantText($t){
+	function constantText($t, $special = ''){
 		$txt = '';
 		if($t=='txt_fname') $txt = 'First Name';
 		else if($t=='txt_lname') $txt = 'Last Name';
@@ -510,6 +510,10 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_emergency_person') $txt = 'Emergency Contact Person';
 		else if($t=='txt_emergency_number') $txt = 'Emergency Contact Number';
 		else if($t=='txt_emergency_address') $txt = 'Emergency Contact Address';
+		elseif($special != ''){
+			$txt = str_replace("ñ", 'N', $special);
+			//echo $txt;
+		}
 		return $txt;
 	}
 	
@@ -859,6 +863,9 @@ class Textmodel extends CI_Model {
 		} else if( $a == 'hdmf_loan_status' ){
 			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
 
+		}
+		elseif($a == 'allowances'){
+			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-rated Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
 		}
 		
 		return $arr;
