@@ -815,7 +815,7 @@ class Payrollmodel extends CI_Model {
 	/** 
 		get payslips items on time range
 	**/
-	public function getPayslipOnTimeRange( $empID, $from, $to ){
+	public function getPayslipOnTimeRange( $empID, $from, $to, $add = false ){
 		$data = array();
 		$data['dateArr'] = $this->payrollM->getArrayPeriodDates($from, $to);	
 		$data['dataMonth'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payDate, basePay, totalTaxable, earning, deduction, net, bonus, adjustment, allowance', 
@@ -823,20 +823,63 @@ class Payrollmodel extends CI_Model {
 		'LEFT JOIN tcPayrolls ON payrollsID_fk=payrollsID');
 	
 		$data['dataMonthItems'] = array();
+		$payCode_str = 'AND payCode IN ("taxRefund","philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")';
+		if( $add == true ){
+			$payCode_str = '';
+		}
+
+
 		if(count($data['dataMonth'])>0){
 			$slipID = '';
 			foreach($data['dataMonth'] AS $m){
 				$slipID .= $m->payslipID.',';
 			}
 			if(!empty($slipID)){
-				$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue, payID', 'payslipID_fk IN ('.rtrim($slipID, ',').') AND payCode IN ("taxRefund", "philhealth", "sss", "pagIbig", "incomeTax", "regularTaken", "nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday")', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
+				$queryItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payslipID_fk, payCode, payValue, payType, payID, payName', 'payslipID_fk IN ('.rtrim($slipID, ',').') '. $payCode_str , 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk');
 				if(count($queryItems)>0){
 					foreach($queryItems AS $item){
 						$data['dataMonthItems'][$item->payslipID_fk][$item->payCode] = $item->payValue;
+						$data['dataMonthMisc'][$item->payslipID_fk][$item->payCode.'_'.$item->payType.'_'.$item->payID.'_'.$item->payName] = $item->payValue;
 					}
 				}
 			}
 		}
+		$total_month = array();
+		//compute net
+
+		foreach( $data['dataMonth'] as $key_m => $val_m ){
+			foreach( $val_m as $key_n => $val_n ){
+				$total_month[ $key_n ] += $val_n;
+			}
+		}
+		$allowances = array();
+		$deductions = array();
+		//compute deductions and allowances
+		foreach( $data['dataMonthMisc'] as $key => $val ){
+			foreach( $val as $key_ => $val_ ){
+				//check if we have instance of the string
+				if( (strpos( $key_, 'credit') !== FALSE) OR (strpos( $key_, 'debit') !== FALSE) ){
+					$key_e = explode('_', $key_);
+					
+					if( $key_e[1] == 'credit'){
+						$allowances[ $key_e[3] ] += $val_;
+					}
+					if( $key_e[1] == 'debit' ){
+						$deductions[ $key_e[3] ] += $val_;
+					}	
+ 				}
+				
+ 			}
+ 		}
+		unset($allowances['Base Pay']);
+		if( $add == true ){
+			$data['total_month'] = $total_month;
+			$data['allowances'] = $allowances;
+			$data['deductions'] = $deductions;	
+		}
+
+
+
 		return $data;
 	}
 	
