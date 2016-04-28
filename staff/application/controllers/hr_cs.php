@@ -297,11 +297,21 @@
 
             }
 
+            function hr_incident_notes(){
+
+          		$insedent_id = $this->uri->segment(3);
+       
+            	$data['hr_note']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
+
+            	$data['content']='hr_incident_notes';
+	  			$this->load->view('includes/templatecolorbox',$data);
+            }
+
            
 
             function test(){ // this for testing function
-            	$data['category'] = $this->ask_hr->max_id();
-            	echo json_encode($data);
+            	$data['content']='hr_incident_notes';
+	  			$this->load->view('includes/templatecolorbox',$data);
             }// end test function
 
 } // end of class

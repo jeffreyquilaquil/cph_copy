@@ -115,7 +115,7 @@
 			<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
 				<tr>
 					<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/test/<?php echo $active_val->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="Detail of incident" data-balloon-pos="right"><?php echo "$active_val->cs_post_id";?></a>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/hr_incident_notes/<?php echo $active_val->cs_post_id; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
 	      			</td>
 					<td><?php echo $active_val->cs_post_subject; ?></td>
 					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>

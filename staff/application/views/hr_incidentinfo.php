@@ -390,7 +390,8 @@
 			<br>
 			<div id="show_add_notes_textarea">
 				<br>
-				<textarea style="height: 100px; width: 100%; resize: none;"></textarea>
+					<textarea style="height: 100px; float: right; resize: none;"></textarea>
+					<input type="submit" name="" class="btngreen" value="Submit" style="float:right;">
 			</div>
 		</td>
 	</tr>
