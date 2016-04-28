@@ -5,17 +5,6 @@
 		margin-top: 10px;
 	}
 
-	.button {
-	    background-color: #50F060;
-	    border: none; 
-	    color: black;
-	    padding: 7px 35px 7px 35px;
-	    margin-top:5px;
-	    text-decoration: none;
-	    display: inline-block;
-
-	}
-
 	.askhr-notif{
 		padding: 40px;
 		background-color: #800000;
@@ -48,8 +37,6 @@
 					WAIT! Before sending your question to HR, please check <a href="#">employee.tatepublishing.net</a> first. Your question may already
 					be answered there. If your question is already answered in employee.tatepublishing.net, HR shall reply with the link to the answer.
 				</td>
-				<td>
-				</td>
 			</tr>
 			<tr>
 				<td>
@@ -71,7 +58,7 @@
 			<tr>
 				<td colspan="2">
 					Explain the details of your inquiry in the box below:<br>
-						<textarea class="hidden tiny" name="askHR_details" style="height:350px;"></textarea>
+						<textarea class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
 				</td>
 			</tr>
 			<tr>
@@ -84,7 +71,7 @@
 					</div>
 				</td>
 				<td valign="bottom" align="right">
-					<input type="submit" class="button" value="SUBMIT INQUIRY">
+					<input type="submit" class="btngreen" value="SUBMIT INQUIRY">
 				</td>
 			</tr>
 			
