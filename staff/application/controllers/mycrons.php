@@ -186,9 +186,25 @@ class MyCrons extends MY_Controller {
 	
 	public function updateStaffCIS(){
 		$query = $this->dbmodel->getQueryResults('staffCIS', 'cisID, empID_fk, effectivedate, changes, dbchanges, preparedby, staffCIS.status, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby AND preparedby!=0) AS pName', 'status=1 AND effectivedate<="'.date('Y-m-d').'"', 'LEFT JOIN staffs ON empID=empID_fk');
-		foreach($query AS $q):	
+
+		foreach($query AS $q):
 			$chtext = '';
 			$changes = json_decode($q->dbchanges);
+
+			//for staffStatusHistory
+			$status_change = json_decode($q->changes);
+			foreach($status_change as $status_old => $status_old_val ){
+				$insert_array = array();
+				$insert_array['empID_fk'] = $q->empID_fk;
+				$insert_array['field'] = $status_old;
+				$insert_array['value'] = $status_old_val->c;
+				$insert_array['date_effective'] = $q->effectivedate;
+				$insert_array['date_added'] = "NOW()";
+
+				$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
+			}
+			//end
+
 			if(isset($changes->title)) 
 				unset($changes->title);
 			if(isset($changes->position)){
