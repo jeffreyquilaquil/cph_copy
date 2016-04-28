@@ -448,11 +448,7 @@ $(document).ready(function() {
 
 	});
 
-	$('html').click(function(){
 	
-		$("div#resol_ans_container").hide();
-	});
-
 	// ===== ADD REDIRECT DEPARTMENT =====
 	$('#add_redirect_dept_form').hide();
 
