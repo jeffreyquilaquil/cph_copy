@@ -1398,7 +1398,7 @@ class Staffmodel extends CI_Model {
 	}
 
 	public function hdmf_loan( $empID, $other_info ){
-
+		//$this->textM->aaa($other_info);
 		$employee_info = $this->dbmodel->getSingleInfo('staffs', '*', 'empID = '. $empID );
 		$month = strtoupper(date('F', strtotime($other_info['date_submitted'])));
 		
@@ -1521,6 +1521,13 @@ class Staffmodel extends CI_Model {
 
 		$pdf->setXY(140, 254);
 		$pdf->Cell(0, 0, $fl_name);
+
+		//witnesses
+		$pdf->setXY(22, 252);
+		$pdf->Cell(0, 0, strtoupper($other_info['all_staff'][ $other_info['witness_1'] ]));
+
+		$pdf->setXY(72, 252);
+		$pdf->Cell(0, 0, strtoupper($other_info['all_staff'][ $other_info['witness_2'] ]));		
 		//end infos
 
 		//loan info

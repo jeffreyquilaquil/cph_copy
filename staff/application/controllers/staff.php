@@ -4382,7 +4382,15 @@ class Staff extends MY_Controller {
 		$data['content'] = 'hdmf_loan';
 		$data['loan_purpose_array'] = $this->textM->constantArr('hdmf_loan_purpose');
 		$this->load->library('form_validation');
+		$all_staff = $this->dbmodel->getQueryArrayResults('staffs', 'empID, CONCAT(fname," ",lname) AS "name"', 'office = "PH-Cebu" AND active = 1 ORDER BY lname');
+		$all_staffs = array();
+		
+		foreach($all_staff as $key => $val ){
+			$all_staffs[$val->empID] = $val->name;
+		}
+		$data['all_staff'] = $all_staffs;
 
+		
 		if( $this->input->post('loan_id') ) {			
 			//upload
 			if( isset($_FILES) AND !empty($_FILES) ){
@@ -4455,9 +4463,13 @@ class Staff extends MY_Controller {
 			$data['mo_maiden_name'] =  $info->hdmf_loan_mo_maiden_name;
 			$data['employer_1'] =  json_decode(stripslashes($info->hdmf_loan_employer_1), true);
 			$data['employer_2'] =  json_decode(stripslashes($info->hdmf_loan_employer_2), true);
+			$data['witness_2'] =  $this->input->post('witness_1');
+			$data['witness_2'] =  $this->input->post('witness_2');
 			$data['date_submitted'] = $info->hdmf_loan_date_submitted;
 			$data['empID'] = $info->empID_fk;
 			$data['username'] = $info->username;
+			$data['witness_1'] = $info->hdmf_loan_witness_1;
+			$data['witness_2'] = $info->hdmf_loan_witness_2;
 			
 
 			if( $this->input->get('a') == 'upload' ){
@@ -4478,11 +4490,19 @@ class Staff extends MY_Controller {
 			$rules = array(
 					array('field' => 'loan_type', 'label' => '`Loan Type`', 'rules' => 'required'),
 					array('field' => 'loan_amt', 'label' => '`Loan Amount`', 'rules' => 'required'),
-					array('field' => 'loan_purpose' , 'label' => '`Loan Purpose`', 'rules' => 'required|callback_loan_purpose_check'),
+					array('field' => 'loan_purpose' , 'label' => '`Loan Purpose`', 'rules' => 'required|callback_select_check["loan purpose"]'),
 					array('field' => 'birth_place' , 'label' => '`Birth Place`', 'rules' => 'required|xss_clean'),
 					array('field' => 'mo_maiden_name' , 'label' => '`Mother\'s Maiden Name`', 'rules' => 'required|xss_clean'),
-					array('field' => 'employer_1' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
-					array('field' => 'employer_2' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'witness_1' , 'label' => 'First Witness', 'rules' => 'required|callback_select_check["first witness"]'),
+					array('field' => 'witness_2' , 'label' => 'Second Witness', 'rules' => 'required|callback_select_check["second witness"]'),
+					array('field' => 'employer_1[0]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[0]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[1]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[1]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[2]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[2]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[3]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[3]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
 				);
 			$this->form_validation->set_rules( $rules );
 			$this->form_validation->set_error_delimiters('<div class="error">', '</div>');
@@ -4499,7 +4519,9 @@ class Staff extends MY_Controller {
 						'hdmf_loan_mo_maiden_name' => $this->input->post('mo_maiden_name'),
 						'hdmf_loan_employer_1' => addslashes(json_encode($this->input->post('employer_1'))),
 						'hdmf_loan_employer_2' => addslashes(json_encode($this->input->post('employer_2'))),
-						'hdmf_loan_date_submitted' => date('Y-m-d H:i:s')
+						'hdmf_loan_date_submitted' => date('Y-m-d H:i:s'),
+						'hdmf_loan_witness_1' => $this->input->post('witness_1'),
+						'hdmf_loan_witness_2' => $this->input->post('witness_2'),
 					);
 					$insert_id = $this->dbmodel->insertQuery('staff_hdmf_loan', $insert_array);
 
@@ -4521,14 +4543,16 @@ class Staff extends MY_Controller {
 	}
 
 	//validator call back
-	public function loan_purpose_check(){
-		if( $this->input->post('loan_purpose') == 0 ){
-			$this->form_validation->set_message('loan_purpose_check', 'Please select a loan purpose.');
+	public function select_check($val, $which_option){
+		if( $val == 0 ){
+			$this->form_validation->set_message('select_check', 'Please select a '.$which_option.'.');
 			return FALSE;
 		} else {
 			return TRUE;
 		}
 	}
+
+	
 
 	//management page
 	public function hdmfs(){

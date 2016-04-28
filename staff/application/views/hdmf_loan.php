@@ -49,7 +49,7 @@ if( isset($upload) OR isset($accounting) ){
 		<td>		
 			<?php $type_array = array('new', 'renew');
 			foreach( $type_array as $val ){
-				echo '<input type="radio" name="loan_type" value="'.$val.'" id="'.$val.'_loan_type" '.$disabled.' '.( ($loan_type == $val) ? ' checked ':'').' />'.ucwords($val).'</label>';
+				echo '<input type="radio" name="loan_type" value="'.$val.'" id="'.$val.'_loan_type" '.$disabled.' '.set_radio('loan_type', $val).' /><label for="'.$val.'_loan_type">'.ucwords($val).'</label>';
 			}
 			
 			?>
@@ -61,7 +61,7 @@ if( isset($upload) OR isset($accounting) ){
 			<ul>
 			<?php $amt_array = array(60 => 'Max of 60% (24-59 mos.)', 70 => 'Max of 70% (60-119 mos.)', 80 => 'Max of 80% (at least 120 mos.)', 90 => 'Others, please specify:');
 				foreach( $amt_array as $key => $val ){
-					echo '<li><input type="radio" name="loan_amt" value="'.$key.'" id="loan_amt_'.$key.'" '.$disabled.' '.( ($loan_amt == $key) ? ' checked ':'').' />'.$val.'</li>';
+					echo '<li><input type="radio" name="loan_amt" value="'.$key.'" id="loan_amt_'.$key.'" '.$disabled.' '.set_radio('loan_amt', $key).' /><label for="loan_amt_'.$key.'">'.$val.'</label></li>';
 				}
 			?>
 			</ul>
@@ -76,7 +76,7 @@ if( isset($upload) OR isset($accounting) ){
 					$c = 1;
 					echo '<option value="0">Please select</option>';
 					foreach( $loan_purpose_array as $key => $purpose ){
-						echo '<option value="'.$key.'" '.( ($loan_purpose == $key) ? ' selected ':'').'>'.$purpose.'</purpose>';
+						echo '<option value="'.$key.'" '.set_select('loan_purpose', $key).'>'.$purpose.'</purpose>';
 						$c++;
 					}
 				 ?>
@@ -89,13 +89,37 @@ if( isset($upload) OR isset($accounting) ){
 	</tr>-->
 	<tr>
 		<td>Birthplace</td>
-		<td><input type="type" name="birth_place" value="<?php echo $birth_place; ?>" <?php echo $disabled; ?> /></td>		
+		<td><input type="type" name="birth_place" value="<?php echo set_value('birth_place'); ?>" <?php echo $disabled; ?> /></td>		
 	</tr>
 	<tr>
 		<td>Mother's maiden name</td>
-		<td><input type="type" name="mo_maiden_name" value="<?php echo $mo_maiden_name; ?>" <?php echo $disabled; ?> /></td>		
+		<td><input type="type" name="mo_maiden_name" value="<?php echo set_value('mo_maiden_name'); ?>" <?php echo $disabled; ?> /></td>		
 	</tr>
-	
+	<tr>
+		<td>Select two witnesses</td>
+		<td>
+			<select name="witness_1" <?php echo $disabled; ?>>
+				<?php 
+					$c = 1;
+					echo '<option value="0">Please select</option>';
+					foreach( $all_staff as $key => $staff ){
+						echo '<option value="'.$key.'" '.set_select('witness_1', $key).'>'.$staff.'</purpose>';
+						$c++;
+					}
+				 ?>
+			</select><br/><br/>
+			<select name="witness_2" <?php echo $disabled; ?>>
+				<?php 
+					$c = 1;
+					echo '<option value="0">Please select</option>';
+					foreach( $all_staff as $key => $staff ){
+						echo '<option value="'.$key.'" '.set_select('witness_2', $key).'>'.$staff.'</purpose>';
+						$c++;
+					}
+				 ?>
+			</select>
+		</td>		
+	</tr>
 	<tr>
 		<td colspan="2">
 		<table class="tableInfo">
@@ -109,16 +133,16 @@ if( isset($upload) OR isset($accounting) ){
 				<td style="font-weight: bold; text-align: center;">To (Mo./Yr.)</td>
 			</tr>
 			<tr>
-				<td><input type="text" name="employer_1[]" value="<?php echo $employer_1[0]; ?>" <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_1[]" value="<?php echo $employer_1[1]; ?>" <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_1[]" value="<?php echo $employer_1[2]; ?>" class="datepick" <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_1[]" value="<?php echo $employer_1[3]; ?>" class="datepick" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_1[0]" value="<?php echo set_value('employer_1[0]'); ?>" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_1[1]" value="<?php echo set_value('employer_1[1]'); ?>" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_1[2]" value="<?php echo set_value('employer_1[2]'); ?>" class="datepick" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_1[3]" value="<?php echo set_value('employer_1[3]'); ?>" class="datepick" <?php echo $disabled; ?> /></td>
 			</tr>
 			<tr>
-				<td><input type="text" name="employer_2[]" value="<?php echo $employer_2[0]; ?>" <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_2[]" value="<?php echo $employer_2[1]; ?>"  <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_2[]" value="<?php echo $employer_2[2]; ?>"  class="datepick" <?php echo $disabled; ?> /></td>
-				<td><input type="text" name="employer_2[]" value="<?php echo $employer_2[3]; ?>" class="datepick" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_2[0]" value="<?php echo set_value('employer_2[0]'); ?>" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_2[1]" value="<?php echo set_value('employer_2[1]'); ?>"  <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_2[2]" value="<?php echo set_value('employer_2[2]'); ?>"  class="datepick" <?php echo $disabled; ?> /></td>
+				<td><input type="text" name="employer_2[3]" value="<?php echo set_value('employer_2[3]'); ?>" class="datepick" <?php echo $disabled; ?> /></td>
 			</tr>
 		</table>
 		</td>
