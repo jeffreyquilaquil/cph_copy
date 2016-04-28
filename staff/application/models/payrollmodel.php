@@ -1341,7 +1341,6 @@ class Payrollmodel extends CI_Model {
 		foreach ($data['allowances'] as $key => $value) {
 			$allowanceArray = $this->textM->constantArr('allowances');
 			if(in_array($key, $allowanceArray)){
-				//echo $key;
 				$totalDeminimis += $value;
 			}
 		}
