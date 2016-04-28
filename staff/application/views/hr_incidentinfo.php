@@ -381,16 +381,23 @@
 		</td>
 	</tr>
 </table>
-
+<br>
 <table class="tableInfo">
 	<tr>
-		<th align="left">Notes</th>
-		<th colspan="2" align="right"><a href="#">Add Note</a></th>
+		<td valign="top"><h3>Notes</h3></td>
+		<td colspan="2">
+			<a id="add_notes" style="float: right"><b>Add Notes</b></a>
+			<br>
+			<div id="show_add_notes_textarea">
+				<br>
+				<textarea style="height: 100px; width: 100%; resize: none;"></textarea>
+			</div>
+		</td>
 	</tr>
 	<tr>
-		<td></td>
-		<td></td>
-		<td></td>
+		<td>aaa</td>
+		<td>bbb</td>
+		<td>ccc</td>
 	</tr>
 </table>
 </div>
@@ -480,7 +487,23 @@ $(document).ready(function() {
 	menubar : false,
 	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
 	});	
-		
+
+
+	// ===== SHOW ADD NOTES =====
+	$('#show_add_notes_textarea').hide();	
+		$('#add_notes').click(function(){
+
+		$('#show_add_notes_textarea').toggle();
+
+		if ($.trim($(this).text()) === 'Hide Notes') {
+
+		$(this).text('Add Notes');
+		}
+
+		else{
+		$(this).text('Hide Notes');
+		}
+		});		
 });
 
 $(function(){
