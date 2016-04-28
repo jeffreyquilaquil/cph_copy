@@ -143,7 +143,7 @@
 						echo '<td>'.$incomeTax.'</td>';
 						
 						//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-						if($staffInfo->endDate>=date('Y').'-01-25'){
+						if($staffInfo->endDate>=date('Y').'-01-25' && ($this->commonM->dateDifferenceDays($staffInfo->startDate, $staffInfo->endDate) > 30)) {
 							$month13 = ($payArr[$date]->basePay - $regTaken)/12;
 						}
 						
@@ -331,7 +331,9 @@
 				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnAddOn">+ Add</button>':'').'</td></tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>13th Month Pay</td>';
-					echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
+					echo '<td>';
+						echo $this->textM->convertNumFormat($total13th);
+					echo '</td>';
 				echo '</tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>Unused Leave Credits</td>';
