@@ -291,6 +291,8 @@
             function give_update(){
             	$data['content']='give_update.php';
             	$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
+
+            	
 	  			$this->load->view('includes/templatecolorbox',$data);
 
             }

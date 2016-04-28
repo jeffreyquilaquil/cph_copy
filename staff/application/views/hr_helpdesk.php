@@ -122,7 +122,7 @@
 					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 					<td><?php echo $active_val->cs_post_urgency; ?></td>
 					<td><?php echo $active_val->last_update; ?></td>
-					<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/give_update" class="iframe">Give Update</a></td>					
+					<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/give_update/<?php echo $active_val->cs_post_id; ?>" class="iframe">Give Update</a></td>					
 				</tr>
 			<?php } ?>     
 	</table>

@@ -45,11 +45,12 @@
     </center>   
 </div>
 
+ 
 <div id="regular_update_form">
     <table class="tableInfo">
         <tr>
             <td>
-                <h2>HR Incident Number 000003
+                <h2>HR Incident Number <?php echo $this->uri->segment(3); ?>
                 <br>
                 <small>You have owned responsibilty for incident number 000003</small>
                 </h2>
@@ -74,9 +75,9 @@
     <table class="tableInfo">
         <tr>
             <td>
-                <h2>HR Incident Number 000003
+                <h2>HR Incident Number <?php echo $this->uri->segment(3); ?>
                 <br>
-                <small>You have owned responsibilty for incident number 000003</small>
+                <small>You have owned responsibilty for incident number <?php echo $this->uri->segment(3); ?></small>
                 </h2>        
             </td>
         </tr>
