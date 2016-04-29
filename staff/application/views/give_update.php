@@ -25,7 +25,8 @@
     }
 
 </style>
-
+<input type="hidden" id="give_up" name="postid" value="give_update">
+<input type="hidden" id="give_update_id" name="postid" value="<?php echo $this->uri->segment(3); ?>">
 <div id="give_update_form">
     <center style="margin:40px 0;">
         <h1>What Update You Want to Give?</h1>
@@ -47,6 +48,7 @@
 
  
 <div id="regular_update_form">
+<form id="regular_update_f">
     <table class="tableInfo">
         <tr>
             <td>
@@ -60,15 +62,16 @@
             <td>Please write below your'e update you want to give the customer:</td>
         </tr>
         <tr>
-            <td><textarea style="height:200px;  resize: none;"></textarea></td>
+            <td><textarea id="regular_update_txtareas" style="height:200px;  resize: none;"></textarea></td>
         </tr>
         <tr>
-            <td><input type="button" name="" class="btn_ans" value="Send Update"></td>
+            <td><input id="regular_update_btns" type="button" name="" class="btn_ans" value="Send Update"></td>
         </tr>
         <tr>
             <td><a id="back_regular_update">Back</a></td>
         </tr>
     </table>
+    </form>
 </div>
 
 <div id="resolve_incident_form">
@@ -91,11 +94,11 @@
                 <div id="resol_ans">
                 <a id="resol_ans_link">The answer can be found in employee.tatepublishing.net</a>   
                     <div id="resol_ans_container"> 
-                        <form id="found_answer_forms">
                             <!--
                             <input id="foundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
                             <input id="foundcategid" type="hidden" name="insedentcategid" value="<?php echo $value->cs_post_id; ?> ">
                             -->
+                            <form id="resolve_incident_link_form">
                             <table class="tableInfo">
                                 <tr>
                                     <td>
@@ -103,7 +106,7 @@
 
                                         <br>
 
-                                        <input type="text" id="found_answer_link" name="found_answer_link" required>
+                                        <input id="resolve_incident_link" type="text" id="found_answer_link" name="found_answer_link" required>
                                     </td>
                                 </tr>
                                 <tr>
@@ -112,11 +115,11 @@
 
                                         <br>
 
-                                        <textarea style="height:200px;  resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
+                                        <textarea id="resolve_incident_link_txtarea" style="height:200px;  resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
 
                                         <br><br>
 
-                                        <input id="found_answerer_submit" type="submit" class="btn_ans" value="Resolve Incident">
+                                        <input id="resolve_incident_link_btn" type="submit" class="btn_ans" value="Resolve Incident">
                                     </td>
                                 </tr>
                             </table>
@@ -134,7 +137,7 @@
                 <div id="resol_ans">
                     <a id="resol_ans_link">Send custom resolution response</a>  
                         <div id="resol_ans_container"> 
-                            <form id="custom_ans_form">
+                            <form id="resolve_incident_custom_form">
                             <!--
                             <input id="customid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
                             <input id="customcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
@@ -146,11 +149,11 @@
 
                                             <br>
 
-                                            <textarea id="custom_answer_msg" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
+                                            <textarea id="resolve_incident_custom_txtarea" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
 
                                             <br><br>
 
-                                            <input type="submit" id="custom_answer_submit" class="btn_ans" value="Resolve Incident">
+                                            <input type="submit" id="resolve_incident_custom_btn" class="btn_ans" value="Resolve Incident">
                                         </td>
                                     </tr>
                                 </table>
@@ -171,12 +174,12 @@
                             <input id="notfoundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
                             <input id="notfoundcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
                             -->
-                            <form id="not_found_ans_form">
+                            <form id="resolve_incident_redirect_form">
                                 <table class="tableInfo">
                                     <tr>
                                         <td>To what deparment does this person need to be redirected to?</td>
                                         <td>
-                                            <select id="redirect_department" name="redirect_department" required style="width: 100%">
+                                            <select id="resolve_incident_redirect_department" name="redirect_department" required style="width: 100%">
                                                 <option></option>
 
                                                 <?php foreach ($department_email as $k => $v): ?>
@@ -188,13 +191,13 @@
                                     </tr>
                                     <tr>
                                         <td valign="top">Add custom message</td>
-                                        <td><textarea id="not_found_custom_msg" name="not_found_custom_msg" style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
+                                        <td><textarea id="resolve_incident_redirect_txtarea" name="not_found_custom_msg" style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
                                     </tr>
                                     <tr>
                                         <td></td>
                                         <td> 
                                             <a id="add_redirect_dept">Add redirection department</a>
-                                            <input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Resolve incident" style="float:right">
+                                            <input type="submit" id="resolve_incident_redirect_btn" class="btn_ans_small" value="Resolve incident" style="float:right">
                                         </td>
                                     </tr>
                                 </table>
@@ -336,5 +339,172 @@
             $('#see_all_redirect_dept_form').slideToggle("slow");
         });
 
-    })
+
+
+    // ===== JQUERY FOR INSERTION REGULAR UPDATE =====
+    $("#regular_update_btns").click(function() {
+        var giv_up = $("#give_up").val();
+        var ins_id = $("#give_update_id").val();
+       
+        var custom_ans = $("#regular_update_txtareas").val();
+
+
+        var dataString = 'give_update_id='+ ins_id +'&custom_answer_msg='+ custom_ans + '&reply=' + giv_up;
+        
+        
+            if (custom_ans == '') {
+
+                alert("Some Field is Empty!");
+            }else{
+
+                    // ===== AJAX CODE TO SUBMIT FORM =====
+                    $.ajax({
+                    type: "POST",
+                    url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
+                    data: dataString,
+                    cache: false,
+                        success: function(result){
+                        alert("Success!");
+                        $('#regular_update_f')[0].reset(); // ===== TO RESET FORM FIELDS =====
+                        window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+                        }
+                    });
+                }
+                return false;
+        });
+
+
+    // ===== JQUERY FOR INSERTION FOUND =====
+    $("#resolve_incident_link_btn").click(function() {
+       var giv_up = $("#give_up").val();
+        var ins_id = $("#give_update_id").val();
+        var fnd_answer_link = $("#resolve_incident_link").val();
+        var custom_ans = $("#resolve_incident_link_txtarea").val();
+
+        var dataString = 'give_update_id='+ ins_id +'&found_answer_link=' + fnd_answer_link +'&found_answer_custom='+ custom_ans + '&reply=' + giv_up;
+        
+        
+
+        if (fnd_answer_link == '') {
+            alert("Some Field is Empty!");
+        }else{
+        // ===== AJAX CODE TO SUBMIT FORM =====
+                $.ajax({
+                    type: "POST",
+                    url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_solution",
+                    data: dataString,
+                    cache: false,
+                        success: function(result){
+                        alert('success!');
+                        // ===== TO RESET FORM FIELDS =====
+                        $('#resolve_incident_link_form')[0].reset(); 
+                        window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+                        }
+                });
+            }
+
+            return false;
+    });
+
+
+    // ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
+    $("#resolve_incident_custom_btn").click(function() {
+        var giv_up = $("#give_up").val();
+        var ins_id = $("#give_update_id").val();
+       
+        var custom_ans = $("#resolve_incident_custom_txtarea").val();
+
+
+        var dataString = 'give_update_id='+ ins_id +'&custom_answer_msg='+ custom_ans + '&reply=' + giv_up;
+        
+        
+            if (custom_ans == '') {
+
+                alert("Some Field is Empty!");
+            }else{
+
+                    // ===== AJAX CODE TO SUBMIT FORM =====
+                    $.ajax({
+                    type: "POST",
+                    url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
+                    data: dataString,
+                    cache: false,
+                        success: function(result){
+                        alert("Success!");
+                        $('#resolve_incident_custom_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+                        window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+                        }
+                    });
+                }
+                return false;
+        });
+
+    // ===== JQUERY FOR INSERTION NOT FOUND ANSWER IN LINK =====
+    $("#resolve_incident_redirect_btn").click(function() {
+         var giv_up = $("#give_up").val();
+        var ins_id = $("#give_update_id").val();  
+        var redirect = $("#resolve_incident_redirect_department").val();
+        var custom_ans = $("#resolve_incident_redirect_txtarea").val();
+        var dataString = 'give_update_id=' + ins_id + '&notfound_answer_custom=' + custom_ans + '&redirect_department=' + redirect + '&reply=' + giv_up;
+        
+            if (redirect == '' || custom_ans== '') {
+
+                alert("Some Field is Empty!");
+            }else{
+
+                    // ===== AJAX CODE TO SUBMIT FORM =====
+                    $.ajax({
+                    type: "POST",
+                    url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_solution",
+                    data: dataString,
+                    cache: false,
+                    
+                        success: function(result){
+                        alert("Success!");
+                        $('#resolve_incident_redirect_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+                        window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+
+                        }
+                    });
+                }
+
+            return false;
+    }); 
+/*
+    // ===== JQUERY FOR INSERTION FURTHER ANSWER IN LINK =====
+    $("#furder_submit").click(function() {
+        var hr_sname = $("#hr_username").val();
+        var ins_id = $("#give_update_id").val();
+        var ass_categ = $("#assign_category option:selected").val();
+        var custom_ans = $("#further_answer_msg").val();
+
+        var dataString = 'give_update_id='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans +'&furthercategid=' + inscateg_id +'&hr_username='+ hr_sname;
+        
+        if (custom_ans == '') {
+            alert("Some Field is Empty!");
+        }else{
+            
+            // ===== AJAX CODE TO SUBMIT FORM =====
+            $.ajax({
+            type: "POST",
+            url: "<?php echo $this->config->base_url(); ?>hr_cs/further_investigation",
+            data: dataString,
+            cache: false,
+            
+                success: function(result){
+                alert("Success!");
+                $('#further_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+                window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+                }
+            });
+        }
+
+            return false;
+    }); */
+ });
 </script>

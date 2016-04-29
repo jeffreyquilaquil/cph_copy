@@ -145,7 +145,7 @@
             	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
-            		$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
+            		$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
 
             	
@@ -172,32 +172,49 @@
             }// end insertion new category
 
             public function found_answer_solution(){
+            		$reply = $this->input->post('reply');
 
+            		if($reply == 'new_reply'){
 
-            		$id = $this->input->post('insedentid');
+	            		$id = $this->input->post('insedentid');
 
-               		$link = $this->input->post('found_answer_link');
-            		$message = $this->input->post('found_answer_custom');
-            		$cus_message = $this->security->xss_clean($message);
+	               		$link = $this->input->post('found_answer_link');
+	            		$message = $this->input->post('found_answer_custom');
+	            		$cus_message = $this->security->xss_clean($message);
 
-            		
-            		$data['cs_msg_postID_fk'] =  $id;
-            		$data['cs_msg_text'] = $link.'<br>'.$cus_message;
-            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-            		
-					$this->ask_hr->askhr('hr_cs_msg',$data);
+	            		
+	            		$data['cs_msg_postID_fk'] =  $id;
+	            		$data['cs_msg_text'] = $link.'<br>'.$cus_message;
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		
+						$this->ask_hr->askhr('hr_cs_msg',$data);
 
-					
-            		$categ = $this->input->post('assign_category');
+						
+	            		$categ = $this->input->post('assign_category');
 
-            		if($categ != ''){
-            		$id_msg = $this->input->post('categid');
-					$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
-            		}
+	            		
+		            	$id_msg = $this->input->post('categid');
+						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
+	            		
 
-            		$empUSER = $this->input->post('hr_username');
-	            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);
+	            		$empUSER = $this->input->post('hr_username');
+		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);
 
+	            	}else if($reply == 'give_update'){
+
+	            		$id = $this->input->post('give_update_id');
+
+	            		$link = $this->input->post('found_answer_link');
+	            		$message = $this->input->post('found_answer_custom');
+	            		$cus_message = $this->security->xss_clean($message);
+
+	            		$data['cs_msg_postID_fk'] =  $id;
+	            		$data['cs_msg_text'] = $link.'<br>'.$cus_message;
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		
+						$this->ask_hr->askhr('hr_cs_msg',$data);
+
+	            	}
 
 	            	$data3['content']='hr_helpdesk';
 		  			$this->load->view('includes/template',$data3);
@@ -205,24 +222,41 @@
 
             }
             public function custom_answer_solution(){
-            		$id = $this->input->post('insedentid');
+            	$reply = $this->input->post('reply');
+            	 
+            	if($reply == 'new_reply'){
 
-            		$data['cs_msg_postID_fk'] =  $id;
-            		$custommessage=  $this->input->post('custom_answer_msg');
-            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
-            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-            		
-            		$this->ask_hr->askhr('hr_cs_msg',$data);
+	            		$id = $this->input->post('insedentid');
 
-            		$id_msg = $this->input->post('customcategid');
-	            	$categ = $this->input->post('assign_category');
-	            	
-	            	if($categ != ''){
-						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
-					}
+	            		$data['cs_msg_postID_fk'] =  $id;
+	            		$custommessage=  $this->input->post('custom_answer_msg');
+	            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		
+	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-					$empUSER = $this->input->post('hr_username');
-	            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);
+	            		$id_msg = $this->input->post('customcategid');
+		            	$categ = $this->input->post('assign_category');
+		            	
+		            	if($categ != ''){
+							$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
+						}
+
+						$empUSER = $this->input->post('hr_username');
+		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);
+
+						}else if($reply == 'give_update'){
+
+							$id = $this->input->post('give_update_id');
+
+		            		$data['cs_msg_postID_fk'] =  $id;
+		            		$custommessage=  $this->input->post('custom_answer_msg');
+		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            		
+		            		$this->ask_hr->askhr('hr_cs_msg',$data);
+						}
+
 
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
@@ -230,28 +264,46 @@
             }
 
             public function notfound_answe_solution(){
+            	$reply = $this->input->post('reply');
             
-            		$id = $this->input->post('insedentid');
-
-            		$direct_email = $this->input->post('redirect_department'); 
-            		$message = $this->input->post('notfound_answer_custom');
-            		$cus_message = $this->security->xss_clean($message);
-
-            		$data['cs_msg_postID_fk'] =  $id;
-            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
-            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            	if($reply == 'new_reply'){
             
-            		$this->ask_hr->askhr('hr_cs_msg',$data);
+	            		$id = $this->input->post('insedentid');
 
-            		$id_msg = $this->input->post('notfoundcategid');
-	            	$categ = $this->input->post('assign_category');
-	            	if($categ != ''){
-	            		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "' .$categ. '"','cs_post_id = '.$id_msg);
-	            	}
+	            		$direct_email = $this->input->post('redirect_department'); 
+	            		$message = $this->input->post('notfound_answer_custom');
+	            		$cus_message = $this->security->xss_clean($message);
 
-	            	$empUSER = $this->input->post('hr_username');
-	            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);	
+	            		$data['cs_msg_postID_fk'] =  $id;
+	            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            
+	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
+	            		$id_msg = $this->input->post('notfoundcategid');
+		            	$categ = $this->input->post('assign_category');
+		            	if($categ != ''){
+		            		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "' .$categ. '"','cs_post_id = '.$id_msg);
+		            	}
+
+		            	$empUSER = $this->input->post('hr_username');
+		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);	
+					}else if($reply == 'give_update'){
+
+						$id = $this->input->post('give_update_id');
+
+	            		$direct_email = $this->input->post('redirect_department'); 
+	            		$message = $this->input->post('notfound_answer_custom');
+	            		$cus_message = $this->security->xss_clean($message);
+
+	            		$data['cs_msg_postID_fk'] =  $id;
+	            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            
+	            		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+
+					}
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
 
