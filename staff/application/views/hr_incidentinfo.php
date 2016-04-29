@@ -446,7 +446,7 @@ $(document).ready(function() {
 
 		$("a#resol_ans_link", $resol_ans).click(function(e) {
 		e.preventDefault();
-
+ 
 		$container = $("div#resol_ans_container", $resol_ans);
 		$container.toggle();
 		$("div#resol_ans_container").not($container).hide();
