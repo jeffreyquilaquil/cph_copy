@@ -370,6 +370,30 @@
 
             }
 
+            function employee_incident_info_events(){
+
+            	$data['content']='employee_incident_info_events';  
+            	
+            	$empid = $this->uri->segment(3);
+
+            	$data['EmployeeIncidentEvents']=$this->ask_hr->hrhelpdesk
+            	(
+
+            	'hr_cs_post.cs_post_id, staffs.fname, staffs.lname',
+
+            	'hr_cs_post','INNER JOIN staffs  
+            	
+            	ON hr_cs_post.cs_post_empID_fk = staffs.empID  
+            	
+            	WHERE cs_post_id = '.$empid.' 
+            	
+            	GROUP BY hr_cs_post.cs_post_id'
+            	);
+         
+            	$this->load->view('includes/templatecolorbox',$data);		
+
+            }
+
            
 
             function test(){ // this for testing function
