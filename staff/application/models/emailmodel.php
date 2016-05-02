@@ -131,8 +131,8 @@ class Emailmodel extends CI_Model {
 		$sender = 'careers.cebu@tatepublishing.net';
 		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
 		$msg = '<p>Hello Tate Leaders!</p>
-		<p>We are sorry to announce that '. $info->name .' is leave Tate Publishing.</p>
-		<p>A separation date has been entered for '. $info->name .' and '.  $possesive_pronoun .' last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
+		<p>We are sorry to announce that '. $info->name .' is leaving Tate Publishing.</p>
+		<p>A separation date has been entered for '. $info->name .' and the last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
 		<p>This is an automatic notification using data that is captured on CareerPH system.</p>
 		<p style="text-style: underline;">Please cascade this information to anyone in your team who may need to be informed.</p>
 		<br/><br/>
