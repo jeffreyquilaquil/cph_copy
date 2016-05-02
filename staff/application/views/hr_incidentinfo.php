@@ -1,6 +1,6 @@
 <?php  
 if($this->user->access != "full"){
-			header("location: <?php echo $this->config->base_url() ?>");
+			header("location:".$this->config->base_url());
 		}
 ?>
 
