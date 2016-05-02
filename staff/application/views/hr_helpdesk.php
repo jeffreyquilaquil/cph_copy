@@ -1,3 +1,9 @@
+<?php  
+if($this->user->access != "full"){
+			header("location: <?php echo $this->config->base_url() ?>");
+		}
+?>
+
 <style type="text/css">
 
 	th{

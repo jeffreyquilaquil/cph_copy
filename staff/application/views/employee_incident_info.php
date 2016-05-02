@@ -6,12 +6,6 @@
 	 a{
 	 	text-decoration: underline;
 	 }
-
-	 input[type=text]{
-
-		width: 100%;
-	}
-
 </style>
 <div id="employee_incident_info_form">
 	<h2>HR HelpDesk</h2>
@@ -19,6 +13,9 @@
 		<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">My Incidents</li>
 	</ul>
 	<hr>
+	<form method="POST" action="<?php echo $this->config->base_url() ?>/hr_cs/employee_dashboard">
+	<input type="hidden" name="EmpId" value="<?php echo $this->user->empID ?>">
+	</form>
 	<div id="tab-1" class="tab-content current">
 		<table class="datatable">
 	  	<thead>
@@ -30,13 +27,15 @@
 		  		<th>Cancel Incident</th>	
 		  	</tr>
 	  	</thead>
+	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
-	      		<td>incident number</td>
-	      		<td>date submitted</td>
-	      		<td>subject</td>
+	      		<td><?php echo $rep->cs_post_id; ?></td>
+	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
+	      		<td><?php echo $rep->cs_post_subject; ?></td>
 	      		<td><a id="send_message_to_hr">Send Message to HR</a></td>
 	      		<td><a id="cancel_incident">Cancel Incident</a></td>
-	  		</tr>	     
+	  		</tr>	
+	  		<?php endforeach ?>     
 	</table>
 	</div>
 </div>

@@ -1,3 +1,9 @@
+<?php  
+if($this->user->access != "full"){
+			header("location: <?php echo $this->config->base_url() ?>");
+		}
+?>
+
 <style type="text/css">
 	.note{
 		font-style: italic;
@@ -278,7 +284,7 @@
 						<!-- ====== SEE ALL DIRECTION DEPARTMENTS ===== -->
 						<div id="see_all_redirect_dept_form">
 							<h2>All Direction Departments</h2>
-							<table class="datatable">
+							<table class="datatable" id="redirect_dept">
 								<thead>
 									<tr>
 										<th>Department Name</th>
@@ -292,8 +298,8 @@
 									<tr>
 										<td><?php echo $dep->department; ?></td>
 										<td><?php echo $dep->email; ?></td>
-										<td align="center"><a id="edit_redirect" href="<?= $this->config->base_url()?>hr_cs/HrIncident/<?php echo $this->uri->segment(3); ?>/edit/<?php echo  $dep->dept_emil_id;?>">Edit</a></td>
-										<td align="center"><a id="delete_redirect" href="<?= $this->config->base_url()?>hr_cs/HrIncident/<?php echo $this->uri->segment(3); ?>/delete/<?php echo  $dep->dept_emil_id;?>">Delete</a></td>
+										<td align="center"><a class="editor_edit">Edit</a></td>
+										<td align="center"><a class="editor_remove">Delete</a></td>
 									</tr>
 
 									<?php endforeach ?>

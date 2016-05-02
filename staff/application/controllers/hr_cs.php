@@ -358,12 +358,23 @@
             	$data['content']='hr_incident_notes';
 	  			$this->load->view('includes/templatecolorbox',$data);
             }
+            function employee_dashboard()
+            {
+				$empid = $this->uri->segment(3);
+
+            	$data['content']='employee_incident_info';  		
+  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
+
+	  			$this->load->view('includes/template',$data);
+
+
+            }
 
            
 
             function test(){ // this for testing function
-            	$data['content']='hr_incident_notes';
-	  			$this->load->view('includes/templatecolorbox',$data);
+            	$data['content']='employee_incident_info';
+	  			$this->load->view('includes/template',$data);
             }// end test function
 
 } // end of class
