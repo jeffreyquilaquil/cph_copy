@@ -394,7 +394,8 @@
 
             }
 
-           
+            
+              
 
             function test(){ // this for testing function
             	$data['content']='employee_incident_info';
