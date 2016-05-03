@@ -363,7 +363,7 @@
 				$empid = $this->uri->segment(3);
 
             	$data['content']='employee_incident_info';  		
-  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
+  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' AND (hr_cs_post.cs_post_status != 4) GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
 
 	  			$this->load->view('includes/template',$data);
 
@@ -391,6 +391,22 @@
             	);
          
             	$this->load->view('includes/templatecolorbox',$data);		
+
+            }
+            function emp_cancel()
+            {
+            	$id = $this->input->post('msg_id');
+
+            	$data['cs_msg_postID_fk'] = $id;
+            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            	$data['cs_msg_type'] = 1;
+            	$data['cs_msg_text'] = $this->security->xss_clean($this->input->post('emp_msg'));
+
+            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
+            	$status = 3;
+
+            	$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $status .'"','cs_post_id = '.$id);
 
             }
 
