@@ -83,7 +83,9 @@ class Timecardmodel extends CI_Model {
 							$dayArr[$i]['schedHour'] = $timeHourArrayVal[$sched->$weekType];
 							$dayArr[$i]['schedDate'] = $dtoday;	
 							
-							if($sched->workhome==1) $dayArr[$i]['workhome'] = true;	
+							
+							if($sched->workhome==1) $dayArr[$i]['workhome'] = true;
+							else unset($dayArr[$i]['workhome']);	
 						}
 					}					
 					$start = strtotime($dtoday.' +1 day');
@@ -100,14 +102,16 @@ class Timecardmodel extends CI_Model {
 							$dayArr[$i]['schedHour'] = $timeHourArrayVal[$sched->$weekType];
 							$dayArr[$i]['schedDate'] = $dtoday;		
 							
+							
 							if($sched->workhome==1) $dayArr[$i]['workhome'] = true;	
+							else unset($dayArr[$i]['workhome']);
 						}							
 					}
 				}
 			}
 		}
 				
-		
+		//$this->textM->aaa($dayArr);
 		
 		//CHECK FOR LEAVES
 		if($dateStart==$dateEnd){
