@@ -1,3 +1,9 @@
+
+<?php  
+if($this->user->access != "full"){
+			header("location:".$this->config->base_url());
+		}
+?>
 <style type="text/css">
 	a{
 		text-decoration: underline;
