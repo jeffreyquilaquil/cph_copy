@@ -56,6 +56,16 @@ echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.min.js" typ
 
 	$(document).ready(function(){
 		$('.datatable').DataTable();
+
+		$('ul.tabs li').click(function(){
+			var tab_id = $(this).attr('data-tab');
+
+			$('ul.tabs li').removeClass('current');
+			$('.tab-content').removeClass('current');
+
+			$(this).addClass('current');
+			$("#"+tab_id).addClass('current');
+		});		
 	})
 </script>
 </body>

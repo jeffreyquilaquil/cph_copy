@@ -1,6 +1,6 @@
 <?php  
 if($this->user->access != "full"){
-			header("location:".$this->config->base_url());
+			header("location: <?php echo $this->config->base_url() ?>");
 		}
 ?>
 
@@ -43,427 +43,182 @@ if($this->user->access != "full"){
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
+
 <input type="hidden" id="new_inc" name="postid" value="new_reply">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
-<table class="tableInfo">
-	<tr>
-		<td colspan="2">
-			<h2>HR Incident Number <?php echo $value->cs_post_id; ?> <br><small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small></h2>
-		</td>	
-	<td></td>
-	</tr>
-	<tr>
-		<td >Customer</td>
-		<td><?php echo $value->fname." ". $value->lname; ?> </td>
-	</tr>
-	<tr>
-		<td>Date Submitted</td>
-		<td><?php echo $value->cs_post_date_submitted; ?></td>
-	</tr>
-	<tr>
-		<td>Subject</td>
-		<td><?php echo $value->cs_post_subject; ?></td>
-	</tr>
-	<tr>
-		<td>Customer selected Priority Level</td>
-		<td><?php echo $value->cs_post_urgency; ?></td>
-	</tr>
-	<tr>
-		<td>Assign Category</td>
-		<td>
-			<select id="assign_category" name="assign_category">
-					<option></option>
-				<?php foreach ($category as $key => $val): ?>
-					<option value="<?php echo $val->categorys; ?>"><?php echo $val->categorys; ?></option>
-				<?php endforeach ?>
-		</select>
-		
-		&nbsp;
 
-		<a id="add_category">Add Category</a>
-		
-		<div id="show_add_category">
-		
-		<br>
+	<table class="tableInfo">
+		<tr>
+			<td colspan="2">
+				<h2>HR Incident Number <?php echo $value->cs_post_id; ?> <br><small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small></h2>
+			</td>	
+		</tr>
+		<tr>
+			<td >Customer</td>
+			<td><?php echo $value->fname." ". $value->lname; ?> </td>
+		</tr>
+		<tr>
+			<td>Date Submitted</td>
+			<td><?php echo $value->cs_post_date_submitted; ?></td>
+		</tr>
+		<tr>
+			<td>Subject</td>
+			<td><?php echo $value->cs_post_subject; ?></td>
+		</tr>
+		<tr>
+			<td>Customer selected Priority Level</td>
+			<td><?php echo $value->cs_post_urgency; ?></td>
+		</tr>
+		<tr>
+			<td>Assign Category</td>
+			<td>
+				<select id="assign_category" name="assign_category">
+						<option></option>
+					<?php foreach ($category as $key => $val): ?>
+						<option value="<?php echo $val->categorys; ?>"><?php echo $val->categorys; ?></option>
+					<?php endforeach ?>
+			</select>
+			
+			&nbsp;
 
-			<form id="form" name="form">
-				<input type="hidden" id="insedentid" name="postid" value="<?php echo $value->cs_post_id; ?>">
-				Category name: <input id="newcategory" type="text" name="category_name" required style="width: 123px">
+			<a id="add_category">Add Category</a>
+			
+			<div id="show_add_category">
+			
+			<br>
+
+				<form id="form" name="form">
+					<input type="hidden" id="insedentid" name="postid" value="<?php echo $value->cs_post_id; ?>">
+					Category name: <input id="newcategory" type="text" name="category_name" required style="width: 123px">
+					
+					&nbsp;
+
+					<input id="submit" type="submit" value="Add">
+				</form>	
+			</div>
+			</td>
+		</tr>
+		<tr>
+			<td>Investigation Required:</td>
+			<td>
+				<input id="yes" type="radio" name="investigation_required_radio" value="yes" required> Yes
+				<input id="no" type="radio" name="investigation_required_radio" value="no" checked="true"> No
 				
-				&nbsp;
-
-				<input id="submit" type="submit" value="Add">
-			</form>	
-		</div>
-		</td>
-	</tr>
-	<tr>
-		<td>Investigation Required:</td>
-		<td>
-			<input id="yes" type="radio" name="investigation_required_radio" value="yes" required> Yes
-			<input id="no" type="radio" name="investigation_required_radio" value="no" checked="true"> No
-			
-			<br>
-
-			<span class="note">
-				Note to HR: If you are able to provide answer to the question within 24 hours,
-				select <b>NO</b> if you need to involve or collect information from other departments,
-				Select <b>YES</b>.
-			</span>
-		</td>
-	</tr>
-	<tr>
-		<td valign="top">Details of the incident</td>
-		<td>
-			<?php echo $value->cs_msg_text; ?>
-			
-			<br><br>
-			
-			<span class="note">
-				Instruction to HR: Search <a href="#">www.employee.tatepublishing.net</a> first to see if the
-				answer to the employee's inquiry above can be found there. If it is, then click on the appropriate
-				<b>RESOLVE</b> action below.
-			</span>
-			
-			<br><br>
-			
-			<div style="background: #CCCCCC; font-weight: bold; width: 100%; padding: 5px 0px 5px 5px">Resolution Options</div>
-			
-			<br>
-			
-			<!-- ===== FOUND ANSWER  ===== -->
-			<div id="resol_ans">
-			<a id="resol_ans_link">The answer can be found in employee.tatepublishing.net</a>	
-				<div id="resol_ans_container"> 
-					<form id="found_answer_forms">
-						<input id="foundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-						<input id="foundcategid" type="hidden" name="insedentcategid" value="<?php echo $value->cs_post_id; ?> ">
-
-						<table class="tableInfo">
-							<tr>
-								<td>
-									<small>Please place below the link to the page in employee.tatepublishing.net</small>
-
-									<br>
-
-									<input type="text" id="found_answer_link" name="found_answer_link" required>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<small>You may right below an additional custom message to the customer (optional):</small>
-
-									<br>
-
-									<textarea style="height:200px;  resize: none;" id="found_answer_custom" name="found_answer_custom"></textarea>
-
-									<br><br>
-
-									<input id="found_answerer_submit" type="submit" class="btn_ans" value="Resolve Incident">
-								</td>
-							</tr>
-						</table>
-
-						<br>
-
-					</form>
-				</div>			
-			</div>
-			
-		
-			<br>
-			
-			<!-- ===== CUSTOM ANSWER  ===== -->
-			<div id="resol_ans">
-				<a id="resol_ans_link">Send custom resolution response</a>	
-					<div id="resol_ans_container"> 
-						<form id="custom_ans_form">
-						<input id="customid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-						<input id="customcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-							<table class="tableInfo">
-								<tr>
-									<td>
-										<small>Please write below your resolution message to employee:</small>
-
-										<br>
-
-										<textarea id="custom_answer_msg" name="custom_answer_msg" style="height:200px; resize: none;"></textarea>
-
-										<br><br>
-
-										<input type="submit" id="custom_answer_submit" class="btn_ans" value="Resolve Incident">
-									</td>
-								</tr>
-							</table>
-
-							<br>
-
-						</form>
-					</div>
-			</div>	
-			
-			<br>
-			
-			<!-- ===== NOT FOUND ANSWER  ===== -->
-			<div id="resol_ans">
-				<a id="resol_ans_link">This is not an HR inquiry. Redirect to another department.</a>	
-					<div id="resol_ans_container"> 
-
-						<input id="notfoundid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-						<input id="notfoundcategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-						
-						<form id="not_found_ans_form">
-							<table class="tableInfo">
-								<tr>
-									<td>To what deparment does this person need to be redirected to?</td>
-									<td>
-										<select id="redirect_department" name="redirect_department" required style="width: 100%">
-											<option></option>
-
-											<?php foreach ($department_email as $k => $v): ?>
-											<option value="<?php echo $v->email; ?>"><?php echo $v->department." (".$v->email.")"; ?></option>
-										<?php endforeach ?>
-
-										</select>
-									</td>	
-								</tr>
-								<tr>
-									<td valign="top">Add custom message</td>
-									<td><textarea id="not_found_custom_msg" name="not_found_custom_msg" style="height:200px; resize: none;" placeholder="<Insert Custom Message Here>"></textarea></td>
-								</tr>
-								<tr>
-									<td></td>
-									<td> 
-										<a id="add_redirect_dept">Add redirection department</a>
-										<input type="submit" id="not_found_answer_submit" class="btn_ans_small" value="Resolve incident" style="float:right">
-									</td>
-								</tr>
-							</table>
-
-							<br>
-
-						</form>
-
-						<!--  ====== ADD A REDIRECTION DEPARTMENT ===== -->
-						<div id="add_redirect_dept_form">
-						<form id="add_new_department_form">
-							<table class="tableInfo">
-								<tr>
-									<td colspan="2"><h2>Add a Redirection Department</h2></td>
-								</tr>
-								<tr>
-									<td colspan="2">
-										<small>Name of the department/team customers can be directed to:</small>
-
-										<br>
-										
-										<input id="name_department" type="text" required>
-									</td>
-								</tr>
-								<tr>
-									<td colspan="2">
-										<small>What is the email address/es that the employee can</small>
-
-										<br>
-										
-										<input id="email_department" type="text" required>
-
-									</td>
-								</tr>
-								<tr>
-									<td align="left">
-										<a id="see_all_redirect_dept" class="resol_link">See All Redirection Departments</a>
-									</td>
-									<td align="right"><input type="submit" id="submit_add_department" class="btn_ans_small" value="Submit"></td>
-								</tr>
-							</table>
-							</form>
-						</div>
-
-						<!-- ====== SEE ALL DIRECTION DEPARTMENTS ===== -->
-						<div id="see_all_redirect_dept_form">
-							<h2>All Direction Departments</h2>
-							<table class="datatable" id="redirect_dept">
-								<thead>
-									<tr>
-										<th>Department Name</th>
-										<th>Email Address</th>
-										<th>Edit</th>
-										<th>Delete</th>
-								</tr>	
-								</thead>
-								<tbody>
-								<?php foreach ($department_email as $name => $dep): ?>
-									<tr>
-										<td><?php echo $dep->department; ?></td>
-										<td><?php echo $dep->email; ?></td>
-										<td align="center"><a class="editor_edit">Edit</a></td>
-										<td align="center"><a class="editor_remove">Delete</a></td>
-									</tr>
-
-									<?php endforeach ?>
-									
-								</tbody>
-							</table>
-
-							<br>
-
-						</div>
-					</div>
-			</div>
-
-
-			<br>
-
-			<!-- ====== FURTHER ANSWER  ====== -->
-			<div id="appear_furtherinfo">
-				<div id="resol_ans">
-					<a id="resol_ans_link">Further information (investigation) is required</a>
-						<div id="resol_ans_container"> 
-						<form id="further_ans_form">
-						<input id="furtherid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-						<input id="furthercategid" type="hidden" name="insedentid" value="<?php echo $value->cs_post_id; ?> ">
-							<table class="tableInfo">
-								<tr>
-									<td>
-										<small>Please write below your update to the customer as to what information is requoired to resolve the matter</small>
-
-										<br>
-
-										<textarea id="further_answer_msg" name="further_answer_msg" style="height:200px; resize: none;"></textarea>
-
-										<br><br>
-										<a id="send_email_to_another">Send email to another department/staff</a>
-										<br><br>
-
-										<input type="submit" id="furder_submit" class="btn_ans" value="Submit">
-									</td>
-								</tr>	
-							</table>
-
-							<br>
-
-						</form>
-
-						<!-- SEND EMAIL -->
-						<div id="send_email_to_another_form">
-							<table class="tableInfo">
-								<tr>
-									<td colspan="2"><h2>Send Email</h2></td>
-								</tr>
-								<tr>
-									<td>From:</td>
-									<td>hr.cebu@tatepublishing.net</td>
-								</tr>
-								<tr>
-									<td>To:</td>
-									<td>
-										<input type="text" name="" value="" placeholder="" >
-										<br>
-										<small><i>Seperate email address with commas</i></small>
-									</td>
-								</tr>
-								<tr>
-									<td>Subject:</td>
-									<td>
-										<input type="text" name="" value="" placeholder="">
-									</td>
-								</tr>
-								<tr>
-									<td>CC</td>
-									<td><!-- Default customer email address --></td>
-								</tr>
-								<tr>
-									<td colspan="2"><textarea class="hidden tiny" style="height:200px; resize: none;"></textarea></td>
-								</tr>
-								<tr>
-									<td colspan="2" align="left"><input type="submit" name="" value="Send" class="btn_ans_small"></td>
-								</tr>
-							</table>
-						</div>
-					</div>
-				</div>	
-			</div>
-		</td>
-	</tr>
-</table>
-<br>
-<table class="tableInfo">
-	<tr>
-		<td valign="top"><h3>Notes</h3></td>
-		<td colspan="2">
-			<a id="add_notes" style="float: right"><b>Add Notes</b></a>
-			<br>
-			<div id="show_add_notes_textarea">
 				<br>
-					<textarea style="height: 100px; float: right; resize: none;"></textarea>
-					<input type="submit" name="" class="btngreen" value="Submit" style="float:right;">
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<td>aaa</td>
-		<td>bbb</td>
-		<td>ccc</td>
-	</tr>
-</table>
+
+				<span class="note">
+					Note to HR: If you are able to provide answer to the question within 24 hours,
+					select <b>NO</b> if you need to involve or collect information from other departments,
+					Select <b>YES</b>.
+				</span>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top">Details of the incident</td>
+			<td>
+				<?php echo $value->cs_msg_text; ?>
+				
+				<br><br>
+				
+				<span class="note">
+					Instruction to HR: Search <a href="#">www.employee.tatepublishing.net</a> first to see if the
+					answer to the employee's inquiry above can be found there. If it is, then click on the appropriate
+					<b>RESOLVE</b> action below.
+				</span>
+				
+				<br><br>
+
+			</td>
+		</tr>
+	</table>
+	<br>
+	<ul class="tabs">
+		<li class="dbold tab-link" id="new_tab" data-tab="tab-1">Note</li>
+		<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Reply</li>
+	</ul>
+	<hr/>
+	<!-- Notes -->
+	<div id="tab-1" class="tab-content">
+		<h2>Add a Note</h2>
+	</div>
+	<!-- Reply  -->
+	<div id="tab-2" class="tab-content"> 
+		<h2>Add A Reply</h2>
+		Resolution Options:
+			<select id="resolution_options">
+				<option></option>
+				<option>The answer can be found in employee.tatepublishing.net</option>
+				<option>Send custom response</option>
+				<option>This is not an HR inquiry. Redirect to another department</option>
+				<option>Further Information (investigation) is required</option>
+			</select>
+		<br><br>
+		<textarea class="hidden tiny" style="height:200px;"></textarea>
+	</div>
 </div>
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 
-$(document).ready(function() { 
+$(document).ready(function() {
 
-	$('#hr_incidentinfo_form').show();
 
 	// ====== ADD CATEGORY =====
 	$('#show_add_category').hide();
+	$('#add_category').click(function(){
 
-		$('#add_category').click(function(){
+		$('#show_add_category').toggle();
 
-			$('#show_add_category').toggle();
+			if ($.trim($(this).text()) === 'Hide Category') {
+				
+				$(this).text('Add Category');
+			}
 
-				if ($.trim($(this).text()) === 'Hide Category') {
-					
-					$(this).text('Add Category');
-				}
-
-				else{
-					$(this).text('Hide Category');
-				}
-		});
-
-	// ===== FURTHER ANSWER LINK =====
-	$('#appear_furtherinfo').hide();
-
-		$('#yes').click(function(){
-			$('#appear_furtherinfo').show();
-		});
-		
-		$('#no').click(function(){
-			$('#appear_furtherinfo').hide();
-		});
-
-	// ===== RESOLUTION OTPTIONS =====
-	$('div#resol_ans_container').hide();
-	$('div#resol_ans').each(function() {
-
-		var $resol_ans = $(this);
-
-		$("a#resol_ans_link", $resol_ans).click(function(e) {
-		e.preventDefault();
- 
-		$container = $("div#resol_ans_container", $resol_ans);
-		$container.toggle();
-		$("div#resol_ans_container").not($container).hide();
-
-		return false;
-		});
-
+			else{
+				$(this).text('Hide Category');
+			}
 	});
 
+	// ===== RESOLUTION OPTIONS ===== 
+	var found = 'Hello (INSERT NAME HERE)!<br><br>The answer to your inquiry/report can be found in the link below:<br>(INSERT LINK HERE)';
+	var custom = 'Hello (INSERT NAME HERE)!<br><br>This is the message that the HR will write on the box as a custom response to the employee.';
+	var not_found = 'Hello (INSERT NAME HERE)!<br><br>(INSERT CUSTOM MESSAGE HERE)<br><br> Upon evaluation, it is determined that your incident/inquiry may be best addressed by the (INSERT REDIRECT DEPARTMENT HERE). Their email address is (INSERT REDIRECT DEPARTMENT EMAIL ADDRESS HERE) which is CC in this email.<br><br>Please communicate with the (INSERT REDIRECT DEPARTMENT HERE) for the resolution of the incident.';
+	var further = 'Hello (INSERT NAME HERE)!<br><br>Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE)<br><br>Thank you very much!<br><br>(INSERT HR COMPLETE NAME HERE)<br>(INSERT HR POSITION HERE)<br><br><b><u>Important Note</u></b><br>If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
 	
+	$( "#resolution_options" ).change(function() {
+	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
+				tinyMCE.activeEditor.setContent(found);
+	    }
+	    else if($( "#resolution_options" ).val() == 'Send custom response') {
+	    		tinyMCE.activeEditor.setContent(custom);
+	    }
+	    else if($( "#resolution_options" ).val() == 'This is not an HR inquiry. Redirect to another department'){
+	    		tinyMCE.activeEditor.setContent(not_found);
+	    }
+	    else if($( "#resolution_options" ).val() == 'Further Information (investigation) is required'){
+	    		tinyMCE.activeEditor.setContent(further);
+	    }
+	    else{
+	    		tinyMCE.activeEditor.setContent("");
+	    }
+    
+	});
+
+
+ 	// ===== DISPLAY TOOLBAR IN TEXTAREA =====
+	tinymce.init({
+	selector: "textarea.tiny",	
+	menubar : false,
+	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
+	});	
+
+
+
+
+	
+/*
+
 	// ===== ADD REDIRECT DEPARTMENT =====
 	$('#add_redirect_dept_form').hide();
 
@@ -488,32 +243,11 @@ $(document).ready(function() {
 
 		$('#send_email_to_another_form').slideToggle("slow");
 	});
-
-	// ===== DISPLAY TOOLBAR IN TEXTAREA =====
-	tinymce.init({
-	selector: "textarea.tiny",	
-	menubar : false,
-	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
-	});	
-
-
-	// ===== SHOW ADD NOTES =====
-	$('#show_add_notes_textarea').hide();	
-		$('#add_notes').click(function(){
-
-		$('#show_add_notes_textarea').toggle();
-
-		if ($.trim($(this).text()) === 'Hide Notes') {
-
-		$(this).text('Add Notes');
-		}
-
-		else{
-		$(this).text('Hide Notes');
-		}
-		});		
+*/
+			
 });
 
+/*
 $(function(){
 
 	// ===== JQUERY FOR ADD NEW DEPARTMENT =====
@@ -717,5 +451,8 @@ $(function(){
 	});
 
 });
+
+});
+*/
 
 </script>
