@@ -117,9 +117,11 @@
 						echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Manage Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
-					}					
-					if($this->access->accessFullHR OR $this->access->accessMedPerson){
+					}	
+					if($this->access->accessMedPerson OR $this->access->accessFullHR){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
+					}				
+					if($this->access->accessFullHR){						
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
 						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application '.(($hdmf_loans > 0)?'<b>['.$hdmf_loans.']</b>':'').'</a></li>';
