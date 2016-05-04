@@ -131,8 +131,7 @@ class Timecardmodel extends CI_Model {
 		}
 		
 		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
-		//$this->textM->aaa($dayArr, false);
-		//$this->textM->aaa($queryLeaves, false);
+	
 		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
@@ -144,7 +143,7 @@ class Timecardmodel extends CI_Model {
 							 
 				if(isset($dayArr[$dayj]['sched']) && strtotime($start)>=$strdateStart && (strtotime($leaveEnd)<=$leavestrend || strtotime($start)<=$leavestrend)){
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
-					$dayArr[$dayj]['leaveID'] = $leave->leaveID;
+					$dayArr[$dayj]['leaveID'][] = $leave->leaveID;
 					$dayArr[$dayj]['leaveStatus'] = $leave->status;
 					$dayArr[$dayj]['leaveStatusText'] = $this->textM->getLeaveStatusText($leave->status, $leave->iscancelled, $leave->isrefiled);
 										
@@ -187,6 +186,7 @@ class Timecardmodel extends CI_Model {
 						list($s, $e) = explode(',', $o);
 						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
 							$karon = date('j', strtotime($s));
+							
 							$dayArr[$karon]['leaveID'][] = $leave->leaveID;
 							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'][] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							else $dayArr[$karon]['pendingoffset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
@@ -863,14 +863,35 @@ class Timecardmodel extends CI_Model {
 				if(isset($d['publish'])) $want .= '<div class="daysbox daysched">PUBLISHED<br/>'.(($d['publish']>0)?'<b class="coloryellow">'.$d['publish'].' HOURS</b>':'').'</div>';
 				if(isset($d['leaveID'])){
 					if(isset($d['leave'])){
-						$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
-						$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
-						if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
-						else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
-						
-						$want .= '</div></a>';
+						if( is_array($d['leaveID']) ){
+							foreach( $d['leaveID'] as $leave ){
+								$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$leave.'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
+								$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$leave);
+								if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
+								else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
+								
+								$want .= '</div></a>';
+							}
+						} else {
+
+
+							$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On Leave<br/>'.$d['leave'];
+							$leaveInfo = $this->dbmodel->getSingleInfo('staffLeaves', 'leaveType, status', 'leaveID='.$d['leaveID']);
+							if($leaveInfo->leaveType==4) $want .= '<br/><b>(offset)</b>';
+							else $want .= '<br/><b>('.$leaveStatArr[$leaveInfo->status].')</b>';
+							
+							$want .= '</div></a>';
+						}
 					}
-					if(isset($d['pendingleave'])) $want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
+					if(isset($d['pendingleave'])){
+						if( is_array($d['leaveID']) ){
+							foreach( $d['leaveID'] as $leave ){
+								$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$leave.'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';
+							}
+						} else {
+							$want .= '<a href="'.$this->config->base_url().'staffleaves/'.$d['leaveID'].'/" class="iframe tanone"><div class="daysbox daypendingleave">Pending Leave<br/>'.$d['pendingleave'].'</div></a>';		
+						}
+					} 
 					if(isset($d['offset'])) {
 						$c_ = 0;
 						foreach( $d['offset'] as $offset ){
