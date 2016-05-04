@@ -24,12 +24,14 @@
 			//checking if there is session data
 			$empID = $this->user->empID;
 
-			/*$this->load->flibrary('form_validation');
+			if($this->input->post()){
+			$this->load->library('form_validation');
 			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
-			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');*/
+			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
 
-			
-			$data['cs_post_empID_fk'] = $empID;
+			if($this->form_validation->run() !== false)
+			{
+				$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
 			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');
@@ -40,7 +42,6 @@
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text'] = $this->input->post('askHR_details');
 			$data2['cs_msg_text'] = $this->security->xss_clean($data2['cs_msg_text']);
-
 			
 			if( $this->isSetNotEmpty($_FILES)){
 						$files = $_FILES;					
@@ -104,6 +105,20 @@
 					}
 					$data3['msg_newID']= $this->ask_hr->max_id();
 					$this->load->view('askHR_submissionpage',$data3);
+
+			}
+			else{
+				$data['content']='askHR_submissionpage';
+				$this->load->view('includes/templatecolorbox',$data);
+				}
+
+
+			}
+			
+			
+
+			
+			
 
 					//redirect($this->config->base_url(), 'refresh');
 				
