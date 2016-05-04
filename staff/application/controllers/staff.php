@@ -4093,7 +4093,7 @@ class Staff extends MY_Controller {
 				
 				$data_config['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="33"');
 				$data_config['dynamic_call'] = true;
-				$data_config['pageType'] = 'empUpdate';
+				//$data_config['pageType'] = 'empUpdate';
 				$data_config['dataItemInfo']->payAmount = $med_request_info->approved_amount;
                 $data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
 				$data['disabled'] = 'disabled';
