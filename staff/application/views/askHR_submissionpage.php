@@ -22,6 +22,7 @@
 		color: red;
 		text-decoration: none;
 	}
+	ul {list-style-type: none;}
 
 </style>
 
@@ -49,10 +50,11 @@
 			<tr>
 				<td colspan="2">
 					Select the urgency of this request: <br>
-
-						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent" checked="true"> I am not able to continue working/department work will stop if this inquiry is not resolvd. <br>
-						<input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention"> This can wait, but work will be delayed if this is not resolved soon <br>
-						<input type="radio" class="radio-pos"name="cs_post_urgency" value="Not Urgent"> Take your time. I can wait for this information.	
+						<ul>
+							<li><input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent" checked="true" id="cs_post_urgency_1"><label for="cs_post_urgency_1"> I am not able to continue working/department work will stop if this inquiry is not resolved.</label></li>
+							<li><input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention" id="cs_post_urgency_2"><label for="cs_post_urgency_2">This can wait, but work will be delayed if this is not resolved soon</label></li>
+							<li><input type="radio" class="radio-pos" name="cs_post_urgency" value="Not Urgent" id="cs_post_urgency_3" ><label for="cs_post_urgency_3"> Take your time. I can wait for this information.</label></li>
+						</ul>	
 				</td>
 			</tr>
 			<tr>
