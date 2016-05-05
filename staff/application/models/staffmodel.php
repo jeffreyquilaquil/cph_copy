@@ -1400,6 +1400,7 @@ class Staffmodel extends CI_Model {
 	public function hdmf_loan( $empID, $other_info ){
 		//$this->textM->aaa($other_info);
 		$employee_info = $this->dbmodel->getSingleInfo('staffs', '*', 'empID = '. $empID );
+	//	$this->textM->aaa($employee_info);
 		$month = strtoupper(date('F', strtotime($other_info['date_submitted'])));
 		
 		$from = date('Y-m-01', strtotime($other_info['date_submitted'] . '-1 month') );
@@ -1467,8 +1468,9 @@ class Staffmodel extends CI_Model {
 		//end of defaults
 
 		//infos
+		$complete_name = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $complete_name);
 		$pdf->setXY(10, 30);
-		$pdf->Cell(0, 0, $complete_name );
+		$pdf->Cell(0, 0, strtoupper($complete_name) );
 
 		$pdf->setXY(10, 35);
 		$pdf->MultiCell(105, 6, $address, 0, 'L');
@@ -1559,10 +1561,11 @@ class Staffmodel extends CI_Model {
 
 		$pdf->setFontSize(8);
 
-		$pdf->setXY(44, 51);
-		$pdf->Cell(0, 0, strtoupper($other_info['birth_place']) );
+		$pdf->setXY(43.5, 49);
+		$pdf->MultiCell(29, 2.5, strtoupper($other_info['birth_place']), 0, 'L' );
 
 		$pdf->setXY(73, 51);
+		$other_info['mo_maiden_name'] = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $other_info['mo_maiden_name']);
 		$pdf->Cell(0, 0, strtoupper($other_info['mo_maiden_name']) );
 
 

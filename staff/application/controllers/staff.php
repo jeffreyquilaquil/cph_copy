@@ -3389,8 +3389,8 @@ class Staff extends MY_Controller {
 	public function probationmanagement(){
 		$data['content'] = 'probationmanagement';
 		
-		if($this->access->accessFullHR==false) $data['access'] = false;
-		else{
+		if($this->access->accessFullHR== true OR $this->access->accessMedPerson) 
+		{
 			if(!empty($_POST)){
 				if($_POST['submitType']=='printedEval'){
 					$this->dbmodel->updateQuery('staffEvaluation', array('evalID'=>$_POST['id']), array('hrStatus'=>2));
@@ -3421,6 +3421,8 @@ class Staff extends MY_Controller {
 			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			
 			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', '1');
+		} else {
+			$data['access'] = false;
 		}
 				
 		$this->load->view('includes/template', $data);
