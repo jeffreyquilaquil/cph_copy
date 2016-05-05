@@ -235,7 +235,7 @@
 	?>
 	</table>
 <?php } 
-if($current=='myinfo' || $this->access->accessFullHR==true){
+if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->accessMedPerson == true ){
 ?>	
 <!----------------------- PERSONAL FILES ----------------------->	
 	<table class="tableInfo" id="personalfiletbl">
