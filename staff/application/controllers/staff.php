@@ -4302,7 +4302,7 @@ class Staff extends MY_Controller {
 		$data['data_query_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 1 AND status_accounting NOT IN (2, 3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
 		
 		$data['data_approved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 2 AND status NOT IN (0)', 'LEFT JOIN staffs ON empID = empID_fk');
-		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 3 AND status IN (3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting IN (3,4) AND status IN (3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
 		
 		$data['cnt_all'] = count($data['data_query_all']);
 		$data['cnt_medical'] = count($data['data_query_medical']);
