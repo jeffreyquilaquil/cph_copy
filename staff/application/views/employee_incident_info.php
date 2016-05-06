@@ -24,13 +24,12 @@
 		  		<th>Date Submitted</th>
 		  		<th>Subject</th>
 		  		<th>Status</th>
-		  		<th>Send Message to HR</th>
 		  		<th>Cancel Incident</th>	
 		  	</tr>
 	  	</thead>
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
-	      		<td><?php echo $rep->cs_post_id; ?></td>
+	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp" class="iframe"><?php echo $rep->cs_post_id; ?></a></td>
 	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
 	      		<td><?php 
@@ -46,8 +45,7 @@
 	      			echo "Closed";
 	      		}
 
-	      		 ?></td>
-	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/employee_incident_info_events/<?php echo $rep->cs_post_id; ?>/send" class="iframe">Send Message to HR</a></td>
+	      		 ?></td>		
 	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/employee_incident_info_events/<?php echo $rep->cs_post_id; ?>/cancel" class="iframe">Cancel Incident</a></td>
 	  		</tr>	
 	  		<?php endforeach ?>     

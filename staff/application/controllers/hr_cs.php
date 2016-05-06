@@ -38,6 +38,7 @@
 			$data['cs_post_status']= 0; 
 			
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
+			$data2['reply_empUser'] = $this->input->post('hr_username');
 			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
 			$data2['cs_msg_type']=1;
 			$data2['cs_msg_text'] = $this->input->post('askHR_details');
@@ -157,10 +158,11 @@
                 $insedent_id = $this->uri->segment(3);
             	
 
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
+            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,hr_cs_post.assign_category,hr_cs_post.invi_req,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
             		$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
+            		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 
 
             	
@@ -236,41 +238,46 @@
 
 
             }
+
             public function custom_answer_solution(){
             	$reply = $this->input->post('reply');
             	 
-            	if($reply == 'new_reply'){
+            	if($reply == 'new'){ 
 
 	            		$id = $this->input->post('insedentid');
+	            		$empUSER = $this->input->post('hr_username');
 
 	            		$data['cs_msg_postID_fk'] =  $id;
 	            		$custommessage=  $this->input->post('custom_answer_msg');
 	            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
 	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            		
+	            		$data['cs_msg_type'] = 1;
+	            		$data['reply_empUser'] = $empUSER;
 	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-	            		$id_msg = $this->input->post('customcategid');
 		            	$categ = $this->input->post('assign_category');
+		            	$inv_req = $this->input->post('inve_req');
 		            	
-		            	if($categ != ''){
-							$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id_msg);
-						}
+						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'", invi_req = "'.$inv_req.'"','cs_post_id = '.$id);
+						
 
-						$empUSER = $this->input->post('hr_username');
-		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);
+						
+		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id);
 
-						}else if($reply == 'give_update'){
+						}else if($reply == 'active' || $reply == 'emp'){
 
-							$id = $this->input->post('give_update_id');
+							$id = $this->input->post('insedentid');
+
 
 		            		$data['cs_msg_postID_fk'] =  $id;
 		            		$custommessage=  $this->input->post('custom_answer_msg');
 		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
 		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            		$data['cs_msg_type'] = 1;
+		            		$data['reply_empUser']  = $this->input->post('hr_username');
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
-						}
+						} 
 
 
             		$data2['content']='hr_helpdesk';
@@ -279,9 +286,9 @@
             }
 
             public function notfound_answe_solution(){
-            	$reply = $this->input->post('reply');
+            	/*$reply = $this->input->post('reply');
             
-            	if($reply == 'new_reply'){
+            	if($reply == 'new_reply'){ */
             
 	            		$id = $this->input->post('insedentid');
 
@@ -292,6 +299,7 @@
 	            		$data['cs_msg_postID_fk'] =  $id;
 	            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
 	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		$data['cs_msg_type'] = 1;
 	            
 	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
@@ -303,7 +311,8 @@
 
 		            	$empUSER = $this->input->post('hr_username');
 		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id_msg);	
-					}else if($reply == 'give_update'){
+					
+					/*else if($reply == 'give_update'){
 
 						$id = $this->input->post('give_update_id');
 
@@ -314,11 +323,12 @@
 	            		$data['cs_msg_postID_fk'] =  $id;
 	            		$data['cs_msg_text'] = $direct_email." <br>".$cus_message;
 	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		$data['cs_msg_type'] = 1;
 	            
 	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
 
-					}
+					}*/
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
 

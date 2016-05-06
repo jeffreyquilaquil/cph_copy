@@ -1,8 +1,3 @@
-<?php  
-if($this->user->access != "full"){
-			header("location: <?php echo $this->config->base_url() ?>");
-		}
-?>
 
 <style type="text/css">
 	.note{
@@ -43,11 +38,10 @@ if($this->user->access != "full"){
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
-
-<input type="hidden" id="new_inc" name="postid" value="new_reply">
+<input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
-
+<form id="custom_ans_form">
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
@@ -56,6 +50,7 @@ if($this->user->access != "full"){
 		</tr>
 		<tr>
 			<td >Customer</td>
+			<input type="hidden" id="fullname" value="<?php echo $value->fname." ". $value->lname; ?>">
 			<td><?php echo $value->fname." ". $value->lname; ?> </td>
 		</tr>
 		<tr>
@@ -70,6 +65,8 @@ if($this->user->access != "full"){
 			<td>Customer selected Priority Level</td>
 			<td><?php echo $value->cs_post_urgency; ?></td>
 		</tr>
+
+		<?php if ($this->uri->segment(4)== 'new'){ ?>
 		<tr>
 			<td>Assign Category</td>
 			<td>
@@ -102,10 +99,10 @@ if($this->user->access != "full"){
 		<tr>
 			<td>Investigation Required:</td>
 			<td>
-				<input id="yes" type="radio" name="investigation_required_radio" value="yes" required> Yes
-				<input id="no" type="radio" name="investigation_required_radio" value="no" checked="true"> No
+				<input  type="radio" name="investigation_required_radio" value="Yes" required> Yes
+				<input  type="radio" name="investigation_required_radio" value="No" checked="true"> No
 				
-				<br>
+				<br><br>
 
 				<span class="note">
 					Note to HR: If you are able to provide answer to the question within 24 hours,
@@ -114,10 +111,35 @@ if($this->user->access != "full"){
 				</span>
 			</td>
 		</tr>
+		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp') { ?>
+
+				<tr>
+					<td>Assign Category</td><td><?php echo $value->assign_category; ?></td>
+				</tr>
+				<tr>
+					<td>Investigation Required:</td><td><b><?php echo $value->invi_req; ?></b><br><br>
+					<span class="note">
+					Note to HR: If you are able to provide answer to the question within 24 hours,
+					select <b>NO</b> if you need to involve or collect information from other departments,
+					Select <b>YES</b>.
+				</span>
+					</td>
+				</tr>
+			<?php } ?>     
 		<tr>
 			<td valign="top">Details of the incident</td>
 			<td>
-				<?php echo $value->cs_msg_text; ?>
+
+			<?php foreach ($conversation as $key => $conve): ?>
+				<div>
+				<br>
+					<h3><font color="darkred">Message From :<b> <?php echo strip_tags($conve->reply_empUser); ?></b></font></h3><br><br>
+					<?php echo $conve->cs_msg_text; ?>
+					<br><br>
+				</div>
+				<hr>
+			<?php endforeach ?>
+				
 				
 				<br><br>
 				
@@ -133,6 +155,10 @@ if($this->user->access != "full"){
 		</tr>
 	</table>
 	<br>
+
+	<?php  if($this->user->access == "full") { ?>
+			
+		
 	<ul class="tabs">
 		<li class="dbold tab-link" id="new_tab" data-tab="tab-1">Note</li>
 		<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Reply</li>
@@ -142,6 +168,7 @@ if($this->user->access != "full"){
 	<div id="tab-1" class="tab-content">
 		<h2>Add a Note</h2>
 	</div>
+
 	<!-- Reply  -->
 	<div id="tab-2" class="tab-content"> 
 		<h2>Add A Reply</h2>
@@ -154,15 +181,27 @@ if($this->user->access != "full"){
 				<option>Further Information (investigation) is required</option>
 			</select>
 		<br><br>
-		<textarea class="hidden tiny" style="height:200px;"></textarea>
+
+		<?php } 
+		if($this->user->access == "full"){ ?>
+
+			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
+			
+		<?php }else{ ?>
+			<textarea id="custom_employee_msg" class="hidden tiny" style="height:200px;"></textarea><br>
+		<?php } ?>
+		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br><br>
+
 	</div>
 </div>
 
+</form>
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 
 $(document).ready(function() {
 
+var message = '';
 
 	// ====== ADD CATEGORY =====
 	$('#show_add_category').hide();
@@ -181,29 +220,38 @@ $(document).ready(function() {
 	});
 
 	// ===== RESOLUTION OPTIONS ===== 
-	var found = 'Hello (INSERT NAME HERE)!<br><br>The answer to your inquiry/report can be found in the link below:<br>(INSERT LINK HERE)';
-	var custom = 'Hello (INSERT NAME HERE)!<br><br>This is the message that the HR will write on the box as a custom response to the employee.';
-	var not_found = 'Hello (INSERT NAME HERE)!<br><br>(INSERT CUSTOM MESSAGE HERE)<br><br> Upon evaluation, it is determined that your incident/inquiry may be best addressed by the (INSERT REDIRECT DEPARTMENT HERE). Their email address is (INSERT REDIRECT DEPARTMENT EMAIL ADDRESS HERE) which is CC in this email.<br><br>Please communicate with the (INSERT REDIRECT DEPARTMENT HERE) for the resolution of the incident.';
-	var further = 'Hello (INSERT NAME HERE)!<br><br>Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE)<br><br>Thank you very much!<br><br>(INSERT HR COMPLETE NAME HERE)<br>(INSERT HR POSITION HERE)<br><br><b><u>Important Note</u></b><br>If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
+	var full_name = $("#fullname").val();
+
+	var found = 'Hello <b>'+ full_name +'! </b><br><br> The answer to your inquiry/report can be found in the link below: <br><br> http://empoyee.tatepublishing.net/company-id-numbers/';
+	var custom = 'Hello <b>'+ full_name +'! </b><br><br> This is the message that the HR will write on the box as a custom response to the employee.';
+	var not_found = 'Hello <b>'+ full_name +'! </b><br><br> (INSERT CUSTOM MESSAGE HERE) <br><br> Upon evaluation, it is determined that your incident/inquiry may be best addressed by the (INSERT REDIRECT DEPARTMENT HERE). Their email address is (INSERT REDIRECT DEPARTMENT EMAIL ADDRESS HERE) which is CC in this email. <br><br> Please communicate with the (INSERT REDIRECT DEPARTMENT HERE) for the resolution of the incident.';
+	var further = 'Hello <b>'+ full_name +'! </b><br><br> Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE) <br><br> Thank you very much! <br><br> (INSERT HR COMPLETE NAME HERE) <br> (INSERT HR POSITION HERE) <br><br><b><u> Important Note </u> </b><br> If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
 	
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
 				tinyMCE.activeEditor.setContent(found);
+				message = found;
 	    }
 	    else if($( "#resolution_options" ).val() == 'Send custom response') {
 	    		tinyMCE.activeEditor.setContent(custom);
+	    		message = custom;
 	    }
 	    else if($( "#resolution_options" ).val() == 'This is not an HR inquiry. Redirect to another department'){
 	    		tinyMCE.activeEditor.setContent(not_found);
+	    		message = not_found;
 	    }
 	    else if($( "#resolution_options" ).val() == 'Further Information (investigation) is required'){
 	    		tinyMCE.activeEditor.setContent(further);
+	    		message = further;
 	    }
-	    else{
+	    else if($( "#resolution_options" ).val() == ''){
+
 	    		tinyMCE.activeEditor.setContent("");
+	    		message = '';
 	    }
     
 	});
+
 
 
  	// ===== DISPLAY TOOLBAR IN TEXTAREA =====
@@ -212,6 +260,97 @@ $(document).ready(function() {
 	menubar : false,
 	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
 	});	
+
+
+// ====== INSERT NEW CATEGORY =====
+	$("#submit").click(function() {
+
+		var category = $("#newcategory").val();
+
+		var datacategorys = 'category_name='+ category;
+		
+		if (category == '') {
+			alert("Insert new category!");
+		} else {
+
+			// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
+				data: datacategorys,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrIncident";
+                        //close();
+					}
+				});
+			}
+	});
+
+	// ===== SUBMITING REPLY =====
+	$("#submit_reply").click(function() {
+
+	
+		var tab_typ = $('#tab_type').val();
+
+		if (tab_typ == 'new') {
+			var inv_req = $('input[name="investigation_required_radio"]:checked').val();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+			var ass_categ = $("#assign_category option:selected").val();
+			var custom_ans = String(message); //$("#custom_answer_msg").val();
+
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ;
+			
+		}else if(tab_typ == 'active'){
+			var custom_ans = String(message); //$("#custom_answer_msg").val();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
+			
+		}else if(tab_typ == 'emp'){
+			var custom_ans = tinyMCE.get('custom_employee_msg').getContent();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
+
+			alert(custom_ans);
+
+		}
+			if (custom_ans == '') {
+
+				alert("Some Field is Empty!");
+			}else{
+					
+
+					// ===== AJAX CODE TO SUBMIT FORM =====
+					$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
+					data: dataString,
+					cache: false,
+						success: function(result){
+						alert("Success!");
+						$('#custom_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+
+						if (tab_typ != 'emp') {
+							 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+	                        close();
+	                    }else{
+	                    	 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID; ?>";
+	                        close();
+
+	                    }
+
+						}
+					});
+				}
+				return false;
+		});
 
 
 
@@ -423,36 +562,10 @@ $(function(){
 			return false;
 	});
 
-	// ====== INSERT NEW CATEGORY =====
-	$("#submit").click(function() {
-
-		var category = $("#newcategory").val();
-
-		var datacategorys = 'category_name='+ category;
-		
-		if (category == '') {
-			alert("Insert new category!");
-		} else {
-
-			// ===== AJAX CODE TO SUBMIT FORM =====
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
-				data: datacategorys,
-				cache: false,
-					success: function(result){
-					alert("Success!");
-					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
-					}
-				});
-			}
-	});
-
 });
 
 });
 */
+
 
 </script>

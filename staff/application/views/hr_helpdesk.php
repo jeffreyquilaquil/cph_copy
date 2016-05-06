@@ -76,7 +76,7 @@ if($this->user->access != "full"){
 
 	  		<tr>
 	      		<td class="td_hover">
-                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>" class="iframe" data-balloon-length="large" data-balloon="<?php echo strip_tags($value->cs_msg_text) ?>" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
+                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>/new" class="iframe" data-balloon-length="large" data-balloon="<?php echo strip_tags($value->cs_msg_text) ?>" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
@@ -115,19 +115,19 @@ if($this->user->access != "full"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
-				<th>Give Update</th>				
+							
 			</tr>
 		</thead>
 			<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
 				<tr>
 					<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/hr_incident_notes/<?php echo $active_val->cs_post_id; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active" class="iframe"><?php echo $active_val->cs_post_id;?></a>
 	      			</td>
 					<td><?php echo $active_val->cs_post_subject; ?></td>
 					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 					<td><?php echo $active_val->cs_post_urgency; ?></td>
 					<td><?php echo $active_val->last_update; ?></td>
-					<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/give_update/<?php echo $active_val->cs_post_id; ?>" class="iframe">Give Update</a></td>					
+									
 				</tr>
 			<?php } ?>     
 	</table>

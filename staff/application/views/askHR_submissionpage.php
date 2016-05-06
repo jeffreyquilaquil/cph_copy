@@ -29,6 +29,7 @@
 	<?php if (empty($msg_newID->maxid)) { ?>
 	<div>
 	<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/askhr" enctype="multipart/form-data">
+	<input type="hidden" id="hr_username" name="hr_username" value="<?php echo $this->user->username; ?>">
 		<table class="tableInfo">
 
 			<tr>
