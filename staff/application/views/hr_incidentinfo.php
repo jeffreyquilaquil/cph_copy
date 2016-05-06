@@ -230,19 +230,19 @@ var message = '';
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
 				tinyMCE.activeEditor.setContent(found);
-				message = found;
+				
 	    }
 	    else if($( "#resolution_options" ).val() == 'Send custom response') {
 	    		tinyMCE.activeEditor.setContent(custom);
-	    		message = custom;
+	    		
 	    }
 	    else if($( "#resolution_options" ).val() == 'This is not an HR inquiry. Redirect to another department'){
 	    		tinyMCE.activeEditor.setContent(not_found);
-	    		message = not_found;
+	    		
 	    }
 	    else if($( "#resolution_options" ).val() == 'Further Information (investigation) is required'){
 	    		tinyMCE.activeEditor.setContent(further);
-	    		message = further;
+	    		
 	    }
 	    else if($( "#resolution_options" ).val() == ''){
 
@@ -300,12 +300,12 @@ var message = '';
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 			var ass_categ = $("#assign_category option:selected").val();
-			var custom_ans = String(message); //$("#custom_answer_msg").val();
+			var custom_ans = tinyMCE.get('custom_msg').getContent();
 
 			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ;
 			
 		}else if(tab_typ == 'active'){
-			var custom_ans = String(message); //$("#custom_answer_msg").val();
+			var custom_ans = tinyMCE.get('custom_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 
@@ -318,8 +318,7 @@ var message = '';
 
 			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
 
-			alert(custom_ans);
-
+		
 		}
 			if (custom_ans == '') {
 
