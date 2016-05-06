@@ -129,7 +129,17 @@
 		<tr>
 			<td colspan="2">
 
-			<?php foreach ($conversation as $key => $conve): ?>
+			<?php foreach ($conversation as $key => $conve){ 
+				 if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 ) { ?>
+				<div>
+					<h4>Message from : <b><?php echo strip_tags($conve->reply_empUser); ?></b></h4>
+					<h5>Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></h5>
+					<br>
+					<?php echo $conve->cs_msg_text; ?>
+					<br>
+					<hr>
+				</div>
+			<?php }elseif($conve->cs_msg_type == 1 && $this->user->access != "full"){ ?>
 				<div>
 					<h4>Message from : <b><?php echo strip_tags($conve->reply_empUser); ?></b></h4>
 					<h5>Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></h5>
@@ -139,7 +149,8 @@
 					<hr>
 				</div>
 			
-			<?php endforeach ?>
+			<?php }
+			} ?>
 				
 				
 				<br><br>
@@ -168,9 +179,11 @@
 	<!-- Notes -->
 	<div id="tab-1" class="tab-content">
 		<h2>Add a Note</h2>
-		<textarea id="" class="hidden tiny" style="height:200px;"></textarea>
-		<br>
-		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
+		<form id="note_form">
+			<textarea id="note_msg" class="hidden tiny" style="height:200px;"></textarea>
+			<br>
+			<input type="submit" id="note_submit" class="btngreen" value="Submit" style="float:right;">
+		</form>
 		<br>
 	</div>
 
@@ -292,6 +305,38 @@ var message = '';
 					}
 				});
 			}
+	});
+
+	// ====== SUBMIT NOTE  =====
+	$("#note_submit").click(function() {
+
+		var custom_ans = tinyMCE.get('note_msg').getContent();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname;
+
+		
+		if (custom_ans == '') {
+
+				alert("Some Field is Empty!");
+			}else{
+
+			// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/submit_notes",
+				data: dataString,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					$('#note_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                        close();
+				}
+			});
+		}
+		return false;
 	});
 
 	// ===== SUBMITING REPLY =====
