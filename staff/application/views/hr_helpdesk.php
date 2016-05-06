@@ -13,16 +13,13 @@ if($this->user->access != "full"){
 	 	text-align: center;
 	 }
 
-	 a{
-		text-decoration: none;
-	} 
-
 	 a.other_links:link, a.other_links:visited, a.other_links:hover, a.other_links:active{
 	 	color: black;
 	 	text-decoration: none;
 	 	background-color: #CCCCCC; 
 	 	padding: 8px 20px 8px 20px;	 
 	 }
+
 
 	 .settings-bottom{
 	 	margin-bottom: 5px;

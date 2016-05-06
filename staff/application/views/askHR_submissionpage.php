@@ -50,7 +50,7 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					Select the urgency of this request: <br>
+					Select the urgency of this request:
 						<ul>
 							<li><input type="radio" class="radio-pos" name="cs_post_urgency" value="Urgent" checked="true" id="cs_post_urgency_1"><label for="cs_post_urgency_1"> I am not able to continue working/department work will stop if this inquiry is not resolved.</label></li>
 							<li><input type="radio" class="radio-pos" name="cs_post_urgency" value="Need Attention" id="cs_post_urgency_2"><label for="cs_post_urgency_2">This can wait, but work will be delayed if this is not resolved soon</label></li>
@@ -60,8 +60,9 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					Explain the details of your inquiry in the box below:<br>
-						<textarea class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
+					Explain the details of your inquiry in the box below:
+					<br><br>
+						<textarea id="content" class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
 				</td>
 			</tr>
 			<tr>
@@ -106,6 +107,7 @@ $(function () {
 		selector: "textarea.tiny",	
 		menubar : false,
 		toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
+
 	});	
 });
 

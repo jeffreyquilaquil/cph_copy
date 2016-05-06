@@ -28,8 +28,17 @@
 		cursor: pointer;
 	}
 
-	table
-{		width: 100%;
+	table{
+		width: 100%;
+	}
+
+	.conversation{
+		padding: 5px;
+		color: #000000;
+	}
+
+	hr{
+		border-top: 1px solid #ccc;
 	}
 </style>
 
@@ -45,7 +54,7 @@
 	<table class="tableInfo">
 		<tr>
 			<td colspan="2">
-				<h2>HR Incident Number <?php echo $value->cs_post_id; ?> <br><small>You have owned responsibility for incident number <?php echo $value->cs_post_id; ?> </small></h2>
+				<h2>HR Incident Number <?php echo $value->cs_post_id; ?></h2>
 			</td>	
 		</tr>
 		<tr>
@@ -62,7 +71,7 @@
 			<td><?php echo $value->cs_post_subject; ?></td>
 		</tr>
 		<tr>
-			<td>Customer selected Priority Level</td>
+			<td>Customer selected priority Level</td>
 			<td><?php echo $value->cs_post_urgency; ?></td>
 		</tr>
 
@@ -97,10 +106,11 @@
 			</td>
 		</tr>
 		<tr>
-			<td>Investigation Required:</td>
+			<td valign="top">Investigation Required:</td>
 			<td>
-				<input  type="radio" name="investigation_required_radio" value="Yes" required> Yes
-				<input  type="radio" name="investigation_required_radio" value="No" checked="true"> No
+				<input id="r_yes" type="radio" name="investigation_required_radio" value="Yes" required><label for="r_yes">Yes</label>
+				<input id="r_no" type="radio" name="investigation_required_radio" value="No" checked="true"><label for="r_no">No</label>
+				
 				
 				<br><br>
 
@@ -125,46 +135,33 @@
 				</span>
 					</td>
 				</tr>
-			<?php } ?>     
+			<?php } ?>  
+
+		<?php foreach ($conversation as $key => $conve){if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 ) { ?>
 		<tr>
 			<td colspan="2">
-
-			<?php foreach ($conversation as $key => $conve){ 
-				 if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 ) { ?>
-				<div>
-					<h4>Message from : <b><?php echo strip_tags($conve->reply_empUser); ?></b></h4>
-					<h5>Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></h5>
+				<div class="conversation">
+					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
 					<br>
+					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+					<br><br>
 					<?php echo $conve->cs_msg_text; ?>
-					<br>
-					<hr>
 				</div>
-			<?php }elseif($conve->cs_msg_type == 1 && $this->user->access != "full"){ ?>
-				<div>
-					<h4>Message from : <b><?php echo strip_tags($conve->reply_empUser); ?></b></h4>
-					<h5>Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></h5>
-					<br>
-					<?php echo $conve->cs_msg_text; ?>
-					<br>
-					<hr>
-				</div>
-			
-			<?php }
-			} ?>
-				
-				
-				<br><br>
-				
-				<span class="note">
-					Instruction to HR: Search <a href="#">www.employee.tatepublishing.net</a> first to see if the
-					answer to the employee's inquiry above can be found there. If it is, then click on the appropriate
-					<b>RESOLVE</b> action below.
-				</span>
-				
-				<br><br>
-
 			</td>
 		</tr>
+		<?php } elseif($conve->cs_msg_type == 1 && $this->user->access != "full"){ ?>
+		<tr>
+			<td colspan="2">
+				<div class="conversation">
+					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+					<br>
+					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+					<br><br> r  
+					<?php echo $conve->cs_msg_text; ?>
+				</div>
+			</td>
+		</tr>
+		<?php } } ?>
 	</table>
 	<br>
 
@@ -178,7 +175,7 @@
 	<hr/>
 	<!-- Notes -->
 	<div id="tab-1" class="tab-content">
-		<h2>Add a Note</h2>
+		<h2>Add A Note</h2>
 		<form id="note_form">
 			<textarea id="note_msg" class="hidden tiny" style="height:200px;"></textarea>
 			<br>
@@ -208,8 +205,7 @@
 		<?php }else{ ?>
 			<textarea id="custom_employee_msg" class="hidden tiny" style="height:200px;"></textarea><br>
 		<?php } ?>
-		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br><br>
-
+		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br>
 	</div>
 </div>
 
@@ -240,7 +236,7 @@ var message = '';
 	// ===== RESOLUTION OPTIONS ===== 
 	var full_name = $("#fullname").val();
 
-	var found = 'Hello <b>'+ full_name +'! </b><br><br> The answer to your inquiry/report can be found in the link below: <br><br> http://empoyee.tatepublishing.net/company-id-numbers/';
+	var found = 'Hello <b>'+ full_name +'! </b><br><br> The answer to your inquiry/report can be found in the link below: <br><br> (INSERT LINK HERE)';
 	var custom = 'Hello <b>'+ full_name +'! </b><br><br> This is the message that the HR will write on the box as a custom response to the employee.';
 	var not_found = 'Hello <b>'+ full_name +'! </b><br><br> (INSERT CUSTOM MESSAGE HERE) <br><br> Upon evaluation, it is determined that your incident/inquiry may be best addressed by the (INSERT REDIRECT DEPARTMENT HERE). Their email address is (INSERT REDIRECT DEPARTMENT EMAIL ADDRESS HERE) which is CC in this email. <br><br> Please communicate with the (INSERT REDIRECT DEPARTMENT HERE) for the resolution of the incident.';
 	var further = 'Hello <b>'+ full_name +'! </b><br><br> Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE) <br><br> Thank you very much! <br><br> (INSERT HR COMPLETE NAME HERE) <br> (INSERT HR POSITION HERE) <br><br><b><u> Important Note </u> </b><br> If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
@@ -301,7 +297,7 @@ var message = '';
 					alert("Success!");
 					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
 					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrIncident";
-                        //close();
+                     close();
 					}
 				});
 			}
@@ -331,8 +327,8 @@ var message = '';
 					success: function(result){
 					alert("Success!");
 					$('#note_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
+					window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                    close();
 				}
 			});
 		}
