@@ -127,17 +127,18 @@
 				</tr>
 			<?php } ?>     
 		<tr>
-			<td valign="top">Details of the incident</td>
-			<td>
+			<td colspan="2">
 
 			<?php foreach ($conversation as $key => $conve): ?>
 				<div>
-				<br>
-					<h3><font color="darkred">Message From :<b> <?php echo strip_tags($conve->reply_empUser); ?></b></font></h3><br><br>
+					<h4>Message from : <b><?php echo strip_tags($conve->reply_empUser); ?></b></h4>
+					<h5>Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></h5>
+					<br>
 					<?php echo $conve->cs_msg_text; ?>
-					<br><br>
+					<br>
+					<hr>
 				</div>
-				<hr>
+			
 			<?php endforeach ?>
 				
 				
@@ -167,6 +168,10 @@
 	<!-- Notes -->
 	<div id="tab-1" class="tab-content">
 		<h2>Add a Note</h2>
+		<textarea id="" class="hidden tiny" style="height:200px;"></textarea>
+		<br>
+		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
+		<br>
 	</div>
 
 	<!-- Reply  -->
