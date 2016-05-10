@@ -431,22 +431,22 @@ class Commonmodel extends CI_Model {
 		$diff = date_diff( $date1, $date2 );
 		
 		$return =  $diff->format( $format );
-		return date('H:i:s', strtotime($return));
+		return $return;//date('H:i:s', strtotime($return));
 	}
 	
-	public function dateDifferenceDays( $date1, $date2, $format = '%a'){
+	// public function dateDifferenceDays( $date1, $date2, $format = '%a'){
 
-		$date1 = date('Y-m-d H:i:s', strtotime($date1) );
-		$date2 = date('Y-m-d H:i:s', strtotime($date2) );
+	// 	$date1 = date('Y-m-d H:i:s', strtotime($date1) );
+	// 	$date2 = date('Y-m-d H:i:s', strtotime($date2) );
 
-		$date1 = date_create( $date1 );
-		$date2 = date_create( $date2 );	
+	// 	$date1 = date_create( $date1 );
+	// 	$date2 = date_create( $date2 );	
 
-		$diff = date_diff( $date1, $date2 );
+	// 	$diff = date_diff( $date1, $date2 );
 		
-		$return =  $diff->format( $format );
-		return $return;//date('m', strtotime($return));
-	}
+	// 	$return =  $diff->format( $format );
+	// 	return $return;//date('m', strtotime($return));
+	// }
 	
 }
 

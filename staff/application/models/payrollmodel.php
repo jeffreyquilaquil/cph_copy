@@ -1735,7 +1735,7 @@ class Payrollmodel extends CI_Model {
 				}
 								
 				//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-				if( $staffInfo->active OR $staffInfo->endDate >= date('Y').'-01-25'){
+				if( $staffInfo->active OR ($staffInfo->endDate >= date('Y').'-01-25' && $this->commonM->dateDifference($staffInfo->startDate,$staffInfo->endDate ) > 30) ){
 					//if( isset($payArr[$date]->deduction) ){
 					$data['month13c'] = ($payArr[$date]->basePay - $data['regTaken'] /*$payArr[$date]->deduction*/)/12;
 					//}
