@@ -1765,16 +1765,16 @@ class Payrollmodel extends CI_Model {
 				$data['total13th'] += $data['month13c'];					
 				$data['totalNet'] += $payArr[$date]->net;					
 			}else{
-				$data['gross'] .= "0.00";
-				$data['basicSal'] .= "0.00";
-				$data['attendance'] .= "0.00";
-				$data['adjustment'] .= "0.00";
-				$data['taxIncome'] .= "0.00";
-				$data['bonus'] .= "0.00";
-				$data['taxWithheld'] .= "0.00";
-				$data['month13'] .= "0.00";
-				$data['deminimis'] .= "0.00";
-				$data['netPay'] .= "0.00";
+				$data['gross'] .= "0.00\n";
+				$data['basicSal'] .= "0.00\n";
+				$data['attendance'] .= "0.00\n";
+				$data['adjustment'] .= "0.00\n";
+				$data['taxIncome'] .= "0.00\n";
+				$data['bonus'] .= "0.00\n";
+				$data['taxWithheld'] .= "0.00\n";
+				$data['month13'] .= "0.00\n";
+				$data['deminimis'] .= "0.00\n";
+				$data['netPay'] .= "0.00\n";
 			}
 		}
 		return $data;
