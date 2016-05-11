@@ -274,7 +274,7 @@ class Schedules extends MY_Controller {
 					foreach($query2 AS $q){
 						$dateArr[] = $q->dateToday;
                         $arr['updateData'] = $q->updateData.'Updated from: timeText:'.$q->timeText.', assignedBy: '.$q->assignBy.', assignedDate: '.$q->assignDate.'|';
-                        $arr['updateData'] = addslashes($arr['updateData']);
+                        
 						$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$q->dateID), $arr);
 						unset($arr['updateData']);
 					}
@@ -377,7 +377,7 @@ class Schedules extends MY_Controller {
 							
 							if(!empty($schedInfo)){															
                                 $newarr['updateData'] = $schedInfo->updateData.'Updated from: timeID:'.$schedInfo->timeText.', assignedBy: '.$schedInfo->assignBy.', assignedDate: '.$schedInfo->assignDate.'|';								
-                                $newarr['updateData'] = addslashes($newArr['updateData']);
+                                
 								$this->dbmodel->updateQuery('tcStaffScheduleByDates', array('dateID'=>$schedInfo->dateID), $newarr);
 							}else{
 								$newarr['dateToday'] = $k;
@@ -484,7 +484,7 @@ class Schedules extends MY_Controller {
 						
 						if(count($dInfo)>0){
                             $updata = $dInfo->updateData.'Updated from: timeText:'.$dInfo->timeText.', assignedBy: '.$dInfo->assignBy.', assignedDate: '.$dInfo->assignDate.' TO: inactiveStatus DUE to '.$_POST['reason'].' BY:'.$this->user->username.'|';
-                            $updata = addslashes($updata);
+                            
 							
 							if($dInfo->status==1) $upArr['status'] = 2;
 							else $upArr['status'] = 0;
@@ -500,7 +500,7 @@ class Schedules extends MY_Controller {
 							$insArr['timeText'] = $data['schedData']['sched'];
 							$insArr['status'] = 0;
                             $insArr['updateData'] = 'Set INACTIVE from:'.$data['schedData']['sched'].' REASON:'.$_POST['reason'].' BY:'.$this->user->username.' |';
-                            $insArr['updateData'] = addslashes($insArr['updateData']);
+                            
 							$this->dbmodel->insertQuery('tcStaffScheduleByDates', $insArr);
 						}
 						
