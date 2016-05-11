@@ -121,7 +121,7 @@
 				</span>
 			</td>
 		</tr>
-		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp') { ?>
+		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp' || $this->uri->segment(4) == 'resolved') { ?>
 
 				<tr>
 					<td>Assign Category</td><td><?php echo $value->assign_category; ?></td>
@@ -137,7 +137,7 @@
 				</tr>
 			<?php } ?>  
 
-		<?php foreach ($conversation as $key => $conve){if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 ) { ?>
+		<?php foreach ($conversation as $key => $conve){if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 || $conve->cs_msg_type == 0) { ?>
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
@@ -149,7 +149,7 @@
 				</div>
 			</td>
 		</tr>
-		<?php } elseif($conve->cs_msg_type == 1 && $this->user->access != "full"){ ?>
+		<?php } elseif($conve->cs_msg_type == 1 && $conve->cs_msg_type == 0 && $this->user->access != "full"){ ?>
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
@@ -165,7 +165,7 @@
 	</table>
 	<br>
 
-	<?php  if($this->user->access == "full") { ?>
+<?php  if($this->user->access == "full" && $this->uri->segment(4) != 'resolved') { ?>
 			
 		
 	<ul class="tabs">
@@ -198,14 +198,18 @@
 		<br><br>
 
 		<?php } 
-		if($this->user->access == "full"){ ?>
+	if($this->user->access == "full" && $this->uri->segment(4) != 'resolved'){ ?>
 
 			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
 			
-		<?php }else{ ?>
+		<?php }elseif($this->uri->segment(4) != 'resolved'){ ?>
 			<textarea id="custom_employee_msg" class="hidden tiny" style="height:200px;"></textarea><br>
 		<?php } ?>
+		<?php 
+	if($this->uri->segment(4) != 'resolved'){ ?>
 		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br>
+	<?php } ?>
+		
 	</div>
 </div>
 
@@ -309,8 +313,10 @@ var message = '';
 		var custom_ans = tinyMCE.get('note_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
+			var inv_req = $('input[name="investigation_required_radio"]:checked').val();
+			var ass_categ = $("#assign_category option:selected").val();
 
-			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname;
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&assign_category=' + ass_categ + '&inve_req=' + inv_req;
 
 		
 		if (custom_ans == '') {
@@ -397,220 +403,7 @@ var message = '';
 				return false;
 		});
 
-
-
-
-	
-/*
-
-	// ===== ADD REDIRECT DEPARTMENT =====
-	$('#add_redirect_dept_form').hide();
-
-	$('#add_redirect_dept').click(function(){
-    	
-    	$('#add_redirect_dept_form').slideToggle("slow");
-	});
-	
-	// ===== SEE ALL REDIRECT DEPARTMENT =====
-	$('#see_all_redirect_dept_form').hide();
-
-	$('#see_all_redirect_dept').click(function(){
-    	
-    	$('#see_all_redirect_dept_form').slideToggle("slow");
-	});
-
-	 
-	// ===== SEND EMAIL FORM ===== 
-	$('#send_email_to_another_form').hide();
-
-	$('#send_email_to_another').click(function(){
-
-		$('#send_email_to_another_form').slideToggle("slow");
-	});
-*/
 			
 });
-
-/*
-$(function(){
-
-	// ===== JQUERY FOR ADD NEW DEPARTMENT =====
-	$("#submit_add_department").click(function() {
-
-		var name_dep = $("#name_department").val();
-		var email_dep = $("#email_department").val();
-		
-
-		var dataString = 'name_department='+ name_dep +'&email_department=' + email_dep;	
-
-		if (name_dep == '' || email_dep == '') {
-			alert("Some Field is Empty!");
-		}else{
-		// ===== AJAX CODE TO SUBMIT FORM =====
-				$.ajax({
-					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/addnewdeparment",
-					data: dataString,
-					cache: false,
-						success: function(result){
-						alert('success!');
-						// ===== TO RESET FORM FIELDS =====
-						$('#add_new_department_form')[0].reset(); 
-						$('#not_found_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-						$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-					
-						}
-				});
-			}
-
-			return false;
-	});
-
-	// ===== JQUERY FOR INSERTION FOUND ANSWER IN LINK =====
-	$("#found_answerer_submit").click(function() {
-		var ins_id = $("#foundid").val();
-		var ass_categ = $("#assign_category").val();
-		var fnd_answer_link = $("#found_answer_link").val();
-		var custom_ans = $("#found_answer_custom").val();
-		var inscateg_id = $("#categoryid").val();
-		var hr_sname = $("#hr_username").val();
-		var new_in = $("#new_inc").val();
-			
-
-		var dataString = 'insedentid= '+ ins_id + '&assign_category=' + ass_categ + '&found_answer_link=' + fnd_answer_link + '&found_answer_custom=' + custom_ans + '&categid=' + inscateg_id + '&hr_username=' + hr_sname + '&reply=' + new_in;
-		
-
-		if (fnd_answer_link == '') {
-			alert("Some Field is Empty!");
-		}else{
-		// ===== AJAX CODE TO SUBMIT FORM =====
-				$.ajax({
-					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/found_answer_solution",
-					data: dataString,
-					cache: false,
-						success: function(result){
-						alert('success!');
-						// ===== TO RESET FORM FIELDS =====
-						$('#found_answer_forms')[0].reset(); 
-						window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
-						}
-				});
-			}
-
-			return false;
-	});
-
-
-	// ===== JQUERY FOR INSERTION CUSTOM FOUND ANSWER IN LINK =====
-	$("#custom_answer_submit").click(function() {
-		var new_in = $("#new_inc").val();
-		var hr_sname = $("#hr_username").val();
-		var ins_id = $("#customid").val();
-		var inscateg_id = $("#customcategid").val();
-		var ass_categ = $("#assign_category option:selected").val();
-		var custom_ans = $("#custom_answer_msg").val();
-
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&customcategid=' + inscateg_id +'&hr_username='+ hr_sname + '&reply=' + new_in;
-		
-		
-			if (custom_ans == '') {
-
-				alert("Some Field is Empty!");
-			}else{
-
-					// ===== AJAX CODE TO SUBMIT FORM =====
-					$.ajax({
-					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/custom_answer_solution",
-					data: dataString,
-					cache: false,
-						success: function(result){
-						alert("Success!");
-						$('#custom_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-						 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
-						}
-					});
-				}
-				return false;
-		});
-
-	// ===== JQUERY FOR INSERTION NOT FOUND ANSWER IN LINK =====
-	$("#not_found_answer_submit").click(function() {
-		var new_in = $("#new_inc").val();
-		var hr_sname = $("#hr_username").val();
-		var ins_id = $("#notfoundid").val();
-		var inscateg_id = $("#notfoundcategid").val();
-		var ass_categ = $("#assign_category").val();
-		var redirect = $("#redirect_department").val();
-		var custom_ans = $("#not_found_custom_msg").val();
-
-		var dataString = 'insedentid=' + ins_id + '&assign_category=' + ass_categ + '&notfound_answer_custom=' + custom_ans + '&redirect_department=' + redirect + '&notfoundcategid=' + inscateg_id +'&hr_username='+ hr_sname + '&reply=' + new_in;
-		
-			if (redirect == '' || custom_ans== '') {
-
-				alert("Some Field is Empty!");
-			}else{
-
-					// ===== AJAX CODE TO SUBMIT FORM =====
-					$.ajax({
-					type: "POST",
-					url: "<?php echo $this->config->base_url(); ?>hr_cs/notfound_answe_solution",
-					data: dataString,
-					cache: false,
-					
-						success: function(result){
-						alert("Success!");
-						$('#not_found_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-						 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
-
-						}
-					});
-				}
-
-			return false;
-	}); 
-
-	// ===== JQUERY FOR INSERTION FURTHER ANSWER IN LINK =====
-	$("#furder_submit").click(function() {
-		var hr_sname = $("#hr_username").val();
-		var ins_id = $("#furtherid").val();
-		var inscateg_id = $("#furthercategid").val();
-		var ass_categ = $("#assign_category option:selected").val();
-		var custom_ans = $("#further_answer_msg").val();
-
-		var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&found_answer_custom='+ custom_ans +'&furthercategid=' + inscateg_id +'&hr_username='+ hr_sname;
-		
-		if (custom_ans == '') {
-			alert("Some Field is Empty!");
-		}else{
-			
-			// ===== AJAX CODE TO SUBMIT FORM =====
-			$.ajax({
-			type: "POST",
-			url: "<?php echo $this->config->base_url(); ?>hr_cs/further_investigation",
-			data: dataString,
-			cache: false,
-			
-				success: function(result){
-				alert("Success!");
-				$('#further_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-				 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                        close();
-				}
-			});
-		}
-
-			return false;
-	});
-
-});
-
-});
-*/
-
 
 </script>

@@ -39,7 +39,7 @@ if($this->user->access != "full"){
 <h2>HR HelpDesk</h2>
 <ul class="tabs">
 	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
-	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active</li>
+	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
 
@@ -142,6 +142,35 @@ if($this->user->access != "full"){
 
 <!-- ===== RESOLVE TAB ===== -->
 <div id="tab-3" class="tab-content">
+
+<br>
+
+	<table id="new" class="datatable">
+		<thead>
+			<tr>
+				<th>Incident #</th>
+				<th>Subject</th>
+				<th>Customer</th>
+				<th>Priority</th>
+				<th>Last Update</th>
+							
+			</tr>
+		</thead>
+			<?php foreach ($ResolveIncident as $active_key => $resolve_val) { ?>
+				<tr>
+					<td class="td_hover">
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/resolved" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+	      			</td>
+					<td><?php echo $resolve_val->cs_post_subject; ?></td>
+					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
+					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
+					<td><?php echo $resolve_val->last_update; ?></td>
+									
+				</tr>
+			<?php } ?>     
+	</table>
+
+      <br>
 
 </div>
 <!--===== CANCELLED TAB ===== -->
