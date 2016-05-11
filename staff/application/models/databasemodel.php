@@ -102,7 +102,7 @@ class Databasemodel extends CI_Model {
 				else
 					$vals .= '"'.$v.'",';
 			}
-			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
+			$sql .= rtrim($cols,',').') VALUES ('.rtrim($this->db->escape($vals),',').')';
 			
 			$this->db->query($sql);
 			return $this->db->insert_id();
