@@ -100,9 +100,9 @@ class Databasemodel extends CI_Model {
 				if($v=='NOW()')
 					$vals .= $v.',';
 				else
-					$vals .= '"'.$v.'",';
+					$vals .= '"'.$this->db->escape($v).'",';
 			}
-			$sql .= rtrim($cols,',').') VALUES ('.rtrim($this->db->escape($vals),',').')';
+			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
 			
 			$this->db->query($sql);
 			return $this->db->insert_id();
