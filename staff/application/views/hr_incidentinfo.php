@@ -141,11 +141,19 @@
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
-					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+					<span style="color: #888888">Message from: <?php echo strip_tags($conve->reply_empUser); ?></span>
 					<br>
-					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+					<span style="color: #888888">Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></span>
 					<br><br>
-					<?php echo $conve->cs_msg_text; ?>
+					<?php 
+						if($conve->cs_msg_text == ''){
+							echo 'No Message';
+						} 
+						else{
+							echo $conve->cs_msg_text;
+						}
+						
+					?>
 				</div>
 			</td>
 		</tr>
@@ -153,11 +161,19 @@
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
-					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+					<span style="color: #888888">Message from: <?php echo strip_tags($conve->reply_empUser); ?></span>
 					<br>
-					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-					<br><br> r  
-					<?php echo $conve->cs_msg_text; ?>
+					<span style="color: #888888">Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></span>
+					<br><br> 
+					<?php 
+						if($conve->cs_msg_text == ''){
+							echo 'No Message';
+						} 
+						else{
+							echo $conve->cs_msg_text;
+						}
+						
+					?>
 				</div>
 			</td>
 		</tr>
