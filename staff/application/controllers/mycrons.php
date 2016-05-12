@@ -95,8 +95,8 @@ class MyCrons extends MY_Controller {
 			$insert_array['empID_fk'] = $q->empID;
 			$insert_array['field'] = 'leaveCredits';
 			$insert_array['value'] = $q->leaveCredits;
-			$insert_array['date_effective'] = "NOW()";
-			$insert_array['date_added'] = "NOW()";
+			$insert_array['date_effective'] = date('Y-m-d H:i:s');
+			$insert_array['date_added'] = date('Y-m-d H:i:s');
 
 			$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
 		//end staffStatusHistory
@@ -190,17 +190,17 @@ class MyCrons extends MY_Controller {
 
 		foreach($query AS $q):
 			$chtext = '';
-			$changes = json_decode($q->dbchanges);
+			$changes = json_decode(stripslashes($q->dbchanges));
 
 			//for staffStatusHistory
-			$status_change = json_decode($q->changes);
+			$status_change = json_decode(stripslashes($q->changes));
 			foreach($status_change as $status_old => $status_old_val ){
 				$insert_array = array();
 				$insert_array['empID_fk'] = $q->empID_fk;
 				$insert_array['field'] = $status_old;
 				$insert_array['value'] = $status_old_val->c;
 				$insert_array['date_effective'] = $q->effectivedate;
-				$insert_array['date_added'] = "NOW()";
+				$insert_array['date_added'] = date('Y-m-d H:i:s');
 
 				$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
 			}
