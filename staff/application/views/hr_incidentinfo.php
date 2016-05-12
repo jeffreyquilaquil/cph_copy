@@ -124,15 +124,18 @@
 		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp' || $this->uri->segment(4) == 'resolved') { ?>
 
 				<tr>
-					<td>Assign Category</td><td><?php echo $value->assign_category; ?></td>
+					<td>Assign Category</td>
+					<td><?php echo $value->assign_category; ?></td>
 				</tr>
 				<tr>
-					<td>Investigation Required:</td><td><b><?php echo $value->invi_req; ?></b><br><br>
+					<td>
+					Investigation Required:</td><td><b><?php echo $value->invi_req; ?></b>
+					<br><br>
 					<span class="note">
 					Note to HR: If you are able to provide answer to the question within 24 hours,
 					select <b>NO</b> if you need to involve or collect information from other departments,
 					Select <b>YES</b>.
-				</span>
+					</span>
 					</td>
 				</tr>
 			<?php } ?>  
@@ -183,7 +186,6 @@
 
 <?php  if($this->user->access == "full" && $this->uri->segment(4) != 'resolved') { ?>
 			
-		
 	<ul class="tabs">
 		<li class="dbold tab-link" id="new_tab" data-tab="tab-1">Note</li>
 		<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Reply</li>
@@ -214,6 +216,7 @@
 		<br><br>
 
 		<?php } 
+		
 	if($this->user->access == "full" && $this->uri->segment(4) != 'resolved'){ ?>
 
 			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
@@ -222,7 +225,7 @@
 			<textarea id="custom_employee_msg" class="hidden tiny" style="height:200px;"></textarea><br>
 		<?php } ?>
 		<?php 
-	if($this->uri->segment(4) != 'resolved'){ ?>
+			if($this->uri->segment(4) != 'resolved'){ ?>
 		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br>
 	<?php } ?>
 		

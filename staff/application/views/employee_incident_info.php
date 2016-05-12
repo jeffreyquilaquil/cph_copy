@@ -24,7 +24,7 @@
 		  		<th>Date Submitted</th>
 		  		<th>Subject</th>
 		  		<th>Status</th>
-		  		<th>Cancel Incident</th>	
+		  		<th>What should I do?</th>	
 		  	</tr>
 	  	</thead>
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
@@ -32,21 +32,30 @@
 	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp" class="iframe"><?php echo $rep->cs_post_id; ?></a></td>
 	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
-	      		<td><?php 
-	      		if ($rep->cs_post_status == 0) {
-	      			echo "Open";
-	      		}elseif($rep->cs_post_status == 1){
-	      			echo "Assign";
-	      		}elseif($rep->cs_post_status == 2){
-	      			echo "Hold";
-	      		}elseif($rep->cs_post_status == 3){
-	      			echo "Resolve";
-	      		}elseif($rep->cs_post_status == 4){
-	      			echo "Closed";
-	      		}
+	      		<td>
+		      		<?php 
 
-	      		 ?></td>		
-	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/employee_incident_info_events/<?php echo $rep->cs_post_id; ?>/cancel" class="iframe">Cancel Incident</a></td>
+		      		if ($rep->cs_post_status == 0) {
+		      			echo "Open";
+		      		}elseif($rep->cs_post_status == 1){
+		      			echo "Assign";
+		      		}elseif($rep->cs_post_status == 2){
+		      			echo "Hold";
+		      		}elseif($rep->cs_post_status == 3){
+		      			echo "Resolve";
+		      		}elseif($rep->cs_post_status == 4){
+		      			echo "Closed";
+		      		}
+
+		      		?>
+		      	</td>		
+	      		<td>
+	      			<?php if($rep->cs_post_status == 3){ ?>
+	      			<a href="">Re-open incident</a>
+	   				<?php } else{ ?>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/employee_incident_info_events/<?php echo $rep->cs_post_id; ?>/cancel" class="iframe">Cancel Incident</a>
+	      			<?php } ?>
+	      		</td>
 	  		</tr>	
 	  		<?php endforeach ?>     
 	</table>
