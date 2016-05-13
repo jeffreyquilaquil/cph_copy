@@ -1425,6 +1425,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function computelastpay(){
+
 		$data['content'] = 'v_timecard/v_computelastpay';
 		
 		if($this->user!=false){			
@@ -1512,6 +1513,7 @@ class Timecard extends MY_Controller {
 
 			///THIS IS FOR THE PDF
 			if(isset($_GET['show'])){
+					
 				$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
 				if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
 					$acc = true;
@@ -1534,7 +1536,8 @@ class Timecard extends MY_Controller {
 					if($acc==false) $data['access'] = false;
 					else exit;
 				}else{
-					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+					if(/*$bdate==$this->textM->decryptText($_GET['show'])*/$_GET['show']=='pdf' || $this->access->accessFullHRFinance==true){
+					
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
 							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
@@ -1546,7 +1549,9 @@ class Timecard extends MY_Controller {
 							case 'release': //release waiver and quitclam
 								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
-								$this->payrollM->pdfReleaseClaim($staff_details);	
+								ob_clean();
+								$this->payrollM->pdfReleaseClaim($staff_details);
+								exit();
 							break;
 							case 'bir':
 							 		//$this->textM->aaa($data);
