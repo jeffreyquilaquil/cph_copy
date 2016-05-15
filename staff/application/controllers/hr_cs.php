@@ -137,9 +137,11 @@
 
 			
 
-				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status != 3 GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
+				$data['ActiveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status != 3 AND hr_cs_post.cs_post_status != 4 GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
 
 				$data['ResolveIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
+
+				$data['CancelIncident']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 GROUP BY hr_cs_msg.cs_msg_postID_fk HAVING COUNT( * ) >1');
 
 
 				$this->load->view('includes/template',$data);
@@ -242,12 +244,21 @@
             }
 
             public function custom_answer_solution(){
+            	$newstat = 0;
             	$reply = $this->input->post('reply');
+            	$dclr = $this->input->post('stat');
+
+            	if(!empty($dclr) && isset($dclr) == 'close'){// if the HR solve the incident the status will change in 4
+			         $newstat = 4;
+			    }else if(!empty($dclr) && isset($dclr) == 'resolved'){// if the HR solve the incident the status will change in 3
+			         $newstat = 3;
+			    } 
             	 
             	if($reply == 'new'){ 
 
 	            		$id = $this->input->post('insedentid');
 	            		$empUSER = $this->input->post('hr_username');
+	            		
 
 	            		$data['cs_msg_postID_fk'] =  $id;
 	            		$custommessage=  $this->input->post('custom_answer_msg');
@@ -262,9 +273,12 @@
 		            	
 						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'", invi_req = "'.$inv_req.'"','cs_post_id = '.$id);
 						
-
 						
 		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '"','cs_post_id = '.$id);
+
+			            	
+			            	$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+
 
 						}else if($reply == 'active' || $reply == 'emp'){
 
@@ -279,7 +293,27 @@
 		            		$data['reply_empUser']  = $this->input->post('hr_username');
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
-						} 
+
+		            		$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+
+						}else if($reply == 'resolved' || $reply == 'reopen' || $reply = 'cinc'){
+
+							$id = $this->input->post('insedentid');
+
+
+		            		$data['cs_msg_postID_fk'] =  $id;
+		            		$custommessage=  $this->input->post('custom_answer_msg');
+		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            		$data['cs_msg_type'] = 0;
+		            		$data['reply_empUser']  = $this->input->post('hr_username');
+		            		
+		            		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+		            		$stat = 0;
+		            	
+							$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $stat .'"','cs_post_id = '.$id);
+						}  
 
 
             		$data2['content']='hr_helpdesk';
@@ -341,7 +375,7 @@
 				$empid = $this->uri->segment(3);
 
             	$data['content']='employee_incident_info';  		
-  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' AND (hr_cs_post.cs_post_status != 4) GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
+  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
 
 	  			$this->load->view('includes/template',$data);
 

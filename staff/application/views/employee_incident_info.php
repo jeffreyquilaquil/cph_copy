@@ -50,8 +50,8 @@
 		      		?>
 		      	</td>		
 	      		<td>
-	      			<?php if($rep->cs_post_status == 3){ ?>
-	      			<a href="">Re-open incident</a>
+	      			<?php if($rep->cs_post_status == 3 || $rep->cs_post_status == 4){ ?>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/reopen" class="iframe">Re-open incident</a>
 	   				<?php } else{ ?>
 	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/employee_incident_info_events/<?php echo $rep->cs_post_id; ?>/cancel" class="iframe">Cancel Incident</a>
 	      			<?php } ?>

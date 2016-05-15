@@ -176,6 +176,38 @@ if($this->user->access != "full"){
 <!--===== CANCELLED TAB ===== -->
 <div id="tab-4" class="tab-content">
 
+
+<br>
+
+	<table id="new" class="datatable">
+		<thead>
+			<tr>
+				<th>Incident #</th>
+				<th>Subject</th>
+				<th>Customer</th>
+				<th>Priority</th>
+				<th>Last Update</th>
+							
+			</tr>
+		</thead>
+			<?php foreach ($CancelIncident as $active_key => $resolve_val) { ?>
+				<tr>
+					<td class="td_hover">
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+	      			</td>
+					<td><?php echo $resolve_val->cs_post_subject; ?></td>
+					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
+					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
+					<td><?php echo $resolve_val->last_update; ?></td>
+									
+				</tr>
+			<?php } ?>     
+	</table>
+
+      <br>
+
+
+
 </div>
 
 <script type="text/javascript">

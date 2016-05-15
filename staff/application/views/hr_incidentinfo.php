@@ -121,21 +121,18 @@
 				</span>
 			</td>
 		</tr>
-		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp' || $this->uri->segment(4) == 'resolved') { ?>
+		<?php }elseif ($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'emp' || $this->uri->segment(4) == 'resolved' || $this->uri->segment(4) == 'cinc') { ?>
 
 				<tr>
-					<td>Assign Category</td>
-					<td><?php echo $value->assign_category; ?></td>
+					<td>Assign Category</td><td><?php echo $value->assign_category; ?></td>
 				</tr>
 				<tr>
-					<td>
-					Investigation Required:</td><td><b><?php echo $value->invi_req; ?></b>
-					<br><br>
+					<td>Investigation Required:</td><td><b><?php echo $value->invi_req; ?></b><br><br>
 					<span class="note">
 					Note to HR: If you are able to provide answer to the question within 24 hours,
 					select <b>NO</b> if you need to involve or collect information from other departments,
 					Select <b>YES</b>.
-					</span>
+				</span>
 					</td>
 				</tr>
 			<?php } ?>  
@@ -144,19 +141,11 @@
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
-					<span style="color: #888888">Message from: <?php echo strip_tags($conve->reply_empUser); ?></span>
+					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
 					<br>
-					<span style="color: #888888">Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></span>
+					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
 					<br><br>
-					<?php 
-						if($conve->cs_msg_text == ''){
-							echo 'No Message';
-						} 
-						else{
-							echo $conve->cs_msg_text;
-						}
-						
-					?>
+					<?php echo $conve->cs_msg_text; ?>
 				</div>
 			</td>
 		</tr>
@@ -164,19 +153,11 @@
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
-					<span style="color: #888888">Message from: <?php echo strip_tags($conve->reply_empUser); ?></span>
+					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
 					<br>
-					<span style="color: #888888">Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?></span>
-					<br><br> 
-					<?php 
-						if($conve->cs_msg_text == ''){
-							echo 'No Message';
-						} 
-						else{
-							echo $conve->cs_msg_text;
-						}
-						
-					?>
+					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+					<br><br> r  
+					<?php echo $conve->cs_msg_text; ?>
 				</div>
 			</td>
 		</tr>
@@ -184,8 +165,9 @@
 	</table>
 	<br>
 
-<?php  if($this->user->access == "full" && $this->uri->segment(4) != 'resolved') { ?>
+<?php  if($this->user->access == "full" && $this->uri->segment(4) != 'resolved' && $this->uri->segment(4) != 'cinc') { ?>
 			
+		
 	<ul class="tabs">
 		<li class="dbold tab-link" id="new_tab" data-tab="tab-1">Note</li>
 		<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Reply</li>
@@ -212,22 +194,17 @@
 				<option>Send custom response</option>
 				<option>This is not an HR inquiry. Redirect to another department</option>
 				<option>Further Information (investigation) is required</option>
+				<option>Resolved</option>
+				<option>Closed</option>
 			</select>
 		<br><br>
 
-		<?php } 
-		
-	if($this->user->access == "full" && $this->uri->segment(4) != 'resolved'){ ?>
+		<?php } ?>
 
 			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-			
-		<?php }elseif($this->uri->segment(4) != 'resolved'){ ?>
-			<textarea id="custom_employee_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-		<?php } ?>
-		<?php 
-			if($this->uri->segment(4) != 'resolved'){ ?>
+
 		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br>
-	<?php } ?>
+	
 		
 	</div>
 </div>
@@ -263,7 +240,9 @@ var message = '';
 	var custom = 'Hello <b>'+ full_name +'! </b><br><br> This is the message that the HR will write on the box as a custom response to the employee.';
 	var not_found = 'Hello <b>'+ full_name +'! </b><br><br> (INSERT CUSTOM MESSAGE HERE) <br><br> Upon evaluation, it is determined that your incident/inquiry may be best addressed by the (INSERT REDIRECT DEPARTMENT HERE). Their email address is (INSERT REDIRECT DEPARTMENT EMAIL ADDRESS HERE) which is CC in this email. <br><br> Please communicate with the (INSERT REDIRECT DEPARTMENT HERE) for the resolution of the incident.';
 	var further = 'Hello <b>'+ full_name +'! </b><br><br> Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE) <br><br> Thank you very much! <br><br> (INSERT HR COMPLETE NAME HERE) <br> (INSERT HR POSITION HERE) <br><br><b><u> Important Note </u> </b><br> If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
-	
+	var resolve = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now resolved)';
+	var closed = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now Closed)';
+		
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
 				tinyMCE.activeEditor.setContent(found);
@@ -279,6 +258,12 @@ var message = '';
 	    }
 	    else if($( "#resolution_options" ).val() == 'Further Information (investigation) is required'){
 	    		tinyMCE.activeEditor.setContent(further);
+	    		
+	    }else if($( "#resolution_options" ).val() == 'Resolved'){
+	    		tinyMCE.activeEditor.setContent(resolve);
+	    		
+	    }else if($( "#resolution_options" ).val() == 'Closed'){
+	    		tinyMCE.activeEditor.setContent(closed);
 	    		
 	    }
 	    else if($( "#resolution_options" ).val() == ''){
@@ -365,25 +350,43 @@ var message = '';
 
 	
 		var tab_typ = $('#tab_type').val();
+		var status ='';
+
+		if($( "#resolution_options option:selected" ).val() == 'Resolved'){
+	    	var	status = 'resolved';
+	    		
+	    }else if($( "#resolution_options option:selected" ).val() == 'Closed'){
+	    	var status = 'close';
+	    		
+	    }
 
 		if (tab_typ == 'new') {
+
 			var inv_req = $('input[name="investigation_required_radio"]:checked').val();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 			var ass_categ = $("#assign_category option:selected").val();
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ;
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
 			
 		}else if(tab_typ == 'active'){
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 
-			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ + '&stat=' + status;
 			
 		}else if(tab_typ == 'emp'){
-			var custom_ans = tinyMCE.get('custom_employee_msg').getContent();
+			var custom_ans = tinyMCE.get('custom_msg').getContent();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
+
+		
+		}else if(tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
+			var custom_ans = tinyMCE.get('custom_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 
@@ -404,15 +407,22 @@ var message = '';
 					data: dataString,
 					cache: false,
 						success: function(result){
-						alert("Success!");
+						alert("Success! "+ status);
 						$('#custom_ans_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
 
-						if (tab_typ != 'emp') {
-							 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+						if (tab_typ == 'emp') {
+							//alert("<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID;?>/");
+	                    	 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID;?>/";
+	                        close();
+	                    }else if (tab_typ == 'reopen') {
+							//alert("<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID;?>/");
+	                    	 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID;?>/";
 	                        close();
 	                    }else{
-	                    	 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID; ?>";
+	                    	//alert("<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk");
+							 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
 	                        close();
+
 
 	                    }
 
