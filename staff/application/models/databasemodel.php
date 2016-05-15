@@ -92,7 +92,7 @@ class Databasemodel extends CI_Model {
 	function insertQuery($table, $array){
 		date_default_timezone_set("Asia/Manila");
 		if(count($array) > 0){
-			$sql = "INSERT INTO $table (";
+			/*$sql = "INSERT INTO $table (";
 			$cols = '';
 			$vals = '';
 			foreach($array AS $k => $v){
@@ -100,11 +100,12 @@ class Databasemodel extends CI_Model {
 				if($v=='NOW()')
 					$vals .= $v.',';
 				else
-					$vals .= '"'.$v.'",';
+					$vals .= $this->db->escape($v).',';
 			}
 			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
 			
-			$this->db->query($sql);
+			$this->db->query($sql);*/
+			$this->db->insert($table, $array);
 			return $this->db->insert_id();
 		}	
 	}

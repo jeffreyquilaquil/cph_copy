@@ -21,7 +21,7 @@ foreach($row AS $r):
 			echo '<b>CareerPH</b> ';
 
     }
-		$note = $r->ntexts;
+		$note = stripslashes($r->ntexts);
 		/* $note = str_replace($this->user->name, 'you', $note);
 		$note = ucfirst($note); */
 		

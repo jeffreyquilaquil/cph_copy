@@ -266,6 +266,7 @@ class Staffmodel extends CI_Model {
 		$pdf->Write(0, date('F d, Y', strtotime($cis->effectivedate)));	
 		
 		$changes = json_decode($cis->changes);	
+
 		$pdf->SetFont('Arial','I',10);	
 		
 		$nextY = 85;

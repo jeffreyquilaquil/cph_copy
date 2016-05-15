@@ -95,8 +95,8 @@ class MyCrons extends MY_Controller {
 			$insert_array['empID_fk'] = $q->empID;
 			$insert_array['field'] = 'leaveCredits';
 			$insert_array['value'] = $q->leaveCredits;
-			$insert_array['date_effective'] = "NOW()";
-			$insert_array['date_added'] = "NOW()";
+			$insert_array['date_effective'] = date('Y-m-d H:i:s');
+			$insert_array['date_added'] = date('Y-m-d H:i:s');
 
 			$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
 		//end staffStatusHistory
@@ -123,24 +123,25 @@ class MyCrons extends MY_Controller {
 						<p>CAREERPH Auto-Email</p>';
 					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				}
-				
+				//Unused leave credits is '.$q->leaveCredits.''.(($used>0)?'. Used leave credits is '.$used.'':'').'.</p>
 				$hremail = '<p>Hi HR,</p>
 						<p><i>This is an automated message.</i><br/>
 						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.($current-$used).'. Unused leave credits is '.$q->leaveCredits.''.(($used>0)?'. Used leave credits is '.$used.'':'').'.</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.($current).'. 
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
 				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				
 				
-				$this->dbmodel->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($current-$used)));
+				$this->dbmodel->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($current)));
 								
-				$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.(($used==0)?$current:($current-$used).' because you already used '.$used.' leave credits instead of '.$current.' leave credits').'.<br/><br/>We wish you happiness and success now and always.';
+				//$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.(($used==0)?$current:($current-$used).' because you already used '.$used.' leave credits instead of '.$current.' leave credits').'.<br/><br/>We wish you happiness and success now and always.';
+				$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($current).'.<br/><br/>We wish you happiness and success now and always.';
 				$this->commonM->addMyNotif($q->empID, $nnote, 0, 1, 0);
 			}
 		endforeach;
-		
+		//$this->output->enable_profiler(true);
 		///DEV LOGS
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS resetAnnivLeaveCredits '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
 		
@@ -189,17 +190,17 @@ class MyCrons extends MY_Controller {
 
 		foreach($query AS $q):
 			$chtext = '';
-			$changes = json_decode($q->dbchanges);
+			$changes = json_decode(stripslashes($q->dbchanges));
 
 			//for staffStatusHistory
-			$status_change = json_decode($q->changes);
+			$status_change = json_decode(stripslashes($q->changes));
 			foreach($status_change as $status_old => $status_old_val ){
 				$insert_array = array();
 				$insert_array['empID_fk'] = $q->empID_fk;
 				$insert_array['field'] = $status_old;
 				$insert_array['value'] = $status_old_val->c;
 				$insert_array['date_effective'] = $q->effectivedate;
-				$insert_array['date_added'] = "NOW()";
+				$insert_array['date_added'] = date('Y-m-d H:i:s');
 
 				$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
 			}

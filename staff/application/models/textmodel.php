@@ -210,7 +210,7 @@ class Textmodel extends CI_Model {
 			';
 		if(count($info)>0){
 			foreach($info AS $a):
-				$c = json_decode($a->changes);
+				$c = json_decode(stripslashes($a->changes));
 				$cnt = 0;
 				$arr = array();
 				if(isset($c->staffHolidaySched)){

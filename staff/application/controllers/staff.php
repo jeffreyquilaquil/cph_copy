@@ -1591,6 +1591,7 @@ class Staff extends MY_Controller {
 			}
 			
 			$data['row'] = $this->dbmodel->getQueryResults('staffMyNotif', 'staffMyNotif.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=sID AND sID!=0) AS nName', 'isNotif=1 AND empID_fk="'.$this->user->empID.'"', '', 'nstatus DESC, notifID DESC');
+
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);
@@ -1641,7 +1642,8 @@ class Staff extends MY_Controller {
 				}
 				
 				//check for duplicate insert leave data
-				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0');
+				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0 AND iscancelled = 0');
+				
 				if(count($dupQuery)>0){
 					echo 'There is a duplicate entry of this leave. Click <a href="'.$this->config->base_url().'staffleaves/'.$dupQuery->leaveID.'/">here</a> to view duplicate leave entry or check "Time Off Details" on My HR Info page if filed leave exists or inform IT if no duplicate entry and you can\'t file leave.';
 					exit;
@@ -1773,7 +1775,7 @@ class Staff extends MY_Controller {
 					$insArr['date_requested'] = date('Y-m-d H:i:s');
 					$insArr['reason'] = addslashes($_POST['reason']);
 					$insArr['totalHours'] = $_POST['totalHours'];
-					$insArr['notesforHR'] = mysql_real_escape_string($_POST['notesforHR']);
+					$insArr['notesforHR'] = $_POST['notesforHR'];
 					$insArr['leaveStart'] = date('Y-m-d H:i', strtotime($_POST['leaveStart']));
 					$insArr['leaveEnd'] = date('Y-m-d H:i', strtotime($_POST['leaveEnd']));
 					if($_POST['leaveType']==4){
@@ -1837,13 +1839,16 @@ class Staff extends MY_Controller {
 				}					
 			}
 		}
+		//$this->output->enable_profiler(true);
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function leavepdf(){
 		if($this->uri->segment(2)!=''){
 			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'staffLeaves.*, CONCAT(fname," ",lname) AS name, username', 'leaveID="'.$this->uri->segment(2).'"', 'LEFT JOIN staffs ON empID_fk=empID');
-			
+			$leave->reason = stripslashes($leave->reason);
+			$leave->notesforHR = stripslashes($leave->notesforHR);
 			if($leave->leaveType==4){
 				$this->staffM->createOffsetpdf($leave);
 			}else{
@@ -1869,6 +1874,12 @@ class Staff extends MY_Controller {
 					$data['content'] = 'staffleavesedit';				
 									
 					$data['row'] = $this->dbmodel->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, startDate, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+
+					//check if we have leave
+					if( empty($data['row']->leaveID) ){
+						show_404();
+						exit();
+					}
 					
 					$data['leaveHistory'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5 AND (leaveStart LIKE "'.date('Y-m-').'%" OR leaveEnd LIKE "'.date('Y-m-').'%")');
 					$data['dir_leave'] = UPLOADS.'leaves/';		
@@ -2405,10 +2416,10 @@ class Staff extends MY_Controller {
 				
 				$insCIS = array(
 							'empID_fk' => $id,
-							'datefiled' => date('Y-m-d H:i:s'),
+							'datefiled' => 'NOW()',
 							'effectivedate' => date('Y-m-d', strtotime($_POST['effectiveDate'])),
-							'changes' => mysql_real_escape_string(json_encode($updatetext)),
-							'dbchanges' => mysql_real_escape_string(json_encode($updateArr)),
+							'changes' => json_encode($updatetext),
+							'dbchanges' => json_encode($updateArr),
 							'preparedby' => $this->user->empID
 						);
 				
@@ -2538,6 +2549,9 @@ class Staff extends MY_Controller {
 		
 		$row = $this->dbmodel->getSingleInfo('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=preparedby AND preparedby!=0) AS prepby, supervisor', 'cisID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		
+		$row->changes = stripslashes($row->changes);
+		$row->dbchanges = stripslashes($row->dbchanges);
+		//$this->textM->aaa($row);
 		if(count($row)>0){
 			$isupname = '';
 			$nsupname = '';
@@ -2610,7 +2624,7 @@ class Staff extends MY_Controller {
 				$data['row'] = $this->user;
 				$data['prevRequests'] = $this->dbmodel->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
-					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>mysql_real_escape_string($_POST['notesforHR']), 'daterequested'=>date('Y-m-d H:i:s')));
+					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>$_POST['notesforHR'], 'daterequested'=>date('Y-m-d H:i:s')));
 					$this->commonM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
@@ -3745,12 +3759,12 @@ class Staff extends MY_Controller {
 			$_POST['dateSubmitted'] = date('Y-m-d H:i:s');
 			$_POST['empID_fk'] = $this->user->empID;
 			$_POST['when'] = date('Y-m-d', strtotime($_POST['when']));
-			$_POST['what'] = mysql_real_escape_string($_POST['what']);
-			$_POST['whatISaction'] = mysql_real_escape_string($_POST['whatISaction']);
-			$_POST['proof'] = mysql_real_escape_string($_POST['proof']);
-			$_POST['otherdetails'] = mysql_real_escape_string($_POST['otherdetails']);
+			$_POST['what'] = $_POST['what'];
+			$_POST['whatISaction'] = $_POST['whatISaction'];
+			$_POST['proof'] = $_POST['proof'];
+			$_POST['otherdetails'] = $_POST['otherdetails'];
 			$_POST['whatViolation'] = implode(',', $_POST['whatViolation']);
-			$_POST['whyExcludeIS'] = mysql_real_escape_string($_POST['whyExcludeIS']);
+			$_POST['whyExcludeIS'] = $_POST['whyExcludeIS'];
 			unset($_POST['donotccIS']);
 			
 			if(isset($_POST['submitanonymous'])){
@@ -3813,7 +3827,7 @@ class Staff extends MY_Controller {
 			if(!empty($_POST)){
 				if($_POST['submitType']=='changeStatus'){
 					$insArr['status'] = $_POST['status'];
-					$insArr['statusNote'] = mysql_real_escape_string($_POST['statusNote']);
+					$insArr['statusNote'] = $_POST['statusNote'];
 					$insArr['staffReportViolation_fk'] = $id;
 					$insArr['updatedBy'] = $this->user->username;
 					$insArr['dateUpdated'] = date('Y-m-d H:i:s');

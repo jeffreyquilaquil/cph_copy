@@ -610,7 +610,13 @@ class Timecardmodel extends CI_Model {
 			///INSERTION
 			$insArr['slogDate'] = $today;
 			$insArr['empID_fk'] = $empID;
-			if(isset($sArr['leaveID'])) $insArr['leaveID_fk'] = $sArr['leaveID'];
+			if(isset($sArr['leaveID'])){
+				if( is_array($sArr['leaveID']) ){
+					$insArr['leaveID_fk'] = $sArr['leaveID'][0];		
+				} else {
+					$insArr['leaveID_fk'] = $sArr['leaveID'];		
+				}
+			} 
 				
 			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'" AND showStatus=1'); //check if not exist insert if not	
 			if(is_numeric($logID)){
