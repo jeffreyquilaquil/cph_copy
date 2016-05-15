@@ -244,15 +244,10 @@
             }
 
             public function custom_answer_solution(){
-            	$newstat = 0;
-            	$reply = $this->input->post('reply');
-            	$dclr = $this->input->post('stat');
 
-            	if(!empty($dclr) && isset($dclr) == 'close'){// if the HR solve the incident the status will change in 4
-			         $newstat = 4;
-			    }else if(!empty($dclr) && isset($dclr) == 'resolved'){// if the HR solve the incident the status will change in 3
-			         $newstat = 3;
-			    } 
+            	$reply = $this->input->post('reply');
+
+            	$newstat = $this->input->post('stat'); // reply on new and active tab is either resolve or close
             	 
             	if($reply == 'new'){ 
 
@@ -318,6 +313,7 @@
 
             		$data2['content']='hr_helpdesk';
 	  				$this->load->view('includes/template',$data2);
+
 
             }
 

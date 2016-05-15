@@ -353,10 +353,10 @@ var message = '';
 		var status ='';
 
 		if($( "#resolution_options option:selected" ).val() == 'Resolved'){
-	    	var	status = 'resolved';
+	    	var	status = 3;
 	    		
 	    }else if($( "#resolution_options option:selected" ).val() == 'Closed'){
-	    	var status = 'close';
+	    	var status = 4;
 	    		
 	    }
 

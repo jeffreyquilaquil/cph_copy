@@ -29,7 +29,14 @@
 	  	</thead>
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
-	      		<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp" class="iframe"><?php echo $rep->cs_post_id; ?></a></td>
+
+	  		<?php if($rep->cs_post_status == 3 || $rep->cs_post_status == 4){ ?>
+
+	      		<td><?php echo $rep->cs_post_id; ?></td>
+	      		<?php } else{ ?>
+	      			<td><a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp" class="iframe"><?php echo $rep->cs_post_id; ?></a></td>
+	      		<?php } ?>
+
 	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
 	      		<td>
