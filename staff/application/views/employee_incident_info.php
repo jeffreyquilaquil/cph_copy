@@ -49,9 +49,9 @@
 		      		}elseif($rep->cs_post_status == 2){
 		      			echo "Hold";
 		      		}elseif($rep->cs_post_status == 3){
-		      			echo "Resolve";
+		      			echo "Resolved";
 		      		}elseif($rep->cs_post_status == 4){
-		      			echo "Closed";
+		      			echo "Cancelled";
 		      		}
 
 		      		?>
