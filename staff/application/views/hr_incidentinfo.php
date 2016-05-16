@@ -212,7 +212,7 @@
 			<h2><b>Add A Reply</b></h2>
 			Resolution Options:
 				<select id="resolution_options" style="width: 500px">
-					<option></option>
+					<option>Reply</option>
 					<option>Answered my question, thanks to HR (Resolved)</option>
 					<option>Found the answer of my question on my own (Close)</option>
 				</select>
@@ -294,7 +294,7 @@ var message = '';
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
 				tinyMCE.activeEditor.setContent(found);
-				
+				 
 	    }
 	    else if($( "#resolution_options" ).val() == 'Send custom response') {
 	    		tinyMCE.activeEditor.setContent(custom);
