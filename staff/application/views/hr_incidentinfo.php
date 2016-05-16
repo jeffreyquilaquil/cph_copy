@@ -165,9 +165,8 @@
 	</table>
 	<br>
 
-<?php  if($this->user->access == "full" && $this->uri->segment(4) != 'resolved' && $this->uri->segment(4) != 'cinc') { ?>
+	<?php if($this->user->access == "full" && ($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
 			
-		
 	<ul class="tabs">
 		<li class="dbold tab-link" id="new_tab" data-tab="tab-1">Note</li>
 		<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Reply</li>
@@ -188,7 +187,7 @@
 	<div id="tab-2" class="tab-content"> 
 		<h2>Add A Reply</h2>
 		Resolution Options:
-			<select id="resolution_options">
+			<select id="resolution_options" style="width: 500px">
 				<option></option>
 				<option>The answer can be found in employee.tatepublishing.net</option>
 				<option>Send custom response</option>
@@ -197,14 +196,61 @@
 				<option>Resolved</option>
 				<option>Closed</option>
 			</select>
-		<br><br>
+			<br><br>
+			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea>
+			<br>
+			<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
+			<br>
+		<?php }elseif($this->user->access == "full" && ($this->uri->segment(4) == 'resolved' || $this->uri->segment(4) == 'cinc')){?>
+			
+			<h2><b>Add a message to re-open this incident</b></h2>
+			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
+			<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>
+			
+		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'open'){?>
+
+			<h2><b>Add A Reply</b></h2>
+			Resolution Options:
+				<select id="resolution_options" style="width: 500px">
+					<option></option>
+					<option>Answered my question, thanks to HR (Resolved)</option>
+					<option>Found the answer of my question on my own (Close)</option>
+				</select>
+				<br><br>
+				<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea>
+				<br>
+				<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
+				<br>
+
+		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'resolved'){?>
+			
+			<h2><b>Help us in HR support you better.</b><br>Let us know how satisfied were you with the resolution of incident <b><?php echo $value->cs_post_id; ?></b></h2>
+			<input id="lbl_vs" type="radio" name="radio_survey">
+			<label for="lbl_vs">Very satisfied</label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_s" type="radio" name="radio_survey">
+			<label for="lbl_s">Satisfied</label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_ds" type="radio" name="radio_survey">
+			<label for="lbl_ds">Dissatisfied</label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_vds" type="radio" name="radio_survey">
+			<label for="lbl_vds">Very Dissatisfied</label> &nbsp;&nbsp;&nbsp;
+			<input type="submit" class="btngreen" name="" value="Submit">
+			<br><br>
+			<a id="reopen_incident">Re-open this incident?</a>
+			<br>
+			<div id="reopen_incident_form">
+				<hr>
+				<h2><b>Add a message to re-open this incident</b></h2>
+				<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
+				<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>	
+			</div>	
+			
+		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'closed'){?>	
+		
+				<h2><b>Add a message to re-open this incident</b></h2>
+				<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
+				<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>	
 
 		<?php } ?>
-
-			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-
-		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;"><br>
-	
 		
 	</div>
 </div>
@@ -232,6 +278,8 @@ var message = '';
 				$(this).text('Hide Category');
 			}
 	});
+
+
 
 	// ===== RESOLUTION OPTIONS ===== 
 	var full_name = $("#fullname").val();
@@ -265,7 +313,14 @@ var message = '';
 	    }else if($( "#resolution_options" ).val() == 'Closed'){
 	    		tinyMCE.activeEditor.setContent(closed);
 	    		
+	    }else if($( "#resolution_options" ).val() == 'Answered my question, thanks to HR (Resolved)'){
+	    		tinyMCE.activeEditor.setContent("");
+	    		
+	    }else if($( "#resolution_options" ).val() == 'Found the answer of my question on my own (Closed)'){
+	    		tinyMCE.activeEditor.setContent("");
+	    		
 	    }
+
 	    else if($( "#resolution_options" ).val() == ''){
 
 	    		tinyMCE.activeEditor.setContent("");
@@ -432,6 +487,10 @@ var message = '';
 				return false;
 		});
 
+	$('#reopen_incident_form').hide();
+	$('#reopen_incident').click(function(){
+		$('#reopen_incident_form').toggle();
+	});
 			
 });
 

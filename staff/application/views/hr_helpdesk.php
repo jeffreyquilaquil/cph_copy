@@ -9,7 +9,7 @@ if($this->user->access != "full"){
 	th{
 	 	background-color: #CCCCCC;
 	 }
-	 td{
+	 .datatable td{
 	 	text-align: center;
 	 }
 
@@ -34,6 +34,36 @@ if($this->user->access != "full"){
 		font-weight: bold;
 	}
 
+	ul.settings_tabs{
+			margin: 0px;
+			padding: 0px;
+			list-style: none;
+
+	}
+	ul.settings_tabs li{
+		background-color: #CCCCCC;
+		color: black;
+		display: inline-block;
+		padding: 8px 20px 8px 20px;	
+		font-weight: bold;
+		cursor: pointer;
+	}
+
+	ul.settings_tabs li.curr{
+		background-color: #FFFFFF;
+		border: solid 1.5px #ddd;
+		
+	}
+
+	.tab-cont{
+		display: none;
+		padding: 15px 0px 15px 0px;
+	}
+
+	.tab-cont.curr{
+		display: inherit;
+	}
+
 </style>
 
 <h2>HR HelpDesk</h2>
@@ -41,7 +71,7 @@ if($this->user->access != "full"){
 	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
 	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
-	<li class="dbold tab-link" data-tab="tab-4">Cancelled</li>
+	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
 
 	<div class=" dbold options-right">
 		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR Customer CSatResults</a>
@@ -73,7 +103,11 @@ if($this->user->access != "full"){
 
 	  		<tr>
 	      		<td class="td_hover">
-                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>/new" class="iframe" data-balloon-length="large" data-balloon="<?php echo strip_tags($value->cs_msg_text) ?>" data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
+                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>/new" 
+                    		class="iframe" 
+                    		data-balloon-length="large" 
+                    		data-balloon="<?php if($value->cs_msg_text==''){echo "No message";}else{echo strip_tags($value->cs_msg_text);} ?>" 
+                    		data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
@@ -85,18 +119,9 @@ if($this->user->access != "full"){
 	    
 	</table>
 
-      <br>
+     
 
-      <h2>SETTINGS</h2>
-
-      <br>
-	
-	<div class=" dbold settings-bottom">
-		<a class="other_links" href="#"><b>Add Categories</b></a>
-		<a class="other_links" href="#"><b>Edit HR User Permissions</b></a>
-		<a class="other_links" href="#"><b>Edit Message Templates</b></a>
-		<a class="other_links" href="#"><b>Add a Redirection Department</b></a>
-	</div>    	
+      
 </div>
 
 <!-- ===== ACTIVE TAB ===== -->
@@ -129,15 +154,8 @@ if($this->user->access != "full"){
 			<?php } ?>     
 	</table>
 
-      <br>
 
-      <h2>SETTINGS</h2><br>
-	
-	<div class=" dbold settings-bottom">
-		<a class="other_links" href="#">Add Categories</a>
-  		<a class="other_links" href="#">Edit HR User Permissions</a>
-  		<a class="other_links" href="#">Edit Message Templates</a>
-	</div> 
+	 
 </div>
 
 <!-- ===== RESOLVE TAB ===== -->
@@ -169,8 +187,6 @@ if($this->user->access != "full"){
 				</tr>
 			<?php } ?>     
 	</table>
-
-      <br>
 
 </div>
 <!--===== CANCELLED TAB ===== -->
@@ -204,29 +220,93 @@ if($this->user->access != "full"){
 			<?php } ?>     
 	</table>
 
-      <br>
-
-
-
 </div>
+
+<h2>SETTINGS</h2>
+
+	<ul class="settings_tabs">
+		<li class="tab-link current" dt-tab="tb-1">Add Categories</li>
+		<li class="tab-link" dt-tab="tb-2">Edit HR User Permissions</li>
+		<li class="tab-link" dt-tab="tb-3">Edit Message Templates</li>
+		<li class="tab-link" dt-tab="tb-4">Add a Redirection Department</li>
+	</ul>
+
+	<div id="tb-1" class="tab-cont">
+	    <label for="lbl_category_name">Enter category name: </label>
+	    <input id="lbl_category_name" type="text" name="" value="" placeholder="">
+    	<input class="btngreen" type="submit" name="" value="Submit">
+    </div>
+
+    <div id="tb-2" class="tab-cont">
+   
+    </div>
+
+    <div id="tb-3" class="tab-cont">
+     
+    </div>
+
+    <div id="tb-4" class="tab-cont">
+   		<table class="tableInfo">
+   			<tr>
+   				<td colspan="2"><h2>Add a Redirection Department</h2></td>
+   			</tr>
+   			<tr>
+   				<td colspan="2">
+   					<label for="lbl_new_dept_name">Name of the department/team customers can be redirected to:</label>
+   					<br>
+   					<input type="text" id="lbl_new_dept_name" name="" value="" placeholder="" style="width: 100%">
+   				</td>
+   			</tr>
+   			<tr>
+   				<td colspan="2">
+   					<label for="lbl_new_dept_emailadd">What is the email address/es that the employees can contact?</label>
+			   		<br>
+			   		<input type="text" id="lbl_new_dept_emailadd" name="" value="" placeholder="" style="width: 100%">
+   				</td>
+   			</tr>
+   			<tr>
+   				<td align="left"><a id="see_all_dept" style="text-decoration: underline">See All Redirection Departments</a></td>
+   				<td align="right"><input type="submit" class="btngreen" name="" value="Submit"></td>	
+   			</tr>
+   		</table>
+   		<div id="see_all_dept_form">
+   			<table class="datatable" width="100%">
+   				<h2>All Redirection Departments</h2>
+   				<thead>	
+	   				<tr>
+	   					<td>Department Name</td>
+	   					<td>Email Address</td>
+	   					<td>Edit</td>
+	   					<td>Delete</td>
+	   				</tr>
+   				</thead>
+   					<tr>
+   						<td></td>
+   						<td></td>
+   						<td></td>
+   						<td></td>
+   					</tr>
+   			</table>
+   		</div>
+    </div>
 
 <script type="text/javascript">
 	
 $(document).ready(function(){
 
-	$("#active_hide").show();
+	$('#see_all_dept_form').hide();
+	$('#see_all_dept').click(function(){
 
-	// ===== SHOW FOUND ANSWER FORM =====
-	$("#active_tab").click(function(){
+		$('#see_all_dept_form').slideToggle();
 
-	$("#active_hide").hide();
+			if ($.trim($(this).text()) === 'Hide See All Redirection Departments') {
+				
+				$(this).text('See All Redirection Departments');
+			}
 
-	});
-
-	$("#new_tab").click(function(){
-
-	$("#active_hide").show();
-
+			else{
+				$(this).text('Hide See All Redirection Departments');
+			}
 	});
 
 });

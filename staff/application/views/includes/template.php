@@ -132,7 +132,20 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 
 			$(this).addClass('current');
 			$("#"+tab_id).addClass('current');
-		});			
+
+		});	
+
+		$('ul.settings_tabs li').click(function(){
+			var tb_id = $(this).attr('dt-tab');
+
+			$('ul.settings_tabs li').removeClass('curr');
+			$('.tab-cont').removeClass('curr');
+
+			$(this).addClass('curr');
+			$("#"+tb_id).addClass('curr');
+		})
+
+	
 	});	
 
 	function displaypleasewait(){
