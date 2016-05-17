@@ -2416,7 +2416,7 @@ class Staff extends MY_Controller {
 				
 				$insCIS = array(
 							'empID_fk' => $id,
-							'datefiled' => 'NOW()',
+							'datefiled' => date('Y-m-d H:i:s'),
 							'effectivedate' => date('Y-m-d', strtotime($_POST['effectiveDate'])),
 							'changes' => json_encode($updatetext),
 							'dbchanges' => json_encode($updateArr),
@@ -2581,6 +2581,7 @@ class Staff extends MY_Controller {
 				$data['pending'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['approved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
 				$data['done'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=3', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['disapproved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=2', 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		
