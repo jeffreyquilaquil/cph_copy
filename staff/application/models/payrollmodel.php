@@ -1590,13 +1590,21 @@ class Payrollmodel extends CI_Model {
 			$n37 = $payInfo->add13th;
 			if($data['is_active'])
 				$n37 = $total13th;
+
+			$totalDeminimis = 0;
+			foreach ($val->allowances as $keey => $value) {
+				$allowanceArray = $this->textM->constantArr('allowances');
+				if(in_array($keey, $allowanceArray)){
+					$totalDeminimis += $value;
+				}
+			}
 			
-			$tnt = $this->textM->convertNumFormat($n37+$totalAllowance+$spp);
+			$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp);
 
 			
 			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $this->formatNum($totalIncome) );
 			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $this->formatNum($total13th) );
-			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $this->formatNum($totalAllowance) );
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $this->formatNum($totalDeminimis) );
 			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $this->formatNum($spp) );
 			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, '' );
 			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $this->formatNum($tnt) );
