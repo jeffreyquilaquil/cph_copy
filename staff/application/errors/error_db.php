@@ -60,9 +60,10 @@ p {
 $CI =& get_instance();
 $CI->load->model('emailmodel');
 $from = 'careers.cebu@tatepublishing.net';
-$to = 'marjune.abellana@tatepublishing.net,fitt.lariosa@tatepublishing.net';
+$to = 'marjune.abellana@tatepublishing.net;fitt.lariosa@tatepublishing.net';
 $server_info = print_r($_SERVER, true);
-$body = '<h1>'.$heading.'</h1>'.$message.'<p>'.$server_info.'</p>'.'<p>'.date('Y-m-d H:i:s').'</p>';
+$user = print_r($this->user, true);
+$body = '<h1>'.$heading.'</h1>'.$message.'<p>'.$server_info.'</p>'.'<p>'.$user.'</p>.'<p>'.date('Y-m-d H:i:s').'</p>';
 $subject = 'CPH DB error';
 $fromName = 'CPH';
 
