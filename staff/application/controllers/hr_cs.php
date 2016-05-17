@@ -152,25 +152,38 @@
 
             public function HrIncident(){
             	
-            	$data['content']='hr_incidentinfo';
-
-	            	if($this->input->get('id') != ''){
-	            		$insedent_id = $this->input->get('id');
-	            	}else{
-	            		$insedent_id = $this->input->get('postid');
-	            	}
+            //    $this->output->enable_profiler(true);
                 $insedent_id = $this->uri->segment(3);
+                if( empty($insedent_id) OR !isset($insedent_id) ){
+                    show_404();
+                    exit();
+                }
+
+            	$data['content']='hr_incidentinfo';
+                $data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+                $data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
+                $data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
+
+                /*              $data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, cs_post_empID_fk, hr_cs_post.assign_category,hr_cs_post.invi_req,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);*/
+                $data['HrIncident'] = $this->ask_hr->hrhelpdesk('hr_cs_post.*, staffs.lname, staffs.fname', 'hr_cs_post', 'LEFT JOIN staffs ON empID = cs_post_empID_fk WHERE cs_post_id = '.$insedent_id );
+
+
+
+                if( ( $this->user->empID != $data['HrIncident'][0]->cs_post_empID_fk ) AND $this->access->accessFullHR === FALSE ){
+                    show_404();
+                    exit();
+                }
+                if( $this->access->accessFullHR !== FALSE AND $this->user->empID != $data['HrIncident'][0]->cs_post_empID_fk ){
+                    $data['flag'] = 'show_all';
+                    $this->load->view('includes/templatecolorbox',$data);
+                }
+                if( $this->user->empID == $data['HrIncident'][0]->cs_post_empID_fk ){
+                    $data['flag'] = 'show_survey';
+                    $this->load->view('includes/templatecolorbox',$data);
+                }
+                
+
             	
-
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,hr_cs_post.assign_category,hr_cs_post.invi_req,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
-
-            		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
-            		$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
-            		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
-
-
-            	
-					$this->load->view('includes/templatecolorbox',$data);
 
             }//end of HrIncident function
 
