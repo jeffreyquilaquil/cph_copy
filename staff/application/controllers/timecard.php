@@ -1216,6 +1216,7 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_payslipdetail';	
 		$data['tpage'] = 'payslips';
 		
+		$this->output->enable_profiler(true);
 		if($this->user!=false){				
 			$empID = $this->uri->segment(2);
 			if(!is_numeric($empID)){
@@ -1628,10 +1629,11 @@ class Timecard extends MY_Controller {
 						}
 						//$this->textM->aaa($data['dataQuery']);						
 						foreach( $data['dataQuery'] as $key => $val ){
-							$datum = $this->payrollM->getPayslipOnTimeRange($val->empID, $from_, $to_);
+							$datum = $this->payrollM->getPayslipOnTimeRange($val->empID, $from_, $to_, TRUE);
 							$data['dataQuery'][$key]->dateArr = $datum['dateArr'];
 							$data['dataQuery'][$key]->dataMonth = $datum['dataMonth'];
 							$data['dataQuery'][$key]->dataMonthItems = $datum['dataMonthItems'];
+							$data['dataQuery'][$key]->allowances = $datum['allowances'];
 						}
 
 						//$this->textM->aaa($data);
@@ -1642,7 +1644,7 @@ class Timecard extends MY_Controller {
 				}
 			}
 		}
-		$this->output->enable_profiler(true);
+		//$this->output->enable_profiler(true);
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
