@@ -233,8 +233,8 @@ if($this->user->access != "full"){
 
 	<div id="tb-1" class="tab-cont">
 	    <label for="lbl_category_name">Enter category name: </label>
-	    <input id="lbl_category_name" type="text" name="" value="" placeholder="">
-    	<input class="btngreen" type="submit" name="" value="Submit">
+	    <input id="category_name_txt" type="text" name="" value="" placeholder="">
+    	<input class="btngreen" type="submit" id="add_categ_btn" name="" value="Submit">
     </div>
 
     <div id="tb-2" class="tab-cont">
@@ -306,6 +306,32 @@ $(document).ready(function(){
 
 			else{
 				$(this).text('Hide See All Redirection Departments');
+			}
+	});
+
+	// ====== INSERT NEW CATEGORY =====
+	$("#add_categ_btn").click(function() {
+
+		var category = $("#category_name_txt").val();
+
+		var datacategorys = 'category_name='+ category;
+		
+		if (category == '') {
+			alert("Insert new category!");
+		} else {
+
+			// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
+				data: datacategorys,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                     close();
+					}
+				});
 			}
 	});
 

@@ -40,6 +40,15 @@ class Ask_hr extends CI_Model {
 		return $v;
 	}
 
+	function Check($field, $table, $where){ // method for checking of the data is excess
+		$query = $this->db->query("SELECT ".$field." FROM ".$table." ".$where);
+		$val = $query->result();
+		if($val != null){
+			return true;
+		}
+		
+	}
+
      function hrhelpdesk($fields, $table, $join='', $orderby=''){ // query with join
      	$arr = array();
 		if($orderby!='') $orderby = 'ORDER BY '.$orderby. ' ASC';

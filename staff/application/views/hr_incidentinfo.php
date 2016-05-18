@@ -50,6 +50,9 @@
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
+<input type="hidden" id="inci_datesubmited" value="<?php echo $value->cs_post_date_submitted; ?>">
+<input type="hidden" id="inci_lastupdate" value="<?php echo $value->last_update; ?>">
+<input type="hidden" id="cs_post_empID_fk" value="<?php echo $value->cs_post_empID_fk; ?>">
 <form id="custom_ans_form">
 	<table class="tableInfo">
 		<tr>
@@ -87,7 +90,7 @@
 			</select>
 			
 			&nbsp;
-
+			<!--
 			<a id="add_category">Add Category</a>
 			
 			<div id="show_add_category">
@@ -103,6 +106,7 @@
 					<input id="submit" type="submit" value="Add">
 				</form>	
 			</div>
+			-->
 			</td>
 		</tr>
 		<tr>
@@ -137,7 +141,7 @@
 				</tr>
 			<?php } ?>  
 
-		<?php foreach ($conversation as $key => $conve){if ($this->user->access == "full" && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 || $conve->cs_msg_type == 0) { ?>
+		<?php foreach ($conversation as $key => $conve){if ($this->uri->segment(4) != 'emp' && $conve->cs_msg_type == 2 || $conve->cs_msg_type == 1 || $conve->cs_msg_type == 0) { ?>
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
@@ -149,7 +153,7 @@
 				</div>
 			</td>
 		</tr>
-		<?php } elseif($conve->cs_msg_type == 1 && $conve->cs_msg_type == 0 && $this->user->access != "full"){ ?>
+		<?php } elseif($conve->cs_msg_type == 1 && $conve->cs_msg_type == 0 && $this->uri->segment(4) == 'emp'){ ?>
 		<tr>
 			<td colspan="2">
 				<div class="conversation">
@@ -205,9 +209,9 @@
 			
 			<h2><b>Add a message to re-open this incident</b></h2>
 			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-			<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>
+			<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>
 			
-		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'open'){?>
+		<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'open'){?>
 
 			<h2><b>Add A Reply</b></h2>
 			Resolution Options:
@@ -222,33 +226,44 @@
 				<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
 				<br>
 
-		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'resolved'){?>
-			
+		<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'resolved'){
+
+
+			// Remarks form condition
+			if($check_remark !=0 )foreach ($check_remark as $rem => $remark){}
+	
+			if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
+					
 			<h2><b>Help us in HR support you better.</b><br>Let us know how satisfied were you with the resolution of incident <b><?php echo $value->cs_post_id; ?></b></h2>
-			<input id="lbl_vs" type="radio" name="radio_survey">
+			<input id="lbl_vs" type="radio" name="radio_survey" value="Very satisfied">
 			<label for="lbl_vs">Very satisfied</label> &nbsp;&nbsp;&nbsp;
-			<input id="lbl_s" type="radio" name="radio_survey">
+			<input id="lbl_s" type="radio" name="radio_survey" value="Satisfied">
 			<label for="lbl_s">Satisfied</label> &nbsp;&nbsp;&nbsp;
-			<input id="lbl_ds" type="radio" name="radio_survey">
+			<input id="lbl_ds" type="radio" name="radio_survey" value="Dissatisfied">
 			<label for="lbl_ds">Dissatisfied</label> &nbsp;&nbsp;&nbsp;
-			<input id="lbl_vds" type="radio" name="radio_survey">
+			<input id="lbl_vds" type="radio" name="radio_survey" value="Very Dissatisfied">
 			<label for="lbl_vds">Very Dissatisfied</label> &nbsp;&nbsp;&nbsp;
-			<input type="submit" class="btngreen" name="" value="Submit">
+			<input type="submit" class="btngreen" id="remarkbtn" name="" value="Submit">
+			
+			<br>
+			
+			<?php } ?>
 			<br><br>
 			<a id="reopen_incident">Re-open this incident?</a>
-			<br>
 			<div id="reopen_incident_form">
 				<hr>
 				<h2><b>Add a message to re-open this incident</b></h2>
 				<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-				<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>	
+				<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	
 			</div>	
 			
-		<?php } elseif($this->user->access != "full" && $this->uri->segment(5) == 'closed'){?>	
+		
+			
+		<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'closed'){?>	
 		
 				<h2><b>Add a message to re-open this incident</b></h2>
 				<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-				<input type="submit" id="submit_reply" class="btngreen" value="Send" style="float:right;"><br>	
+				<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	
 
 		<?php } ?>
 		
@@ -314,10 +329,10 @@ var message = '';
 	    		tinyMCE.activeEditor.setContent(closed);
 	    		
 	    }else if($( "#resolution_options" ).val() == 'Answered my question, thanks to HR (Resolved)'){
-	    		tinyMCE.activeEditor.setContent("");
+	    		tinyMCE.activeEditor.setContent("Resolved");
 	    		
-	    }else if($( "#resolution_options" ).val() == 'Found the answer of my question on my own (Closed)'){
-	    		tinyMCE.activeEditor.setContent("");
+	    }else if($( "#resolution_options" ).val() == 'Found the answer of my question on my own (Close)'){
+	    		tinyMCE.activeEditor.setContent("close");
 	    		
 	    }
 
@@ -338,33 +353,6 @@ var message = '';
 	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
 	});	
 
-
-// ====== INSERT NEW CATEGORY =====
-	$("#submit").click(function() {
-
-		var category = $("#newcategory").val();
-
-		var datacategorys = 'category_name='+ category;
-		
-		if (category == '') {
-			alert("Insert new category!");
-		} else {
-
-			// ===== AJAX CODE TO SUBMIT FORM =====
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
-				data: datacategorys,
-				cache: false,
-					success: function(result){
-					alert("Success!");
-					$('#form')[0].reset(); // ===== TO RESET FORM FIELDS =====
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrIncident";
-                     close();
-					}
-				});
-			}
-	});
 
 	// ====== SUBMIT NOTE  =====
 	$("#note_submit").click(function() {
@@ -391,8 +379,74 @@ var message = '';
 				cache: false,
 					success: function(result){
 					alert("Success!");
-					$('#note_form')[0].reset(); // ===== TO RESET FORM FIELDS =====
+					
 					window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                    close();
+				}
+			});
+		}
+		return false;
+	});
+
+	// ====== SUBMIT SURVEY  =====
+	$("#remarkbtn").click(function() {
+
+			var postempID = $("#cs_post_empID_fk").val();
+			var datesub = $("#inci_datesubmited").val();
+			var lastup =$("#inci_lastupdate").val();
+			var ins_id = $("#categoryid").val();
+			var remark = $('input[name="radio_survey"]:checked').val();
+
+			var dataString = 'insedentid='+ ins_id + '&remark='+ remark + '&date_submit='+ datesub + '&last_update='+ lastup + '&post_emp_id='+ postempID;
+
+		
+		if (remark == '') {
+
+				alert("Some Field is Empty!");
+			}else{
+
+			// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/remark",
+				data: dataString,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID; ?>";
+                    close();
+				}
+			});
+		}
+		return false;
+	});
+
+	// ====== RE-OPEN THE INCIDENT  =====
+	$("#submit_reply_reopen").click(function() {
+
+		
+			var custom_ans = tinyMCE.get('custom_msg').getContent();
+			var hr_sname = $("#hr_username").val();
+			var ins_id = $("#categoryid").val();
+			var status = 0;
+			var surv_stat = 1;
+
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&survstatus=' + surv_stat + '&stat=' + status;
+
+		if (custom_ans == '') {
+
+				alert("Some Field is Empty!");
+			}else{
+
+			// ===== AJAX CODE TO SUBMIT FORM =====
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/remark_update",
+				data: dataString,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID; ?>";
                     close();
 				}
 			});
@@ -407,12 +461,21 @@ var message = '';
 		var tab_typ = $('#tab_type').val();
 		var status ='';
 
-		if($( "#resolution_options option:selected" ).val() == 'Resolved'){
+		// ichange status of the incident 
+		if($("#resolution_options option:selected" ).val() == 'Resolved'){
 	    	var	status = 3;
 	    		
 	    }else if($( "#resolution_options option:selected" ).val() == 'Closed'){
 	    	var status = 4;
 	    		
+	    }else if($("#resolution_options option:selected" ).val() == 'Answered my question, thanks to HR (Resolved)'){
+	    	var status = 3;
+	    		
+	    }else if($("#resolution_options option:selected" ).val() == 'Found the answer of my question on my own (Close)'){
+	    	var status = 4;
+	    		
+	    }else{
+	    	var status = 0;
 	    }
 
 		if (tab_typ == 'new') {
@@ -425,29 +488,13 @@ var message = '';
 
 			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
 			
-		}else if(tab_typ == 'active'){
+		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 
 			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ + '&stat=' + status;
 			
-		}else if(tab_typ == 'emp'){
-			var custom_ans = tinyMCE.get('custom_msg').getContent();
-			var hr_sname = $("#hr_username").val();
-			var ins_id = $("#categoryid").val();
-
-			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
-
-		
-		}else if(tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
-			var custom_ans = tinyMCE.get('custom_msg').getContent();
-			var hr_sname = $("#hr_username").val();
-			var ins_id = $("#categoryid").val();
-
-			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ;
-
-		
 		}
 			if (custom_ans == '') {
 

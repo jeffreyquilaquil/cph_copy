@@ -154,21 +154,23 @@
             	
             	$data['content']='hr_incidentinfo';
 
-	            	if($this->input->get('id') != ''){
-	            		$insedent_id = $this->input->get('id');
-	            	}else{
-	            		$insedent_id = $this->input->get('postid');
-	            	}
                 $insedent_id = $this->uri->segment(3);
             	
 
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,hr_cs_post.assign_category,hr_cs_post.invi_req,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
+            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,hr_cs_post.cs_post_empID_fk,hr_cs_post.assign_category,hr_cs_post.invi_req,staffs.fname,staffs.lname,hr_cs_post.cs_post_date_submitted,hr_cs_post.cs_post_subject,hr_cs_post.cs_post_urgency,hr_cs_msg.cs_msg_text,MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id AND hr_cs_post.cs_post_id ='.$insedent_id);
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
             		$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
             		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 
+            		$checkRemark = $this->ask_hr->getdata('*','incident_rating','post_id = '.$insedent_id);
 
+            		if($checkRemark != null){
+            			$return = $checkRemark;
+            		}else{
+            			$return = 0;
+            		}
+            		$data['check_remark'] = $return;
             	
 					$this->load->view('includes/templatecolorbox',$data);
 
@@ -305,9 +307,9 @@
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-		            		$stat = 0;
+		            		
 		            	
-							$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $stat .'"','cs_post_id = '.$id);
+							$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'"','cs_post_id = '.$id);
 						}  
 
 
@@ -345,6 +347,9 @@
 
             function hr_custom_satisfaction(){
             	$data['content']='hr_cust_satisfaction_survey';
+
+            	$data['Remark_incident']=$this->ask_hr->hrhelpdesk('incident_rating.post_id, staffs.fname, staffs.lname, date_submited, last_update, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_post.hr_own_empUSER, remark','incident_rating','INNER JOIN staffs ON staffs.empID = incident_rating.post_EmpID INNER JOIN hr_cs_post ON hr_cs_post.cs_post_id = incident_rating.post_id WHERE remark_status = 0');
+
 	  			$this->load->view('includes/template',$data);
 
             }
@@ -401,7 +406,7 @@
             	$this->load->view('includes/templatecolorbox',$data);		
 
             }
-            function emp_cancel()
+            function emp_cancel() // method of employee cancel the incident
             {
             	$id = $this->input->post('msg_id');
 
@@ -418,6 +423,49 @@
 
             }
 
+            function remark(){ // give survy
+            	$id = $this->input->post('insedentid');
+            	$ret = $this->ask_hr->Check('post_id','incident_rating','WHERE post_id = '.$id);
+            	if($ret != true){
+
+            		$data['post_id'] = $id;
+	            	$data['post_EmpID'] = $this->input->post('post_emp_id');
+	            	$data['date_submited'] = $this->input->post('date_submit');
+	            	$data['last_update'] = $this->input->post('last_update');
+	            	$data['remark'] = $this->input->post('remark');
+
+	            	$this->ask_hr->askhr('incident_rating',$data);
+
+            	}else{
+
+            		$this->ask_hr->updatestatus('incident_rating','remark_status = 0','post_id = '.$id);
+
+            	}
+
+            }
+            function remark_update(){ // update survy
+
+            	$id = $this->input->post('insedentid');
+            	$newstat = $this->input->post('stat');
+            	$datateupdated = date('Y-m-d h:i:sa');
+
+		        $data['cs_msg_postID_fk'] =  $id;
+		        $custommessage=  $this->input->post('custom_answer_msg');
+		        $data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+		        $data['cs_msg_date_submitted'] = $datateupdated;
+		        $data['cs_msg_type'] = 0;
+		        $data['reply_empUser']  = $this->input->post('hr_username');
+		            		
+		        $this->ask_hr->askhr('hr_cs_msg',$data);
+ 	
+				$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'"','cs_post_id = '.$id);
+
+				$stat_update = $this->input->post('survstatus');
+				$date_update = $datateupdated;
+				$this->ask_hr->updatestatus('incident_rating','last_update = "'. $date_update .'",remark_status = "'.$stat_update.'"','post_id = '.$id);
+
+
+            }
             
               
 
