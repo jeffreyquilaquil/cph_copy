@@ -1708,6 +1708,8 @@ class Payrollmodel extends CI_Model {
 		$data['regTaken'] = 0;
 
 		$flag = 0;
+		// echo "<pre>";
+		// var_dump($payArr);
 
 		foreach($dateArr AS $date){
 			$data['payDate'] .= date('d-M-Y', strtotime($date))."\n";
@@ -1722,10 +1724,10 @@ class Payrollmodel extends CI_Model {
 				
 				//add all adjustments
 				//"nightDiff", "overTime", "perfIncentive", "specialPHLHoliday", "regPHLHoliday", "	regUSHoliday", "regHoliday", "regHoursAdded", "nightDiffAdded", "nightDiffSpecialHoliday", "nightDiffRegHoliday"
-				if( !$flag && $payArr[$date]->adjustment > 0 ){
-					$payArr[$date]->adjustment = 0;
-					$flag = 1;
-				}
+				// if( !$flag && $payArr[$date]->adjustment > 0 ){
+				// 	$payArr[$date]->adjustment = 0;
+				// 	$flag = 1;
+				// }
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiff']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiff']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['overTime']))?$dataMonthItems[$payArr[$date]->payslipID]['overTime']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']))?$dataMonthItems[$payArr[$date]->payslipID]['perfIncentive']:0;
