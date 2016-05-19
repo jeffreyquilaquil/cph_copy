@@ -9,6 +9,12 @@
 	 
 </style>
 
+<?php 
+if ($this->user->empID != $this->uri->segment(3)) {
+	header("location: ".$this->config->base_url());
+}
+?>
+
 <div>
 	<h2>HR HelpDesk</h2>
 	<ul class="tabs">
