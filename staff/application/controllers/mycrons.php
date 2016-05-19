@@ -103,6 +103,7 @@ class MyCrons extends MY_Controller {
 
 			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
 			$years = floor($diff / (365*60*60*24));
+			$convertible = $years - 1;
 				
 			if($years>0){
 				$current = 10+$years;
@@ -112,15 +113,17 @@ class MyCrons extends MY_Controller {
 				foreach($quer AS $qq):
 					$used += $qq->leaveCreditsUsed;
 				endforeach;
+				$convertible = $q->leaveCredits - $convertible;
 			
 				if($q->leaveCredits>0){
 					$body = '<p>Hi,</p>
 						<p><i>This is an automated message.</i><br/>
 						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.$current.'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.$current.'. Unused leave credits is '.$q->leaveCredits.'. '.(($convertible > 0 )?'Convertible leave credits: '. $convertible : '').' Please facilitate conversion to cash. Thank you.</p>
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
+						
 					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				}
 				//Unused leave credits is '.$q->leaveCredits.''.(($used>0)?'. Used leave credits is '.$used.'':'').'.</p>
@@ -131,6 +134,7 @@ class MyCrons extends MY_Controller {
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
+						
 				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				
 				
@@ -138,6 +142,7 @@ class MyCrons extends MY_Controller {
 								
 				//$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.(($used==0)?$current:($current-$used).' because you already used '.$used.' leave credits instead of '.$current.' leave credits').'.<br/><br/>We wish you happiness and success now and always.';
 				$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($current).'.<br/><br/>We wish you happiness and success now and always.';
+				
 				$this->commonM->addMyNotif($q->empID, $nnote, 0, 1, 0);
 			}
 		endforeach;
