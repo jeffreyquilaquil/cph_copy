@@ -67,9 +67,10 @@ if($this->user->access != "full"){
 </style>
 
 <h2>HR HelpDesk</h2>
+<!-- hr help desk tabs -->
 <ul class="tabs">
-	<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
-	<li class="dbold tab-link" id="active_tab" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
+	<li class="dbold tab-link current" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
+	<li class="dbold tab-link" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
 
@@ -81,7 +82,7 @@ if($this->user->access != "full"){
 
 <hr/>
 
-<!-- ====== NEW TAB ====== --> 
+<!-- new tab -->
 <div id="tab-1" class="tab-content current">
 
 <br>
@@ -95,10 +96,10 @@ if($this->user->access != "full"){
 		  		<th>Priority</th>	
 		  		<th>Date Submitted</th>
 		  		
-		  		
 		  	</tr>
 	  	</thead>
 
+	  	<!-- array show incidient #, subject, customer, priority and date submited-->
 	  	<?php foreach ($NewIncident as $key => $value) { ?>
 
 	  		<tr>
@@ -117,14 +118,11 @@ if($this->user->access != "full"){
 
 	  	<?php } ?> 		
 	    
-	</table>
-
-     
-
+	</table>  
       
 </div>
 
-<!-- ===== ACTIVE TAB ===== -->
+<!-- active tab-->
 <div id="tab-2" class="tab-content"> 
 
 <br>
@@ -140,25 +138,25 @@ if($this->user->access != "full"){
 							
 			</tr>
 		</thead>
-			<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
-				<tr>
-					<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active" class="iframe"><?php echo $active_val->cs_post_id;?></a>
-	      			</td>
-					<td><?php echo $active_val->cs_post_subject; ?></td>
-					<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
-					<td><?php echo $active_val->cs_post_urgency; ?></td>
-					<td><?php echo $active_val->last_update; ?></td>
-									
-				</tr>
-			<?php } ?>     
+
+		<!-- array show incident #, subject, customer, priority and last update -->
+		<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
+			<tr>
+				<td class="td_hover">
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active" class="iframe"><?php echo $active_val->cs_post_id;?></a>
+      			</td>
+				<td><?php echo $active_val->cs_post_subject; ?></td>
+				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
+				<td><?php echo $active_val->cs_post_urgency; ?></td>
+				<td><?php echo $active_val->last_update; ?></td>
+								
+			</tr>
+		<?php } ?>    	 
 	</table>
-
-
 	 
 </div>
 
-<!-- ===== RESOLVE TAB ===== -->
+<!-- resolved tab -->
 <div id="tab-3" class="tab-content">
 
 <br>
@@ -174,6 +172,8 @@ if($this->user->access != "full"){
 							
 			</tr>
 		</thead>
+
+			<!-- array show incident #, subject, customer, priority and last update -->
 			<?php foreach ($ResolveIncident as $active_key => $resolve_val) { ?>
 				<tr>
 					<td class="td_hover">
@@ -189,9 +189,9 @@ if($this->user->access != "full"){
 	</table>
 
 </div>
-<!--===== CANCELLED TAB ===== -->
-<div id="tab-4" class="tab-content">
 
+<!-- closed tab -->
+<div id="tab-4" class="tab-content">
 
 <br>
 
@@ -206,46 +206,53 @@ if($this->user->access != "full"){
 							
 			</tr>
 		</thead>
-			<?php foreach ($CancelIncident as $active_key => $resolve_val) { ?>
-				<tr>
-					<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
-	      			</td>
-					<td><?php echo $resolve_val->cs_post_subject; ?></td>
-					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
-					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
-					<td><?php echo $resolve_val->last_update; ?></td>
-									
-				</tr>
-			<?php } ?>     
+		<!-- array show incident #, subject, customer, priority and last update -->
+		<?php foreach ($CancelIncident as $active_key => $resolve_val) { ?>
+			<tr>
+				<td class="td_hover">
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+      			</td>
+				<td><?php echo $resolve_val->cs_post_subject; ?></td>
+				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
+				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
+				<td><?php echo $resolve_val->last_update; ?></td>
+								
+			</tr>
+		<?php } ?>     
 	</table>
 
 </div>
 
 <h2>SETTINGS</h2>
-
+	<!-- settings tab -->
 	<ul class="settings_tabs">
 		<li class="tab-link current" dt-tab="tb-1">Add Categories</li>
 		<li class="tab-link" dt-tab="tb-2">Edit HR User Permissions</li>
 		<li class="tab-link" dt-tab="tb-3">Edit Message Templates</li>
 		<li class="tab-link" dt-tab="tb-4">Add a Redirection Department</li>
-	</ul>
+	</ul>.
 
+	<!-- add categories tab -->
 	<div id="tb-1" class="tab-cont">
 	    <label for="lbl_category_name">Enter category name: </label>
 	    <input id="category_name_txt" type="text" name="" value="" placeholder="">
     	<input class="btngreen" type="submit" id="add_categ_btn" name="" value="Submit">
     </div>
 
+    <!-- edit hr permission tab --> 
     <div id="tb-2" class="tab-cont">
    
     </div>
 
+    <!-- edit message template tab -->
     <div id="tb-3" class="tab-cont">
      
     </div>
 
+    <!-- add redirection department tab -->
     <div id="tb-4" class="tab-cont">
+
+    	<!-- add redirection department -->
    		<table class="tableInfo">
    			<tr>
    				<td colspan="2"><h2>Add a Redirection Department</h2></td>
@@ -269,6 +276,8 @@ if($this->user->access != "full"){
    				<td align="right"><input type="submit" class="btngreen" name="" value="Submit"></td>	
    			</tr>
    		</table>
+
+   		<!-- see all department -->
    		<div id="see_all_dept_form">
    			<table class="datatable" width="100%">
    				<h2>All Redirection Departments</h2>
@@ -291,9 +300,10 @@ if($this->user->access != "full"){
     </div>
 
 <script type="text/javascript">
-	
+
 $(document).ready(function(){
 
+	// see all department slide toggle 
 	$('#see_all_dept_form').hide();
 	$('#see_all_dept').click(function(){
 
@@ -309,18 +319,16 @@ $(document).ready(function(){
 			}
 	});
 
-	// ====== INSERT NEW CATEGORY =====
+	// insert new category
 	$("#add_categ_btn").click(function() {
 
 		var category = $("#category_name_txt").val();
-
 		var datacategorys = 'category_name='+ category;
 		
 		if (category == '') {
 			alert("Insert new category!");
 		} else {
-
-			// ===== AJAX CODE TO SUBMIT FORM =====
+				
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",

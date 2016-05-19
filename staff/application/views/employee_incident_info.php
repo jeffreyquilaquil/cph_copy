@@ -6,7 +6,9 @@
 	 a{
 	 	text-decoration: underline;
 	 }
+	 
 </style>
+
 <div>
 	<h2>HR HelpDesk</h2>
 	<ul class="tabs">
@@ -26,6 +28,7 @@
 		  		<th>Status</th>
 		  	</tr>
 	  	</thead>
+	  	<!-- array show incident #, date submitted, subject and status -->
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
 				<td>
@@ -61,7 +64,3 @@
 	</table>
 	</div>
 </div>
-
-<script type="text/javascript">
-	
-</script>

@@ -6,8 +6,8 @@
 
 <h2>HR Customer Satifaction Survey</h2>
 
+<!-- table for hr customer satisfaction survey -->
 <div>
-
  <table class="datatable">
       	<thead>
 	      	<tr>
@@ -29,7 +29,7 @@
       			<td><?php echo $value->fname." ".$value->lname ?></td>
       			<td><?php echo $value->date_submited ?></td>
                         <td><?php echo $value->last_update ?></td>
-      			<td><?php echo $value->assign_category ?></td>
+      			<td><?php if($value->assign_category==''){echo " - ";}else{echo $value->assign_category;} ?></td>
       			<td><?php echo $value->cs_post_subject ?></td>
       			<td><?php echo $value->cs_post_urgency ?></td>
       			<td><?php echo $value->hr_own_empUSER ?></td>
