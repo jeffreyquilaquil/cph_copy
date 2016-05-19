@@ -438,8 +438,8 @@
 	            	$this->ask_hr->askhr('incident_rating',$data);
 
             	}else{
-
-            		$this->ask_hr->updatestatus('incident_rating','remark_status = 0','post_id = '.$id);
+            		$remark = $this->input->post('remark');
+            		$this->ask_hr->updatestatus('incident_rating','remark_status = 0, remark = "'.$remark.'"','post_id = '.$id);
 
             	}
 
