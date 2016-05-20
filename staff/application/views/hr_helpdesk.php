@@ -63,7 +63,7 @@ if($this->user->access != "full"){
 	.tab-cont.curr{
 		display: inherit;
 	}
-
+ 
 </style>
 
 <h2>HR HelpDesk</h2>
