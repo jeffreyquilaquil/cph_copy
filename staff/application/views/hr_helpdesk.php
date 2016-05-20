@@ -69,7 +69,8 @@ if($this->user->access != "full"){
 <h2>HR HelpDesk</h2>
 <!-- hr help desk tabs -->
 <ul class="tabs">
-	<li class="dbold tab-link current" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
+	<li class="dbold tab-link current" data-tab="tab-0">My Ticket</li>
+	<li class="dbold tab-link" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
@@ -82,8 +83,11 @@ if($this->user->access != "full"){
 
 <hr/>
 
+<!-- my ticket tab -->
+<div id="tab-0" class="tab-content current"></div>
+
 <!-- new tab -->
-<div id="tab-1" class="tab-content current">
+<div id="tab-1" class="tab-content">
 
 <br>
 
@@ -229,8 +233,9 @@ if($this->user->access != "full"){
 		<li class="tab-link current" dt-tab="tb-1">Add Categories</li>
 		<li class="tab-link" dt-tab="tb-2">Edit HR User Permissions</li>
 		<li class="tab-link" dt-tab="tb-3">Edit Message Templates</li>
-		<li class="tab-link" dt-tab="tb-4">Add a Redirection Department</li>
-	</ul>.
+		<li class="tab-link" dt-tab="tb-4">Edit Urgency Time Limit</li>
+		<li class="tab-link" dt-tab="tb-5">Add a Redirection Department</li>
+	</ul>
 
 	<!-- add categories tab -->
 	<div id="tb-1" class="tab-cont">
@@ -249,8 +254,13 @@ if($this->user->access != "full"){
      
     </div>
 
-    <!-- add redirection department tab -->
+    <!-- edit urgency time limit -->
     <div id="tb-4" class="tab-cont">
+    	
+    </div>
+
+    <!-- add redirection department tab -->
+    <div id="tb-5" class="tab-cont">
 
     	<!-- add redirection department -->
    		<table class="tableInfo">

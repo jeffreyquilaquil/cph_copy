@@ -45,8 +45,17 @@
 			</tr>
 			<!-- input box for inquiry/report -->
 			<tr>
-				<td>What's your inquiry/report to HR about?</td>
+				<td>What's your inquiry/report all about?</td>
 				<td align="center"><input type="text" name="cs_post_subject" style="width: 100%" required></td>
+			</tr>
+			<tr>
+				<td>What's your inquiry/report related to?</td>
+				<td>
+					<input id="lbl_hr_inquiry" type="radio" name="inquiry_type" value="hr_inquiry" placeholder="">
+					<label for="lbl_hr_inquiry">HR</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input id="lbl_accounting_inquiry" type="radio" name="inquiry_type" value="accounting_inquiry" placeholder="">
+					<label for="lbl_accounting_inquiry">Accounting</label>
+				</td>
 			</tr>
 			<!-- radio buttons for urgency request -->
 			<tr>
@@ -62,11 +71,13 @@
 			<!-- textarea box for explanation of details of inquiry-->
 			<tr>
 				<td colspan="2">
+					<br>
 					Explain the details of your inquiry in the box below:
 					<br><br>
 					<textarea id="content" class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
 				</td>
 			</tr>
+			<!-- add attachments -->
 			<tr>
 				<td>
 					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
