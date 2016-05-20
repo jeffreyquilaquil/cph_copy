@@ -61,9 +61,21 @@
 			<td colspan="2"><h2>HR Incident Number <?php echo $value->cs_post_id; ?></h2></td>	
 		</tr>
 		<tr>
-			<td >Customer</td>
+			<td >Employee Name</td>
 			<input type="hidden" id="fullname" value="<?php echo $value->fname." ". $value->lname; ?>">
 			<td><?php echo $value->fname." ". $value->lname; ?> </td>
+		</tr>
+		<tr>
+			<td>Department</td>
+			<td>A</td>
+		</tr>
+		<tr>
+			<td>Position</td>
+			<td>B</td>
+		</tr>
+		<tr>
+			<td>Immediate Supervisor</td>
+			<td>C</td>
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
@@ -193,49 +205,89 @@
 		<br>
 	</div>
 
-	<!-- reply tab-->
+	<!-- reply tab -->
 	<div id="tab-2" class="tab-content current"> 
-		<h2>Add A Reply</h2>
-		Resolution Options:
-		<select id="resolution_options" style="width: 500px">
-			<option></option>
-			<option>The answer can be found in employee.tatepublishing.net</option>
-			<option>Send custom response</option>
-			<option>This is not an HR inquiry. Redirect to another department</option>
-			<option>Further Information (investigation) is required</option>
-			<option>Resolved</option>
-			<option>Closed</option>
-		</select>
-		<br><br>	
-		<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea>
-		<br>
-		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
-		<br>
+		<table>
+			<tr>
+				<td colspan="2"><h2>Add A Reply</h2></td>
+			</tr>
+			<tr>
+				<td>Resolution Options:</td>
+				<td>	
+					<select id="resolution_options" style="width: 100%">
+						<option></option>
+						<option>The answer can be found in employee.tatepublishing.net</option>
+						<option>Send custom response</option>
+						<option>This is not an HR inquiry. Redirect to another department</option>
+						<option>Further Information (investigation) is required</option>
+						<option>Resolved</option>
+						<option>Closed</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+			</tr>
+			<tr>
+				<td align="left">
+					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+				</td>
+				<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Send"></td>
+			</tr>
+		</table>
 
 	<!-- when user acess is full and his/her incident is resolved and closed -->
 	<?php }elseif($this->user->access == "full" && 
 				 ($this->uri->segment(4) == 'resolved' ||
 				  $this->uri->segment(4) == 'cinc')){?>
-		
-		<h2><b>Add a message to re-open this incident</b></h2>
-		<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-		<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>
-	
+
+		<table>
+			<tr>
+				<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+			</tr>
+			<tr>
+				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+			</tr>
+			<tr>
+				<td align="left"> 
+					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+				</td>
+				<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
+			</tr>
+		</table>
+			
 	<!-- when user is an employee and his/her incident is open -->	
 	<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'open'){?>
 
-		<h2><b>Add A Reply</b></h2>
-		Resolution Options:
-		<select id="resolution_options" style="width: 500px">
-			<option>Reply</option>
-			<option>Answered my question, thanks to HR (Resolved)</option>
-			<option>Found the answer of my question on my own (Close)</option>
-		</select>
-		<br><br>
-		<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea>
-		<br>
-		<input type="submit" id="submit_reply" class="btngreen" value="Submit" style="float:right;">
-		<br>
+		<table>
+			<tr>
+				<td colspan="2"><h2><b>Add A Reply</b></h2></td>
+			</tr>
+			<tr>
+				<td>Resolution Options:</td>
+				<td>
+					<select id="resolution_options" style="width: 100%">
+						<option>Reply</option>
+						<option>Cancel Incident</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+			</tr>
+			<tr>
+				<td align="left">
+					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+				</td>
+				<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Submit"></td>
+			</tr>
+		</table>
 
 	<!-- when user is an employee and his/her incident is resolved -->
 	<?php } elseif($this->uri->segment(4) == 'emp' &&
@@ -246,8 +298,6 @@
 
 			// when incident don't have a remark
 			if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
-					
-		<h2><b>Help us in HR support you better.</b><br>Let us know how satisfied were you with the resolution of incident <b><?php echo $value->cs_post_id; ?></b></h2>
 
 		<input id="lbl_vs" type="radio" name="radio_survey" value="Very satisfied">
 		<label for="lbl_vs">Very satisfied</label> &nbsp;&nbsp;&nbsp;
@@ -267,9 +317,22 @@
 		<a id="reopen_incident">Re-open this incident?</a>
 		<div id="reopen_incident_form">
 			<hr>
-			<h2><b>Add a message to re-open this incident</b></h2>
-			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-			<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	
+			<table>
+				<tr>
+					<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+				</tr>
+				<tr>
+					<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+				</tr>
+				<tr>
+					<td align="left">
+						<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+						<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+						<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+					</td>
+					<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
+				</tr>
+			</table>			
 		</div>	
 	
 	<!-- when user is an employee and his/her incident is closed -->
@@ -277,10 +340,23 @@
 				   $this->uri->segment(5) == 'closed'){?>	
 
 			<!-- re open incident -->
-			<h2><b>Add a message to re-open this incident</b></h2>
-			<textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea><br>
-			<input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	
-
+			<table>
+				<tr>
+					<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+				</tr>
+				<tr>
+					<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+				</tr>
+				<tr>
+					<td align="left">
+						<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+						<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+						<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+					</td>
+					<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	</td>
+				</tr>
+			</table>
+			
 	<?php } ?>
 		
 	</form>
@@ -317,6 +393,7 @@ $(document).ready(function() {
 	var further = 'Hello <b>'+ full_name +'! </b><br><br> Please provide a copy of (INSERT NEEDED REQUIRMENTS HERE) <br><br> Thank you very much! <br><br> (INSERT HR COMPLETE NAME HERE) <br> (INSERT HR POSITION HERE) <br><br><b><u> Important Note </u> </b><br> If any responses/information/document is required from you, please reply within three (3) business days. If no response is received from you within three (3) business days, This incident will automatically closed. If no response/information/document is required from you, no action is required and you will received regular updates about this incident until its resolution';
 	var resolve = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now resolved)';
 	var closed = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now Closed)';
+	var cancelled = 'Hello <b>HR NAME</b>' + '!<br><br><br> I want to cancel my incident.';
 		
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
@@ -338,16 +415,13 @@ $(document).ready(function() {
 	    		
 	    }else if($( "#resolution_options" ).val() == 'Closed'){
 	    		tinyMCE.activeEditor.setContent(closed);
-	    		
-	    }else if($( "#resolution_options" ).val() == 'Answered my question, thanks to HR (Resolved)'){
-	    		tinyMCE.activeEditor.setContent("Resolved");
-	    		
-	    }else if($( "#resolution_options" ).val() == 'Found the answer of my question on my own (Close)'){
-	    		tinyMCE.activeEditor.setContent("close");
+		    		
+	    }else if($( "#resolution_options" ).val() == 'Cancel Incident'){
+	    		tinyMCE.activeEditor.setContent(cancelled);
 	    		
 	    }
 
-	    else if($( "#resolution_options" ).val() == ''){
+	    else{
 
 	    		tinyMCE.activeEditor.setContent("");
 	    		message = '';
@@ -538,6 +612,27 @@ $(document).ready(function() {
 	$('#reopen_incident_form').hide();
 	$('#reopen_incident').click(function(){
 		$('#reopen_incident_form').toggle();
+	});
+
+	// display many attachments
+	var sup_counter = 1;
+	$('a.label_add_docs').hide();
+
+	$('a.label_add_docs').click(function(){
+	
+	sup_counter += 1;			
+		if( sup_counter <= 5 ){				
+			$('.sup_docs_div').append('<input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx"/><br/>');
+				if( sup_counter == 5 ){
+					$('a.label_add_docs').hide();								
+				}
+		} 
+	});
+
+	$('.sup_docs').change(function(){
+		if( sup_counter = 1 ){
+			$('a.label_add_docs').show();
+		}			
 	});
 			
 });

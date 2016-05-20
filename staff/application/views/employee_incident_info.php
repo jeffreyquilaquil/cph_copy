@@ -32,6 +32,7 @@ if ($this->user->empID != $this->uri->segment(3)) {
 		  		<th>Date Submitted</th>
 		  		<th>Subject</th>
 		  		<th>Status</th>
+		  		<th>Owner</th>
 		  	</tr>
 	  	</thead>
 	  	<!-- array show incident #, date submitted, subject and status -->
@@ -65,6 +66,7 @@ if ($this->user->empID != $this->uri->segment(3)) {
 
 		      		?>
 		      	</td>	
+		      	<td></td>
 	  		</tr>	
 	  		<?php endforeach ?>     
 	</table>

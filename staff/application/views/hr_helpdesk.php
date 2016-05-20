@@ -66,9 +66,12 @@ if($this->user->access != "full"){
  
 </style>
 
-<h2>HR HelpDesk</h2>
+
+
 <!-- hr help desk tabs -->
 <ul class="tabs">
+
+	<h2>HR/Accounting HelpDesk </h2>
 	<li class="dbold tab-link current" data-tab="tab-0">My Ticket</li>
 	<li class="dbold tab-link" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
@@ -84,7 +87,28 @@ if($this->user->access != "full"){
 <hr/>
 
 <!-- my ticket tab -->
-<div id="tab-0" class="tab-content current"></div>
+<div id="tab-0" class="tab-content current">
+	<table class="datatable">
+		<thead>
+			<tr>
+				<th>Incident #</th>
+				<th>Subject</th>
+				<th>Customer</th>
+				<th>Priority</th>
+				<th>Last Update</th>
+				<th>Owner</th>	
+			</tr>
+		</thead>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+	</table>
+</div>
 
 <!-- new tab -->
 <div id="tab-1" class="tab-content">
@@ -99,7 +123,6 @@ if($this->user->access != "full"){
 		  		<th>Customer</th>
 		  		<th>Priority</th>	
 		  		<th>Date Submitted</th>
-		  		
 		  	</tr>
 	  	</thead>
 
@@ -117,7 +140,7 @@ if($this->user->access != "full"){
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php echo $value->cs_post_urgency; ?></td>
-	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>      		
+	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>   		
 	  		</tr>	     
 
 	  	<?php } ?> 		
@@ -139,7 +162,7 @@ if($this->user->access != "full"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
-							
+				<th>Owner</th>		
 			</tr>
 		</thead>
 
@@ -153,7 +176,7 @@ if($this->user->access != "full"){
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
 				<td><?php echo $active_val->last_update; ?></td>
-								
+				<td></td>				
 			</tr>
 		<?php } ?>    	 
 	</table>
@@ -173,7 +196,7 @@ if($this->user->access != "full"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
-							
+				<th>Owner</th>							
 			</tr>
 		</thead>
 
@@ -187,7 +210,7 @@ if($this->user->access != "full"){
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 					<td><?php echo $resolve_val->last_update; ?></td>
-									
+					<td></td>				
 				</tr>
 			<?php } ?>     
 	</table>
@@ -207,7 +230,7 @@ if($this->user->access != "full"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
-							
+				<th>Owner</th>
 			</tr>
 		</thead>
 		<!-- array show incident #, subject, customer, priority and last update -->
@@ -220,7 +243,7 @@ if($this->user->access != "full"){
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 				<td><?php echo $resolve_val->last_update; ?></td>
-								
+				<td></td>		
 			</tr>
 		<?php } ?>     
 	</table>
