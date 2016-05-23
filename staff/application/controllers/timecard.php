@@ -1976,7 +1976,7 @@ class Timecard extends MY_Controller {
 					}
 					if( isset($header_array_sequence[ $item->payID ] ) ){
 						$key = $item->payID;
-						$data_excel_array[ $key ]= $item->payValue;
+						$data_excel_array[ $key ] += $item->payValue;
 					}
 					if( $item->numHR > 0 ){
 						$key = $item->payID.'HR';
