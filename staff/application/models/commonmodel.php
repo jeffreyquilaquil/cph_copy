@@ -148,10 +148,18 @@ class Commonmodel extends CI_Model {
 		return true;
 	}
 	
-	function countResults($type){
+	//own means for supervisor
+	function countResults($type, $own = false){
 		$cnt = 0;
 		if($type=='cis'){
-			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0');
+			$condition = '';
+			if( $own === true ){
+				
+				$condition = 'AND preparedby ='.$this->user->empID;
+			}
+
+
+			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0 '.$condition);
 		}else if($type=='coaching'){
 			$condition = '';
 			if($this->access->accessHR==false){
