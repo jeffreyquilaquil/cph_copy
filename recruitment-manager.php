@@ -40,21 +40,21 @@ $pooledJobsText = implode(', ', $hehe);
 
 
 
-$appOpenJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, applicants.date_created, title, processText, processStat 
+$appOpenJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, applicants.date_created, title, processText, processStat, last_employer 
 		FROM applicants 
 		LEFT JOIN recruitmentProcess ON processID=process 
 		LEFT JOIN newPositions ON posID=position 
 		WHERE processStat=1 AND isNew = 1 AND position IN ('.$openJobsText.') 
 		ORDER BY applicants.date_created DESC');
 
-$appNoJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat 
+$appNoJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat, last_employer
 		FROM applicants 
 		LEFT JOIN newPositions ON posID=position 
 		LEFT JOIN recruitmentProcess ON processID=process 
 		WHERE processStat=1 AND isNew = 1 AND position NOT IN ('.$openJobsText.')
 		ORDER BY applicants.date_created DESC');
 
-$pooledJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat 
+$pooledJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, processStat, last_employer 
 		FROM applicants 
 		LEFT JOIN newPositions ON posID=position 
 		LEFT JOIN recruitmentProcess ON processID=process 
@@ -62,8 +62,8 @@ $pooledJobReq = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",ln
         ORDER BY applicants.date_created DESC');
 
 		
-$petrifiedQ = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=0 AND processText IN ("Failed IQ Test", "Failed Typing Test", "Failed Written Comprehension Test", "Failed HR Interview") GROUP BY applicants.id ORDER BY applicants.date_created DESC');
-$infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', lname) AS name, email, mnumber, applicants.date_created, isNew, process, processType, processText, processStat, IF(isNew = 0, (SELECT title FROM positions WHERE position=positions.id LIMIT 1), (SELECT title FROM newPositions WHERE position=posID LIMIT 1)) as title", "1 ORDER BY date_created DESC", "LEFT JOIN recruitmentProcess ON processID=process");
+$petrifiedQ = $db->selectQueryArray('SELECT applicants.id, CONCAT(fname," ",lname) AS name, email, mnumber, position, processType, title, applicants.date_created, processText, last_employer FROM applicants LEFT JOIN jobReqData ON positionID=position LEFT JOIN newPositions ON posID=position LEFT JOIN recruitmentProcess ON processID=process WHERE processStat=0 AND processText IN ("Failed IQ Test", "Failed Typing Test", "Failed Written Comprehension Test", "Failed HR Interview") GROUP BY applicants.id ORDER BY applicants.date_created DESC');
+$infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', lname) AS name, email, mnumber, applicants.date_created, isNew, process, processType, processText, last_employer, processStat, IF(isNew = 0, (SELECT title FROM positions WHERE position=positions.id LIMIT 1), (SELECT title FROM newPositions WHERE position=posID LIMIT 1)) as title", "1 ORDER BY date_created DESC", "LEFT JOIN recruitmentProcess ON processID=process");
 
 ?>
 
@@ -117,6 +117,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
+				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -135,6 +136,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$aa['id'].'">'.$aa['name'].'</a></td>
 							<td><a href="mailto:'.$aa['email'].'">'.$aa['email'].'</a></td>
 							<td>'.$aa['mnumber'].'</td>
+							<td>'.$aa['last_employer'].'</td>
 							<td>'.$aa['title'].'</td>
 							<td>'.date('Y-m-d',strtotime($aa['date_created'])).'</td>
 							<td>'.$aa['processType'].' '.$txt.'</td>';
@@ -166,6 +168,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
+				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -184,6 +187,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
+							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>';
@@ -215,6 +219,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
+				<th>Previous Employer</th>
 				<th>Position</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -232,6 +237,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
+							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>
@@ -257,6 +263,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
+				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Status</th>
@@ -273,6 +280,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 						<td><a href="view_info.php?id='.$info['id'].'">'.$info['name'].'</a></td>
 						<td><a href="mailto:'.$info['email'].'">'.$info['email'].'</a></td>
 						<td>'.$info['mnumber'].'</td>
+						<td>'.$info['last_employer'].'</td>
 						<td>'.$info['title'].$nw.'</td>
 						<td>'.date('Y-m-d', strtotime($info['date_created'])).'</td>';
 				if(empty($info['processText'])) echo '<td>'.$info['processType'].' <span style="color:green;">[in progress]</span></td>';
@@ -301,6 +309,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
+				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -319,6 +328,7 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
+							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>';
