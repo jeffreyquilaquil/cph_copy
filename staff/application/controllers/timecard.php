@@ -1216,7 +1216,7 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_payslipdetail';	
 		$data['tpage'] = 'payslips';
 		
-		$this->output->enable_profiler(true);
+
 		if($this->user!=false){				
 			$empID = $this->uri->segment(2);
 			if(!is_numeric($empID)){
