@@ -1,7 +1,13 @@
 <?php  
-if($this->user->access != "full"){
+if($this->user->access == "exec"){
 			header("location: ".$this->config->base_url());
-		}
+}else if($this->user->access == "inventory admin"){
+	header("location: ".$this->config->base_url());
+}else if($this->user->access == "med_person"){
+	header("location: ".$this->config->base_url());
+}else if($this->user->access == ""){
+	header("location: ".$this->config->base_url());
+}
 ?>
 
 <style type="text/css">
@@ -66,20 +72,63 @@ if($this->user->access != "full"){
  
 </style>
 
+ 	<?php
+	  	$NewIncident = array();
+	  	$ActiveIncident = array();
+	  	$ResolveIncident = array();
+	  	$CancelIncident = array();
+	  	$title = '';
 
+	  	if($this->user->access == "hr"){
+	  		$NewIncident = $NewIncidentHR;
+	  		$title = "HR HelpDesk";
+	  	}else if($this->user->access == "finance"){
+	  		$NewIncident = $NewIncidentAcc;
+	  		$title = "Accounting HelpDesk";
+	  	}else if($this->user->access == "full"){
+			$NewIncident = $NewIncidentFull;
+			$title = "Admin HelpDesk";
+		}
+
+		if($this->user->access == "hr"){
+	  		$ActiveIncident = $ActiveIncidentHR;
+	  	}else if($this->user->access == "finance"){
+	  		$ActiveIncident = $ActiveIncidentAcc;	
+	  	}else if($this->user->access == "full"){
+			$ActiveIncident = $ActiveIncidentFull;
+		}
+		if($this->user->access == "hr"){
+	  		$ResolveIncident = $ResolveIncidentHR;
+	  	}else if($this->user->access == "finance"){
+	  		$ResolveIncident = $ResolveIncidentAcc;	
+	  	}else if($this->user->access == "full"){
+			$ResolveIncident = $ResolveIncidentFull;
+		}
+		if($this->user->access == "hr"){
+	  		$CancelIncident = $CancelIncidentHR;
+	  	}else if($this->user->access == "finance"){
+	  		$CancelIncident = $CancelIncidentAcc;	
+	  	}else if($this->user->access == "full"){
+			$CancelIncident = $CancelIncidentFull;
+		}
+	?>
 
 <!-- hr help desk tabs -->
 <ul class="tabs">
 
-	<h2>HR/Accounting HelpDesk </h2>
+	<h2><?php echo $title; ?></h2>
+
+
 	<li class="dbold tab-link current" data-tab="tab-0">My Ticket</li>
-	<li class="dbold tab-link" data-tab="tab-1">New <font color="darkred" style="font-weight: bold;">( <?php echo count($NewIncident)?> )</font></li>
+	<li class="dbold tab-link" data-tab="tab-1">New<font color="darkred" style="font-weight: bold;">
+	( <?php echo count($NewIncident)?> )</font>
+	</li>
 	<li class="dbold tab-link" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
 
 	<div class=" dbold options-right">
-		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR Customer CSatResults</a>
+		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR/Accounting Customer CSatResults</a>
 		<a class="other_links" href="#">Generate Reports</a>	
 	</div>
 </ul>
@@ -96,17 +145,40 @@ if($this->user->access != "full"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
-				<th>Owner</th>	
+				<th>Owner</th>
+				<th>Status</th>
+				<th>Mark</th>	
 			</tr>
 		</thead>
+			<?php foreach ($MyTicket as $myticket_key => $myticket) { ?>
 			<tr>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
+				<td class="td_hover">
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $myticket->cs_post_id; ?>/active/<?php echo $myticket->cs_post_empID_fk; ?>" class="iframe"><?php echo $myticket->cs_post_id;?></a>
+      			</td>
+				<td><?php echo $myticket->cs_post_subject; ?></td>
+				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
+				<td><?php echo $myticket->cs_post_urgency; ?></td>
+				<td><?php echo $myticket->last_update; ?></td>
+				<td><?php echo $myticket->hr_own_empUSER; ?></td>
+				<?php if($myticket->cs_post_status == 3){
+						echo "<td>Resolved</td>";
+					}else if($myticket->cs_post_status == 4){
+						echo "<td>Close</td>";
+					}else if($myticket->cs_post_status == 1){
+						echo "<td>Active</td>";
+					}else{ ?>
+					<td><a href="">Reassign</a></td>	
+				<?php }
+				if($myticket->remark != ''){
+					echo "<td>". $myticket->remark."</td>";
+				}else{
+					echo "<td>Unremark</td>";
+				}
+				?>
+
+							
 			</tr>
+		<?php } ?>    	 
 	</table>
 </div>
 
@@ -126,12 +198,13 @@ if($this->user->access != "full"){
 		  	</tr>
 	  	</thead>
 
+
 	  	<!-- array show incidient #, subject, customer, priority and date submited-->
 	  	<?php foreach ($NewIncident as $key => $value) { ?>
 
 	  		<tr>
 	      		<td class="td_hover">
-                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>/new" 
+                    <a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $value->cs_post_id; ?>/new/<?php echo $value->cs_post_empID_fk; ?>" 
                     		class="iframe" 
                     		data-balloon-length="large" 
                     		data-balloon="<?php if($value->cs_msg_text==''){echo "No message";}else{echo strip_tags($value->cs_msg_text);} ?>" 
@@ -170,13 +243,13 @@ if($this->user->access != "full"){
 		<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
 			<tr>
 				<td class="td_hover">
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active" class="iframe"><?php echo $active_val->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active/<?php echo $active_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
       			</td>
 				<td><?php echo $active_val->cs_post_subject; ?></td>
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
 				<td><?php echo $active_val->last_update; ?></td>
-				<td></td>				
+				<td><?php echo $active_val->hr_own_empUSER; ?></td>				
 			</tr>
 		<?php } ?>    	 
 	</table>
@@ -204,13 +277,13 @@ if($this->user->access != "full"){
 			<?php foreach ($ResolveIncident as $active_key => $resolve_val) { ?>
 				<tr>
 					<td class="td_hover">
-	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/resolved" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+	      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/resolved/<?php echo $resolve_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
 	      			</td>
 					<td><?php echo $resolve_val->cs_post_subject; ?></td>
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 					<td><?php echo $resolve_val->last_update; ?></td>
-					<td></td>				
+					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
 				</tr>
 			<?php } ?>     
 	</table>
@@ -237,13 +310,13 @@ if($this->user->access != "full"){
 		<?php foreach ($CancelIncident as $active_key => $resolve_val) { ?>
 			<tr>
 				<td class="td_hover">
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc/<?php echo $resolve_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
       			</td>
 				<td><?php echo $resolve_val->cs_post_subject; ?></td>
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 				<td><?php echo $resolve_val->last_update; ?></td>
-				<td></td>		
+				<td><?php echo $resolve_val->hr_own_empUSER; ?></td>		
 			</tr>
 		<?php } ?>     
 	</table>

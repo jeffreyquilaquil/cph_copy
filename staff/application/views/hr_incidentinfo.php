@@ -39,6 +39,15 @@
 
 	hr{
 		border-top: 1px solid #ccc;
+	}#remark_list {
+    	background-color:#FF868E;
+    	text-align:center;
+    	padding:5px;
+   	 	width:500px;
+    	float:left;
+    	-moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+         border-radius: 2px;
 	}
 </style>
 
@@ -46,6 +55,7 @@
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
+
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
@@ -67,15 +77,15 @@
 		</tr>
 		<tr>
 			<td>Department</td>
-			<td>A</td>
+			<td><?php echo $value->dept; ?></td>
 		</tr>
 		<tr>
 			<td>Position</td>
-			<td>B</td>
+			<td><?php echo $value->title; ?></td>
 		</tr>
 		<tr>
 			<td>Immediate Supervisor</td>
-			<td>C</td>
+			<td><?php echo $value->supervisor; ?></td>
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
@@ -185,8 +195,11 @@
 	<br>
 
 	<!-- when user access is full and his/her incident is new or active -->
-	<?php if($this->user->access == "full" &&
+	<?php if(($this->user->access == "full" || $this->user->access == "hr" || $this->user->access == "finance")&&
 			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
+
+	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">		
+	<input type="hidden" id="incident_owner" value="<?php echo $this->user->username; ?>"> <!--this will be the  HR/Accouting or admin owner of the incidet reply-->
 	
 	<!-- message type tabs -->
 	<ul class="tabs">
@@ -220,7 +233,9 @@
 						<option>Send custom response</option>
 						<option>This is not an HR inquiry. Redirect to another department</option>
 						<option>Further Information (investigation) is required</option>
+						<?php if($this->uri->segment(4) != "new"){?>
 						<option>Resolved</option>
+						<?php } ?>
 						<option>Closed</option>
 					</select>
 				</td>
@@ -298,16 +313,20 @@
 
 			// when incident don't have a remark
 			if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
-
-		<input id="lbl_vs" type="radio" name="radio_survey" value="Very satisfied">
-		<label for="lbl_vs">Very satisfied</label> &nbsp;&nbsp;&nbsp;
-		<input id="lbl_s" type="radio" name="radio_survey" value="Satisfied">
-		<label for="lbl_s">Satisfied</label> &nbsp;&nbsp;&nbsp;
-		<input id="lbl_ds" type="radio" name="radio_survey" value="Dissatisfied">
-		<label for="lbl_ds">Dissatisfied</label> &nbsp;&nbsp;&nbsp;
-		<input id="lbl_vds" type="radio" name="radio_survey" value="Very Dissatisfied">
-		<label for="lbl_vds">Very Dissatisfied</label> &nbsp;&nbsp;&nbsp;
-		<input type="submit" class="btngreen" id="remarkbtn" name="" value="Submit">
+		<h3><font color="Darkred">Please Rate this Incident</font></h3>
+		<div id="remark_list">
+			<input id="lbl_vs" type="radio" name="radio_survey" value="Very satisfied" checked>
+			<label for="lbl_vs"><font color="#fff">Very satisfied</font></label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_s" type="radio" name="radio_survey" value="Satisfied">
+			<label for="lbl_s"><font color="#fff">Satisfied</font></label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_ds" type="radio" name="radio_survey" value="Dissatisfied">
+			<label for="lbl_ds"><font color="#fff">Dissatisfied</font></label> &nbsp;&nbsp;&nbsp;
+			<input id="lbl_vds" type="radio" name="radio_survey" value="Very Dissatisfied">
+			<label for="lbl_vds"><font color="#fff">Very Dissatisfied</font></label> 
+		</div>
+		<br><br>
+		<textarea id="remark_comment" class="hidden tiny" style="height:100px;"></textarea><br>
+		<input style="float:right;" type="submit" class="btngreen" id="remarkbtn" name="" value="Submit">
 		<br>
 
 	<?php } ?>
@@ -473,19 +492,19 @@ $(document).ready(function() {
 	// add survey
 	$("#remarkbtn").click(function() {
 
+		var custom_ans = tinyMCE.get('remark_comment').getContent();
+		var hr_sname = $("#hr_username").val();
 		var postempID = $("#cs_post_empID_fk").val();
 		var datesub = $("#inci_datesubmited").val();
 		var lastup =$("#inci_lastupdate").val();
 		var ins_id = $("#categoryid").val();
 		var remark = $('input[name="radio_survey"]:checked').val();
 
-		var dataString = 'insedentid='+ ins_id + '&remark='+ remark + '&date_submit='+ datesub + '&last_update='+ lastup + '&post_emp_id='+ postempID;
+		var dataString = 'insedentid='+ ins_id + '&remark='+ remark + '&date_submit='+ datesub + '&last_update='+ lastup + '&post_emp_id='+ postempID + '&remark_msg='+ custom_ans + '&hr_username='+ hr_sname;
 	
-		if (remark == '') {
-
-			alert("Some Field is Empty!");
-		}
-		else{
+		if (remark == 'Very Dissatisfied' && custom_ans == '') {
+			alert("Write a comment about to your remark");
+		}else{
 
 			$.ajax({
 			type: "POST",
@@ -493,7 +512,7 @@ $(document).ready(function() {
 			data: dataString,
 			cache: false,
 				success: function(result){
-				alert("Success!");
+				alert("Success! "+remark);
 				window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/employee_dashboard/<?php echo $this->user->empID; ?>";
                 close();
 				}
@@ -561,13 +580,15 @@ $(document).ready(function() {
 
 		if (tab_typ == 'new') {
 
+			var hd_own = $('#incident_owner').val();
+			var hd_ownID = $('#incident_ownerID').val();
+			var stat = 1;
 			var inv_req = $('input[name="investigation_required_radio"]:checked').val();
-			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 			var ass_categ = $("#assign_category option:selected").val();
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + stat;
 			
 		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
@@ -588,7 +609,7 @@ $(document).ready(function() {
 					data: dataString,
 					cache: false,
 						success: function(result){
-						alert("Success! "+ status);
+						alert("Success! ");
 						$('#custom_ans_form')[0].reset();
 
 							if (tab_typ == 'emp') {

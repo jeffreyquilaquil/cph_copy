@@ -51,9 +51,9 @@
 			<tr>
 				<td>What's your inquiry/report related to?</td>
 				<td>
-					<input id="lbl_hr_inquiry" type="radio" name="inquiry_type" value="hr_inquiry" placeholder="">
+					<input id="lbl_hr_inquiry" type="radio" name="inquiry_type" value="0" required>
 					<label for="lbl_hr_inquiry">HR</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input id="lbl_accounting_inquiry" type="radio" name="inquiry_type" value="accounting_inquiry" placeholder="">
+					<input id="lbl_accounting_inquiry" type="radio" name="inquiry_type" value="1" required>
 					<label for="lbl_accounting_inquiry">Accounting</label>
 				</td>
 			</tr>

@@ -6,6 +6,16 @@
 	 a{
 	 	text-decoration: underline;
 	 }
+	 #nummark {
+    	background-color:Darkred;
+    	text-align:center;
+    	padding:5px;
+   	 	width:400px;
+    	float:right;
+    	-moz-border-radius: 50px;
+        -webkit-border-radius: 50px;
+         border-radius: 50px;
+	}
 	 
 </style>
 
@@ -13,10 +23,16 @@
 if ($this->user->empID != $this->uri->segment(3)) {
 	header("location: ".$this->config->base_url());
 }
-?>
+foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 
 <div>
 	<h2>HR HelpDesk</h2>
+	<?php if($num_mark->num_rate != 0){ ?>
+	<div id="nummark">
+		<h3><font color="#ffffff">You have <b><?php echo $num_mark->num_rate ?></b> Incident that already resolved please put a remark</font></h3>
+	</div><br>
+	<?php } ?>
+	
 	<ul class="tabs">
 		<li class="dbold tab-link current" id="new_tab" data-tab="tab-1">My Incidents</li>
 	</ul>
@@ -39,12 +55,17 @@ if ($this->user->empID != $this->uri->segment(3)) {
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
 				<td>
-				<?php if($rep->cs_post_status == 0){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/open" class="iframe"><?php echo $rep->cs_post_id; ?></a>
-				<?php }elseif($rep->cs_post_status == 3){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/resolved" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+				<?php if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){?>
+				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/open/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+				<?php }elseif($rep->cs_post_status == 3){
+
+					if($rep->rate_status == 0){
+						echo "&#10067;";
+					} ?>
+				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/resolved/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+
 				<?php }elseif($rep->cs_post_status == 4){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
 				<?php } ?>
 				</td>
 	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
@@ -66,7 +87,7 @@ if ($this->user->empID != $this->uri->segment(3)) {
 
 		      		?>
 		      	</td>	
-		      	<td></td>
+		      	<td><?php echo $rep->hr_own_empUSER; ?></td>
 	  		</tr>	
 	  		<?php endforeach ?>     
 	</table>
