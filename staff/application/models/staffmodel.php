@@ -456,38 +456,43 @@ class Staffmodel extends CI_Model {
 		
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'COE_form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_standard.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
 		$pdf->SetFont('Arial','B',14);
-		$pdf->setXY(95, 91);
+		$pdf->setXY(85, 92);
 		$pdf->Write(0, $row->name);
-		$pdf->setXY(95, 100);
+		$pdf->setXY(85, 101);
 		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
-		$pdf->setXY(95, 109);
+		$pdf->setXY(85, 110);
 		$pdf->Write(0, $row->title);
 		
 		$sal = (double)str_replace(',','',$this->textM->decryptText($row->salary));
 		$allowance = (double)str_replace(',','',$row->allowance);
 		
-		$pdf->setXY(125, 127);
+		$pdf->setXY(115, 127);
 		$pdf->Write(0, $this->textM->convertNumFormat(($sal*12)));
-		$pdf->setXY(127, 137);
+		$pdf->setXY(117, 137);
 		$pdf->Write(0, $this->textM->convertNumFormat(($allowance*12)) );
-		$pdf->setXY(125, 155);
+		$pdf->setXY(115, 155);
 		$pdf->Write(0, $this->textM->convertNumFormat((($sal*12)+($allowance*12))));
 		
 		$pdf->SetFont('Arial','B',12);
-		$pdf->setXY(10, 177);
-		$pdf->MultiCell(180, 15, ((!empty($row->purposeEdited))?$row->purposeEdited:$row->purpose),0,'C',false);	
+		$pdf->setXY(15, 177);
+		$pdf->MultiCell(0, 15, ((!empty($row->purposeEdited))?$row->purposeEdited:$row->purpose),0,'C',false);	
 		
 		$pdf->setXY(87, 205);
 		$pdf->Write(0, date('F d, Y',strtotime($row->dateissued)));
 		
 		$pdf->SetFont('Arial','',10);
-		$pdf->setXY(151, 127);
+		$pdf->setXY(141, 127);
 		$pdf->Write(0, '(Excluding 13th month pay)');
+
+		$pdf->SetFont('Arial','B',12);
+
+		$pdf->setXY(15, 237);
+		$pdf->Cell(0, 8, $this->user->name, 0, 0, 'C');
 		
 		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
 	}
