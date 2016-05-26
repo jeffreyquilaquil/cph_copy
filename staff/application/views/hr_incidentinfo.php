@@ -161,7 +161,7 @@
 			<td><?php echo $value->cs_post_subject; ?></td>
 		</tr>
 		<tr>
-			<td>Customer selected priority level</td>
+			<td>Priority level</td>
 			<td>
 				<?php if($value->cs_post_urgency=='Urgent'){ 
 				   			echo "<div class=\"urgent\">$value->cs_post_urgency</div>";
@@ -172,6 +172,10 @@
 						}
 				?>
 			</td>
+		</tr>
+		<tr>
+			<td>Due date</td>
+			<td>aaaaaa</td>
 		</tr>
 
 		<!-- when incidident is new, can add assign category and investigation required -->
@@ -211,12 +215,6 @@
 				<tr>
 					<td>Assign Category</td>
 					<td><?php echo $value->assign_category; ?></td>
-				</tr>
-				<tr>
-					<td>Choose priority level & Resolved date</td>
-					<td>
-						aaa
-					</td>
 				</tr>
 		<?php } ?>  
 	</table>
@@ -725,6 +723,12 @@ $(document).ready(function() {
 			$('a.label_add_docs').show();
 		}			
 	});
+
+	$('#extend_date_form').hide();
+	$('#extend_date').click(function(){
+
+		$('#extend_date_form').toggle();
+	})
 			
 });
 

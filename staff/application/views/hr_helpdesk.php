@@ -69,6 +69,8 @@ if($this->user->access == "exec"){
 	.tab-cont.curr{
 		display: inherit;
 	}
+
+
  
 </style>
 
@@ -145,10 +147,14 @@ if($this->user->access == "exec"){
 				<th>Customer</th>
 				<th>Priority</th>
 				<th>Last Update</th>
+				<th>Due Date</th>
 				<th>Owner</th>
 				<th>Status</th>
 				<th>Mark</th>
-				<th>Reassign</th>	
+				<th>Extend Due Date</th>
+				<th>Reassign</th>
+
+
 			</tr>
 		</thead>
 			<?php foreach ($MyTicket as $myticket_key => $myticket) { ?>
@@ -160,6 +166,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
 				<td><?php echo $myticket->cs_post_urgency; ?></td>
 				<td><?php echo $myticket->last_update; ?></td>
+				<td>aaaa</td>
 				<td><?php echo $myticket->hr_own_empUSER; ?></td>
 				<?php 
 					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed'];
@@ -172,7 +179,35 @@ if($this->user->access == "exec"){
 					echo "<td>Unremark</td>";
 				}
 				?>
-				<td><a href=''>Reassign</a></td>		
+				<td>
+					<a id="extend_date<?php echo $myticket->cs_post_id; ?>">Extend Date</a>
+					<span id="extend_date_form<?php echo $myticket->cs_post_id; ?>">
+						<br>
+						<small>Plase select a date:</small>
+						<input type="text" id="lbl_extend_date" class="datepick" placeholder="mm/dd/yy" style="width: 100px" readonly="true">
+						<input type="button" class="btngreen" name="" value="Submit">
+					</span>
+				</td>
+				<td>
+					<a id="reassign<?php echo $myticket->cs_post_id ?>" style="cursor: pointer;">Reassign</a>
+					<div id="reassign_form<?php echo $myticket->cs_post_id; ?>">
+						<ul style="list-style: none; margin: 0px; padding: 0px;">
+							<li>
+								<small>Please select a department:</small>
+								<select name="" style="width: 200px;">
+									<option value="">aaaaaaaaaaaaa</option>
+								</select>
+							</li>
+							<li>
+								<small>Please select who:</small>
+								<select name="" style="width: 200px;">
+									<option value="">bbbbbbbbbbbbb</option>
+								</select>
+							</li>
+							<li><input type="button" class="btngreen" name="" value="Submit" style="float:right;"></li>
+						</ul>	
+					</div>
+				</td>		
 			</tr>
 		<?php } ?>    	 
 	</table>
@@ -444,6 +479,24 @@ $(document).ready(function(){
 				});
 			}
 	});
+
+
+
+	<?php foreach ($MyTicket as $jk => $jv): ?>
+		$('#reassign_form<?php echo $jv->cs_post_id; ?>').hide();
+		$('#reassign<?php echo $jv->cs_post_id;  ?>').click(function(){
+
+		$('#reassign_form<?php echo $jv->cs_post_id; ?>').toggle();
+
+		});	
+
+		$('#extend_date_form<?php echo $jv->cs_post_id; ?>').hide();
+		$('#extend_date<?php echo $jv->cs_post_id; ?>').click(function(){
+
+			$('#extend_date_form<?php echo $jv->cs_post_id; ?>').toggle();
+		})
+	<?php endforeach ?>
+	
 
 });
 
