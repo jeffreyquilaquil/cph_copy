@@ -147,7 +147,8 @@ if($this->user->access == "exec"){
 				<th>Last Update</th>
 				<th>Owner</th>
 				<th>Status</th>
-				<th>Mark</th>	
+				<th>Mark</th>
+				<th>Reassign</th>	
 			</tr>
 		</thead>
 			<?php foreach ($MyTicket as $myticket_key => $myticket) { ?>
@@ -166,15 +167,16 @@ if($this->user->access == "exec"){
 						echo "<td>Close</td>";
 					}else if($myticket->cs_post_status == 1){
 						echo "<td>Active</td>";
-					}else{ ?>
-					<td><a href="">Reassign</a></td>	
-				<?php }
+					}?>
+						
+				<?php 
 				if($myticket->remark != ''){
 					echo "<td>". $myticket->remark."</td>";
 				}else{
 					echo "<td>Unremark</td>";
 				}
 				?>
+				<td><a href=''>Reassign</a></td>
 
 							
 			</tr>
