@@ -39,7 +39,9 @@
 
 	hr{
 		border-top: 1px solid #ccc;
-	}#remark_list {
+	}
+
+	#remark_list {
     	background-color:#FF868E;
     	text-align:center;
     	padding:5px;
@@ -49,6 +51,69 @@
         -webkit-border-radius: 2px;
          border-radius: 2px;
 	}
+
+	input[type="radio"] {
+	  margin-top: -1px;
+	  vertical-align: middle;
+	}
+
+	.urgent{
+		background-color: #c9302c; 
+		border-color: #ac2925; 
+		border-radius: 4px; 
+		color: #fff; 
+		padding: 3px 9px;
+		display: inline-block;
+	}
+
+	.need_attention{
+		 background-color: #ec971f; 
+		 border-color: #d58512; 
+		 border-radius: 4px; 
+		 color: #fff; 
+		 padding: 3px 9px;
+		 display: inline-block;
+	}
+
+	.not_urgent{
+		background-color: #449d44; 
+		border-color: #398439; 
+		border-radius: 4px; color: #fff; 
+		padding: 3px 9px;
+		display: inline-block;
+	}
+
+	.employee_messages{
+		background: #f0f9ff;
+		background: -moz-linear-gradient(top,  #f0f9ff 0%, #cbebff 47%, #b9d1ff 100%);
+		background: -webkit-linear-gradient(top,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
+		background: linear-gradient(to bottom,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0f9ff', endColorstr='#b9d1ff',GradientType=0 );
+		padding: 3px 9px;
+		border: solid 1px #4a7ebb;
+	}
+
+	.hr_messages{
+
+		background: #febbbb;
+		background: -moz-linear-gradient(top,  #febbbb 0%, #fe9090 45%, #ffa7a6 100%);
+		background: -webkit-linear-gradient(top,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
+		background: linear-gradient(to bottom,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febbbb', endColorstr='#ffa7a6',GradientType=0 );
+		padding: 3px 9px;
+		border: solid 1px #be4b48;
+	}
+
+	.internal_notes{
+		background: #eeeeee;
+		background: -moz-linear-gradient(top,  #eeeeee 0%, #bebebe 100%);
+		background: -webkit-linear-gradient(top,  #eeeeee 0%,#bebebe 100%);
+		background: linear-gradient(to bottom,  #eeeeee 0%,#bebebe 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#bebebe',GradientType=0 );
+		padding: 3px 9px;
+		border: solid 1px black;
+	}
+
 </style>
 
 <div> 
@@ -96,8 +161,17 @@
 			<td><?php echo $value->cs_post_subject; ?></td>
 		</tr>
 		<tr>
-			<td>Customer selected priority Level</td>
-			<td><?php echo $value->cs_post_urgency; ?></td>
+			<td>Customer selected priority level</td>
+			<td>
+				<?php if($value->cs_post_urgency=='Urgent'){ 
+				   			echo "<div class=\"urgent\">$value->cs_post_urgency</div>";
+						}elseif($value->cs_post_urgency=='Need Attention'){
+							echo "<div class=\"need_attention\">$value->cs_post_urgency</div>";
+						}elseif($value->cs_post_urgency=='Not Urgent'){
+							echo "<div class=\"not_urgent\">$value->cs_post_urgency</div>";
+						}
+				?>
+			</td>
 		</tr>
 
 		<!-- when incidident is new, can add assign category and investigation required -->
@@ -115,20 +189,16 @@
 				</select>
 			</td>
 		</tr>
-		<!-- selection of investigation required-->
+		<!-- choosing priority level & resolved date -->
 		<tr>
-			<td valign="top">Investigation Required:</td>
+			<td>Choose priority level & Resolved date</td>
 			<td>
-				<input id="r_yes" type="radio" name="investigation_required_radio" value="Yes" required>
-				<label for="r_yes">Yes</label>
-				<input id="r_no" type="radio" name="investigation_required_radio" value="No" checked="true">
-				<label for="r_no">No</label>
-				<br><br>
-				<span class="note">
-					Note to HR: If you are able to provide answer to the question within 24 hours,
-					select <b>NO</b> if you need to involve or collect information from other departments,
-					Select <b>YES</b>.
-				</span>
+				<input id="lbl_urgent" type="radio" name="incident_urgency" value="" placeholder="">
+				<label for="lbl_urgent" class="urgent">Urgent (2 days)</label>&nbsp;&nbsp;&nbsp;
+				<input id="lbl_need_attention" type="radio" name="incident_urgency" value="" placeholder="">
+				<label for="lbl_need_attention" class="need_attention">Need Attention (1 week)</label>&nbsp;&nbsp;&nbsp;
+				<input id="lbl_not_urgent" type="radio" name="incident_urgency" value="" placeholder="">
+				<label for="lbl_not_urgent" class="not_urgent">Not Urgent (2 weeks)</label>&nbsp;&nbsp;&nbsp;
 			</td>
 		</tr>
 
@@ -143,63 +213,63 @@
 					<td><?php echo $value->assign_category; ?></td>
 				</tr>
 				<tr>
-					<td>Investigation Required:</td>
+					<td>Choose priority level & Resolved date</td>
 					<td>
-						<b><?php echo $value->invi_req; ?></b>	
-						<br><br>
-						<span class="note">
-							Note to HR: If you are able to provide answer to the question within 24 hours,
-							select <b>NO</b> if you need to involve or collect information from other departments,
-							Select <b>YES</b>.
-						</span>
+						aaa
 					</td>
 				</tr>
 		<?php } ?>  
+	</table>
 
-		<!-- array show conversations -->
+	<table>
+	<!-- array show conversations -->
 		<?php foreach ($conversation as $key => $conve){
-					// show hr messages
-					if ($this->uri->segment(4) != 'emp' &&
-						$conve->cs_msg_type == 2 || 
-						$conve->cs_msg_type == 1 || 
-						$conve->cs_msg_type == 0) { ?>
+		if ($conve->cs_msg_type == 0) {?>
+		<!-- employee messages -->
 		<tr>
-			<td colspan="2">
-				<div class="conversation">
-					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-					<br>
-					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-					<br><br>
-					<?php echo $conve->cs_msg_text; ?>
-				</div>
+			<td class="employee_messages">
+				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				<br>
+				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+				<br><br> 
+				<?php echo $conve->cs_msg_text; ?>
 			</td>
 		</tr>
+		<!-- hr messages-->
+		<?php }elseif($conve->cs_msg_type == 1){ ?>
+		<tr>
+			<td class="hr_messages">			
+				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				<br>
+				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+				<br><br>
+				<?php echo $conve->cs_msg_text; ?>
+			</td>
 
-		<!-- show employee messages -->
-		<?php } elseif($conve->cs_msg_type == 1 &&
-					   $conve->cs_msg_type == 0 && 
-					   $this->uri->segment(4) == 'emp'){ ?>
+		</tr>
+		<!-- internal notes -->
+		<?php } elseif($conve->cs_msg_type == 2){ ?>
 		<tr>
-			<td colspan="2">
-				<div class="conversation">
-					Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-					<br>
-					Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-					<br><br> 
-					<?php echo $conve->cs_msg_text; ?>
-				</div>
+			<td class="internal_notes">
+				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				<br>
+				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
+				<br><br>
+				<?php echo $conve->cs_msg_text; ?>
 			</td>
 		</tr>
-		<?php } } ?>
+	<?php } } ?>
 	</table>
 	<br>
 
-	<!-- when user access is full and his/her incident is new or active -->
+	<!-- when user access is full or hr or finance and his/her incident is new or active -->
 	<?php if(($this->user->access == "full" || $this->user->access == "hr" || $this->user->access == "finance")&&
 			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
 
-	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">		
-	<input type="hidden" id="incident_owner" value="<?php echo $this->user->username; ?>"> <!--this will be the  HR/Accouting or admin owner of the incidet reply-->
+	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
+
+	<!-- this will be the  HR/Accouting or admin owner of the incidet reply -->	
+	<input type="hidden" id="incident_owner" value="<?php echo $this->user->username; ?>"> 
 	
 	<!-- message type tabs -->
 	<ul class="tabs">

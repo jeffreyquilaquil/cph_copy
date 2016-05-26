@@ -161,14 +161,10 @@ if($this->user->access == "exec"){
 				<td><?php echo $myticket->cs_post_urgency; ?></td>
 				<td><?php echo $myticket->last_update; ?></td>
 				<td><?php echo $myticket->hr_own_empUSER; ?></td>
-				<?php if($myticket->cs_post_status == 3){
-						echo "<td>Resolved</td>";
-					}else if($myticket->cs_post_status == 4){
-						echo "<td>Close</td>";
-					}else if($myticket->cs_post_status == 1){
-						echo "<td>Active</td>";
-					}?>
-						
+				<?php 
+					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed'];
+					echo '<td>'.$status[ $myticket->cs_post_status ].'</td>';
+				?>						
 				<?php 
 				if($myticket->remark != ''){
 					echo "<td>". $myticket->remark."</td>";
@@ -176,9 +172,7 @@ if($this->user->access == "exec"){
 					echo "<td>Unremark</td>";
 				}
 				?>
-				<td><a href=''>Reassign</a></td>
-
-							
+				<td><a href=''>Reassign</a></td>		
 			</tr>
 		<?php } ?>    	 
 	</table>

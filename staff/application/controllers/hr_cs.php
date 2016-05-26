@@ -42,7 +42,7 @@
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
 			$data2['reply_empUser'] = $this->input->post('hr_username');
 			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
-			$data2['cs_msg_type']=1;
+			$data2['cs_msg_type']=0;
 			$data2['cs_msg_text'] = $this->input->post('askHR_details');
 			$data2['cs_msg_text'] = $this->security->xss_clean($data2['cs_msg_text']);
 			
@@ -306,7 +306,7 @@
 			            	$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
 
 
-						}else if($reply == 'active' || $reply == 'emp'){
+						}else if($reply == 'emp' || $reply == 'active'){
 
 							$id = $this->input->post('insedentid');
 
@@ -315,7 +315,12 @@
 		            		$custommessage=  $this->input->post('custom_answer_msg');
 		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
 		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-		            		$data['cs_msg_type'] = 1;
+		            		if ($reply=='emp') {
+		            			$data['cs_msg_type'] = 0;
+		            		}else if($reply=='active'){
+		            			$data['cs_msg_type'] = 1;
+		            		}
+		            		
 		            		$data['reply_empUser']  = $this->input->post('hr_username');
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
@@ -331,7 +336,14 @@
 		            		$custommessage=  $this->input->post('custom_answer_msg');
 		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
 		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-		            		$data['cs_msg_type'] = 0;
+		            		if ($reply == 'resolved') {
+		            			$data['cs_msg_type'] = 1;	
+		            		}elseif (($reply == 'reopen' || $reply == 'cinc') && $reply == 'emp') {
+		            			$data['cs_msg_type'] = 0;	
+		            		}elseif(($reply == 'reopen' || $reply == 'cinc') && $reply == 'active'){
+		            			$data['cs_msg_type'] = 1;	
+		            		}
+		            		
 		            		$data['reply_empUser']  = $this->input->post('hr_username');
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
