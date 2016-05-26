@@ -498,7 +498,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_last.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_separated_employee.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
@@ -515,6 +515,9 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->setXY(87, 163);
 		$pdf->Write(0, date('F d, Y'));
+
+		$pdf->setXY(10, 195);
+		$pdf->Cell(0, 8, $this->user->name, 0, 1, 'C');
 		
 		
 		
