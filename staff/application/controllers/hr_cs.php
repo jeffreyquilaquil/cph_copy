@@ -139,9 +139,9 @@
 				//$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 GROUP BY cs_msg_postID_fk HAVING COUNT(cs_msg_postID_fk) = 1','hr_cs_post.cs_post_id');
 
 				//This is for New incident 
-				$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
-				$data['NewIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 0 GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
-				$data['NewIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk ,staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 1 GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0  AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 0 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk ,staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 1 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
 
 			 
 				// this is for the active incident
@@ -319,13 +319,20 @@
 		            			$data['cs_msg_type'] = 0;
 		            		}else if($reply=='active'){
 		            			$data['cs_msg_type'] = 1;
+		            			if ($newstat == 0) {
+		            				$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '", rate_status = 0','cs_post_id = '.$id);
+		            				$this->ask_hr->updatestatus('incident_rating','remark = "" ,remark_status = 1','post_id = '.$id);
+		            			}else{
+		            				$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+		            			}
+
 		            		}
 		            		
 		            		$data['reply_empUser']  = $this->input->post('hr_username');
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-		            		$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+		            		
 
 						}else if($reply == 'resolved' || $reply == 'reopen' || $reply = 'cinc'){
 
@@ -350,7 +357,8 @@
 
 		            		
 		            	
-							$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'"','cs_post_id = '.$id);
+							$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'", rate_status = 0','cs_post_id = '.$id);
+							$this->ask_hr->updatestatus('incident_rating','remark = "" ,remark_status = 1','post_id = '.$id);
 						}  
 
 
@@ -525,11 +533,11 @@
 		            		
 		        $this->ask_hr->askhr('hr_cs_msg',$data);
  	
-				$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'"','cs_post_id = '.$id);
+				$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "'. $newstat .'", rate_status = 0','cs_post_id = '.$id);
 
 				$stat_update = $this->input->post('survstatus');
 				$date_update = $datateupdated;
-				$this->ask_hr->updatestatus('incident_rating','last_update = "'. $date_update .'",remark_status = "'.$stat_update.'"','post_id = '.$id);
+				$this->ask_hr->updatestatus('incident_rating','remark= "" ,last_update = "'. $date_update .'",remark_status = "'.$stat_update.'"','post_id = '.$id);
 
 
             }
