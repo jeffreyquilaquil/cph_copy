@@ -1858,7 +1858,7 @@ class Timecard extends MY_Controller {
 			foreach( $payInfo as $key => $pay_ ){			
 				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
-					unset($payInfos[$key]);					
+				//	unset($payInfos[$key]);					
 				}
 			}	
 			$payInfo = $payInfos;
