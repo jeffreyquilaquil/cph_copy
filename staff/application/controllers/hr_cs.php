@@ -184,7 +184,7 @@
 
             	
 
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
+            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_msg.cs_msg_attachment, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
             	
             		$data['HrIncident'][0]->supervisor = $this->ask_hr->getdata('CONCAT(fname, " ", lname) AS name','staffs','empID ='.$data['HrIncident'][0]->supervisor)[0]->name;
 
