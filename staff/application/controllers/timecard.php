@@ -1840,7 +1840,7 @@ class Timecard extends MY_Controller {
 		}else{
 			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
 									
-			$payInfo = $payInfos = $this->dbmodel->getQueryResults('tcPayslips', 
+			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
 						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
 						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
 						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
@@ -1855,13 +1855,15 @@ class Timecard extends MY_Controller {
 
 			//get the separated employee to be used at the second tab
 			$separated_employee = array();
-			foreach( $payInfo as $key => $pay_ ){			
+			$payInfo_ = array();
+			foreach( $payInfo as $pay_ ){			
 				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
-				//	unset($payInfos[$key]);					
+				} else {
+					$payInfo_[] = $pay_;
 				}
 			}	
-			$payInfo = $payInfos;
+			$payInfo = $payInfo_;
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
@@ -2108,10 +2110,10 @@ class Timecard extends MY_Controller {
 			$col_header = 'C';
 			unset($header_col['name']);
 			unset($header_col['id_num']);
-			foreach( $header_col as $payID => $payDetails ){
+			/*foreach( $header_col as $payID => $payDetails ){
 				$objWorkSheet->setCellValue($col_header.$row_, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
 				$col_header++;
-			}
+			}*/
 			
 			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->getFont()->setBold(true);
 			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->applyFromArray(
