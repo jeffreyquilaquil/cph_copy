@@ -2104,16 +2104,21 @@ class Timecard extends MY_Controller {
 			//end body
 
 			//footer
-			//TOTALS			
+			//TOTALS
 			$objWorkSheet->setCellValue('A'.$row_, 'TOTALS:');
 			$last_row = $row_ - 1;
 			$col_header = 'C';
 			unset($header_col['name']);
 			unset($header_col['id_num']);
-			/*foreach( $header_col as $payID => $payDetails ){
-				$objWorkSheet->setCellValue($col_header.$row_, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
-				$col_header++;
-			}*/
+			
+			if( count($data_excel) > 0 ){
+				foreach( $header_col as $payID => $payDetails ){
+					$objWorkSheet->setCellValue($col_header.$row_, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
+					$col_header++;
+				}	
+			}			
+			
+			
 			
 			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->getFont()->setBold(true);
 			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->applyFromArray(
