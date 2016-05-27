@@ -1841,15 +1841,26 @@ class Timecard extends MY_Controller {
 			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
 									
 			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
-						'fname, lname, empID_fk, idNum, payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
+						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
 						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
 						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
-						LEFT JOIN staffs ON empID=empID_fk 
+						LEFT JOIN staffs ON empID=empID_fk
+						LEFT JOIN tcLastPay ON tcLastPay.empID_fk =  tcPayslips.empID_fk
 						LEFT JOIN newPositions ON posID=position 
 						LEFT JOIN orgLevel ON levelID=orgLevel_fk
-						LEFT JOIN sssTable ON monthlyRate BETWEEN minRange AND maxRange', 
+						LEFT JOIN sssTable ON tcPayslips.monthlyRate BETWEEN minRange AND maxRange', 
 						'lname');
 
+			
+
+			//get the separated employee to be used at the second tab
+			$separated_employee = array();
+			foreach( $payInfo as $pay_ ){			
+				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
+					$separated_employee[ $pay_->empID_fk ] = $pay_;
+				}
+			}	
+				
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
@@ -1955,49 +1966,7 @@ class Timecard extends MY_Controller {
 
 			$data_excel = array();
 			foreach( $payInfo as $pay_info ){
-				$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$pay_info->payslipID.'" AND payValue!="0.00"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
-
-				$data_excel_array = array();
-
-				$data_excel_array['name'] = $pay_info->lname.', '.$pay_info->fname;
-				$data_excel_array['id_num'] = $pay_info->idNum;
-				$data_excel_array['net'] = $pay_info->net;
-				$data_excel_array['net_'] = $pay_info->net;
-				$data_excel_array['earning'] = $pay_info->earning;
-				$data_excel_array['earning_'] = $pay_info->earning;
-				$data_excel_array['eCompensation'] = '-'.$pay_info->eCompensation;
-				$data_excel_array['employerShare'] = '-'.$pay_info->employerShare;
-				$data_excel_array['totalTaxable'] = $pay_info->totalTaxable;
-				$data_excel_array['basePay'] = $pay_info->basePay;
-
-				foreach( $dataItems as $item ){
-					if( $item->payType == 'debit')	{
-						$item->payValue = '-'.$item->payValue;
-					}
-					if( isset($header_array_sequence[ $item->payID ] ) ){
-						$key = $item->payID;
-						$data_excel_array[ $key ] += $item->payValue;
-					}
-					if( $item->numHR > 0 ){
-						$key = $item->payID.'HR';
-						$data_excel_array[ $key ] = $item->numHR;
-					}
-					//for tax refund
-					//deduct tax refund from gross pay
-					if( isset($item->payID) AND in_array($item->payID, array(43, 46, 37) ) ){
-						$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
-						$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
-					}
-				}
-				if( !isset($data_excel_array['22HR']) ){
-					unset($data_excel_array['22']);
-				}
-				if( isset($data_excel_array['22']) ){
-					unset($data_excel_array['basePay']);
-				}
-
-
-				$data_excel[$pay_info->empID_fk] = $data_excel_array;
+				$data_excel[ $pay_info->empID_fk ] = $this->payrollM->getEmployeePayrollDistro( $pay_info, $header_array_sequence );
 			}
 
 			//$this->textM->aaa($data_excel);
@@ -2037,6 +2006,129 @@ class Timecard extends MY_Controller {
 									)
 				 )
 			);
+
+			//header for second page
+			$header_array_sequence = $header_col =  array(
+				'name' => 'Employee',
+				'id_num' => 'Employee ID',
+				'12' => 'Regular Taken',
+				'22' => 'Regular Worked',				
+				'10' => 'ND:Regular',
+				'earning' => 'Gross Pay',				
+				'9' => 'Pag-ibig Contribution',
+				'8' => 'SSS Contribution',
+				'7' => 'Philhealth Contribution',
+				'totalTaxable' => 'Taxable Pay',
+				'33' => 'Medicine Reimbursement',
+				'44' => 'Pro-rated Allowance',
+				'14' => 'Performance Bonus',
+				'15' => 'Kudos Bonus',
+				'31' => 'Discrepancy on Previous Bonus',
+				'21' => 'Vacation Pay',
+				'13thMonth' => 'Total 13th Month Pay',
+				'taxFromPrevious' => 'Tax Refund Previous Year',
+				'20' => 'Tax Deficit Previous Year',
+				'18' => 'Sun Life',
+				'17' => 'Healthcare Dependent/s',
+				'47' => 'Training Allowance',
+				'19' => 'Pag-ibig Loan',
+				'13' => 'SSS Loan',
+				'39' => 'Loan Adjustment',
+				'40' => 'Payslip Adjustment',
+				'36' => '13th Month Adjustment',				
+				'30' => 'Cost of Vaccines',
+				'46' => 'Refund on Cost of Vaccines',
+				'38' => 'Cost of Community Tax Certificate',
+				'45' => 'One Plus Shop',
+				'48' => 'ID Replacement',
+				'taxWithheld' => 'Total Tax Withheld',
+				'taxDue' => 'Tax Due',
+				'net' => 'Last Pay',
+				'net_' => 'Cheque Payroll',
+				'eCompensation' => 'SSS Employer Compensation',
+				'employerShare' => 'SSS Employer Share');
+
+			//second page
+			// Add new sheet
+			$objWorkSheet = $objPHPExcel->createSheet(1); //Setting index when creating
+
+			//Write cells
+			
+			//header
+			$objWorkSheet->mergeCells('A1:AL1');
+			$objWorkSheet->setCellValue('A1', 'DISTRIBUTION REPORT FOR SEPARATED EMPLOYEE - ' . date('Y') )
+				->getStyle('A1')
+				->getAlignment()
+				->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+			$objWorkSheet->getStyle('A1')
+				->getFont()
+				->setBold(true);
+			$objWorkSheet->getRowDimension(1)->setRowHeight(28);
+
+			$objWorkSheet->getRowDimension(2)->setRowHeight(28);
+			$col_header = 'A';
+			foreach( $header_col as $header ){
+				$objWorkSheet->setCellValue($col_header.'2', $header);
+				$objWorkSheet->getColumnDimension($col_header)->setAutoSize(true);
+				$col_header++;
+			}
+			$objWorkSheet->freezePane('B3');
+			//end header
+
+			//body
+
+			//traverse through $separated Employee
+			
+			$data_excel = array();
+			foreach( $separated_employee as $empID => $details ){
+				$data_excel[ $empID ] = $this->payrollM->getEmployeePayrollDistro( $details, $header_array_sequence, true );
+			};
+			
+			$row_ = 3;
+			foreach( $data_excel as $empID => $details ){
+				$col_name = 'A';
+				foreach( $header_array_sequence as $key => $val ){
+					if( isset($details[ $key ]) ){
+						$objWorkSheet->setCellValue($col_name.$row_, $details[ $key ]);	
+					} else {
+						$objWorkSheet->setCellValue($col_name.$row_, 0);	
+					}
+					
+					$col_name++;
+				}
+				$row_++;
+			}
+			//end body
+
+			//footer
+			//TOTALS			
+			$objWorkSheet->setCellValue('A'.$row_, 'TOTALS:');
+			$last_row = $row_ - 1;
+			$col_header = 'C';
+			unset($header_col['name']);
+			unset($header_col['id_num']);
+			foreach( $header_col as $payID => $payDetails ){
+				$objWorkSheet->setCellValue($col_header.$row_, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
+				$col_header++;
+			}
+			
+			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->getFont()->setBold(true);
+			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->applyFromArray(
+			array('fill' 	=> array(
+										'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+										'color'		=> array('argb' => 'FFF000')
+									)
+				 )
+			);
+
+			//end footer
+
+			
+			// Rename sheet
+			$objWorkSheet->setTitle("Separated Employee");
+
+			//end second page
+
 							
 			//$this->textM->aaa($arrCell);
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);

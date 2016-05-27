@@ -2060,6 +2060,64 @@ class Payrollmodel extends CI_Model {
 		return $s;
 	}
 	
+	//return info used in distro list
+	public function getEmployeePayrollDistro( $employee_info, $header_array_sequence, $include_last_pay = false ){
+		$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$employee_info->payslipID.'" AND payValue!="0.00"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
+
+		$data_excel_array = array();
+
+		$data_excel_array['name'] = $employee_info->lname.', '.$employee_info->fname;
+		$data_excel_array['id_num'] = $employee_info->idNum;
+		$data_excel_array['net'] = $employee_info->net;
+		$data_excel_array['net_'] = $employee_info->net;
+		$data_excel_array['earning'] = $employee_info->earning;
+		$data_excel_array['earning_'] = $employee_info->earning;
+		$data_excel_array['eCompensation'] = '-'.$employee_info->eCompensation;
+		$data_excel_array['employerShare'] = '-'.$employee_info->employerShare;
+		$data_excel_array['totalTaxable'] = $employee_info->totalTaxable;
+		$data_excel_array['basePay'] = $employee_info->basePay;
+
+		foreach( $dataItems as $item ){
+			if( $item->payType == 'debit')	{
+				$item->payValue = '-'.$item->payValue;
+			}
+			if( isset($header_array_sequence[ $item->payID ] ) ){
+				$key = $item->payID;
+				$data_excel_array[ $key ] += $item->payValue;
+			}
+			if( $item->numHR > 0 ){
+				$key = $item->payID.'HR';
+				$data_excel_array[ $key ] = $item->numHR;
+			}
+			//for tax refund
+			//deduct tax refund from gross pay
+			if( isset($item->payID) AND in_array($item->payID, array(43, 46, 37) ) ){
+				$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
+				$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
+			}
+		}
+		if( !isset($data_excel_array['22HR']) ){
+			unset($data_excel_array['22']);
+		}
+		if( isset($data_excel_array['22']) ){
+			unset($data_excel_array['basePay']);
+		}
+
+		if( $include_last_pay == TRUE ){
+			
+			$last_pay_items = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$employee_info->empID_fk);
+			if( count($last_pay_items) > 0 ){
+				$data_excel_array['taxDue']	= $last_pay_items->taxDue;
+				$data_excel_array['taxWithheld']	= $last_pay_items->taxWithheld;
+				$data_excel_array['13thMonth']	= $last_pay_items->add13th;
+				$data_excel_array['taxFromPrevious']	= $last_pay_items->taxFromPrevious;
+				
+
+			}
+			
+		}
+
+
+		return $data_excel_array;
+	}
 }
-?>
-	
