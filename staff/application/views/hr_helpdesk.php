@@ -81,6 +81,7 @@ if($this->user->access == "exec"){
 	  	$CancelIncident = array();
 	  	$title = '';
 
+	  	// Title & access in new tab
 	  	if($this->user->access == "hr"){
 	  		$NewIncident = $NewIncidentHR;
 	  		$title = "HR HelpDesk";
@@ -92,6 +93,7 @@ if($this->user->access == "exec"){
 			$title = "Admin HelpDesk";
 		}
 
+		// Access in active tab
 		if($this->user->access == "hr"){
 	  		$ActiveIncident = $ActiveIncidentHR;
 	  	}else if($this->user->access == "finance"){
@@ -99,6 +101,8 @@ if($this->user->access == "exec"){
 	  	}else if($this->user->access == "full"){
 			$ActiveIncident = $ActiveIncidentFull;
 		}
+
+		// Access in resolved tab
 		if($this->user->access == "hr"){
 	  		$ResolveIncident = $ResolveIncidentHR;
 	  	}else if($this->user->access == "finance"){
@@ -106,6 +110,8 @@ if($this->user->access == "exec"){
 	  	}else if($this->user->access == "full"){
 			$ResolveIncident = $ResolveIncidentFull;
 		}
+
+		// Access in close tab
 		if($this->user->access == "hr"){
 	  		$CancelIncident = $CancelIncidentHR;
 	  	}else if($this->user->access == "finance"){
@@ -120,12 +126,9 @@ if($this->user->access == "exec"){
 
 	<h2><?php echo $title; ?></h2>
 
-
 	<li class="dbold tab-link current" data-tab="tab-0">My Ticket</li>
-	<li class="dbold tab-link" data-tab="tab-1">New<font color="darkred" style="font-weight: bold;">
-	( <?php echo count($NewIncident)?> )</font>
-	</li>
-	<li class="dbold tab-link" data-tab="tab-2">Active <font color="darkred" style="font-weight: bold;">( <?php echo count($ActiveIncident)?> )</font></li>
+	<li class="dbold tab-link" data-tab="tab-1">New <span style="font-weight: bold; color: darkred;"><?php if(count($NewIncident)=='0'){}else{echo '('.count($NewIncident).')'; } ?></span></li>
+	<li class="dbold tab-link" data-tab="tab-2">Active</li>
 	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
 	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
 
@@ -148,9 +151,9 @@ if($this->user->access == "exec"){
 				<th>Priority</th>
 				<th>Last Update</th>
 				<th>Due Date</th>
-				<th>Owner</th>
 				<th>Status</th>
 				<th>Mark</th>
+				<th>Owner</th>
 				<th>Extend Due Date</th>
 				<th>Reassign</th>
 
@@ -168,14 +171,24 @@ if($this->user->access == "exec"){
       			</td>
 				<td><?php echo $myticket->cs_post_subject; ?></td>
 				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
-				<td><?php echo $myticket->cs_post_urgency; ?></td>
-				<td><?php echo $myticket->last_update; ?></td>
-				<td><?php echo $myticket->due_date; ?></td>
-				<td><?php echo $myticket->hr_own_empUSER; ?></td>
+				<td>
+					<?php if($myticket->cs_post_urgency=='Urgent'){ 
+					   			echo "<div class='urgent'>$myticket->cs_post_urgency</div>";
+							}elseif($myticket->cs_post_urgency=='Need Attention'){
+								echo "<div class='need_attention'>$myticket->cs_post_urgency</div>";
+							}elseif($myticket->cs_post_urgency=='Not Urgent'){
+								echo "<div class='not_urgent'>$myticket->cs_post_urgency</div>";
+							}
+					?>
+				</td>
+				<td><?php echo date_format(date_create($myticket->last_update), 'F d, Y G:ia'); ?></td>
+				<td><?php echo date_format(date_create($myticket->due_date),'F d, Y'); ?></td>
+				
 				<?php 
 					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed'];
 					echo '<td>'.$status[ $myticket->cs_post_status ].'</td>';
-				?>						
+				?>	
+
 				<?php 
 				if($myticket->remark != ''){
 					echo "<td>". $myticket->remark."</td>";
@@ -183,6 +196,7 @@ if($this->user->access == "exec"){
 					echo "<td>Unremark</td>";
 				}
 				?>
+				<td><?php echo $myticket->hr_own_empUSER; ?></td>
 				<td>
 					<a style="cursor: pointer;" id="extend_date<?php echo $myticket->cs_post_id; ?>">Extend Date</a>
 					<span id="extend_date_form<?php echo $myticket->cs_post_id; ?>">
@@ -381,8 +395,7 @@ if($this->user->access == "exec"){
 		<li class="tab-link current" dt-tab="tb-1">Add Categories</li>
 		<li class="tab-link" dt-tab="tb-2">Edit HR User Permissions</li>
 		<li class="tab-link" dt-tab="tb-3">Edit Message Templates</li>
-		<li class="tab-link" dt-tab="tb-4">Edit Urgency Time Limit</li>
-		<li class="tab-link" dt-tab="tb-5">Add a Redirection Department</li>
+		<li class="tab-link" dt-tab="tb-4">Add a Redirection Department</li>
 	</ul>
 
 	<!-- add categories tab -->
@@ -402,13 +415,8 @@ if($this->user->access == "exec"){
      
     </div>
 
-    <!-- edit urgency time limit -->
-    <div id="tb-4" class="tab-cont">
-    	
-    </div>
-
     <!-- add redirection department tab -->
-    <div id="tb-5" class="tab-cont">
+    <div id="tb-4" class="tab-cont">
 
     	<!-- add redirection department -->
    		<table class="tableInfo">
