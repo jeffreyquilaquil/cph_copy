@@ -1840,7 +1840,7 @@ class Timecard extends MY_Controller {
 		}else{
 			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
 									
-			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
+			$payInfo = $payInfos = $this->dbmodel->getQueryResults('tcPayslips', 
 						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
 						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
 						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
@@ -1857,11 +1857,11 @@ class Timecard extends MY_Controller {
 			$separated_employee = array();
 			foreach( $payInfo as $key => $pay_ ){			
 				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
-					unset($payInfo[$key]);
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
+					unset($payInfos[$key]);					
 				}
 			}	
-
+			$payInfo = $payInfos;
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
