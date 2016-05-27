@@ -173,10 +173,12 @@
 				?>
 			</td>
 		</tr>
+
 		<tr>
 			<td>Due date</td>
-			<td>aaaaaa</td>
+			<td><?php echo $value->due_date; ?></td>
 		</tr>
+
 
 		<!-- when incidident is new, can add assign category and investigation required -->
 		<?php if ($this->uri->segment(4)== 'new'){ ?>
@@ -197,11 +199,11 @@
 		<tr>
 			<td>Choose priority level & Resolved date</td>
 			<td>
-				<input id="lbl_urgent" type="radio" name="incident_urgency" value="" placeholder="">
+				<input id="lbl_urgent" type="radio" name="incident_urgency" value="Urgent" required>
 				<label for="lbl_urgent" class="urgent">Urgent (2 days)</label>&nbsp;&nbsp;&nbsp;
-				<input id="lbl_need_attention" type="radio" name="incident_urgency" value="" placeholder="">
+				<input id="lbl_need_attention" type="radio" name="incident_urgency" value="Need Attention" required>
 				<label for="lbl_need_attention" class="need_attention">Need Attention (1 week)</label>&nbsp;&nbsp;&nbsp;
-				<input id="lbl_not_urgent" type="radio" name="incident_urgency" value="" placeholder="">
+				<input id="lbl_not_urgent" type="radio" name="incident_urgency" value="Not Urgent" required>
 				<label for="lbl_not_urgent" class="not_urgent">Not Urgent (2 weeks)</label>&nbsp;&nbsp;&nbsp;
 			</td>
 		</tr>
@@ -530,7 +532,6 @@ $(document).ready(function() {
 		var custom_ans = tinyMCE.get('note_msg').getContent();
 		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#categoryid").val();
-		var inv_req = $('input[name="investigation_required_radio"]:checked').val();
 		var ass_categ = $("#assign_category option:selected").val();
 
 		var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&assign_category=' + ass_categ + '&inve_req=' + inv_req;
@@ -651,7 +652,7 @@ $(document).ready(function() {
 			var hd_own = $('#incident_owner').val();
 			var hd_ownID = $('#incident_ownerID').val();
 			var stat = 1;
-			var inv_req = $('input[name="investigation_required_radio"]:checked').val();
+			var inv_req = $('input[name="incident_urgency"]:checked').val();
 			var ins_id = $("#categoryid").val();
 			var ass_categ = $("#assign_category option:selected").val();
 			var custom_ans = tinyMCE.get('custom_msg').getContent();

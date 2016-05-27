@@ -8,7 +8,7 @@
 	if($this->config->item('devmode')==true || $this->session->userdata('testing')==true){
 		
 		echo $this->user->username.' '.$this->user->empID.'---'.$this->user->idNum.'<br/>';
-		print_r($this->access->myaccess);
+		echo $this->access->myaccess[0];
 		echo '<form action="'.$this->config->base_url().'hello/" method="POST">
 			<b>Change logged in user</b><br/>
 			<input type="text" name="username" value="" class="padding5px" placeholder="username"/><input type="submit" value="Submit"/><br/>

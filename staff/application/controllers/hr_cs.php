@@ -139,30 +139,36 @@
 				//$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 GROUP BY cs_msg_postID_fk HAVING COUNT(cs_msg_postID_fk) = 1','hr_cs_post.cs_post_id');
 
 				//This is for New incident 
-				$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0  AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
-				$data['NewIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 0 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
-				$data['NewIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk ,staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 1 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0  AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, staffs.fname, hr_cs_post.due_date, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 0 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
+				$data['NewIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk ,staffs.fname, hr_cs_post.due_date, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 1 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
 
 			 
 				// this is for the active incident
-				$data['ActiveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 GROUP BY cs_msg_postID_fk');
-				$data['ActiveIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 0 GROUP BY cs_msg_postID_fk');
-				$data['ActiveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 1 GROUP BY cs_msg_postID_fk');
+				$data['ActiveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 GROUP BY cs_msg_postID_fk');
+				$data['ActiveIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 0 GROUP BY cs_msg_postID_fk');
+				$data['ActiveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 1 GROUP BY cs_msg_postID_fk');
 
 				// this is for Resolve incident
-				$data['ResolveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['ResolveIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['ResolveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['ResolveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['ResolveIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['ResolveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
 
 				//this is for Cancel incident
-				$data['CancelIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['CancelIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['CancelIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
 
 
 				// this is for Agent incident
-				$data['MyTicket']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_status, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, incident_rating.remark','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category LEFT JOIN incident_rating ON incident_rating.post_id = hr_cs_post.cs_post_id WHERE hr_cs_post.hr_own_empUSER = "'.$empuser.'" GROUP BY cs_msg_postID_fk');
+				$data['MyTicket']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_status, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, incident_rating.remark','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category LEFT JOIN incident_rating ON incident_rating.post_id = hr_cs_post.cs_post_id WHERE hr_cs_post.hr_own_empUSER = "'.$empuser.'" GROUP BY cs_msg_postID_fk');
 
+				// get the name of all hr employee
+				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
+				// get the name of all accounting employee
+				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
+				// get the name of all Full Access employee
+				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
 
 				$this->load->view('includes/template',$data);
 
@@ -178,7 +184,7 @@
 
             	
 
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
+            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
             	
             		$data['HrIncident'][0]->supervisor = $this->ask_hr->getdata('CONCAT(fname, " ", lname) AS name','staffs','empID ='.$data['HrIncident'][0]->supervisor)[0]->name;
 
@@ -296,14 +302,22 @@
 
 		            	$categ = $this->input->post('assign_category');
 		            	$inv_req = $this->input->post('inve_req');
+		            	if($inv_req == "Urgent"){
+		            		$due = date('Y-m-d', strtotime(date('Y-m-d'). ' + 2 days'));
+		            	}else if($inv_req == "Need Attention"){
+		            		$due = date('Y-m-d', strtotime(date('Y-m-d'). ' + 3 days'));
+		            	}else if($inv_req == "Not Urgent"){
+		            		$due = date('Y-m-d', strtotime(date('Y-m-d'). ' + 4 days'));
+		            	}
+
 		            	
-						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'", invi_req = "'.$inv_req.'"','cs_post_id = '.$id);
+						$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'", due_date = "'.$due.'", cs_post_urgency = "'.$inv_req.'", hr_own_empUSER = "' .$empUSER. '", cs_post_agent = "'.$empID.'", cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
 						
 						
-		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '", cs_post_agent = "'.$empID.'"','cs_post_id = '.$id);
+		            	//$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "' .$empUSER. '", cs_post_agent = "'.$empID.'"','cs_post_id = '.$id);
 
 			            	
-			            	$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+			            //$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
 
 
 						}else if($reply == 'emp' || $reply == 'active'){
@@ -384,9 +398,8 @@
 		            		
 		            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-		            		$categ = $this->input->post('assign_category');
-		            		$inv_req = $this->input->post('inve_req');
-		            		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'", invi_req = "'.$inv_req.'"','cs_post_id = '.$id);
+		            		$categ = $this->input->post('assign_category');		    
+		            		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id);
 
 
             		$data2['content']='hr_helpdesk';
@@ -539,6 +552,38 @@
 				$date_update = $datateupdated;
 				$this->ask_hr->updatestatus('incident_rating','remark= "" ,last_update = "'. $date_update .'",remark_status = "'.$stat_update.'"','post_id = '.$id);
 
+
+            }
+            function Redirect() // method to redirect the incident owner
+            {
+            	$val = $this->input->post('redirect_to');
+            	$list = array();
+            	$list = explode(",",$val);
+            	$id = $list[0];
+
+            	$data['cs_msg_postID_fk'] = $id;
+            	$data['reply_empUser'] = $list[3];
+            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+            	$data['cs_msg_type'] = 1;
+            	$data['cs_msg_text'] = "<h3>This Incident is Reassign to you from <b>".$list[3]." </b></h3>";
+
+            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
+            	$new_owner = $list[1];
+            	$new_agent= $list[2];
+            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "'. $new_owner .'", cs_post_agent = "'.$new_agent.'"','cs_post_id = '.$id);
+
+            }
+            function AdditionalDays() // method to redirect the incident owner
+            {
+            	$id = $this->input->post('inci_id');
+            	$dueDate = $this->input->post('due_date');
+            	$num_days = $this->input->post('add_days');
+
+            	$Updated_date = date('Y-m-d', strtotime($dueDate. ' + '.$num_days.' days'));
+
+
+            	$this->ask_hr->updatestatus('hr_cs_post','due_date = "'. $Updated_date .'"','cs_post_id = '.$id);
 
             }
             
