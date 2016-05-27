@@ -1855,12 +1855,13 @@ class Timecard extends MY_Controller {
 
 			//get the separated employee to be used at the second tab
 			$separated_employee = array();
-			foreach( $payInfo as $pay_ ){			
+			foreach( $payInfo as $key => $pay_ ){			
 				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
+					unset($payInfo[$key]);
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
 				}
 			}	
-				
+
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
