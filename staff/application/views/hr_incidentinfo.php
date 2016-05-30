@@ -241,12 +241,14 @@
 				<?php 
 				$file = $conve->cs_msg_attachment;
 				if($file != null){
-					$aReplace = array('["', '"]');
-					$coordsReplaced = str_replace($aReplace , '', $file);
-					$link = stripslashes($coordsReplaced);
-					$exp = explode('","',$link);
-					foreach ($exp as $link_file) {
+					$docs_url = json_decode($conve->cs_msg_attachment);
+
+					foreach ($docs_url as $l_file=>$file) {
+						$link_file = str_replace(FCPATH, '', $file);
+
+						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px;'>";
 						echo $this->config->base_url()."".$link_file."<br>";
+						echo "</a>";
 					}
 				}else{
 					echo "No File Attach..<br>";
@@ -266,12 +268,13 @@
 
 					$file = $conve->cs_msg_attachment;
 					if($file != null){
-					$aReplace = array('["', '"]');
-					$coordsReplaced = str_replace($aReplace , '', $file);
-					$link = stripslashes($coordsReplaced);
-					$exp = explode('","',$link);
-					foreach ($exp as $link_file) {
+						$docs_url = json_decode($conve->cs_msg_attachment);
+
+					foreach ($docs_url as $l_file=>$file) {
+						$link_file = str_replace(FCPATH, '', $file);
+						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px;'>";
 						echo $this->config->base_url()."".$link_file."<br>";
+						echo "</a>";
 					}
 				}else{
 					echo "No File Attach..<br>";
