@@ -1841,7 +1841,7 @@ class Timecard extends MY_Controller {
 			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
 									
 			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
-						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
+						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation, payPeriodStart as "payroll_start", payPeriodEnd AS "payroll_end", dateFrom as "lastpay_start", dateTo as "lastpay_start"', 
 						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
 						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
 						LEFT JOIN staffs ON empID=empID_fk
@@ -1857,7 +1857,7 @@ class Timecard extends MY_Controller {
 			$separated_employee = array();
 			$payInfo_ = array();
 			foreach( $payInfo as $pay_ ){			
-				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) ){
+				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate > $pay_->payroll_start AND $pay_->endDate < $pay_->payroll_end ) ){
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
 				} else {
 					$payInfo_[] = $pay_;
@@ -2145,6 +2145,7 @@ class Timecard extends MY_Controller {
 			header('Content-type: application/vnd.ms-excel');
 			header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
 			$objWriter->save('php://output');			
+			
 		}	
 	}
 	
