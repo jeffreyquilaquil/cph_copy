@@ -239,7 +239,20 @@
 				<br>
 				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
 				<br><br> 
-				<?php echo $conve->cs_msg_text; ?>
+				<?php 
+				$file = $conve->cs_msg_attachment;
+				if($file != null){
+					$aReplace = array('["', '"]');
+					$coordsReplaced = str_replace($aReplace , '', $file);
+					$link = stripslashes($coordsReplaced);
+					$exp = explode('","',$link);
+					foreach ($exp as $link_file) {
+						echo $this->config->base_url()."".$link_file."<br>";
+					}
+				}else{
+					echo "No File Attach..<br>";
+				}
+				echo "<br>".$conve->cs_msg_text; ?>
 			</td>
 		</tr>
 		<!-- hr messages-->
@@ -250,7 +263,22 @@
 				<br>
 				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
 				<br><br>
-				<?php echo $conve->cs_msg_text; ?>
+				<?php 
+
+					$file = $conve->cs_msg_attachment;
+					if($file != null){
+					$aReplace = array('["', '"]');
+					$coordsReplaced = str_replace($aReplace , '', $file);
+					$link = stripslashes($coordsReplaced);
+					$exp = explode('","',$link);
+					foreach ($exp as $link_file) {
+						echo $this->config->base_url()."".$link_file."<br>";
+					}
+				}else{
+					echo "No File Attach..<br>";
+				}
+
+				echo $conve->cs_msg_text; ?>
 			</td>
 
 		</tr>
@@ -262,7 +290,21 @@
 				<br>
 				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
 				<br><br>
-				<?php echo $conve->cs_msg_text; ?>
+				<?php 
+
+					$file = $conve->cs_msg_attachment;
+					if($file != null){
+					$aReplace = array('["', '"]');
+					$coordsReplaced = str_replace($aReplace , '', $file);
+					$link = stripslashes($coordsReplaced);
+					$exp = explode('","',$link);
+					foreach ($exp as $link_file) {
+						echo $this->config->base_url()."".$link_file."<br>";
+					}
+				}else{
+					echo "No File Attach..<br>";
+				}
+				echo $conve->cs_msg_text; ?>
 			</td>
 		</tr>
 	<?php } } ?>
