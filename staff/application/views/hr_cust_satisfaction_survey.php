@@ -27,11 +27,22 @@
       		<tr>
       			<td><?php echo $value->post_id ?></td>
       			<td><?php echo $value->fname." ".$value->lname ?></td>
-      			<td><?php echo $value->date_submited ?></td>
-                        <td><?php echo $value->last_update ?></td>
-      			<td><?php if($value->assign_category==''){echo " - ";}else{echo $value->assign_category;} ?></td>
+                        <td><?php echo date_format(date_create($value->date_submited), 'F d, Y G:ia'); ?></td>
+                        <td><?php echo date_format(date_create($value->last_update), 'F d, Y G:ia'); ?></td>
+      			<td><?php echo $value->assign_category; ?></td>
       			<td><?php echo $value->cs_post_subject ?></td>
-      			<td><?php echo $value->cs_post_urgency ?></td>
+      			<td>
+                        <?php if($value->cs_post_urgency=='Urgent'){ 
+                                    echo "<div class='urgent'>$value->cs_post_urgency</div>";
+                              }elseif($value->cs_post_urgency=='Need Attention'){
+                                    echo "<div class='need_attention'>$value->cs_post_urgency</div>";
+                              }elseif($value->cs_post_urgency=='Not Urgent'){
+                                    echo "<div class='not_urgent'>$value->cs_post_urgency</div>";
+                              }else{
+                                    echo "-";
+                              }
+                        ?>
+                        </td>
       			<td><?php echo $value->hr_own_empUSER ?></td>
       			<td><?php echo $value->remark ?></td>
       		</tr>

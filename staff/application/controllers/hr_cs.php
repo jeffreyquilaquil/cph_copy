@@ -49,7 +49,7 @@
 			if( $this->isSetNotEmpty($_FILES)){
 						$files = $_FILES;					
 						// config data 
-						$upload_config['upload_path'] = FCPATH .'uploads/cs_hr_attachments';
+						$upload_config['upload_path'] ='uploads/cs_hr_attachments';
 						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc';
 						$upload_config['max_size']	= '2048';
 						$upload_config['overwrite']	= 'FALSE';					

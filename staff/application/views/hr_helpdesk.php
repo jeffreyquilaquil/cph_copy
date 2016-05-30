@@ -10,6 +10,7 @@ if($this->user->access == "exec"){
 }
 ?>
 
+
 <style type="text/css">
 
 	th{
@@ -69,7 +70,6 @@ if($this->user->access == "exec"){
 	.tab-cont.curr{
 		display: inherit;
 	}
-
 
  
 </style>
@@ -291,12 +291,29 @@ if($this->user->access == "exec"){
 	      		</td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
-	      		<td><?php echo $value->cs_post_urgency; ?></td>
-	      		<td><?php  echo $value->cs_post_date_submitted; ?></td> 
-	      		<td><select name="" id="redirect_select" style="width: 200px;">
-	      				<option>HR</option>
-	      				<option>Finance</option>
-	      			</select>
+	      		<td>
+	      		<?php if($value->cs_post_urgency=='Urgent'){ 
+					   			echo "<div class='urgent'>$value->cs_post_urgency</div>";
+							}elseif($value->cs_post_urgency=='Need Attention'){
+								echo "<div class='need_attention'>$value->cs_post_urgency</div>";
+							}elseif($value->cs_post_urgency=='Not Urgent'){
+								echo "<div class='not_urgent'>$value->cs_post_urgency</div>";
+							}else{
+								echo "-";
+							}
+					?>
+	      		</td>
+	       		<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
+	      		<td>
+	      			<ul style="list-style: none; margin: 0px; padding: 0px;">
+	      				<li>
+	      					<select name="" id="redirect_select" style="width: 100%;">
+		      				<option>HR</option>
+		      				<option>Finance</option>
+		      			</select>
+	      				</li>
+	      				<li><input type="button" class="btngreen" id="" name="" value="Submit" style="float:right;"></li>
+	      			</ul>
 	      		</td>	
 	  		</tr>	     
 
@@ -327,12 +344,23 @@ if($this->user->access == "exec"){
 		<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
 			<tr>
 				<td class="td_hover">
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active/<?php echo $active_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
+      				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active/<?php echo $active_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
       			</td>
 				<td><?php echo $active_val->cs_post_subject; ?></td>
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
-				<td><?php echo $active_val->cs_post_urgency; ?></td>
-				<td><?php echo $active_val->last_update; ?></td>
+				<td>
+				<?php if($active_val->cs_post_urgency=='Urgent'){ 
+				   			echo "<div class='urgent'>$active_val->cs_post_urgency</div>";
+						}elseif($active_val->cs_post_urgency=='Need Attention'){
+							echo "<div class='need_attention'>$active_val->cs_post_urgency</div>";
+						}elseif($active_val->cs_post_urgency=='Not Urgent'){
+							echo "<div class='not_urgent'>$active_val->cs_post_urgency</div>";
+						}else{
+							echo "-";
+						}
+				?>
+				</td>
+				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
 				<td><?php echo $active_val->hr_own_empUSER; ?></td>				
 			</tr>
 		<?php } ?>    	 
@@ -365,8 +393,19 @@ if($this->user->access == "exec"){
 	      			</td>
 					<td><?php echo $resolve_val->cs_post_subject; ?></td>
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
-					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
-					<td><?php echo $resolve_val->last_update; ?></td>
+					<td>
+					<?php if($resolve_val->cs_post_urgency=='Urgent'){ 
+				   			echo "<div class='urgent'>$resolve_val->cs_post_urgency</div>";
+						}elseif($resolve_val->cs_post_urgency=='Need Attention'){
+							echo "<div class='need_attention'>$resolve_val->cs_post_urgency</div>";
+						}elseif($resolve_val->cs_post_urgency=='Not Urgent'){
+							echo "<div class='not_urgent'>$resolve_val->cs_post_urgency</div>";
+						}else{
+							echo "-";
+						}
+					?>
+					</td>
+					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
 					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
 				</tr>
 			<?php } ?>     
@@ -376,9 +415,7 @@ if($this->user->access == "exec"){
 
 <!-- closed tab -->
 <div id="tab-4" class="tab-content">
-
 <br>
-
 	<table id="new" class="datatable">
 		<thead>
 			<tr>
@@ -398,13 +435,23 @@ if($this->user->access == "exec"){
       			</td>
 				<td><?php echo $resolve_val->cs_post_subject; ?></td>
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
-				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
-				<td><?php echo $resolve_val->last_update; ?></td>
+				<td>
+				<?php if($resolve_val->cs_post_urgency=='Urgent'){ 
+				   			echo "<div class='urgent'>$resolve_val->cs_post_urgency</div>";
+						}elseif($resolve_val->cs_post_urgency=='Need Attention'){
+							echo "<div class='need_attention'>$resolve_val->cs_post_urgency</div>";
+						}elseif($resolve_val->cs_post_urgency=='Not Urgent'){
+							echo "<div class='not_urgent'>$resolve_val->cs_post_urgency</div>";
+						}else{
+							echo "-";
+						}
+				?>
+				</td>
+				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>>
 				<td><?php echo $resolve_val->hr_own_empUSER; ?></td>		
 			</tr>
 		<?php } ?>     
 	</table>
-
 </div>
 
 <h2>SETTINGS</h2>

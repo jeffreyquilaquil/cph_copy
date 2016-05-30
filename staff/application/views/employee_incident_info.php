@@ -29,8 +29,9 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	<h2>HR HelpDesk</h2>
 	<?php if($num_mark->num_rate != 0){ ?>
 	<div id="nummark">
-		<h3><font color="#ffffff">You have <b><?php echo $num_mark->num_rate ?></b> Incident that already resolved please put a remark</font></h3>
-	</div><br>
+		<h3 style="color: white;">You have <b><?php echo $num_mark->num_rate ?></b> Incident that already resolved please put a remark</h3>
+	</div>
+	<br>
 	<?php } ?>
 	
 	<ul class="tabs">
@@ -68,7 +69,7 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
 				<?php } ?>
 				</td>
-	      		<td><?php echo $rep->cs_post_date_submitted; ?></td>
+	      		<td><?php echo date_format(date_create($rep->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
 	      		<td>
 		      		<?php 

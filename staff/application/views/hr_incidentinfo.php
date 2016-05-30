@@ -154,7 +154,7 @@
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
-			<td><?php echo $value->cs_post_date_submitted; ?></td>
+			<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
 		</tr>
 		<tr>
 			<td>Subject</td>
@@ -173,12 +173,18 @@
 				?>
 			</td>
 		</tr>
-
-		<tr>
-			<td>Due date</td>
-			<td><?php echo $value->due_date; ?></td>
-		</tr>
-
+		
+		<?php if($this->uri->segment(4)== 'new'){?> 
+		
+		<?php }elseif($this->uri->segment(4) == 'active' || 
+						$this->uri->segment(4) == 'resolved' || 
+						$this->uri->segment(4) == 'cinc' || 
+						$this->uri->segment(4) == 'emp'){ ?>
+			<tr>
+				<td>Due date</td>
+				<td> <?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
+			</tr>
+		<?php } ?>
 
 		<!-- when incidident is new, can add assign category and investigation required -->
 		<?php if ($this->uri->segment(4)== 'new'){ ?>
@@ -216,7 +222,7 @@
 
 				<tr>
 					<td>Assign Category</td>
-					<td><?php echo $value->assign_category; ?></td>
+					<td><?php if($value->assign_category==''){echo '-';}else{echo $value->assign_category;} ?></td>
 				</tr>
 		<?php } ?>  
 	</table>
@@ -428,18 +434,18 @@
 
 			// when incident don't have a remark
 			if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
-		<h3><font color="Darkred">Please Rate this Incident</font></h3>
-		<div id="remark_list">
-			<input id="lbl_vs" type="radio" name="radio_survey" value="Very satisfied" checked>
-			<label for="lbl_vs"><font color="#fff">Very satisfied</font></label> &nbsp;&nbsp;&nbsp;
+		<h2>Please rate incident</h2>
+		<div>
+			<input id="lbl_vs" type="radio" name="radio_survey" value="Very Satisfied" checked>
+			<label for="lbl_vs">Very satisfied</label> &nbsp;&nbsp;&nbsp;
 			<input id="lbl_s" type="radio" name="radio_survey" value="Satisfied">
-			<label for="lbl_s"><font color="#fff">Satisfied</font></label> &nbsp;&nbsp;&nbsp;
+			<label for="lbl_s">Satisfied</label> &nbsp;&nbsp;&nbsp;
 			<input id="lbl_ds" type="radio" name="radio_survey" value="Dissatisfied">
-			<label for="lbl_ds"><font color="#fff">Dissatisfied</font></label> &nbsp;&nbsp;&nbsp;
+			<label for="lbl_ds">Dissatisfied</label> &nbsp;&nbsp;&nbsp;
 			<input id="lbl_vds" type="radio" name="radio_survey" value="Very Dissatisfied">
-			<label for="lbl_vds"><font color="#fff">Very Dissatisfied</font></label> 
+			<label for="lbl_vds">Very Dissatisfied</label> 
 		</div>
-		<br><br>
+		<br>
 		<textarea id="remark_comment" class="hidden tiny" style="height:100px;"></textarea><br>
 		<input style="float:right;" type="submit" class="btngreen" id="remarkbtn" name="" value="Submit">
 		<br>
