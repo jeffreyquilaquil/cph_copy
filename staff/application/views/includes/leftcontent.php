@@ -74,7 +74,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	
 	echo '<ul id="leftMenu">';
 		if($this->user->username == $row->username){
-			
+			echo '<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask a Question</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>';
 			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
@@ -85,8 +85,8 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'medrequest/" class="iframe">Request for Medicine Reimbursement</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask a Question</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">Employee Dashboard</a></li>';
+			
+			
 	}
 		if(($content=='staffinfo' || $this->uri->segment(1)=='timecard') && $this->user->username != $row->username && ($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username))){
 			echo '<li><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/" '.(($content=='staffinfo')?'class="current"':'').'>'.trim($row->fname).'\'s Info</a></li>';

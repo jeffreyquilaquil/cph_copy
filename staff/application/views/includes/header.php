@@ -41,6 +41,7 @@
 					echo '<li '.(($segment2=='timelogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a></li>';
 					echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
 					echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
+
 					
 					if($this->user->level>0 || $this->access->accessFullHRFinance==true) 
 						echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
@@ -81,7 +82,15 @@
 			
 			echo '</li>';
 			
-		?>			
+		?>	
+
+		<?php  echo '<li>
+						<a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">Employee Dashboard</a>
+						<ul class="dropdown">
+							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
+						</ul>
+					</li>';
+		?>	
 			
 		<?php
 			if($this->user->dept== 'IT'){
