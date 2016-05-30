@@ -507,7 +507,7 @@
 	            	$data2['reply_empUser'] = $this->input->post('hr_username');
 	            	$data2['cs_msg_text'] = $msg;
 	            	$data2['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            	$data2['cs_msg_type'] = 1;
+	            	$data2['cs_msg_type'] = 0;
 	            	$this->ask_hr->askhr('hr_cs_msg',$data2);
 
 	            	$this->ask_hr->updatestatus('hr_cs_post','rate_status = 1','cs_post_id = '.$id);
@@ -522,7 +522,7 @@
 	            	$data2['reply_empUser'] = $this->input->post('hr_username');
 	            	$data2['cs_msg_text'] = $msg;
 	            	$data2['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            	$data2['cs_msg_type'] = 1;
+	            	$data2['cs_msg_type'] = 0;
 	            	$this->ask_hr->askhr('hr_cs_msg',$data2);
 
 
