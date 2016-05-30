@@ -174,11 +174,18 @@
 			</td>
 		</tr>
 
-		<tr>
-			<td>Due date</td>
-			<td><?php echo $value->due_date; ?></td>
-		</tr>
+		<?php if($this->uri->segment(4)== 'new'){?>
 
+		<?php }elseif($this->uri->segment(4) == 'active' || 
+						$this->uri->segment(4) == 'resolved' || 
+						$this->uri->segment(4) == 'cinc' || 
+						$this->uri->segment(4) == 'emp'){?>
+			<tr>
+				<td>Due date</td>
+				<td><?php echo $value->due_date; ?></td>
+			</tr>
+
+		<?php } ?>
 
 		<!-- when incidident is new, can add assign category and investigation required -->
 		<?php if ($this->uri->segment(4)== 'new'){ ?>
