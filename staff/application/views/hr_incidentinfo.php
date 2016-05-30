@@ -583,7 +583,7 @@ $(document).ready(function() {
 		var ins_id = $("#categoryid").val();
 		var ass_categ = $("#assign_category option:selected").val();
 
-		var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&assign_category=' + ass_categ + '&inve_req=' + inv_req;
+		var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&assign_category=' + ass_categ; 
 		
 		if (custom_ans == '') {
 
