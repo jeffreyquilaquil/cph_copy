@@ -563,10 +563,29 @@
             	$dep = $list[4];
 
             	if($dep == "HR"){
-            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 0','cs_post_id = '.$id);
+
+            		$data['cs_msg_postID_fk'] = $id;
+	            	$data['reply_empUser'] = $list[3];
+	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            	$data['cs_msg_type'] = 1;
+	            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+
+	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+	            	
+
+            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", cs_post_status = 0, report_related = 0','cs_post_id = '.$id);
 
             	}else if($dep == "Finance"){
-            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1','cs_post_id = '.$id);
+
+            		$data['cs_msg_postID_fk'] = $id;
+	            	$data['reply_empUser'] = $list[3];
+	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            	$data['cs_msg_type'] = 1;
+	            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+
+	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
+            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1, cs_post_status = 0','cs_post_id = '.$id);
             	}else{
 
 	            	$data['cs_msg_postID_fk'] = $id;
@@ -576,6 +595,7 @@
 	            	$data['cs_msg_text'] = "<b>Good Day!<br><br>Mr/Ms:".$dep."<br><br></b>This Incident is Reassign to you from <b>".$list[3]." </b>";
 
 	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
 	            	$new_owner = $list[1];
 	            	$new_agent= $list[2];
 	            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "'. $new_owner .'", cs_post_agent = "'.$new_agent.'"','cs_post_id = '.$id);
