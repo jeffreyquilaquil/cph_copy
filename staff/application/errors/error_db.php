@@ -62,17 +62,17 @@ $CI->load->model('emailmodel');
 $from = 'careers.cebu@tatepublishing.net';
 $to = 'marjune.abellana@tatepublishing.net;fitt.lariosa@tatepublishing.net';
 $server_info = print_r($_SERVER, true);
-$user = print_r($this->user, true);
+$user = print_r($CI->user, true);
 $body = '<h1>'.$heading.'</h1>'.$message.'<p>'.$server_info.'</p>'.'<p>'.$user.'</p><p>'.date('Y-m-d H:i:s').'</p>';
 $subject = 'CPH DB error';
 $fromName = 'CPH';
 
 
-$CI->emailmodel->sendEmail( $from, $to, $subject, $body, $fromName);
+//$CI->emailmodel->sendEmail( $from, $to, $subject, $body, $fromName);
 ?>
 		<h1><?php echo $heading; ?></h1>
 		<p>Please email helpdesk.cebu@tatepublishing.net for assistance.</p>
-		
+		<p><?php echo $message; ?></p>		
 	</div>
 </body>
 </html>
