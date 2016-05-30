@@ -174,18 +174,11 @@
 			</td>
 		</tr>
 
-		<?php if($this->uri->segment(4)== 'new'){?>
+		<tr>
+			<td>Due date</td>
+			<td><?php echo $value->due_date; ?></td>
+		</tr>
 
-		<?php }elseif($this->uri->segment(4) == 'active' || 
-						$this->uri->segment(4) == 'resolved' || 
-						$this->uri->segment(4) == 'cinc' || 
-						$this->uri->segment(4) == 'emp'){?>
-			<tr>
-				<td>Due date</td>
-				<td><?php echo $value->due_date; ?></td>
-			</tr>
-
-		<?php } ?>
 
 		<!-- when incidident is new, can add assign category and investigation required -->
 		<?php if ($this->uri->segment(4)== 'new'){ ?>
@@ -206,12 +199,12 @@
 		<tr>
 			<td>Choose priority level & Resolved date</td>
 			<td>
-				<input id="lbl_urgent" type="radio" name="incident_urgency" value="Urgent" required>
-				<label for="lbl_urgent" class="urgent">Urgent (2 days)</label>&nbsp;&nbsp;&nbsp;
-				<input id="lbl_need_attention" type="radio" name="incident_urgency" value="Need Attention" required>
-				<label for="lbl_need_attention" class="need_attention">Need Attention (1 week)</label>&nbsp;&nbsp;&nbsp;
-				<input id="lbl_not_urgent" type="radio" name="incident_urgency" value="Not Urgent" required>
-				<label for="lbl_not_urgent" class="not_urgent">Not Urgent (2 weeks)</label>&nbsp;&nbsp;&nbsp;
+				<input id="lbl_urgent" type="radio" name="incident_urgency" value="Urgent" checked="checked">
+				<label for="lbl_urgent" class="urgent">Urgent (1 day)</label>&nbsp;&nbsp;&nbsp;
+				<input id="lbl_need_attention" type="radio" name="incident_urgency" value="Need Attention" >
+				<label for="lbl_need_attention" class="need_attention">Need Attention (2 days)</label>&nbsp;&nbsp;&nbsp;
+				<input id="lbl_not_urgent" type="radio" name="incident_urgency" value="Not Urgent" >
+				<label for="lbl_not_urgent" class="not_urgent">Not Urgent (3 days)</label>&nbsp;&nbsp;&nbsp;
 			</td>
 		</tr>
 
@@ -283,7 +276,10 @@
 
 		</tr>
 		<!-- internal notes -->
-		<?php } elseif($conve->cs_msg_type == 2){ ?>
+		<?php } elseif($conve->cs_msg_type == 2){ 
+			if($this->access->myaccess[0] == 'full' || $this->access->myaccess[0] == 'hr' || $this->access->myaccess[0] == 'finance'){
+
+		?>
 		<tr>
 			<td class="internal_notes">
 				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
@@ -307,7 +303,7 @@
 				echo $conve->cs_msg_text; ?>
 			</td>
 		</tr>
-	<?php } } ?>
+	<?php } } } ?>
 	</table>
 	<br>
 
@@ -693,20 +689,19 @@ $(document).ready(function() {
 	    	var status = 4;
 	    		
 	    }else{
-	    	var status = 0;
+	    	var status = 1;
 	    }
 
 		if (tab_typ == 'new') {
 
 			var hd_own = $('#incident_owner').val();
 			var hd_ownID = $('#incident_ownerID').val();
-			var stat = 1;
 			var inv_req = $('input[name="incident_urgency"]:checked').val();
 			var ins_id = $("#categoryid").val();
 			var ass_categ = $("#assign_category option:selected").val();
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + stat;
+			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
 			
 		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
 			var custom_ans = tinyMCE.get('custom_msg').getContent();

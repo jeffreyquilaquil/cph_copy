@@ -219,20 +219,24 @@ if($this->user->access == "exec"){
 									<?php if ($this->access->myaccess[0] == "hr") { ?>
 											<option value=""></option>
 										<?php foreach ($getHRlist as $key_hr => $value_hr): ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
 										<?php endforeach ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
 										
 									<?php }else if($this->access->myaccess[0] == "finance"){?>
 											<option value=""></option>
 										<?php foreach ($getACClist as $key_acc => $value_acc): ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
 										<?php endforeach ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										
 									<?php }else if($this->access->myaccess[0] == "full"){?>
 											<option value=""></option>
 										<?php foreach ($getFULLlist as $key_full => $value_full): ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
 										<?php endforeach ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
+										<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
 										
 									<?php }?>
 								</select>
@@ -261,6 +265,7 @@ if($this->user->access == "exec"){
 		  		<th>Customer</th>
 		  		<th>Priority</th>	
 		  		<th>Date Submitted</th>
+		  		<th>Reassign</th>
 		  	</tr>
 	  	</thead>
 
@@ -279,7 +284,12 @@ if($this->user->access == "exec"){
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
 	      		<td><?php echo $value->cs_post_urgency; ?></td>
-	      		<td><?php  echo $value->cs_post_date_submitted; ?></td>   		
+	      		<td><?php  echo $value->cs_post_date_submitted; ?></td> 
+	      		<td><select name="" id="redirect_select" style="width: 200px;">
+	      				<option>HR</option>
+	      				<option>Finance</option>
+	      			</select>
+	      		</td>	
 	  		</tr>	     
 
 	  	<?php } ?> 		
