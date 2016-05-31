@@ -10,7 +10,6 @@ if($this->user->access == "exec"){
 }
 ?>
 
-
 <style type="text/css">
 
 	th{
@@ -70,6 +69,7 @@ if($this->user->access == "exec"){
 	.tab-cont.curr{
 		display: inherit;
 	}
+
 
  
 </style>
@@ -185,7 +185,7 @@ if($this->user->access == "exec"){
 				<td><?php echo date_format(date_create($myticket->due_date),'F d, Y'); ?></td>
 				
 				<?php 
-					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed'];
+					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed','Closed'];
 					echo '<td>'.$status[ $myticket->cs_post_status ].'</td>';
 				?>	
 
@@ -198,7 +198,7 @@ if($this->user->access == "exec"){
 				?>
 				<td><?php echo $myticket->hr_own_empUSER; ?></td>
 				<td>
-				<?php if($myticket->cs_post_status == 0 || $myticket->cs_post_status == 1){?>
+				<?php if($myticket->cs_post_status == 0 || $myticket->cs_post_status == 1){ ?>
 					<a style="cursor: pointer;" id="extend_date<?php echo $myticket->cs_post_id; ?>">Extend Date</a>
 				<?php }else { ?>
 						....
@@ -226,27 +226,27 @@ if($this->user->access == "exec"){
 								<select name="" id="redirect_select" style="width: 200px;">
 									<?php if ($this->access->myaccess[0] == "hr") { ?>
 											<option value=""></option>
-										<?php foreach ($getHRlist as $key_hr => $value_hr): ?>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
-										<?php endforeach ?>
+										<?php } ?>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
 										
 									<?php }else if($this->access->myaccess[0] == "finance"){?>
 											<option value=""></option>
-										<?php foreach ($getACClist as $key_acc => $value_acc): ?>
+										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
-										<?php endforeach ?>
+										<?php } ?>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										
-									<?php }else if($this->access->myaccess[0] == "full"){?>
+									<?php }else if($this->access->myaccess[0] == "full") { ?>
 											<option value=""></option>
-										<?php foreach ($getFULLlist as $key_full => $value_full): ?>
+										<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_full->fname." ".$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
-										<?php endforeach ?>
+										<?php } ?>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
 										
-									<?php }?>
+									<?php } ?>
 								</select>
 							</li>
 							
@@ -291,29 +291,31 @@ if($this->user->access == "exec"){
 	      		</td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
 	      		<td><?php echo $value->fname; ?></td>
-	      		<td>
-	      		<?php if($value->cs_post_urgency=='Urgent'){ 
-					   			echo "<div class='urgent'>$value->cs_post_urgency</div>";
-							}elseif($value->cs_post_urgency=='Need Attention'){
-								echo "<div class='need_attention'>$value->cs_post_urgency</div>";
-							}elseif($value->cs_post_urgency=='Not Urgent'){
-								echo "<div class='not_urgent'>$value->cs_post_urgency</div>";
-							}else{
-								echo "-";
-							}
-					?>
-	      		</td>
-	       		<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
-	      		<td>
-	      			<ul style="list-style: none; margin: 0px; padding: 0px;">
-	      				<li>
-	      					<select name="" id="redirect_select" style="width: 100%;">
-		      				<option>HR</option>
-		      				<option>Finance</option>
-		      			</select>
-	      				</li>
-	      				<li><input type="button" class="btngreen" id="" name="" value="Submit" style="float:right;"></li>
-	      			</ul>
+	      		<td><?php echo $value->cs_post_urgency; ?></td>
+	      		<td><?php  echo $value->cs_post_date_submitted; ?></td> 
+	      		<td style="width: 100px;">
+	      		<a id="new_reassign<?php echo $value->cs_post_id ?>" style="cursor: pointer;">Reassign</a>
+	      		<div id="new_reassign_form<?php echo $value->cs_post_id; ?>">
+					<ul style="list-style: none; margin: 0px; padding: 0px;">
+						<li>
+							<small>Please select who:</small>
+							<select name="" id="new_redirect_select" style="width: 100px;">
+								<option></option>
+								<?php if($this->access->myaccess[0] == "full"){ ?>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Finance</option>
+								<?php }else if($this->access->myaccess[0] == "hr"){ ?>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Finance</option>
+								<?php }else if($this->access->myaccess[0] == "finance"){ ?>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+								<?php } ?>
+							</select><br>
+							<input type="button" class="btngreen" id="new_redirect_btn" name="" value="Submit" style="float:right;">
+						</li>
+					
+					</ul>
+				</div>
+
 	      		</td>	
 	  		</tr>	     
 
@@ -344,23 +346,12 @@ if($this->user->access == "exec"){
 		<?php foreach ($ActiveIncident as $active_key => $active_val) { ?>
 			<tr>
 				<td class="td_hover">
-      				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/active/<?php echo $active_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $active_val->cs_post_id; ?>/onproc/<?php echo $active_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $active_val->cs_post_id;?></a>
       			</td>
 				<td><?php echo $active_val->cs_post_subject; ?></td>
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
-				<td>
-				<?php if($active_val->cs_post_urgency=='Urgent'){ 
-				   			echo "<div class='urgent'>$active_val->cs_post_urgency</div>";
-						}elseif($active_val->cs_post_urgency=='Need Attention'){
-							echo "<div class='need_attention'>$active_val->cs_post_urgency</div>";
-						}elseif($active_val->cs_post_urgency=='Not Urgent'){
-							echo "<div class='not_urgent'>$active_val->cs_post_urgency</div>";
-						}else{
-							echo "-";
-						}
-				?>
-				</td>
-				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
+				<td><?php echo $active_val->cs_post_urgency; ?></td>
+				<td><?php echo $active_val->last_update; ?></td>
 				<td><?php echo $active_val->hr_own_empUSER; ?></td>				
 			</tr>
 		<?php } ?>    	 
@@ -393,19 +384,8 @@ if($this->user->access == "exec"){
 	      			</td>
 					<td><?php echo $resolve_val->cs_post_subject; ?></td>
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
-					<td>
-					<?php if($resolve_val->cs_post_urgency=='Urgent'){ 
-				   			echo "<div class='urgent'>$resolve_val->cs_post_urgency</div>";
-						}elseif($resolve_val->cs_post_urgency=='Need Attention'){
-							echo "<div class='need_attention'>$resolve_val->cs_post_urgency</div>";
-						}elseif($resolve_val->cs_post_urgency=='Not Urgent'){
-							echo "<div class='not_urgent'>$resolve_val->cs_post_urgency</div>";
-						}else{
-							echo "-";
-						}
-					?>
-					</td>
-					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
+					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
+					<td><?php echo $resolve_val->last_update; ?></td>
 					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
 				</tr>
 			<?php } ?>     
@@ -415,7 +395,9 @@ if($this->user->access == "exec"){
 
 <!-- closed tab -->
 <div id="tab-4" class="tab-content">
+
 <br>
+
 	<table id="new" class="datatable">
 		<thead>
 			<tr>
@@ -425,6 +407,7 @@ if($this->user->access == "exec"){
 				<th>Priority</th>
 				<th>Last Update</th>
 				<th>Owner</th>
+				<th>Status</th>
 			</tr>
 		</thead>
 		<!-- array show incident #, subject, customer, priority and last update -->
@@ -435,23 +418,33 @@ if($this->user->access == "exec"){
       			</td>
 				<td><?php echo $resolve_val->cs_post_subject; ?></td>
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
-				<td>
-				<?php if($resolve_val->cs_post_urgency=='Urgent'){ 
-				   			echo "<div class='urgent'>$resolve_val->cs_post_urgency</div>";
-						}elseif($resolve_val->cs_post_urgency=='Need Attention'){
-							echo "<div class='need_attention'>$resolve_val->cs_post_urgency</div>";
-						}elseif($resolve_val->cs_post_urgency=='Not Urgent'){
-							echo "<div class='not_urgent'>$resolve_val->cs_post_urgency</div>";
-						}else{
-							echo "-";
-						}
-				?>
-				</td>
-				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>>
-				<td><?php echo $resolve_val->hr_own_empUSER; ?></td>		
+				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
+				<td><?php echo $resolve_val->last_update; ?></td>
+				<td><?php echo $resolve_val->hr_own_empUSER; ?></td>
+			<?php if($resolve_val->cs_post_status == 5){ ?>
+				<td>Closed Cancel</td>	
+			<?php } ?>
 			</tr>
-		<?php } ?>     
+		<?php } ?>   
+<!--This is for the Close Transfer-->
+		<?php foreach ($Canceltransfer as $transfer_key => $c_transfer) { ?>
+			<tr>
+				<td class="td_hover">
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $c_transfer->cs_post_id; ?>/cinc/<?php echo $c_transfer->cs_post_empID_fk; ?>" class="iframe"><?php echo $c_transfer->cs_post_id;?></a>
+      			</td>
+				<td><?php echo $c_transfer->cs_post_subject; ?></td>
+				<td><?php echo $c_transfer->fname." ".$c_transfer->lname; ?></td>
+				<td><?php echo $c_transfer->cs_post_urgency; ?></td>
+				<td><?php echo $c_transfer->last_update; ?></td>
+				<td><?php echo $c_transfer->hr_own_empUSER; ?></td>
+				<td>Closed Transfer</td>	
+
+			</tr>
+		<?php } ?> 
+
+
 	</table>
+
 </div>
 
 <h2>SETTINGS</h2>
@@ -577,8 +570,8 @@ $(document).ready(function(){
 	// Redirection of owner
 	$("#redirect_btn").click(function() {
 
-		var redirect = $("#redirect_select option:selected").val();
-		var dataredirect = 'redirect_to='+ redirect;
+		var redirect_b = $("#redirect_select option:selected").val();
+		var dataredirect_a = 'redirect_to='+ redirect_b;
 
 		if (redirect == '') {
 			alert("Please Select!");
@@ -587,6 +580,30 @@ $(document).ready(function(){
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/Redirect",
+				data: dataredirect_a,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                     close();
+					}
+				});
+			}
+	});
+
+	// Redirection of owner department
+	$("#new_redirect_btn").click(function() {
+
+		var redirect = $("#new_redirect_select option:selected").val();
+		var dataredirect = 'new_redirect_dep='+ redirect;
+
+		if (redirect == '') {
+			alert("Please Select!");
+		} else {
+				
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/Redirect_new",
 				data: dataredirect,
 				cache: false,
 					success: function(result){
@@ -643,6 +660,15 @@ $(document).ready(function(){
 
 			$('#extend_date_form<?php echo $jv->cs_post_id; ?>').toggle();
 		})
+	<?php endforeach ?>
+
+	<?php foreach ($NewIncident as $new => $inc): ?>
+		$('#new_reassign_form<?php echo $inc->cs_post_id; ?>').hide();
+		$('#new_reassign<?php echo $inc->cs_post_id;  ?>').click(function(){
+
+		$('#new_reassign_form<?php echo $inc->cs_post_id; ?>').toggle();
+
+		});	
 	<?php endforeach ?>
 	
 

@@ -50,7 +50,7 @@
 						$files = $_FILES;					
 						// config data 
 						$upload_config['upload_path'] ='uploads/cs_hr_attachments';
-						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc';
+						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc|csv';
 						$upload_config['max_size']	= '2048';
 						$upload_config['overwrite']	= 'FALSE';					
 						$this->load->library('upload');	
@@ -155,9 +155,11 @@
 				$data['ResolveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
 
 				//this is for Cancel incident
-				$data['CancelIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['CancelIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				$data['CancelIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 4 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, hr_cs_post.cs_post_status,staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5) GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, hr_cs_post.cs_post_status, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5) AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				$data['CancelIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, hr_cs_post.cs_post_status, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5)  AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
+				// this is for  cancel transfer
+				$data['Canceltransfer']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, hr_cs_post.cs_post_status,staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_msg.reply_empUser = "'.$empuser.'" AND hr_cs_msg.incident_status = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
 
 
 				// this is for Agent incident
@@ -287,6 +289,8 @@
             	 
             	if($reply == 'new'){ 
 
+            		if($newstat != 5){
+
 	            		$id = $this->input->post('insedentid');
 	            		$empUSER = $this->input->post('hr_username');
 	            		$empID = $this->input->post('hr_userID');
@@ -318,6 +322,24 @@
 
 			            	
 			            //$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+					}else{
+						
+						$id = $this->input->post('insedentid');
+
+						$data['reply_empUser'] = $this->input->post('hr_username');
+						$custommessage=  $this->input->post('custom_answer_msg');
+	            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+	            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            		$data['cs_msg_type'] = 1;
+	            		$data['cs_msg_postID_fk'] =  $id;
+
+	            		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+
+	            		$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+						
+
+					}
 
 
 						}else if($reply == 'emp' || $reply == 'active'){
@@ -554,56 +576,79 @@
 
 
             }
+            function Redirect_new(){
+
+            	$new_red_dep = $this->input->post('new_redirect_dep');
+
+            		$new_l = array();
+            		$new_l = explode(",",$new_red_dep);
+
+            		$data['cs_msg_postID_fk'] = $new_l[0];
+	            	$data['reply_empUser'] = $new_l[1];
+	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+	            	$data['cs_msg_type'] = 1;
+	            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$new_l[1]." </b>";
+	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
+
+            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = '.$new_l[2].', cs_post_status = 0','cs_post_id = '.$new_l[0]);
+
+            }
+
             function Redirect() // method to redirect the incident owner
             {
+            	
             	$val = $this->input->post('redirect_to');
+            	
+
             	$list = array();
             	$list = explode(",",$val);
             	$id = $list[0];
             	$dep = $list[4];
 
-            	if($dep == "HR"){
+	            	if($dep == "HR"){
 
-            		$data['cs_msg_postID_fk'] = $id;
-	            	$data['reply_empUser'] = $list[3];
-	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            	$data['cs_msg_type'] = 1;
-	            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+	            		$data['cs_msg_postID_fk'] = $id;
+		            	$data['reply_empUser'] = $list[3];
+		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            	$data['cs_msg_type'] = 1;
+		            	$data['incident_status'] = 1;
+		            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
 
-	            	$this->ask_hr->askhr('hr_cs_msg',$data);
-	            	
+		            	$this->ask_hr->askhr('hr_cs_msg',$data);
+		            	
 
-            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", cs_post_status = 0, report_related = 0','cs_post_id = '.$id);
+	            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", cs_post_status = 0, report_related = 0','cs_post_id = '.$id);
 
-            	}else if($dep == "Finance"){
+	            	}else if($dep == "Finance"){
 
-            		$data['cs_msg_postID_fk'] = $id;
-	            	$data['reply_empUser'] = $list[3];
-	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            	$data['cs_msg_type'] = 1;
-	            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+	            		$data['cs_msg_postID_fk'] = $id;
+		            	$data['reply_empUser'] = $list[3];
+		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            	$data['cs_msg_type'] = 1;
+		            	$data['incident_status'] = 1;
+		            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
 
-	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
-            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1, cs_post_status = 0','cs_post_id = '.$id);
-            	}else{
+	            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1, cs_post_status = 0','cs_post_id = '.$id);
+	            	}else{
 
-	            	$data['cs_msg_postID_fk'] = $id;
-	            	$data['reply_empUser'] = $list[3];
-	            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-	            	$data['cs_msg_type'] = 1;
-	            	$data['cs_msg_text'] = "<b>Good Day!<br><br>Mr/Ms:".$dep."<br><br></b>This Incident is Reassign to you from <b>".$list[3]." </b>";
+		            	$data['cs_msg_postID_fk'] = $id;
+		            	$data['reply_empUser'] = $list[3];
+		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            	$data['cs_msg_type'] = 1;
+		            	$data['cs_msg_text'] = "<b>Good Day!<br><br>Mr/Ms:".$dep."<br><br></b>This Incident is Reassign to you from <b>".$list[3]." </b>";
 
-	            	$this->ask_hr->askhr('hr_cs_msg',$data);
+		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
-	            	$new_owner = $list[1];
-	            	$new_agent= $list[2];
-	            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "'. $new_owner .'", cs_post_agent = "'.$new_agent.'"','cs_post_id = '.$id);
-	            }
-
-            	
-
+		            	$new_owner = $list[1];
+		            	$new_agent= $list[2];
+		            	$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "'. $new_owner .'", cs_post_agent = "'.$new_agent.'"','cs_post_id = '.$id);
+		            }
+	   
             }
+
             function AdditionalDays() // method to redirect the incident owner
             {
             	$id = $this->input->post('inci_id');

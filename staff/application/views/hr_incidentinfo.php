@@ -244,7 +244,7 @@
 					$docs_url = json_decode($conve->cs_msg_attachment);
 
 					foreach ($docs_url as $l_file=>$file) {
-						$link_file = str_replace(FCPATH, '', $file);
+						$link_file = str_replace(FCPATH,'', $file);
 
 						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px;'>";
 						echo $this->config->base_url()."".$link_file."<br>";
@@ -703,21 +703,40 @@ $(document).ready(function() {
 
 		if (tab_typ == 'new') {
 
-			var hd_own = $('#incident_owner').val();
-			var hd_ownID = $('#incident_ownerID').val();
-			var inv_req = $('input[name="incident_urgency"]:checked').val();
-			var ins_id = $("#categoryid").val();
-			var ass_categ = $("#assign_category option:selected").val();
-			var custom_ans = tinyMCE.get('custom_msg').getContent();
+			if(status == 4){
+				var hd_own = $('#incident_owner').val();
+				var ins_id = $("#categoryid").val();
+				var custom_ans = tinyMCE.get('custom_msg').getContent();
+				var status_cancel = 5;
+				var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&reply=' + tab_typ + '&stat=' + status_cancel;
+				
+			}else{
+				var hd_own = $('#incident_owner').val();
+				var hd_ownID = $('#incident_ownerID').val();
+				var inv_req = $('input[name="incident_urgency"]:checked').val();
+				var ins_id = $("#categoryid").val();
+				var ass_categ = $("#assign_category option:selected").val();
+				var custom_ans = tinyMCE.get('custom_msg').getContent();
 
-			var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
+				var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
+
+			}
+
+			
 			
 		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
+			var new_stat = '';
+			if(status == 4){
+				var new_stat = 5;
+			}else{
+				var new_stat = status;
+			}
+
 			var custom_ans = tinyMCE.get('custom_msg').getContent();
 			var hr_sname = $("#hr_username").val();
 			var ins_id = $("#categoryid").val();
 
-			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ + '&stat=' + status;
+			var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&reply=' + tab_typ + '&stat=' + new_stat;
 			
 		}
 			if (custom_ans == '') {

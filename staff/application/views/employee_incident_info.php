@@ -65,7 +65,7 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 					} ?>
 				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/resolved/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
 
-				<?php }elseif($rep->cs_post_status == 4){?>
+				<?php }elseif($rep->cs_post_status == 4 || $rep->cs_post_status == 5 ){?>
 				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
 				<?php } ?>
 				</td>
@@ -83,6 +83,8 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 		      		}elseif($rep->cs_post_status == 3){
 		      			echo "Resolved";
 		      		}elseif($rep->cs_post_status == 4){
+		      			echo "Closed";
+		      		}elseif($rep->cs_post_status == 5){
 		      			echo "Closed";
 		      		}
 
