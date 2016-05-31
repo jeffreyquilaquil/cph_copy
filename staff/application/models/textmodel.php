@@ -863,9 +863,10 @@ class Textmodel extends CI_Model {
 		} else if( $a == 'hdmf_loan_status' ){
 			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
 
-		}
-		elseif($a == 'allowances'){
+		} else if($a == 'allowances'){
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if( $a == 'last_pay_status' ){
+			$arr = array('Pending requirements', 'For review', 'For releasing', 'Released');
 		}
 		
 		return $arr;
