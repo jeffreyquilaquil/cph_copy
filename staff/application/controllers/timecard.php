@@ -1652,7 +1652,7 @@ class Timecard extends MY_Controller {
 
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
-		$data['dataTableProperties'] = '{"order": [[ 3, "desc" ]]}';
+		
 		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
 
 		
@@ -1677,7 +1677,7 @@ class Timecard extends MY_Controller {
 					}
 				}
 
-				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', $condition, 'LEFT JOIN staffs ON empID=empID_fk');				
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', $condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');				
 			}
 		}
 		
