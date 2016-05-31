@@ -108,7 +108,7 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
 		$(".iframesmall").colorbox({iframe:true, width:"40%", height:"60%"});
 		$(".inline").colorbox({inline:true, width:"40%", height:"60%"});
-		$('.datatable').dataTable();		
+		$('.datatable').dataTable(<?php echo (isset($dataTableProperties) ? $dataTableProperties:''); ?>);
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });

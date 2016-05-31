@@ -787,7 +787,7 @@ class Timecard extends MY_Controller {
 		$data['isUnder'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-				
+		$this->textM->aaa($data, false);
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
 	
@@ -1462,6 +1462,7 @@ class Timecard extends MY_Controller {
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
 					}else{
+						$_POST['status'] = 1;
 						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
 					}
 					
@@ -1652,10 +1653,31 @@ class Timecard extends MY_Controller {
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
 		
+		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
+
+		
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
-				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', '1', 'LEFT JOIN staffs ON empID=empID_fk');				
+				$data['error_data'] = '';
+				$condition = '1';
+				if( $this->input->is_ajax_request() ){
+					//update					
+					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
+					exit();
+				}
+
+				if( $this->input->post() ) {
+					if( !empty($this->input->post('dateFrom')) AND !empty($this->input->post('dateTo')) ){
+						$dateFrom = date('Y-m-d', strtotime( $this->input->post('dateFrom')) );
+						$dateTo = date('Y-m-d', strtotime( $this->input->post('dateTo')) );
+						$condition = '(dateGenerated BETWEEN "'.$dateFrom.'" AND "'.$dateTo.'")';
+					} else {
+						$data['error_data'] = '<span class="error">Please specify date range.</span>';
+					}
+				}
+
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', $condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');				
 			}
 		}
 		

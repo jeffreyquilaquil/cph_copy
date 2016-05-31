@@ -77,6 +77,9 @@ class Schedulemodel extends CI_Model {
 	public function endSchedule($empID, $endDate){		
 		$this->dbmodel->updateQueryText('tcStaffSchedules', 'effectiveend="'.$endDate.'"', 'empID_fk="'.$empID.'" AND effectivestart<="'.$endDate.'" AND effectiveend="0000-00-00"'); //update staff schedules
 		$this->dbmodel->updateQueryText('tcStaffScheduleByDates', 'status=0', 'empID_fk="'.$empID.'" AND dateToday>"'.$endDate.'"'); //update custom schedules
+
+		//insert into tcLastPay
+		$this->dbmodel->insertQuery('tcLastPay', ['empID_fk' => $empID, 'generatedBy' => 'system', 'dateGenerated' => date('Y-m-d H:i:s')]);
 	}
 	
 }
