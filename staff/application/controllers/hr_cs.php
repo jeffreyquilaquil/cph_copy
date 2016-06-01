@@ -596,7 +596,7 @@
             }
 
             function Redirect() // method to redirect the incident owner
-            {
+            { 
             	
             	$val = $this->input->post('redirect_to');
             	
