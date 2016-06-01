@@ -251,7 +251,7 @@ if($this->user->access == "exec"){
 							</li>
 							
 
-							<li><input type="button" class="btngreen" id="redirect_btn" name="" value="Submit" style="float:right;"></li>
+							<li><input type="submit" class="btngreen" id="redirect_btn" name="" value="Submit" style="float:right;"></li>
 						</ul>	
 					</div>
 				</td>		
@@ -569,11 +569,13 @@ $(document).ready(function(){
 
 	// Redirection of owner
 	$("#redirect_btn").click(function() {
+		
+		
 
 		var redirect_b = $("#redirect_select option:selected").val();
 		var dataredirect_a = 'redirect_to='+ redirect_b;
 
-		if (redirect == '') {
+		if (redirect_b == '') {
 			alert("Please Select!");
 		} else {
 				
