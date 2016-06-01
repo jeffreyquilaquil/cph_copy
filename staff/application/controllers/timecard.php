@@ -787,7 +787,7 @@ class Timecard extends MY_Controller {
 		$data['isUnder'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-		$this->textM->aaa($data, false);
+		//$this->textM->aaa($data, false);
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
 	
