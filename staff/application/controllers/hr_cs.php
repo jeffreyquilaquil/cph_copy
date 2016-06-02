@@ -28,7 +28,7 @@
 			if($this->input->post()){
 			$this->load->library('form_validation');
 			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
-			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
+			
 
 			if($this->form_validation->run() !== false)
 			{
@@ -661,6 +661,16 @@
             	$this->ask_hr->updatestatus('hr_cs_post','due_date = "'. $Updated_date .'"','cs_post_id = '.$id);
 
             }
+
+            function hr_generate_reports(){
+            	$data['content']='hr_generate_reports';
+
+            	$data['hr_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
+            	$data['finance_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
+				$data['full_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
+				
+	  			$this->load->view('includes/template',$data);
+            }// 
             
               
 

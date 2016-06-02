@@ -73,7 +73,7 @@ if($this->user->access == "exec"){
 
  
 </style>
-
+	
  	<?php
 	  	$NewIncident = array();
 	  	$ActiveIncident = array();
@@ -134,7 +134,7 @@ if($this->user->access == "exec"){
 
 	<div class=" dbold options-right">
 		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR/Accounting Customer CSatResults</a>
-		<a class="other_links" href="#">Generate Reports</a>	
+		<a class="other_links" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_generate_reports">Generate Reports</a>	
 	</div>
 </ul>
 
@@ -196,6 +196,7 @@ if($this->user->access == "exec"){
 					echo "<td>Unrated</td>";
 				}
 				?>
+				
 				<td><?php echo $myticket->hr_own_empUSER; ?></td>
 				<td>
 				<?php if($myticket->cs_post_status == 0 || $myticket->cs_post_status == 1){ ?>
@@ -223,7 +224,7 @@ if($this->user->access == "exec"){
 						
 							<li>
 								<small>Please select who:</small>
-								<select name="" id="redirect_select" style="width: 200px;">
+								<select name="" id="redirect_select<?php echo $myticket->cs_post_id; ?>" style="width: 200px;">
 									<?php if ($this->access->myaccess[0] == "hr") { ?>
 											<option value=""></option>
 										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
@@ -251,7 +252,7 @@ if($this->user->access == "exec"){
 							</li>
 							
 
-							<li><input type="submit" class="btngreen" id="redirect_btn" name="" value="Submit" style="float:right;"></li>
+							<li><input type="submit" class="btngreen" id="redirect_btn<?php echo $myticket->cs_post_id ?>" name="" value="Submit" style="float:right;"></li>
 						</ul>	
 					</div>
 				</td>		
@@ -299,7 +300,7 @@ if($this->user->access == "exec"){
 					<ul style="list-style: none; margin: 0px; padding: 0px;">
 						<li>
 							<small>Please select who:</small>
-							<select name="" id="new_redirect_select" style="width: 100px;">
+							<select name="" id="new_redirect_select<?php echo $value->cs_post_id; ?>" style="width: 100px;">
 								<option></option>
 								<?php if($this->access->myaccess[0] == "full"){ ?>
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
@@ -310,7 +311,7 @@ if($this->user->access == "exec"){
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
 								<?php } ?>
 							</select><br>
-							<input type="button" class="btngreen" id="new_redirect_btn" name="" value="Submit" style="float:right;">
+							<input type="button" class="btngreen" id="new_redirect_btn<?php echo $value->cs_post_id ?>" name="" value="Submit" style="float:right;">
 						</li>
 					
 					</ul>
@@ -567,12 +568,12 @@ $(document).ready(function(){
 			}
 	});
 
-	// Redirection of owner
-	$("#redirect_btn").click(function() {
+	<?php foreach ($MyTicket as $k => $v): ?>
 		
+		// Redirection of owner
+	$("#redirect_btn<?php echo $v->cs_post_id?>").click(function() {
 		
-
-		var redirect_b = $("#redirect_select option:selected").val();
+		var redirect_b = $("#redirect_select<?php echo $v->cs_post_id?> option:selected").val();
 		var dataredirect_a = 'redirect_to='+ redirect_b;
 
 		if (redirect_b == '') {
@@ -593,10 +594,13 @@ $(document).ready(function(){
 			}
 	});
 
-	// Redirection of owner department
-	$("#new_redirect_btn").click(function() {
+	<?php endforeach ?>
 
-		var redirect = $("#new_redirect_select option:selected").val();
+	<?php foreach ($NewIncident as $new_k => $new_v): ?>
+	// Redirection of owner department
+	$("#new_redirect_btn<?php echo $new_v->cs_post_id?>").click(function() {
+
+		var redirect = $("#new_redirect_select<?php echo $new_v->cs_post_id?> option:selected").val();
 		var dataredirect = 'new_redirect_dep='+ redirect;
 
 		if (redirect == '') {
@@ -616,6 +620,8 @@ $(document).ready(function(){
 				});
 			}
 	});
+
+	<?php endforeach ?>
 
 	// Additional days of owner incident
 	<?php foreach ($MyTicket as $k => $t): ?>
