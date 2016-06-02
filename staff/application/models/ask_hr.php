@@ -48,6 +48,12 @@ class Ask_hr extends CI_Model {
 		}
 		
 	}
+		function GetID($field, $table, $where){ // method for checking of the data is excess
+		$query = $this->db->query("SELECT ".$field." FROM ".$table." ".$where);
+		$val = $query->result();
+		
+			return $val;
+	}
 
      function hrhelpdesk($fields, $table, $join='', $orderby=''){ // query with join
      	$arr = array();

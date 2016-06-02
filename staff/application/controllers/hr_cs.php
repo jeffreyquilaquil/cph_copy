@@ -28,7 +28,7 @@
 			if($this->input->post()){
 			$this->load->library('form_validation');
 			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
-			
+			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
 
 			if($this->form_validation->run() !== false)
 			{
@@ -608,6 +608,12 @@
 
 	            	if($dep == "HR"){
 
+	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser = "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
+	            		
+	            		if($msg_id != null){
+	            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+	            		}
+
 	            		$data['cs_msg_postID_fk'] = $id;
 		            	$data['reply_empUser'] = $list[3];
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
@@ -622,6 +628,12 @@
 
 	            	}else if($dep == "Finance"){
 
+	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser =  "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
+	            		
+	            		if($msg_id != null){
+	            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+	            		}
+
 	            		$data['cs_msg_postID_fk'] = $id;
 		            	$data['reply_empUser'] = $list[3];
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
@@ -634,10 +646,17 @@
 	            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1, cs_post_status = 0','cs_post_id = '.$id);
 	            	}else{
 
+	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser =  "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
+	            		
+	            		if($msg_id != null){
+	            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+	            		}
+
 		            	$data['cs_msg_postID_fk'] = $id;
 		            	$data['reply_empUser'] = $list[3];
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            	$data['cs_msg_type'] = 1;
+		            	$data['incident_status'] = 1;
 		            	$data['cs_msg_text'] = "<b>Good Day!<br><br>Mr/Ms:".$dep."<br><br></b>This Incident is Reassign to you from <b>".$list[3]." </b>";
 
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
@@ -661,16 +680,6 @@
             	$this->ask_hr->updatestatus('hr_cs_post','due_date = "'. $Updated_date .'"','cs_post_id = '.$id);
 
             }
-
-            function hr_generate_reports(){
-            	$data['content']='hr_generate_reports';
-
-            	$data['hr_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
-            	$data['finance_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
-				$data['full_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
-				
-	  			$this->load->view('includes/template',$data);
-            }// 
             
               
 
