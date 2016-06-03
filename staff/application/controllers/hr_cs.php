@@ -171,6 +171,8 @@
 				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
 				// get the name of all Full Access employee
 				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
+				//get all department infomation
+				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
 				$this->load->view('includes/template',$data);
 
@@ -195,7 +197,6 @@
 
 
             		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
-            		$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
             		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 
             		$checkRemark = $this->ask_hr->getdata('*','incident_rating','post_id = '.$insedent_id);
@@ -227,6 +228,13 @@
 	  			   	$this->ask_hr->askhr('redirection_department',$data);
 	  			   	$data2['content']='hr_incidentinfo';
 	  			  	$this->load->view('includes/templatecolorbox',$data2);
+
+            }// end insertion new category
+
+
+             function DeleteDeparment(){ // delete the department in the depatabase
+	            	$id = $this->input->post('id_delete');
+	  			   	$this->ask_hr->delete('redirection_department','dept_emil_id = '.$id);
 
             }// end insertion new category
 
@@ -294,7 +302,7 @@
 	            		$id = $this->input->post('insedentid');
 	            		$empUSER = $this->input->post('hr_username');
 	            		$empID = $this->input->post('hr_userID');
-	            		
+
 
 	            		$data['cs_msg_postID_fk'] =  $id;
 	            		$custommessage=  $this->input->post('custom_answer_msg');
@@ -326,6 +334,13 @@
 						
 						$id = $this->input->post('insedentid');
 
+						// check if the incident ID is have a history of close transfer
+						$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE cs_msg_postID_fk = "'.$id.'" AND incident_status = 1');
+		            		
+		            	if($msg_id != null){ // change the status of the incident into regular status
+		            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+		            	}
+
 						$data['reply_empUser'] = $this->input->post('hr_username');
 						$custommessage=  $this->input->post('custom_answer_msg');
 	            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
@@ -336,7 +351,7 @@
 	            		$this->ask_hr->askhr('hr_cs_msg',$data);
 
 
-	            		$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
+	            	$this->ask_hr->updatestatus('hr_cs_post','cs_post_status = "' .$newstat. '"','cs_post_id = '.$id);
 						
 
 					}
@@ -346,6 +361,15 @@
 
 							$id = $this->input->post('insedentid');
 
+							if($reply == 'active' && $newstat == 5){
+								// check if the incident ID is have a history of close transfer
+							$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE cs_msg_postID_fk = "'.$id.'" AND incident_status = 1');
+		            		
+		            		if($msg_id != null){ // change the status of the incident into regular status
+		            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+
+							}
+						}
 
 		            		$data['cs_msg_postID_fk'] =  $id;
 		            		$custommessage=  $this->input->post('custom_answer_msg');
@@ -373,6 +397,16 @@
 						}else if($reply == 'resolved' || $reply == 'reopen' || $reply = 'cinc'){
 
 							$id = $this->input->post('insedentid');
+
+							if($reply == 'reopen'){
+
+								// check if the incident ID is have a history of close transfer
+								$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE cs_msg_postID_fk = "'.$id.'" AND incident_status = 1');
+			            		
+			            		if($msg_id != null){ // change the status of the incident into regular status
+			            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+			            		}
+							}
 
 
 		            		$data['cs_msg_postID_fk'] =  $id;

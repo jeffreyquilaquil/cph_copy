@@ -82,6 +82,12 @@ class Ask_hr extends CI_Model {
      	$this->db->query($sql);
 
      }// end update function
+
+     function delete($table,$where){ //update any status
+     	$sql = ("DELETE FROM ".$table." WHERE ".$where." ");
+     	$this->db->query($sql);
+
+     }// end update function
    
 } // end of class
 

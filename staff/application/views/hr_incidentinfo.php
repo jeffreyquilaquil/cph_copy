@@ -369,7 +369,12 @@
 			</tr>
 			<tr>
 				<td align="left">
-					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+					<div class="sup_docs_div">
+					<!--NEW REPLY-->
+					<form enctype="multipart/form-data">
+						<input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" />
+					</form>
+					<br></div>
 					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
 					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
 				</td>
@@ -711,6 +716,12 @@ $(document).ready(function() {
 				var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&reply=' + tab_typ + '&stat=' + status_cancel;
 				
 			}else{
+
+				 //e.preventDefault(); //upload
+        
+        		//var formData = $(this).before("<input name='arr_attachments[]' type='file'/>");
+
+
 				var hd_own = $('#incident_owner').val();
 				var hd_ownID = $('#incident_ownerID').val();
 				var inv_req = $('input[name="incident_urgency"]:checked').val();
@@ -718,7 +729,7 @@ $(document).ready(function() {
 				var ass_categ = $("#assign_category option:selected").val();
 				var custom_ans = tinyMCE.get('custom_msg').getContent();
 
-				var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status;
+				var dataString = 'insedentid='+ ins_id + '&assign_category=' + ass_categ +'&custom_answer_msg='+ custom_ans + '&hr_username='+ hd_own + '&hr_userID='+ hd_ownID + '&inve_req=' + inv_req + '&reply=' + tab_typ + '&stat=' + status; // + '&upfile=' + formData
 
 			}
 

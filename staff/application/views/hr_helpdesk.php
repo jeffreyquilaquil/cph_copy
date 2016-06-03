@@ -14,9 +14,7 @@ if($this->user->access == "exec"){
 
 	th{
 	 	background-color: #CCCCCC;
-	 }
-	 .datatable td{
-	 	text-align: center;
+	 	text-align: left;
 	 }
 
 	 a.other_links:link, a.other_links:visited, a.other_links:hover, a.other_links:active{
@@ -486,19 +484,19 @@ if($this->user->access == "exec"){
    				<td colspan="2">
    					<label for="lbl_new_dept_name">Name of the department/team customers can be redirected to:</label>
    					<br>
-   					<input type="text" id="lbl_new_dept_name" name="" value="" placeholder="" style="width: 100%">
+   					<input type="text" id="new_dept_name" name="" value="" placeholder="" style="width: 100%">
    				</td>
    			</tr>
    			<tr>
    				<td colspan="2">
    					<label for="lbl_new_dept_emailadd">What is the email address/es that the employees can contact?</label>
 			   		<br>
-			   		<input type="text" id="lbl_new_dept_emailadd" name="" value="" placeholder="" style="width: 100%">
+			   		<input type="text" id="new_dept_emai" name="" value="" placeholder="" style="width: 100%">
    				</td>
    			</tr>
    			<tr>
    				<td align="left"><a id="see_all_dept" style="text-decoration: underline">See All Redirection Departments</a></td>
-   				<td align="right"><input type="submit" class="btngreen" name="" value="Submit"></td>	
+   				<td align="right"><input type="submit" class="btngreen" id="add_dep_btn" name="" value="Submit"></td>	
    			</tr>
    		</table>
 
@@ -514,12 +512,20 @@ if($this->user->access == "exec"){
 	   					<td>Delete</td>
 	   				</tr>
    				</thead>
+   				<?php foreach ($department_email as $key_d) { ?>
    					<tr>
-   						<td></td>
-   						<td></td>
-   						<td></td>
-   						<td></td>
+   						<td><?php echo $key_d->department; ?></td>
+   						<td><?php echo $key_d->email; ?></td>
+   						<td>
+   						<input type="hidden" class="btngreen" id="id_edit_department<?php echo $key_d->dept_emil_id; ?>" value="<?php echo $key_d->dept_emil_id; ?>">
+   						<input type="submit" class="btngreen" id="edit_department_btn<?php echo $key_d->dept_emil_id; ?>" value="Edit">
+   						</td>
+   						<td>
+   						<input type="hidden" class="btngreen" id="id_delete_department<?php echo $key_d->dept_emil_id; ?>" value="<?php echo $key_d->dept_emil_id; ?>">
+   						<input type="submit" class="btnred" id="delete_department_btn<?php echo $key_d->dept_emil_id; ?>" value="Delete">
+   						</td>
    					</tr>
+   					<?php } ?>
    			</table>
    		</div>
     </div>
@@ -543,6 +549,31 @@ $(document).ready(function(){
 				$(this).text('Hide See All Redirection Departments');
 			}
 	});
+<?php foreach ($department_email as $id_d) { ?>
+	// Delete Department
+	$("#delete_department_btn<?php echo $id_d->dept_emil_id; ?>").click(function() {
+
+		var id_dep = $("#id_delete_department<?php echo $id_d->dept_emil_id; ?>").val();
+		var datacategorys = 'id_delete='+ id_dep;
+		
+		if (id_dep == '') {
+			alert("No ID Selected!");
+		} else {
+				
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/DeleteDeparment",
+				data: datacategorys,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                     close();
+					}
+				});
+			}
+	});
+<?php } ?>
 
 	// insert new category
 	$("#add_categ_btn").click(function() {
@@ -557,6 +588,32 @@ $(document).ready(function(){
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/addcategory",
+				data: datacategorys,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                     close();
+					}
+				});
+			}
+	});
+
+	// insert new Department Information
+	$("#add_dep_btn").click(function() {
+
+		var new_name = $("#new_dept_name").val();
+		var new_email = $("#new_dept_emai").val();
+
+		var datacategorys = 'name_department='+ new_name +'&email_department=' + new_email;
+		
+		if (new_name == '' || new_email == '') {
+			alert("Error field in empty!");
+		} else {
+				
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/addnewdeparment",
 				data: datacategorys,
 				cache: false,
 					success: function(result){
@@ -681,5 +738,8 @@ $(document).ready(function(){
 	
 
 });
+
+
+
 
 </script>
