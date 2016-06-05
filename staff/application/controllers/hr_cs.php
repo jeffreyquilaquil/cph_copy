@@ -714,6 +714,23 @@
             	$this->ask_hr->updatestatus('hr_cs_post','due_date = "'. $Updated_date .'"','cs_post_id = '.$id);
 
             }
+
+            function hr_generate_reports(){
+
+            	$data['content']='hr_generate_reports';
+
+            	// get the name of all hr employee
+				$data['hr_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
+				// get the name of all accounting employee
+				$data['finance_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
+				// get the name of all Full Access employee
+				$data['full_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
+				//get all department infomation
+				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
+				
+	  			$this->load->view('includes/template',$data);
+
+            }
             
               
 
