@@ -239,21 +239,25 @@
 				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
 				<br><br> 
 				<?php 
+
+				echo "<br>".$conve->cs_msg_text."<br>";
 				$file = $conve->cs_msg_attachment;
 				if($file != null){
 					$docs_url = json_decode($conve->cs_msg_attachment);
-
+					echo "<b>FILE : </b>";
 					foreach ($docs_url as $l_file=>$file) {
 						$link_file = str_replace(FCPATH,'', $file);
+						$file_link = $this->config->base_url()."".$link_file;
+						$link = explode(".",$file_link);
+						
 
-						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px;'>";
-						echo $this->config->base_url()."".$link_file."<br>";
+						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px; border:1px solid #000; text-decoration: none !important; background-color: #E4F5F8; padding:1px; border-radius: 2px;'>";
+						echo "file.".$link[3];
 						echo "</a>";
 					}
 				}else{
 					echo "No File Attach..<br>";
-				}
-				echo "<br>".$conve->cs_msg_text; ?>
+				} echo "<br><br>"; ?>
 			</td>
 		</tr>
 		<!-- hr messages-->
@@ -266,21 +270,24 @@
 				<br><br>
 				<?php 
 
+				echo $conve->cs_msg_text."<br>";
+
 					$file = $conve->cs_msg_attachment;
 					if($file != null){
 						$docs_url = json_decode($conve->cs_msg_attachment);
-
+					echo "<b>FILE : </b>";
 					foreach ($docs_url as $l_file=>$file) {
 						$link_file = str_replace(FCPATH, '', $file);
-						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px;'>";
-						echo $this->config->base_url()."".$link_file."<br>";
+						$file_link = $this->config->base_url()."".$link_file;
+						$link = explode(".",$file_link);
+						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px; border:1px solid #000; text-decoration: none !important; background-color: #E4F5F8; padding:1px; border-radius: 2px;'>";
+						echo "file.".$link[3].", ";
 						echo "</a>";
 					}
+					
 				}else{
 					echo "No File Attach..<br>";
-				}
-
-				echo $conve->cs_msg_text; ?>
+				} echo "<br><br>"; ?>
 			</td>
 
 		</tr>
