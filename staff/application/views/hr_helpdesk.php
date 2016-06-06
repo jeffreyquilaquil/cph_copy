@@ -12,12 +12,11 @@ if($this->user->access == "exec"){
 
 <style type="text/css">
 
-	th{
-	 	background-color: #CCCCCC;
-	 	text-align: left;
-	 }
+	td{
+		text-align: center;
+	}
 
-	 a.other_links:link, a.other_links:visited, a.other_links:hover, a.other_links:active{
+	a.other_links:link, a.other_links:visited, a.other_links:hover, a.other_links:active{
 	 	color: black;
 	 	text-decoration: none;
 	 	background-color: #CCCCCC; 
@@ -67,12 +66,6 @@ if($this->user->access == "exec"){
 	.tab-cont.curr{
 		display: inherit;
 	}
-
-	td, th{
-		text-align: center;
-	}
-
-
  
 </style>
 	
@@ -293,9 +286,9 @@ if($this->user->access == "exec"){
                     		data-balloon-pos="right"><?php echo "$value->cs_post_id";?></a>		
 	      		</td>
 	      		<td><?php echo $value->cs_post_subject ?></td>
-	      		<td><?php echo $value->fname; ?></td>
+	      		<td><?php echo $value->fname.' '.$value->lname;?></td>
 	      		<td><?php echo $value->cs_post_urgency; ?></td>
-	      		<td><?php  echo $value->cs_post_date_submitted; ?></td> 
+	       		<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
 	      		<td style="width: 100px;">
 	      		<a id="new_reassign<?php echo $value->cs_post_id ?>" style="cursor: pointer;">Reassign</a>
 	      		<div id="new_reassign_form<?php echo $value->cs_post_id; ?>">
@@ -354,7 +347,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $active_val->cs_post_subject; ?></td>
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
-				<td><?php echo $active_val->last_update; ?></td>
+				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
 				<td><?php echo $active_val->hr_own_empUSER; ?></td>				
 			</tr>
 		<?php } ?>    	 
@@ -388,7 +381,7 @@ if($this->user->access == "exec"){
 					<td><?php echo $resolve_val->cs_post_subject; ?></td>
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
-					<td><?php echo $resolve_val->last_update; ?></td>
+					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
 					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
 				</tr>
 			<?php } ?>     
@@ -417,28 +410,28 @@ if($this->user->access == "exec"){
 		<?php foreach ($CancelIncident as $active_key => $resolve_val) { ?>
 			<tr>
 				<td class="td_hover">
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/cinc/<?php echo $resolve_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $resolve_val->cs_post_id; ?>/closed_cancel/<?php echo $resolve_val->cs_post_empID_fk; ?>" class="iframe"><?php echo $resolve_val->cs_post_id;?></a>
       			</td>
 				<td><?php echo $resolve_val->cs_post_subject; ?></td>
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
-				<td><?php echo $resolve_val->last_update; ?></td>
-				<td><?php echo $resolve_val->hr_own_empUSER; ?></td>
+				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
+				<td><?php if($resolve_val->hr_own_empUSER==''){ echo 'No Owner';}else{ echo $resolve_val->hr_own_empUSER;} ?></td>
 			<?php if($resolve_val->cs_post_status == 5){ ?>
 				<td>Closed Cancel</td>	
 			<?php } ?>
 			</tr>
 		<?php } ?>   
-<!--This is for the Close Transfer-->
+		<!--This is for the Close Transfer-->
 		<?php foreach ($Canceltransfer as $transfer_key => $c_transfer) { ?>
 			<tr>
 				<td class="td_hover">
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $c_transfer->cs_post_id; ?>/cinc/<?php echo $c_transfer->cs_post_empID_fk; ?>" class="iframe"><?php echo $c_transfer->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $c_transfer->cs_post_id; ?>/closed_transfer/<?php echo $c_transfer->cs_post_empID_fk; ?>" class="iframe"><?php echo $c_transfer->cs_post_id;?></a>
       			</td>
 				<td><?php echo $c_transfer->cs_post_subject; ?></td>
 				<td><?php echo $c_transfer->fname." ".$c_transfer->lname; ?></td>
 				<td><?php echo $c_transfer->cs_post_urgency; ?></td>
-				<td><?php echo $c_transfer->last_update; ?></td>
+				<td><?php echo date_format(date_create($c_transfer->last_update), 'F d, Y G:ia'); ?></td>
 				<td><?php echo $c_transfer->hr_own_empUSER; ?></td>
 				<td>Closed Transfer</td>	
 

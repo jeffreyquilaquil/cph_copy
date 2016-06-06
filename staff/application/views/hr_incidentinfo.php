@@ -92,9 +92,6 @@
 	}
 
 
-
-
-
 	.hr_msg_lbl{
 
 		background: #febbbb;
@@ -181,10 +178,7 @@
 		
 		<?php if($this->uri->segment(4)== 'new'){?> 
 		
-		<?php }elseif($this->uri->segment(4) == 'active' || 
-						$this->uri->segment(4) == 'resolved' || 
-						$this->uri->segment(4) == 'cinc' || 
-						$this->uri->segment(4) == 'emp'){ ?>
+		<?php }elseif($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'resolved'){ ?>
 			<tr>
 				<td>Due date</td>
 				<td><?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
