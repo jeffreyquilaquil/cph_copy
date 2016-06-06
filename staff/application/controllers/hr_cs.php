@@ -1,7 +1,7 @@
 <?php
 	if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-	class Hr_cs extends MY_Controller{
+	class Hr_cs extends MY_Controller{ 
 
 
 		public function __construct(){
