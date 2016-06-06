@@ -32,10 +32,7 @@
 		width: 100%;
 	}
 
-	.conversation{
-		padding: 5px;
-		color: #000000;
-	}
+	
 
 	hr{
 		border-top: 1px solid #ccc;
@@ -83,35 +80,43 @@
 		display: inline-block;
 	}
 
-	.employee_messages{
+
+
+	.employee_msg_lbl{
 		background: #f0f9ff;
 		background: -moz-linear-gradient(top,  #f0f9ff 0%, #cbebff 47%, #b9d1ff 100%);
 		background: -webkit-linear-gradient(top,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
 		background: linear-gradient(to bottom,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0f9ff', endColorstr='#b9d1ff',GradientType=0 );
-		padding: 3px 9px;
-		border: solid 1px #4a7ebb;
+		padding: 7px;
 	}
 
-	.hr_messages{
+
+
+
+
+	.hr_msg_lbl{
 
 		background: #febbbb;
 		background: -moz-linear-gradient(top,  #febbbb 0%, #fe9090 45%, #ffa7a6 100%);
 		background: -webkit-linear-gradient(top,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
 		background: linear-gradient(to bottom,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febbbb', endColorstr='#ffa7a6',GradientType=0 );
-		padding: 3px 9px;
-		border: solid 1px #be4b48;
+		padding: 7px;
+		
 	}
 
-	.internal_notes{
+	.internal_notes_lbl{
 		background: #eeeeee;
 		background: -moz-linear-gradient(top,  #eeeeee 0%, #bebebe 100%);
 		background: -webkit-linear-gradient(top,  #eeeeee 0%,#bebebe 100%);
 		background: linear-gradient(to bottom,  #eeeeee 0%,#bebebe 100%);
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#bebebe',GradientType=0 );
-		padding: 3px 9px;
-		border: solid 1px black;
+		padding: 7px;
+	}
+
+	.messages{
+		padding: 7px;
 	}
 
 </style>
@@ -182,7 +187,7 @@
 						$this->uri->segment(4) == 'emp'){ ?>
 			<tr>
 				<td>Due date</td>
-				<td> <?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
+				<td><?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
 			</tr>
 		<?php } ?>
 
@@ -233,11 +238,12 @@
 		if ($conve->cs_msg_type == 0) {?>
 		<!-- employee messages -->
 		<tr>
-			<td class="employee_messages">
+			<td style="border: solid 1px #4a7ebb;">
+				<div class="employee_msg_lbl">
 				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-				<br>
-				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-				<br><br> 
+				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
+				</div>
+				<div class="messages">
 				<?php 
 
 				echo "<br>".$conve->cs_msg_text."<br>";
@@ -256,18 +262,20 @@
 						echo "</a>";
 					}
 				}else{
-					echo "No File Attach..<br>";
-				} echo "<br><br>"; ?>
+					
+				} echo "<br>"; ?>
+				</div>
 			</td>
 		</tr>
 		<!-- hr messages-->
 		<?php }elseif($conve->cs_msg_type == 1){ ?>
 		<tr>
-			<td class="hr_messages">			
+			<td style="border: solid 1px #be4b48;">
+				<div class="hr_msg_lbl">
 				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-				<br>
-				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-				<br><br>
+				<span style="float:right;">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
+				</div>	
+				<div class="messages">		
 				<?php 
 
 				echo $conve->cs_msg_text."<br>";
@@ -286,10 +294,10 @@
 					}
 					
 				}else{
-					echo "No File Attach..<br>";
+					
 				} echo "<br><br>"; ?>
+				</div>
 			</td>
-
 		</tr>
 		<!-- internal notes -->
 		<?php } elseif($conve->cs_msg_type == 2){ 
@@ -297,11 +305,12 @@
 
 		?>
 		<tr>
-			<td class="internal_notes">
+			<td style="border: solid 1px black;">
+				<div class="internal_notes_lbl">
 				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-				<br>
-				Date Submitted: <?php echo strip_tags($conve->cs_msg_date_submitted); ?>
-				<br><br>
+				<span style="float: right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
+				</div>
+				<div class="messages">
 				<?php 
 
 					$file = $conve->cs_msg_attachment;
@@ -314,9 +323,10 @@
 						echo $this->config->base_url()."".$link_file."<br>";
 					}
 				}else{
-					echo "No File Attach..<br>";
+					
 				}
 				echo $conve->cs_msg_text; ?>
+				</div>
 			</td>
 		</tr>
 	<?php } } } ?>
@@ -588,7 +598,7 @@ $(document).ready(function() {
 	tinymce.init({
 	selector: "textarea.tiny",	
 	menubar : false,
-	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image"
+	toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table code image "
 	});	
 
 
