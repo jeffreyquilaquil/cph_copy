@@ -431,10 +431,15 @@
 			<tr>
 				<td>Resolution Options:</td>
 				<td>
-					<select id="resolution_options" style="width: 100%">
+					<input id="reply_lbl" type="radio" name="inquiry_type" value="Reply" checked="checked">
+					<label for="reply_lbl">Reply</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input id="canel_lbl" type="radio" name="inquiry_type" value="Cancel Incident">
+					<label for="canel_lbl">Cancel Incident</label>
+
+					<!--<select id="resolution_options" style="width: 100%">
 						<option>Reply</option>
 						<option>Cancel Incident</option>
-					</select>
+					</select> -->
 				</td>
 			</tr>
 			<tr>
@@ -530,6 +535,7 @@
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 
+
 $(document).ready(function() {
 
 	// add category
@@ -559,7 +565,17 @@ $(document).ready(function() {
 	var resolve = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now resolved)';
 	var closed = 'Hello <b>'+ full_name +'! </b><br><br> (Your Incident is now Closed)';
 	var cancelled = 'Hello <b>HR NAME</b>' + '!<br><br><br> I want to cancel my incident.';
-		
+
+	$('input[name="inquiry_type"]').on('change', function() {
+
+		if ($('input[name="inquiry_type"]:checked').val() == "Cancel Incident") {
+           tinyMCE.activeEditor.setContent(cancelled);
+        }else if($('input[name="inquiry_type"]:checked').val() == "Reply"){
+        	tinyMCE.activeEditor.setContent("");
+        }
+   		
+		});
+
 	$( "#resolution_options" ).change(function() {
 	    if ($( "#resolution_options" ).val() == 'The answer can be found in employee.tatepublishing.net') { 
 				tinyMCE.activeEditor.setContent(found);
@@ -581,9 +597,6 @@ $(document).ready(function() {
 	    }else if($( "#resolution_options" ).val() == 'Closed'){
 	    		tinyMCE.activeEditor.setContent(closed);
 		    		
-	    }else if($( "#resolution_options" ).val() == 'Cancel Incident'){
-	    		tinyMCE.activeEditor.setContent(cancelled);
-	    		
 	    }
 
 	    else{
