@@ -43,7 +43,7 @@
 					be answered there. If your question is already answered in employee.tatepublishing.net, HR shall reply with the link to the answer.
 				</td>
 			</tr>
-			<!-- input box for inquiry/report -->
+			<!-- input box for inquiry/report --> 
 			<tr>
 				<td>What's your inquiry/report all about?</td>
 				<td align="center"><input type="text" name="cs_post_subject" style="width: 100%" required></td>
