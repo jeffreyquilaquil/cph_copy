@@ -68,6 +68,10 @@ if($this->user->access == "exec"){
 		display: inherit;
 	}
 
+	td, th{
+		text-align: center;
+	}
+
 
  
 </style>
@@ -154,11 +158,11 @@ if($this->user->access == "exec"){
 				<th>Owner</th>
 				<th>Extend Due Date</th>
 				<th>Reassign</th>
-
-
 			</tr>
 		</thead>
+
 			<?php foreach ($MyTicket as $myticket_key => $myticket) { ?>
+
 			<tr>
 				<td class="td_hover">
 				<?php if (date('Y-m-d') >= $myticket->due_date) {
@@ -228,7 +232,7 @@ if($this->user->access == "exec"){
 										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
 										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
 										
 									<?php }else if($this->access->myaccess[0] == "finance"){?>
 											<option value=""></option>
@@ -243,7 +247,7 @@ if($this->user->access == "exec"){
 											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_full->fname." ".$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
 										<?php } ?>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Finance</option>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
 										
 									<?php } ?>
 								</select>
@@ -302,9 +306,9 @@ if($this->user->access == "exec"){
 								<option></option>
 								<?php if($this->access->myaccess[0] == "full"){ ?>
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Finance</option>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
 								<?php }else if($this->access->myaccess[0] == "hr"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Finance</option>
+								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
 								<?php }else if($this->access->myaccess[0] == "finance"){ ?>
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
 								<?php } ?>
