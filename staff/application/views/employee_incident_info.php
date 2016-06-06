@@ -90,7 +90,7 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 
 		      		?>
 		      	</td>	
-		      	<td><?php echo $rep->hr_own_empUSER; ?></td>
+		      	<td><?php if($rep->hr_own_empUSER==''){echo "Not assigned";}else{echo $rep->hr_own_empUSER;} ?></td>
 	  		</tr>	
 	  		<?php endforeach ?>     
 	</table>
