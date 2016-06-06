@@ -110,6 +110,39 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 		$(".inline").colorbox({inline:true, width:"40%", height:"60%"});
 		$('.datatable').dataTable(<?php echo (isset($dataTableProperties) ? $dataTableProperties:''); ?>);
 		
+		/* Create an array with the values of all the input boxes in a column */
+		$.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).val();
+		    } );
+		}
+		 
+		/* Create an array with the values of all the input boxes in a column, parsed as numbers */
+		$.fn.dataTable.ext.order['dom-text-numeric'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).val() * 1;
+		    } );
+		}
+		 
+		/* Create an array with the values of all the select options in a column */
+		$.fn.dataTable.ext.order['dom-select'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('select', td).val();
+		    } );
+		}
+		 
+		/* Create an array with the values of all the checkboxes in a column */
+		$.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).prop('checked') ? '1' : '0';
+		    } );
+		}
+
+		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
 		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });

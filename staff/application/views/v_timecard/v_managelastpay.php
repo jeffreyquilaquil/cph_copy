@@ -47,7 +47,14 @@
 			echo '<td>'.$this->textM->convertNumFormat($data->deductTotal).'</td>';			
 			echo '<td><b>PHP '.$this->textM->convertNumFormat($data->netLastPay).'</b></td>'; 
 			
-			echo '<td>'. $this->textM->formfield('selectoption', 'status', $data->status, '', '', 'data-lastpayid="'.$data->lastpayID.'"', $status_labels) .'</td>';
+			echo '<td>'. $this->textM->formfield('selectoption', 'status', $data->status, '', '', 'data-lastpayid="'.$data->lastpayID.'"', $status_labels).'<br/>';
+			if( $data->status == 3 ){
+				$docs = json_decode($data->docs);
+				foreach( $docs as $doc ){
+					echo '<a href="'. $this->config->base_url().'uploads/lastpay_docs/'.$doc.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" />';
+				}
+			}
+			echo '</td>';
 			echo '<td align="right">
 					<ul class="dropmenu">
 						<li><img src="'.$this->config->base_url().'css/images/settings-icon.png" class="cpointer"/>
@@ -73,17 +80,28 @@
  	});
 
  	$('select[name="status"]').change(function(){
- 		$.ajax({
- 			type: 'POST',
- 			url: '<?php echo $this->config->base_url()."timecard/managelastpay/"; ?>',
- 			data: { 'status': $(this).val(), 'id': $(this).data('lastpayid') },
- 			success: function(data){
- 				console.log(data);
- 				alert('Status has updated');
- 				window.location.reload();
- 			}
- 		});
+ 		var that = $(this);
+
+ 		if( that.val() == 3 ){
+ 			$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=upload&payID='; ?>" + that.data('lastpayid') });
+ 		} else {
+ 			$.ajax({
+	 			type: 'POST',
+	 			url: '<?php echo $this->config->base_url()."timecard/managelastpay/"; ?>',
+	 			data: { 'status': $(this).val(), 'id': $(this).data('lastpayid') },
+	 			success: function(data){
+	 				console.log(data);
+	 				alert('Status has updated');
+	 				window.location.reload();
+	 			}
+	 		});	
+ 		}
+
+
+ 		
  	});
+
+
  });
  </script>
 
