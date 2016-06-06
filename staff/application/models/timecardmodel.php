@@ -278,7 +278,7 @@ class Timecardmodel extends CI_Model {
 			//remove schedule
 			}else if($yeye->status==0) unset($dayArr[$d]);		
 		}
-		//$this->textM->aaa($dayArr);
+		$this->textM->aaa($dayArr);
 		return $dayArr;	
 	}
 	
@@ -605,6 +605,11 @@ class Timecardmodel extends CI_Model {
 					}	
 				}
 								
+			}
+
+			//check if the leave is without pay
+			if( $sArr['leaveStatus'] == 2 ){
+				$insArr['publishDeduct'] = 8;
 			}
 			
 			///INSERTION
