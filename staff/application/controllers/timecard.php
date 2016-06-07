@@ -1470,7 +1470,7 @@ class Timecard extends MY_Controller {
 					}
 					
 					//notes
-					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay computation has been updated.', 1, 0, $this->user->empID);
+					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay computation has been updated.', 1, 1, $this->user->empID);
 					//end notes
 
 					echo $lastpayID;
@@ -1736,6 +1736,14 @@ class Timecard extends MY_Controller {
 				if( $this->input->is_ajax_request() ){
 					//update					
 					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
+
+
+					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
+					//notes
+					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $this->input->post('status') ].'`.', 1, 1, $this->user->empID);
+					//end notes
+
+					
 					exit();
 				}
 

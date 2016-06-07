@@ -75,28 +75,42 @@
 </table>
 <script>
  $(function(){
+ 	var prev;
  	$('.btnclass').click(function(){
  		window.location = '<?php echo $this->config->base_url(); ?>timecard/alphalist/?which=end';		
  	});
 
+ 	$('select[name="status"]').focus(function(){
+
+ 		prev = $(this).children('option').filter(':selected').val();
+ 	});
+
  	$('select[name="status"]').change(function(){
  		var that = $(this);
+ 		
+ 		console.log(prev);
+ 		var r = confirm('Proceed in updating the status to ' + that.children('option').filter(':selected').text() + '?');
 
- 		if( that.val() == 3 ){
- 			$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=upload&payID='; ?>" + that.data('lastpayid') });
+ 		if( r == true ){
+ 			if( that.val() == 3 ){
+	 			$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=upload&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
+	 		} else {
+	 			$.ajax({
+		 			type: 'POST',
+		 			url: '<?php echo $this->config->base_url()."timecard/managelastpay/"; ?>',
+		 			data: { 'status': $(this).val(), 'id': $(this).data('lastpayid') },
+		 			success: function(data){
+		 				console.log(data);
+		 				alert('Status has updated');
+		 				window.location.reload();
+		 			}
+		 		});	
+	 		}	
  		} else {
- 			$.ajax({
-	 			type: 'POST',
-	 			url: '<?php echo $this->config->base_url()."timecard/managelastpay/"; ?>',
-	 			data: { 'status': $(this).val(), 'id': $(this).data('lastpayid') },
-	 			success: function(data){
-	 				console.log(data);
-	 				alert('Status has updated');
-	 				window.location.reload();
-	 			}
-	 		});	
- 		}
 
+ 			that.val( prev );
+ 		}
+ 		
 
  		
  	});
