@@ -1,4 +1,16 @@
 <?php 
+
+if( isset($js) ){
+
+	if( isset($upload_error) ){
+		echo '<p class="errortext">'. $upload_error . '</p>';
+	}
+
+	echo '<script>parent.window.location.reload();</script>';
+	exit();
+}
+
+
 echo '<h3>Upload Signed Last Pay Documentation</h3>';
 echo '<hr/>';
 

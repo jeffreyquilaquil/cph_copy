@@ -1701,12 +1701,12 @@ class Timecard extends MY_Controller {
 			}
 			//save data
 			if( isset($error_data) ){
-				unset($upload_data);
+				unset($data['upload_data']);
 				$data['upload_error'] = implode('<br/>', $error_data);				
 			} else if( isset($upload_data)  ){
 
-				foreach( $upload_data as $data ){
-					$filenames[] = $data['file_name'];
+				foreach( $upload_data as $data_upload ){
+					$filenames[] = $data_upload['file_name'];
 				}
 
 				$filename = json_encode($filenames);
@@ -1714,10 +1714,12 @@ class Timecard extends MY_Controller {
 				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
 
 				$data['upload_error'] = 'Document has been uploaded.';
+				$data['js'] = true;
 			} 
 			
 		}
 		//end upload files
+		
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
 
