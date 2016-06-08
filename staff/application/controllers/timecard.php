@@ -1713,6 +1713,10 @@ class Timecard extends MY_Controller {
 
 				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
 
+				//notes
+				$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `Released`.', 1, 1, $this->user->empID);
+				//end notes
+
 				$data['upload_error'] = 'Document has been uploaded.';
 				$data['js'] = true;
 			} 
