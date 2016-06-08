@@ -74,7 +74,7 @@
 					<br>
 					Explain the details of your inquiry in the box below:
 					<br><br>
-					<textarea id="content" class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
+					<textarea class="hidden tiny" name="askHR_details" style="height:350px; resize: none;"></textarea>
 				</td>
 			</tr>
 			<!-- add attachments -->

@@ -6,32 +6,38 @@
 
 		public function __construct(){
 		parent::__construct();
+
 		$this->load->helper('security');
 		$this->load->model('ask_hr');		
 		
 			}
 
 		public function index(){
-            $data['content']='askHR_submissionpage';
-            $data['msg_newID']=0;
+
+            $data['content']= 'askHR_submissionpage';
+            $data['msg_newID']= 0;
 
 			$this->load->view('includes/templatecolorbox',$data);
-		} // end of index function
+		} 
 
+		// Adding of Inquiry/Question to HR/Accounting
 		public function askhr(){
 			
-
-			//checking if there is session data
+			// Get current login user
 			$empID = $this->user->empID;
-			
-			
+						
 			if($this->input->post()){
-			$this->load->library('form_validation');
-			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
-			$this->form_validation->set_rules('cs_post_subject','cs_post_subject','required');
 
-			if($this->form_validation->run() !== false)
-			{
+			$this->load->library('form_validation');
+
+			// Form validation in server side
+			$this->form_validation->set_rules('cs_post_subject','Cs_post_subject','required');
+			$this->form_validation->set_rules('askHR_details','AskHR_details','required');
+			
+			// If form validation is valid
+			if($this->form_validation->run() !== false){
+
+			// Get inputted data from views to be passed to hr_cs_msg
 			$data['cs_post_empID_fk'] = $empID;
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['report_related']= $this->input->post('inquiry_type');
@@ -39,101 +45,108 @@
 			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');
 			$data['cs_post_status']= 0; 
 			
+			// Insert data1 to hr_cs_post
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
+
+			// Get inputted data from views to be passed to hr_cs_post
 			$data2['reply_empUser'] = $this->input->post('hr_username');
 			$data2['cs_msg_date_submitted']= date('Y-m-d h:i:sa');
-			$data2['cs_msg_type']=0;
+			$data2['cs_msg_type']= 0;
 			$data2['cs_msg_text'] = $this->input->post('askHR_details');
 			$data2['cs_msg_text'] = $this->security->xss_clean($data2['cs_msg_text']);
 			
 			if( $this->isSetNotEmpty($_FILES)){
-						$files = $_FILES;					
-						// config data 
-						$upload_config['upload_path'] ='uploads/cs_hr_attachments';
-						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc|csv';
-						$upload_config['max_size']	= '2048';
-						$upload_config['overwrite']	= 'FALSE';					
-						$this->load->library('upload');	
+						
+				$files = $_FILES;					
+				// config of file upload 
+				$upload_config['upload_path'] ='uploads/cs_hr_attachments';
+				$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc|csv';
+				$upload_config['max_size']	= '2048';
+				$upload_config['overwrite']	= 'FALSE';					
+				$this->load->library('upload');	
 
+				$upload_count = count( $_FILES['arr_attachments']['name'] );
+				for( $x = 0; $x < $upload_count; $x++ )
+				{
+					$_FILES['to_upload']['name'] = $files['arr_attachments']['name'][$x];
+					$_FILES['to_upload']['type'] = $files['arr_attachments']['type'][$x];
+					$_FILES['to_upload']['tmp_name'] = $files['arr_attachments']['tmp_name'][$x];
+					$_FILES['to_upload']['error'] = $files['arr_attachments']['error'][$x];
+					$_FILES['to_upload']['size'] = $files['arr_attachments']['size'][$x];
 
-						$upload_count = count( $_FILES['arr_attachments']['name'] );
-						for( $x = 0; $x < $upload_count; $x++ )
-						{
-							$_FILES['to_upload']['name'] = $files['arr_attachments']['name'][$x];
-							$_FILES['to_upload']['type'] = $files['arr_attachments']['type'][$x];
-							$_FILES['to_upload']['tmp_name'] = $files['arr_attachments']['tmp_name'][$x];
-							$_FILES['to_upload']['error'] = $files['arr_attachments']['error'][$x];
-							$_FILES['to_upload']['size'] = $files['arr_attachments']['size'][$x];
+					// Get extention
+					$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+					$uniq_id = uniqid();
 
-							$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
-							$uniq_id = uniqid();
-							$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
-							
-							$this->upload->initialize( $upload_config );
-							
-							if( ! $this->upload->do_upload('to_upload') ){
-								$error_data[$x] = $this->upload->display_errors();
-							} else {
-								$upload_data[$x] = $this->upload->data();
-							}
+					$upload_config['file_name'] = $this->user->empID .'_'. $uniq_id .'_'. $x .'.'.$ext;
+					
+					$this->upload->initialize($upload_config);
+					
+						if( ! $this->upload->do_upload('to_upload') ){
+							$error_data[$x] = $this->upload->display_errors();
+						} else {
+							$upload_data[$x] = $this->upload->data();
+					}
 
-						} // end of fro loop
+				} 
 
-						//if we have error, throw it to views
-                        if( isset($error_data) AND !empty($error_data) ){
-                            $data['error'] = '';
-							foreach( $error_data as $key1 => $val1 ){
-								$data['error'] .= $val1 ."\n";
-							}						
-						}
+				//if file is invalid
+                if( isset($error_data) AND !empty($error_data) ){
+                    $data['error'] = '';
+					foreach( $error_data as $key1 => $val1 ){
+						$data['error'] .= $val1 ."\n";
+					}						
+				}
 
-						if( isset($upload_data) AND !empty($upload_data) ){
-							foreach( $upload_data as $key => $val ){
-								$docs_url[] = $val['full_path'];
-							}
-							$data2['cs_msg_attachment'] = json_encode( $docs_url );
-							$data2['cs_msg_attachment'] = addslashes($data2['cs_msg_attachment']);
-						}					
-					}else{
-						$data2['cs_msg_attachment'] = null;
+				// If file is valid
+				if( isset($upload_data) AND !empty($upload_data) ){
+					
+					foreach( $upload_data as $key => $val ){
+						$docs_url[] = $val['full_path'];
+					}
 
-					} // end of file upload
+					$data2['cs_msg_attachment'] = json_encode( $docs_url );
+					$data2['cs_msg_attachment'] = addslashes($data2['cs_msg_attachment']);
+				}					
+			
+			}
 
+			// If no file upload
+			else{
+				$data2['cs_msg_attachment'] = null;
+
+				} // End file upload
 									
-					$data3['msg_newID']=0;
 					if(isset($data2['cs_msg_postID_fk'])){
+
+						// Insert data2 to hr_cs_msg
 						$this->ask_hr->askhr('hr_cs_msg',$data2);
 
 			 
 					}
+
+					$data3['msg_newID']= 0;
+
 					$data3['msg_newID']= $this->ask_hr->max_id();
 					$this->load->view('askHR_submissionpage',$data3);
 
 			}
+
 			else{
 				$data['content']='askHR_submissionpage';
 				$this->load->view('includes/templatecolorbox',$data);
 				}
 
-
 			}
-			
-			
-
-			
-			
-
-					//redirect($this->config->base_url(), 'refresh');
-				
-            } // end of askhr function
+						
+        } 
 
             public function HrHelpDesk()
             {
             	//for viewing
             	$data['content']='hr_helpdesk';
             	$empuser = $this->user->username;
-            	
-				
+   				
 				//getting data from db
 				//for New incident data HR HELP DESK
 				//$data['NewIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, staffs.fname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE hr_cs_post.cs_post_status = 0 GROUP BY cs_msg_postID_fk HAVING COUNT(cs_msg_postID_fk) = 1','hr_cs_post.cs_post_id');
@@ -148,6 +161,8 @@
 				$data['ActiveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 GROUP BY cs_msg_postID_fk');
 				$data['ActiveIncidentHR']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 0 GROUP BY cs_msg_postID_fk');
 				$data['ActiveIncidentAcc']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date ,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 1 GROUP BY cs_msg_postID_fk');
+
+
 
 				// this is for Resolve incident
 				$data['ResolveIncidentFull']=$this->ask_hr->hrhelpdesk('hr_cs_msg.cs_msg_postID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.due_date,hr_cs_post.cs_post_id, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, assign_category.assign_sla, hr_cs_post.hr_own_empUSER, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category WHERE hr_cs_post.cs_post_status = 3 GROUP BY hr_cs_msg.cs_msg_postID_fk');
@@ -446,7 +461,7 @@
 
 
 		            		$data['cs_msg_postID_fk'] =  $id;
-		            		$custommessage=  $this->input->post('custom_answer_msg');
+		            		$custommessage=  $this->input->post('note_msg');
 		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
 		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            		$data['cs_msg_type'] = 2;
@@ -725,8 +740,6 @@
 				$data['finance_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
 				// get the name of all Full Access employee
 				$data['full_list']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
-				//get all department infomation
-				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 				
 	  			$this->load->view('includes/template',$data);
 

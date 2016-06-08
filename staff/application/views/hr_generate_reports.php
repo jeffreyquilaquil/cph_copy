@@ -1,13 +1,14 @@
 <h2>Generate Reports</h2>
 <hr>
+<form id="genarate_reports_form">
 <table style="border: 1px solid #000;">
 	<tr>
 		<td align="left">From:</td>
-		<td align="right"><input type="text" id="" name="" class="datepick"  value="" placeholder="Start Date" style="width: 400px" readonly/></td>
+		<td align="right"><input type="text" id="from_date" class="datepick"  value="" placeholder="Start Date" style="width: 400px" readonly/></td>
 	</tr>
 	<tr>
 		<td align="left">To:</td>
-		<td align="right"><input type="text" id="" name="" class="datepick"  value="" placeholder="End Date" style="width: 400px" readonly/></td>
+		<td align="right"><input type="text" id="to_date" class="datepick"  value="" placeholder="End Date" style="width: 400px" readonly/></td>
 	</tr>
 	<tr>
 		<td align="left" valign="top">Who:</td>
@@ -41,9 +42,10 @@
 		</td>
 	</tr>
 	<tr>
-		<td colspan="2" align="right"><input type="submit" class="btngreen" value="Submit"></td>
+		<td colspan="2" align="right"><input type="submit" id="btn_generate_reports" class="btngreen" value="Submit"></td>
 	</tr>
 </table>
+</form>
 <br><br>
 As of mm/dd/yy - mm/dd/yy
 <br><br>
@@ -63,6 +65,43 @@ As of mm/dd/yy - mm/dd/yy
 <script type="text/javascript">
 	$(document).ready(function(){
 
+		$('#btn_generate_reports').click(function() {
+
+			var from_date=  $("#from_date").val();
+			var to_date=  $("#to_date").val();
+			
+
+			
+			//var dataString = 'insedentid='+ ins_id + '&custom_answer_msg='+ custom_ans + '&hr_username='+ hr_sname + '&assign_category=' + ass_categ; 
+			
+			if (from_date == '' || to_date == '') {
+
+					$('#genarate_reports_form')[0].reset();
+					alert("Some Field is Empty!");
+			}
+
+			/*
+			else{
+
+				$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/hr_generate_reports",
+				data: dataString,
+				cache: false,
+					success: function(result){
+					alert("Success!");
+					
+					window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+	                close();
+					}
+				});
+			}
+
+			return false;
+
+			*/
+
+		});
 	
 	});
 	

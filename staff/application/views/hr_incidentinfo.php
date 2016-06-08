@@ -241,23 +241,25 @@
 				<?php 
 
 				echo "<br>".$conve->cs_msg_text."<br>";
+				
 				$file = $conve->cs_msg_attachment;
+				
 				if($file != null){
 					$docs_url = json_decode($conve->cs_msg_attachment);
-					echo "<b>FILE : </b>";
-					foreach ($docs_url as $l_file=>$file) {
+
+					foreach ($docs_url as $l_file => $file) {
 						$link_file = str_replace(FCPATH,'', $file);
 						$file_link = $this->config->base_url()."".$link_file;
-						$link = explode(".",$file_link);
+						$link = explode("/",$file_link);
 						
 
-						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank' style='margin-right: 5px; border:1px solid #000; text-decoration: none !important; background-color: #E4F5F8; padding:1px; border-radius: 2px;'>";
-						echo "file.".$link[3];
-						echo "</a>";
+						echo "<a href='".$this->config->base_url()."".$link_file."' target='_blank'>";
+						echo $link[7];
+						echo "</a></br>";
 					}
 				}else{
 					
-				} echo "<br>"; ?>
+				} ?>
 				</div>
 			</td>
 		</tr>
@@ -308,6 +310,7 @@
 				<?php 
 
 					$file = $conve->cs_msg_attachment;
+
 					if($file != null){
 					$aReplace = array('["', '"]');
 					$coordsReplaced = str_replace($aReplace , '', $file);
@@ -612,7 +615,7 @@ $(document).ready(function() {
 	// add note
 	$("#note_submit").click(function() {
 
-		var custom_ans = tinyMCE.get('note_msg').getContent();
+		var custom_ans = tinyMCE.get('#note_msg').getContent();
 		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#categoryid").val();
 		var ass_categ = $("#assign_category option:selected").val();

@@ -4,7 +4,7 @@
        }
 </style>
 
-<h2>HR Customer Satifaction Survey</h2>
+<h2>HR/Accounting Customer Satifaction Survey</h2>
 
 <!-- table for hr customer satisfaction survey -->
 <div>
@@ -29,7 +29,7 @@
       			<td><?php echo $value->fname." ".$value->lname ?></td>
                         <td><?php echo date_format(date_create($value->date_submited), 'F d, Y G:ia'); ?></td>
                         <td><?php echo date_format(date_create($value->last_update), 'F d, Y G:ia'); ?></td>
-      			<td><?php echo $value->assign_category; ?></td>
+      			<td><?php if($value->assign_category==''){echo "-";}else{echo $value->assign_category;} ?></td>
       			<td><?php echo $value->cs_post_subject ?></td>
       			<td>
                         <?php if($value->cs_post_urgency=='Urgent'){ 
