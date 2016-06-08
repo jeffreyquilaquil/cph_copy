@@ -68,7 +68,7 @@ $subject = 'CPH DB error';
 $fromName = 'CPH';
 
 
-//$CI->emailmodel->sendEmail( $from, $to, $subject, $body, $fromName);
+$CI->emailmodel->sendEmail( $from, $to, $subject, $body, $fromName);
 ?>
 		<h1><?php echo $heading; ?></h1>
 		<p>Please email helpdesk.cebu@tatepublishing.net for assistance.</p>
