@@ -456,25 +456,23 @@
          
              public function submit_notes(){
             	
+				$id = $this->input->post('insedentid');
 
-            		$id = $this->input->post('insedentid');
+        		$data['cs_msg_postID_fk'] =  $id;
 
+        		$custommessage=  $this->input->post('custom_answer_msg');
+        		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
+        		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+        		$data['cs_msg_type'] = 2;
+        		$data['reply_empUser']  = $this->input->post('hr_username');
+        		
+        		$this->ask_hr->askhr('hr_cs_msg',$data);
 
-		            		$data['cs_msg_postID_fk'] =  $id;
-		            		$custommessage=  $this->input->post('note_msg');
-		            		$data['cs_msg_text'] = $this->security->xss_clean($custommessage);
-		            		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
-		            		$data['cs_msg_type'] = 2;
-		            		$data['reply_empUser']  = $this->input->post('hr_username');
-		            		
-		            		$this->ask_hr->askhr('hr_cs_msg',$data);
+        		$categ = $this->input->post('assign_category');		    
+        		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id);
 
-		            		$categ = $this->input->post('assign_category');		    
-		            		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $categ .'"','cs_post_id = '.$id);
-
-
-            		$data2['content']='hr_helpdesk';
-	  				$this->load->view('includes/template',$data2);
+        		$data2['content']='hr_helpdesk';
+  				$this->load->view('includes/template',$data2);
 
             }
 

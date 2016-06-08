@@ -80,8 +80,6 @@
 		display: inline-block;
 	}
 
-
-
 	.employee_msg_lbl{
 		background: #f0f9ff;
 		background: -moz-linear-gradient(top,  #f0f9ff 0%, #cbebff 47%, #b9d1ff 100%);
@@ -122,7 +120,6 @@
 
 <?php foreach ($HrIncident as $key => $value): ?>
 <?php endforeach ?>
-
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
@@ -328,139 +325,123 @@
 		</tr>
 	<?php } } } ?>
 	</table>
+
 	<br>
 
-	<!-- when user access is full or hr or finance and his/her incident is new or active -->
+	<!-- When user access is full/hr/finance and his/her incident is new/active -->
 	<?php if(($this->user->access == "full" || $this->user->access == "hr" || $this->user->access == "finance")&&
 			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
 
-	<!-- this will be the  HR/Accouting or admin owner of the incidet reply -->	
+	<!-- This will be the  HR/Accouting or admin owner of the incidet reply -->	
 	<input type="hidden" id="incident_owner" value="<?php echo $this->user->username; ?>"> 
 	
 	<!-- message type tabs -->
 	<ul class="tabs">
-		<li class="dbold tab-link" data-tab="tab-1">Note</li>
-		<li class="dbold tab-link current" data-tab="tab-2">Reply</li>
+		<li class="dbold tab-link current" data-tab="tab-1">Reply</li>
+		<li class="dbold tab-link" data-tab="tab-2">Note</li>
 	</ul>
 	<hr/>
-	<!-- note tab-->
-	<div id="tab-1" class="tab-content">
-		<h2>Add A Note</h2>
-		<form id="note_form">
-			<textarea id="note_msg" class="hidden tiny" style="height:200px;"></textarea>
-			<br>
-			<input type="submit" id="note_submit" class="btngreen" value="Submit" style="float:right;">
-		</form>
-		<br>
-	</div>
 
-	<!-- reply tab -->
-	<div id="tab-2" class="tab-content current"> 
-		<table>
-			<tr>
-				<td colspan="2"><h2>Add A Reply</h2></td>
-			</tr>
-			<tr>
-				<td>Resolution Options:</td>
-				<td>	
-					<select id="resolution_options" style="width: 100%">
-						<option></option>
-						<option>The answer can be found in employee.tatepublishing.net</option>
-						<option>Send custom response</option>
-						<option>This is not an HR inquiry. Redirect to another department</option>
-						<option>Further Information (investigation) is required</option>
-						<?php if($this->uri->segment(4) != "new"){?>
-						<option>Resolved</option>
-						<?php } ?>
-						<option>Closed</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
-			</tr>
-			<tr>
-				<td align="left">
-					<div class="sup_docs_div">
-					<!--NEW REPLY-->
-					<form enctype="multipart/form-data">
-						<input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" />
-					</form>
-					<br></div>
-					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
-					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
-				</td>
-				<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Send"></td>
-			</tr>
-		</table>
+	<!-- reply tab-->
+	<div id="tab-1" class="tab-content current">
+	<table>
+		<tr>
+			<td colspan="2"><h2>Add A Reply</h2></td>
+		</tr>
+		<tr>
+			<td>Resolution Options:</td>
+			<td>	
+				<select id="resolution_options" style="width: 100%">
+					<option></option>
+					<option>The answer can be found in employee.tatepublishing.net</option>
+					<option>Send custom response</option>
+					<option>This is not an HR inquiry. Redirect to another department</option>
+					<option>Further Information (investigation) is required</option>
+					<?php if($this->uri->segment(4) != "new"){?>
+					<option>Resolved</option>
+					<?php } ?>
+					<option>Closed</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+		</tr>
+		<tr>
+			<td align="left">
+				<div class="sup_docs_div">
+				<!--NEW REPLY-->
+				<form enctype="multipart/form-data">
+					<input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" />
+				</form>
+				<br></div>
+				<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+				<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+			</td>
+			<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Send"></td>
+		</tr>
+	</table>
 
 	<!-- when user acess is full and his/her incident is resolved and closed -->
-	<?php }elseif($this->user->access == "full" && 
-				 ($this->uri->segment(4) == 'resolved' ||
-				  $this->uri->segment(4) == 'cinc')){?>
+	<?php }elseif($this->user->access == "full" && ($this->uri->segment(4) == 'resolved' ||  $this->uri->segment(4) == 'cinc')){?>
 
-		<table>
-			<tr>
-				<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
-			</tr>
-			<tr>
-				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
-			</tr>
-			<tr>
-				<td align="left"> 
-					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
-					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
-					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
-				</td>
-				<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
-			</tr>
-		</table>
+	<table>
+		<tr>
+			<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+		</tr>
+		<tr>
+			<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+		</tr>
+		<tr>
+			<td align="left"> 
+				<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+				<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+				<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+			</td>
+			<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
+		</tr>
+	</table>
 			
 	<!-- when user is an employee and his/her incident is open -->	
 	<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'open'){?>
 
-		<table>
-			<tr>
-				<td colspan="2"><h2><b>Add A Reply</b></h2></td>
-			</tr>
-			<tr>
-				<td>Resolution Options:</td>
-				<td>
-					<input id="reply_lbl" type="radio" name="inquiry_type" value="Reply" checked="checked">
-					<label for="reply_lbl">Reply</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input id="canel_lbl" type="radio" name="inquiry_type" value="Cancel Incident">
-					<label for="canel_lbl">Cancel Incident</label>
-
-					<!--<select id="resolution_options" style="width: 100%">
-						<option>Reply</option>
-						<option>Cancel Incident</option>
-					</select> -->
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
-			</tr>
-			<tr>
-				<td align="left">
-					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
-					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
-					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
-				</td>
-				<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Submit"></td>
-			</tr>
-		</table>
+	<table>
+		<tr>
+			<td colspan="2"><h2><b>Add A Reply</b></h2></td>
+		</tr>
+		<tr>
+			<td>Resolution Options:</td>
+			<td>
+				<input id="reply_lbl" type="radio" name="inquiry_type" value="Reply" checked="checked">
+				<label for="reply_lbl">Reply</label> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<input id="canel_lbl" type="radio" name="inquiry_type" value="Cancel Incident">
+				<label for="canel_lbl">Cancel Incident</label>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+		</tr>
+		<tr>
+			<td align="left">
+				<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+				<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+				<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+			</td>
+			<td align="right" valign="bottom"><input type="submit" id="submit_reply" class="btngreen" value="Submit"></td>
+		</tr>
+	</table>
 
 	<!-- when user is an employee and his/her incident is resolved -->
-	<?php } elseif($this->uri->segment(4) == 'emp' &&
-				   $this->uri->segment(5) == 'resolved'){
+	<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'resolved'){
 
 			// when incident have a remark
-			if($check_remark !=0 )foreach ($check_remark as $rem => $remark){}
+		if($check_remark != 0 )foreach ($check_remark as $rem => $remark){}
 
-			// when incident don't have a remark
-			if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
+		// when incident don't have a remark
+		if($check_remark == 0 || ($remark->post_id == $this->uri->segment(3) && $remark->remark_status != 0)){ ?>
+		
 		<h2>Please rate incident</h2>
 		<div>
 			<input id="lbl_vs" type="radio" name="radio_survey" value="Very Satisfied" checked>
@@ -473,61 +454,72 @@
 			<label for="lbl_vds">Very Dissatisfied</label> 
 		</div>
 		<br>
-		<textarea id="remark_comment" class="hidden tiny" style="height:100px;"></textarea><br>
+		<textarea id="remark_comment" class="hidden tiny" style="height:100px;"></textarea>
+		<br>
 		<input style="float:right;" type="submit" class="btngreen" id="remarkbtn" name="" value="Submit">
 		<br>
 
 	<?php } ?>
 
-		<br><br>
-		<!-- re open incident toggle -->
-		<a id="reopen_incident">Re-open this incident?</a>
-		<div id="reopen_incident_form">
-			<hr>
-			<table>
-				<tr>
-					<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
-				</tr>
-				<tr>
-					<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
-				</tr>
-				<tr>
-					<td align="left">
-						<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
-						<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
-						<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
-					</td>
-					<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
-				</tr>
-			</table>			
-		</div>	
+	<br><br>
+
+	<!-- re open incident toggle -->
+	<a id="reopen_incident">Re-open this incident?</a>
+	<div id="reopen_incident_form">
+		<hr>
+		<table>
+			<tr>
+				<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+			</tr>
+			<tr>
+				<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+			</tr>
+			<tr>
+				<td align="left">
+					<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+					<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+					<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+				</td>
+				<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send"></td>
+			</tr>
+		</table>			
+	</div>	
 	
 	<!-- when user is an employee and his/her incident is closed -->
-	<?php } elseif($this->uri->segment(4) == 'emp' &&
-				   $this->uri->segment(5) == 'closed'){?>	
+	<?php } elseif($this->uri->segment(4) == 'emp' && $this->uri->segment(5) == 'closed'){?>	
 
-			<!-- re open incident -->
-			<table>
-				<tr>
-					<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
-				</tr>
-				<tr>
-					<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
-				</tr>
-				<tr>
-					<td align="left">
-						<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
-						<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
-						<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
-					</td>
-					<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	</td>
-				</tr>
-			</table>
+	<!-- re open incident -->
+	<table>
+		<tr>
+			<td colspan="2"><h2><b>Add a message to re-open this incident</b></h2></td>
+		</tr>
+		<tr>
+			<td colspan="2"><textarea id="custom_msg" class="hidden tiny" style="height:200px;"></textarea></td>
+		</tr>
+		<tr>
+			<td align="left">
+				<div class="sup_docs_div"><input type="file" name="arr_attachments[]" class="sup_docs" accept=".jpg, .png, .doc, .docx" /><br></div>
+				<div class="add_docs_label"><a href="#" class="label_add_docs">+ Add another attachments</a></div>
+				<span style="color:#555; text-decoration: italic; position: relative; top: 3px; ">Upload up to 5 documents</span>
+			</td>
+			<td align="right" valign="bottom"><input type="submit" id="submit_reply_reopen" class="btngreen" value="Send" style="float:right;"><br>	</td>
+		</tr>
+	</table>
 			
 	<?php } ?>
-		
-	</form>
-</div>
+
+	</div>
+
+	<!-- note tab -->
+	<div id="tab-2" class="tab-content "> 		
+	<h2>Add A Note</h2>
+		<form id="note_form">
+			<textarea id="note_msg" class="hidden tiny" style="height:200px;"></textarea>
+			<br>
+			<input type="submit" id="note_submit" class="btngreen" value="Submit" style="float:right;">
+		</form>
+	<br>	
+	</div>
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
@@ -615,7 +607,7 @@ $(document).ready(function() {
 	// add note
 	$("#note_submit").click(function() {
 
-		var custom_ans = tinyMCE.get('#note_msg').getContent();
+		var custom_ans = tinyMCE.get('note_msg').getContent();
 		var hr_sname = $("#hr_username").val();
 		var ins_id = $("#categoryid").val();
 		var ass_categ = $("#assign_category option:selected").val();
@@ -626,7 +618,7 @@ $(document).ready(function() {
 
 				alert("Some Field is Empty!");
 		}else{
-
+			
 			$.ajax({
 			type: "POST",
 			url: "<?php echo $this->config->base_url(); ?>hr_cs/submit_notes",
@@ -639,6 +631,7 @@ $(document).ready(function() {
                 close();
 				}
 			});
+			
 		}
 
 		return false;
