@@ -2582,7 +2582,7 @@ class Staff extends MY_Controller {
 				
 		if($this->user!=false){
 			
-			if( $this->user->is_supervisor == 1 AND $this->access->myaccess[0] == "" ){
+			if( $this->user->levelID_fk > 0 AND $this->access->myaccess[0] == "" ){
 				
 				$data['supervisor'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0 AND preparedby IN ('.$this->user->empID.')', 'LEFT JOIN staffs ON empID=empID_fk');
 			} else if( $this->access->accessFullHR == true ){
