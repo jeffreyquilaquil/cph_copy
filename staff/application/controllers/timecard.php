@@ -1966,7 +1966,7 @@ class Timecard extends MY_Controller {
 			$separated_employee = array();
 			$payInfo_ = array();
 			foreach( $payInfo as $pay_ ){			
-				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate > $pay_->payroll_start AND $pay_->endDate < $pay_->payroll_end ) ){
+				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate >= $pay_->payroll_start AND $pay_->endDate <= $pay_->payroll_end ) ){
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
 				} else {
 					$payInfo_[] = $pay_;
