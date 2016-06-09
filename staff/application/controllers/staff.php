@@ -2578,7 +2578,7 @@ class Staff extends MY_Controller {
 	
 	public function staffcis(){
 		$data['content'] = 'staffcis';
-		dd($this->user);
+		
 				
 		if($this->user!=false){
 			
