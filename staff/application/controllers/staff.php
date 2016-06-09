@@ -2578,6 +2578,7 @@ class Staff extends MY_Controller {
 	
 	public function staffcis(){
 		$data['content'] = 'staffcis';
+		dd($this->user);
 				
 		if($this->user!=false){
 			
@@ -4295,6 +4296,12 @@ class Staff extends MY_Controller {
 							unset($payslip_array['payStartOnce']);
 							unset($payslip_array['selectPayPercent']);
 							unset($payslip_array['medrequestID']);
+							unset($payslip_array['payName']);
+							unset($payslip_array['mainItem']);
+							unset($payslip_array['payCategory']);
+							unset($payslip_array['payType']);
+							unset($payslip_array['payCDto']);
+							
 						}
 						
 						
