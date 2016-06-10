@@ -190,7 +190,7 @@ class Emailmodel extends CI_Model {
 	//send email if access and end date entered after today
 	public function emailEndEmploymentNotice($info){
 		$de = 'kent.ybanez@tatepublishing.net';
-		$sur = 'helpdesk.cebu@tatepublishing.net,'.$info->supEmail;
+		$sur = 'helpdesk.cebu@tatepublishing.net';
 		$sujet = 'End of Employment Notice';		
 		
 		$termArr = $this->textM->constantArr('terminationType');
@@ -206,7 +206,27 @@ class Emailmodel extends CI_Model {
 		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
+
+
+		//for employee
+		$from = 'careers.cebu@tatepublishing.net';
+		$to = $info->email;
+		$subject = 'End of Employment Notice';
+
+		$msg = '<p>Hello '.$info->name.',</p>';
+		$msg .= '<p>This is to confirm that HR has received your resignation letter duly approved by your immediate supervisor. Careerph is now updated with your effective separation date which is on '. date('F d, Y', strtotime($info->endDate) ).'.</p>';
+		$msg .= '<p>Please come to HR two days before your last day of employment and claim two copies of your exit clearance form. Note that it is your responsibility to complete the exit clearance form. Your last pay shall be release thirty (30) days after the exit clearance form is completed. For addition information, please visit <a href=" http://employee.tatepublishing.net/hr/exit-process/" alt="http://employee.tatepublishing.net/hr/exit-process/">http://employee.tatepublishing.net/hr/exit-process/</a>';
+		$msg .= '<p>Reply to this email if you have questions about the exit process.</p>';
+		$msg .= '<p>Best Regards,</p>';
+		$msg .= '<p>Human Resources Department</p>';
+
+		$this->emailM->sendEmail($from, $to, $subject, $msg, 'CareerPH');
+
+		//add notification
+		$this->load->model('commonmodel', 'commonM');
+		$this->commonM->addMyNotif($info->empID, $msg, 0, 1);
 	}
+
 	
 	//send email if access and end date entered on or before
 	public function emailUrgentTerminateAllAccess($info){
