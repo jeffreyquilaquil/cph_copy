@@ -576,4 +576,29 @@ ul.tabs2 li.current{
 .divMessageReq p{ margin:0px; }
 .divMessageReq ul{ margin:0px; }
 
- 
+.urgent{
+    background-color: #c9302c; 
+    border-color: #ac2925; 
+    border-radius: 4px; 
+    color: #fff; 
+    padding: 3px 9px;
+    display: inline-block;
+}
+
+.need_attention{
+     background-color: #ec971f; 
+     border-color: #d58512; 
+     border-radius: 4px; 
+     color: #fff; 
+     padding: 3px 9px;
+     display: inline-block;
+}
+
+.not_urgent{
+    background-color: #449d44; 
+    border-color: #398439; 
+    border-radius: 4px; color: #fff; 
+    padding: 3px 9px;
+    display: inline-block;
+}
+g
