@@ -190,7 +190,7 @@ class Emailmodel extends CI_Model {
 	//send email if access and end date entered after today
 	public function emailEndEmploymentNotice($info){
 		$de = 'kent.ybanez@tatepublishing.net';
-		$sur = 'helpdesk.cebu@tatepublishing.net';
+		$sur = 'helpdesk.cebu@tatepublishing.net,'.$info->supEmail;
 		$sujet = 'End of Employment Notice';		
 		
 		$termArr = $this->textM->constantArr('terminationType');
