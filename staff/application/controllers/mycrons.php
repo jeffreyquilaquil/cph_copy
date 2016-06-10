@@ -160,7 +160,7 @@ class MyCrons extends MY_Controller {
 	function accessenddate(){
 		$dateToday = date('Y-m-d');
 		$dateTodayText = date('Y-m-d h:i a');
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT CONCAT(fname, " ", lname) FROM staffs  s WHERE s.empID=staffs.supervisor) AS "supName"', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
 				
 		//deactivate and send separation notice email if account is still active OR access end date is today OR empty access end date and end date is today
 		foreach($query AS $uInfo):
@@ -187,6 +187,20 @@ class MyCrons extends MY_Controller {
 		///DEV LOGS
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS accessenddate '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
 		
+		//advance notice
+		$today = date_create(date('Y-m-d'));		
+		$twodays = date_add($today, date_interval_create_from_date_string('2 days') );
+		$twodays = date_format( $twodays, 'Y-m-d' );
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, gender, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT CONCAT(fname, " ", lname) FROM staffs  s WHERE s.empID=staffs.supervisor) AS "supName"', 'accessEndDate="'.$twodays.'" OR endDate="'.$twodays.'"', 'LEFT JOIN newPositions ON posID=position');
+
+		foreach( $query as $info ){
+			$this->emailM->emailSeparationDateAdvanceNotice( $info );
+		}
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS accessenddate advance notice'.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		
+
+
 		exit;
 	}
 	

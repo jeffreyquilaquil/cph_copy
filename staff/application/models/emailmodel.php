@@ -102,7 +102,8 @@ class Emailmodel extends CI_Model {
 			($info->accessEndDate=='0000-00-00' && $info->endDate!='0000-00-00' && strtotime($info->endDate)<strtotime($dateToday))
 		){
 			$this->emailM->emailUrgentTerminateAllAccess($info);
-		}	
+		}
+		
 	}
 	
 	//send email if end date is today
@@ -125,8 +126,14 @@ class Emailmodel extends CI_Model {
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');		
 
+		
+	}
+
+	//advance notice
+	public function emailSeparationDateAdvanceNotice($info){
 		$pronoun = ( $info->gender == 'M' ) ? 'he' : 'she';
 		$possesive_pronoun = ( $info->gender == 'M' ) ? 'his' : 'her';
+		$sujet = 'Separation Date Alert ('.$info->name.')';
 		//send email to leaders
 		$sender = 'careers.cebu@tatepublishing.net';
 		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
@@ -135,19 +142,24 @@ class Emailmodel extends CI_Model {
 		<p>A separation date has been entered for '. $info->name .' and the last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
 		<p>This is an automatic notification using data that is captured on CareerPH system.</p>
 		<p style="text-style: underline;">Please cascade this information to anyone in your team who may need to be informed.</p>
-		<br/><br/>
+		<p>Thank you very much,</p>
+		<p>The Human Resources Team</p>';
 
-		<p style="font-weight: bold;">Dear immediate supervisor '.$info->supName.'</p>
+		$this->emailM->sendEmail($sender, $receiver, $sujet, $msg, 'CareerPH');
+		
+		$msg = '
+		<p style="font-weight: bold;">Dear '.$info->supName.'</p>
 		<p>Please reply to this email with information on:<br/>
 		<ul>
 			<li>who will be responsible for the tasks that were assigned to '.$info->name.'</li>
 			<li>whether a requisition will be opened to find a replacement.</li>
 			<li>other process changes related to this offboarding.</li>
 		</ul>
+		<p>Kindly fill out the form below for your feedback on the performance of '. $info->name .'. Your evaluation is needed to complete '.$possesive_pronoun .' exit clearance. Please be objective in your evaluation. <a href="http://goo.gl/forms/ybu8ny16Cx72U17n2">http://goo.gl/forms/ybu8ny16Cx72U17n2</a></p>
 		<p>Thank you very much,</p>
 		<p>The Human Resources Team</p>
 		';
-		$this->emailM->sendEmail($sender, $receiver, $sujet, $msg, 'CareerPH');
+		$this->emailM->sendEmail($sender, $info->supEmail, $sujet, $msg, 'CareerPH');
 	}
 	
 	//send email if access end date is today AND deactivate staff and PT accesses
