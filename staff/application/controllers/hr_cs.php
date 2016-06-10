@@ -8,8 +8,9 @@
 		parent::__construct();
 
 		$this->load->helper('security');
-		$this->load->model('ask_hr');		
-		
+		$this->load->helper('url');
+		$this->load->model('ask_hr');	
+
 			}
 
 		public function index(){
@@ -453,7 +454,7 @@
 
             }
 
-         
+         	// Add internal note ajax
              public function submit_notes(){
             	
 				$id = $this->input->post('insedentid');
@@ -476,6 +477,30 @@
 
             }
 
+            // Add internal note form submission
+            public function add_internal_note(){
+
+            	$incident_id = $this->input->post('incident_id');
+
+        		$data['cs_msg_postID_fk'] =  $incident_id;
+
+        		$data['cs_msg_text']=  $this->input->post('internal_note_textarea');
+        		$data['cs_msg_text'] = $this->security->xss_clean($data['cs_msg_text']);
+        		$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+        		$data['cs_msg_type'] = 2;
+        		$data['reply_empUser']  = $this->input->post('reply_username');
+        		
+        		$this->ask_hr->askhr('hr_cs_msg',$data);
+
+        		$assign_category = $this->input->post('assign_category');		    
+        		$this->ask_hr->updatestatus('hr_cs_post','assign_category = "'. $assign_category .'"','cs_post_id = '.$incident_id);
+
+        		//$data2['content']='hr_helpdesk';
+  				//$this->load->view('includes/template',$data2);
+  				redirect('hr_cs/HrHelpDesk');
+            }
+
+          
             function hr_custom_satisfaction(){
             	$data['content']='hr_cust_satisfaction_survey';
 

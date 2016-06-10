@@ -260,6 +260,7 @@
 				</div>
 			</td>
 		</tr>
+
 		<!-- hr messages-->
 		<?php }elseif($conve->cs_msg_type == 1){ ?>
 		<tr>
@@ -513,17 +514,21 @@
 	<!-- note tab -->
 	<div id="tab-2" class="tab-content "> 		
 	<h2>Add A Note</h2>
-		<form id="note_form">
-			<textarea id="note_msg" class="hidden tiny" style="height:200px;"></textarea>
+		<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/add_internal_note" target='_parent' enctype="multipart/form-data" target=''>
+				
+			<input type="hidden" name="incident_id" value="<?php echo $value->cs_post_id; ?>">
+			<input type="hidden" name="reply_username" value="<?php echo $this->user->username; ?>">
+			<input type="hidden" name= "assign_category" value="<?php echo $value->assign_category; ?>">
+
+			<textarea class="hidden tiny" name= "internal_note_textarea" style="height:200px;"></textarea>
 			<br>
-			<input type="submit" id="note_submit" class="btngreen" value="Submit" style="float:right;">
+			<input type="submit" class="btngreen" value="Submit" style="float:right;">
 		</form>
 	<br>	
 	</div>
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
-
 
 $(document).ready(function() {
 
@@ -604,7 +609,8 @@ $(document).ready(function() {
 	});	
 
 
-	// add note
+	// Add internal note
+	/*
 	$("#note_submit").click(function() {
 
 		var custom_ans = tinyMCE.get('note_msg').getContent();
@@ -636,6 +642,8 @@ $(document).ready(function() {
 
 		return false;
 	});
+
+	*/
 
 	// add survey
 	$("#remarkbtn").click(function() {
