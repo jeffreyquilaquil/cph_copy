@@ -86,10 +86,25 @@ class MyCrons extends MY_Controller {
 	function resetAnnivLeaveCredits(){	
 		//select active staffs with month and day start date is today
 		$query = $this->dbmodel->getQueryResults('staffs', 'empID, leaveCredits, CONCAT(fname," ",lname) AS name, startDate', 'active=1 AND startDate LIKE "%'.date('m-d').'" AND office="PH-Cebu"');
+		
+
 		foreach($query AS $q):		
+
+		//for staffStatusHistory
+			$insert_array = array();
+			$insert_array['empID_fk'] = $q->empID;
+			$insert_array['field'] = 'leaveCredits';
+			$insert_array['value'] = $q->leaveCredits;
+			$insert_array['date_effective'] = date('Y-m-d H:i:s');
+			$insert_array['date_added'] = date('Y-m-d H:i:s');
+
+			$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
+		//end staffStatusHistory
+
 			$diff = abs(strtotime(date('Y-m-d')) - strtotime($q->startDate));
 			$years = floor($diff / (365*60*60*24));
-			
+			$convertible = $years - 1;
+				
 			if($years>0){
 				$current = 10+$years;
 				$used = 0;
@@ -98,35 +113,40 @@ class MyCrons extends MY_Controller {
 				foreach($quer AS $qq):
 					$used += $qq->leaveCreditsUsed;
 				endforeach;
+				$convertible = $q->leaveCredits - $convertible;
 			
 				if($q->leaveCredits>0){
 					$body = '<p>Hi,</p>
 						<p><i>This is an automated message.</i><br/>
 						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.$current.'. Unused leave credits is '.$q->leaveCredits.'. Please facilitate conversion to cash. Thank you.</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.$current.'. Unused leave credits is '.$q->leaveCredits.'. '.(($convertible > 0 )?'Convertible leave credits: '. $convertible : '').' Please facilitate conversion to cash. Thank you.</p>
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
+						
 					$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'accounting.cebu@tatepublishing.net', 'Employee\'s Anniversary', $body, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				}
-				
+				//Unused leave credits is '.$q->leaveCredits.''.(($used>0)?'. Used leave credits is '.$used.'':'').'.</p>
 				$hremail = '<p>Hi HR,</p>
 						<p><i>This is an automated message.</i><br/>
 						*************************************************************************************</p>
-						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.($current-$used).'. Unused leave credits is '.$q->leaveCredits.''.(($used>0)?'. Used leave credits is '.$used.'':'').'.</p>
+						<p>Please be informed that today is the anniversary of '.$q->name.'. Leave credits has been reset and is now '.($current).'. 
 						<p><br/></p>
 						<p>Thanks!</p>
 						<p>CAREERPH Auto-Email</p>';
+						
 				$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'hr.cebu@tatepublishing.net', 'Employee\'s Anniversary', $hremail, 'CAREERPH', '', 'hrcebu.notify@tatepublishing.net' );
 				
 				
-				$this->dbmodel->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($current-$used)));
+				$this->dbmodel->updateQuery('staffs', array('empID'=>$q->empID), array('leaveCredits'=>($current)));
 								
-				$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.(($used==0)?$current:($current-$used).' because you already used '.$used.' leave credits instead of '.$current.' leave credits').'.<br/><br/>We wish you happiness and success now and always.';
+				//$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.(($used==0)?$current:($current-$used).' because you already used '.$used.' leave credits instead of '.$current.' leave credits').'.<br/><br/>We wish you happiness and success now and always.';
+				$nnote = 'CONGRATULATIONS! This day marks your '.$this->textM->ordinal($years).' year with Tate Publishing. During the time you have worked with us, you have significantly contributed to our company\'s success. We thank you for your enduring loyalty and diligence.<br/><br/>Your leave credits is automatically reset to '.($current).'.<br/><br/>We wish you happiness and success now and always.';
+				
 				$this->commonM->addMyNotif($q->empID, $nnote, 0, 1, 0);
 			}
 		endforeach;
-		
+		//$this->output->enable_profiler(true);
 		///DEV LOGS
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS resetAnnivLeaveCredits '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
 		
@@ -140,7 +160,7 @@ class MyCrons extends MY_Controller {
 	function accessenddate(){
 		$dateToday = date('Y-m-d');
 		$dateTodayText = date('Y-m-d h:i a');
-		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT CONCAT(fname, " ", lname) FROM staffs  s WHERE s.empID=staffs.supervisor) AS "supName"', 'accessEndDate="'.$dateToday.'" OR endDate="'.$dateToday.'"', 'LEFT JOIN newPositions ON posID=position');
 				
 		//deactivate and send separation notice email if account is still active OR access end date is today OR empty access end date and end date is today
 		foreach($query AS $uInfo):
@@ -167,14 +187,44 @@ class MyCrons extends MY_Controller {
 		///DEV LOGS
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS accessenddate '.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
 		
+		//advance notice
+		$today = date_create(date('Y-m-d'));		
+		$twodays = date_add($today, date_interval_create_from_date_string('2 days') );
+		$twodays = date_format( $twodays, 'Y-m-d' );
+		$query = $this->dbmodel->getQueryResults('staffs', 'empID, username, CONCAT(fname," ",lname) AS name, dept, gender, title, accessEndDate, endDate, terminationType, (SELECT email FROM staffs  s WHERE s.empID=staffs.supervisor) AS supEmail, (SELECT CONCAT(fname, " ", lname) FROM staffs  s WHERE s.empID=staffs.supervisor) AS "supName"', 'accessEndDate="'.$twodays.'" OR endDate="'.$twodays.'"', 'LEFT JOIN newPositions ON posID=position');
+
+		foreach( $query as $info ){
+			$this->emailM->emailSeparationDateAdvanceNotice( $info );
+		}
+		///DEV LOGS
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', 'ludivina.marinas@tatepublishing.net', 'CRON RESULTS accessenddate advance notice'.date('Y-m-d H:i:s'), 'RESULTS: '.count($query).'<pre>'.print_r($query, true).'</pre>', 'CAREERPH');
+		
+
+
 		exit;
 	}
 	
 	public function updateStaffCIS(){
 		$query = $this->dbmodel->getQueryResults('staffCIS', 'cisID, empID_fk, effectivedate, changes, dbchanges, preparedby, staffCIS.status, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby AND preparedby!=0) AS pName', 'status=1 AND effectivedate<="'.date('Y-m-d').'"', 'LEFT JOIN staffs ON empID=empID_fk');
-		foreach($query AS $q):	
+
+		foreach($query AS $q):
 			$chtext = '';
-			$changes = json_decode($q->dbchanges);
+			$changes = json_decode(stripslashes($q->dbchanges));
+
+			//for staffStatusHistory
+			$status_change = json_decode(stripslashes($q->changes));
+			foreach($status_change as $status_old => $status_old_val ){
+				$insert_array = array();
+				$insert_array['empID_fk'] = $q->empID_fk;
+				$insert_array['field'] = $status_old;
+				$insert_array['value'] = $status_old_val->c;
+				$insert_array['date_effective'] = $q->effectivedate;
+				$insert_array['date_added'] = date('Y-m-d H:i:s');
+
+				$this->dbmodel->insertQuery('staffStatusHistory', $insert_array);
+			}
+			//end
+
 			if(isset($changes->title)) 
 				unset($changes->title);
 			if(isset($changes->position)){

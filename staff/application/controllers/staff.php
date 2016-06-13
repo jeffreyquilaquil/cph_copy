@@ -300,14 +300,15 @@ class Staff extends MY_Controller {
 	
 	public function manageStaff(){
 		$data['content'] = 'manageStaff';
-				
+		///$this->textM->aaa($this->user, false);
+		//$this->textM->aaa($this->access, true);
 		if($this->user!=false){		
-			if($this->user->access=='' && $this->user->level==0){
+			if($this->user->access=='' AND $this->user->level==0){
 				$data['access'] = false;
 			}else{	
 				$condition = 'staffs.office="PH-Cebu"';
 										
-				if($this->access->accessFullHRFinance==false){
+				if($this->access->accessFullHRFinance==false AND $this->access->accessMedPerson == false){
 					$ids = '"",'; //empty value for staffs with no under yet
 					$myStaff = $this->commonM->getStaffUnder($this->user->empID, $this->user->level);						
 					foreach($myStaff AS $m):
@@ -321,7 +322,7 @@ class Staff extends MY_Controller {
 					}
 					
 					if($condition!='') $condition .= ' AND ';
-					$condition .= 'empID IN ('.rtrim($ids,',').')';							
+					$condition .= 'empID IN ('.rtrim($ids,',').') /*fullHR*/';							
 				}
 								
 				$flds = 'CONCAT(lname,", ",fname) AS name, ';
@@ -426,7 +427,7 @@ class Staff extends MY_Controller {
 				}				
 			}
 		}		
-		
+		//$this->output->enable_profiler(true);
 		$this->load->view('includes/template', $data);			
 	}
 			
@@ -1590,6 +1591,7 @@ class Staff extends MY_Controller {
 			}
 			
 			$data['row'] = $this->dbmodel->getQueryResults('staffMyNotif', 'staffMyNotif.*, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=sID AND sID!=0) AS nName', 'isNotif=1 AND empID_fk="'.$this->user->empID.'"', '', 'nstatus DESC, notifID DESC');
+
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);
@@ -1640,7 +1642,8 @@ class Staff extends MY_Controller {
 				}
 				
 				//check for duplicate insert leave data
-				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0');
+				$dupQuery = $this->dbmodel->getSingleInfo('staffLeaves','leaveID', 'empID_fk="'.$this->user->empID.'" AND date_requested LIKE "'.date('Y-m-d').'%" AND leaveType="'.$_POST['leaveType'].'" AND reason LIKE "%'.addslashes($_POST['reason']).'%" AND leaveStart="'.date('Y-m-d H:i:s',strtotime($_POST['leaveStart'])).'" AND leaveEnd="'.date('Y-m-d H:i:s',strtotime($_POST['leaveEnd'])).'" AND code="'.$_POST['code'].'" AND totalHours="'.$_POST['totalHours'].'" AND status=0 AND iscancelled = 0');
+				
 				if(count($dupQuery)>0){
 					echo 'There is a duplicate entry of this leave. Click <a href="'.$this->config->base_url().'staffleaves/'.$dupQuery->leaveID.'/">here</a> to view duplicate leave entry or check "Time Off Details" on My HR Info page if filed leave exists or inform IT if no duplicate entry and you can\'t file leave.';
 					exit;
@@ -1772,7 +1775,7 @@ class Staff extends MY_Controller {
 					$insArr['date_requested'] = date('Y-m-d H:i:s');
 					$insArr['reason'] = addslashes($_POST['reason']);
 					$insArr['totalHours'] = $_POST['totalHours'];
-					$insArr['notesforHR'] = mysql_real_escape_string($_POST['notesforHR']);
+					$insArr['notesforHR'] = $_POST['notesforHR'];
 					$insArr['leaveStart'] = date('Y-m-d H:i', strtotime($_POST['leaveStart']));
 					$insArr['leaveEnd'] = date('Y-m-d H:i', strtotime($_POST['leaveEnd']));
 					if($_POST['leaveType']==4){
@@ -1836,13 +1839,16 @@ class Staff extends MY_Controller {
 				}					
 			}
 		}
+		//$this->output->enable_profiler(true);
+		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
 	public function leavepdf(){
 		if($this->uri->segment(2)!=''){
 			$leave = $this->dbmodel->getSingleInfo('staffLeaves', 'staffLeaves.*, CONCAT(fname," ",lname) AS name, username', 'leaveID="'.$this->uri->segment(2).'"', 'LEFT JOIN staffs ON empID_fk=empID');
-			
+			$leave->reason = stripslashes($leave->reason);
+			$leave->notesforHR = stripslashes($leave->notesforHR);
 			if($leave->leaveType==4){
 				$this->staffM->createOffsetpdf($leave);
 			}else{
@@ -1868,6 +1874,12 @@ class Staff extends MY_Controller {
 					$data['content'] = 'staffleavesedit';				
 									
 					$data['row'] = $this->dbmodel->getSingleInfo('staffLeaves', 'staffLeaves.*, username, fname, CONCAT(fname," ",lname) AS name, email, dept, supervisor, startDate, (SELECT CONCAT(fname," ",lname) AS n FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supName,(SELECT email FROM staffs e WHERE e.empID=staffs.supervisor LIMIT 1) AS supEmail, leaveCredits, empStatus', 'leaveID="'.$segment2.'"', 'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
+
+					//check if we have leave
+					if( empty($data['row']->leaveID) ){
+						show_404();
+						exit();
+					}
 					
 					$data['leaveHistory'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$data['row']->empID_fk.'" AND leaveID!="'.$segment2.'" AND status!=5 AND (leaveStart LIKE "'.date('Y-m-').'%" OR leaveEnd LIKE "'.date('Y-m-').'%")');
 					$data['dir_leave'] = UPLOADS.'leaves/';		
@@ -2322,15 +2334,24 @@ class Staff extends MY_Controller {
 	public function generatecis(){	
 		$data['content'] = 'generatecis';
 		$data['updated'] = false;
-			
+		$data['holidaySched_array']	= $this->textM->constantArr('staffHolidaySched');
+
 		if($this->user!=false){
 			$id = $this->uri->segment(2);	
 				
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) as name, title, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'username, CONCAT(fname," ",lname) as name, title, staffHolidaySched, position, office, shift, supervisor, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0) AS supName, org, dept, grp, subgrp, endDate, empStatus, sal', 'empID="'.$id.'" AND position!=0', 'LEFT JOIN newPositions ON posID=position');
 									
 			if(!empty($_POST)){
+				//$this->textM->aaa($_POST);
 				$updatetext = array();
 				$updateArr = array();
+				if( !empty($_POST['staffHolidaySched']) ){
+					$updateArr['staffHolidaySched'] = $_POST['staffHolidaySched'];
+					$updatetext['staffHolidaySched'] = array(
+							'c' => $data['holidaySched_array'][ $data['row']->staffHolidaySched ],
+							'n' => $data['holidaySched_array'][ $_POST['staffHolidaySched'] ]
+						);
+				}
 				if(!empty($_POST['position'])){
 					$p = explode('|',$_POST['position']);
 					$updateArr['position'] = $p[0];
@@ -2397,8 +2418,8 @@ class Staff extends MY_Controller {
 							'empID_fk' => $id,
 							'datefiled' => date('Y-m-d H:i:s'),
 							'effectivedate' => date('Y-m-d', strtotime($_POST['effectiveDate'])),
-							'changes' => mysql_real_escape_string(json_encode($updatetext)),
-							'dbchanges' => mysql_real_escape_string(json_encode($updateArr)),
+							'changes' => json_encode($updatetext),
+							'dbchanges' => json_encode($updateArr),
 							'preparedby' => $this->user->empID
 						);
 				
@@ -2440,7 +2461,7 @@ class Staff extends MY_Controller {
 	public function updatecis(){
 		$data['content'] = 'generatecis';
 		$data['updated'] = true;
-		
+		$data['holidaySched_array']	= $this->textM->constantArr('staffHolidaySched');
 		if($this->user!=false){
 			$cisID = $this->uri->segment(2);
 			$data['row'] = $this->dbmodel->getSingleInfo('staffCIS','staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs ss WHERE ss.empID=staffCIS.preparedby) AS prepName', 'cisID="'.$cisID.'"', 'LEFT JOIN staffs ON empID=empID_fk');
@@ -2497,6 +2518,11 @@ class Staff extends MY_Controller {
 					$upArr['reason'] = $_POST['reason'];
 					
 					$hraction = 'Disapproved the CIS generated by '.$data['row']->prepName.' for '.$data['row']->name.'.';
+				} else if($_POST['submitType'] == 'cancel'){
+					$upArr['status'] = 4;	
+					$upArr['reason'] = $_POST['reason'];
+					
+					$hraction = $data['row']->prepName.' cancelled the generated CIS for '.$data['row']->name.'.';
 				}else if($_POST['submitType']=='signedCIS' && !empty($_FILES['signedFile'])){					
 					if($_FILES['signedFile']['name']!=''){
 						$dir = UPLOADS.'CIS/';	
@@ -2528,6 +2554,9 @@ class Staff extends MY_Controller {
 		
 		$row = $this->dbmodel->getSingleInfo('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=preparedby AND preparedby!=0) AS prepby, supervisor', 'cisID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		
+		$row->changes = stripslashes($row->changes);
+		$row->dbchanges = stripslashes($row->dbchanges);
+		//$this->textM->aaa($row);
 		if(count($row)>0){
 			$isupname = '';
 			$nsupname = '';
@@ -2549,14 +2578,21 @@ class Staff extends MY_Controller {
 	
 	public function staffcis(){
 		$data['content'] = 'staffcis';
+		
 				
-		if($this->user!=false){		
-			if($this->access->accessFullHR==false){
+		if($this->user!=false){
+			
+			if( $this->user->levelID_fk > 0 AND $this->access->myaccess[0] == "" ){
+				
+				$data['supervisor'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0 AND preparedby IN ('.$this->user->empID.')', 'LEFT JOIN staffs ON empID=empID_fk');
+			} else if( $this->access->accessFullHR == true ){
+				$data['pending'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['approved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['done'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=3', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['disapproved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=2', 'LEFT JOIN staffs ON empID=empID_fk');
+				$data['cancelled'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=4', 'LEFT JOIN staffs ON empID=empID_fk');
+			} else {			
 				$data['access'] = false;
-			}else{	
-				$data['pending'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=0', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['approved'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=1', 'LEFT JOIN staffs ON empID=empID_fk');
-				$data['done'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby', 'status=3', 'LEFT JOIN staffs ON empID=empID_fk');
 			}
 		}
 		
@@ -2600,7 +2636,7 @@ class Staff extends MY_Controller {
 				$data['row'] = $this->user;
 				$data['prevRequests'] = $this->dbmodel->getQueryResults('staffCOE', 'staffCOE.*', 'empID_fk="'.$this->user->empID.'" AND status=1');
 				if(isset($_POST) && !empty($_POST) && $_POST['submitType']=='request'){	
-					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>mysql_real_escape_string($_POST['notesforHR']), 'daterequested'=>date('Y-m-d H:i:s')));
+					$id = $this->dbmodel->insertQuery('staffCOE', array('empID_fk'=>$this->user->empID, 'purpose'=>$_POST['purpose'],'notesforHR'=>$_POST['notesforHR'], 'daterequested'=>date('Y-m-d H:i:s')));
 					$this->commonM->addMyNotif($this->user->empID, 'You requested for a Certificate of Employment.', 5);
 					
 					$body = '<p>Hi,</p>
@@ -3379,8 +3415,8 @@ class Staff extends MY_Controller {
 	public function probationmanagement(){
 		$data['content'] = 'probationmanagement';
 		
-		if($this->access->accessFullHR==false) $data['access'] = false;
-		else{
+		if($this->access->accessFullHR== true OR $this->access->accessMedPerson) 
+		{
 			if(!empty($_POST)){
 				if($_POST['submitType']=='printedEval'){
 					$this->dbmodel->updateQuery('staffEvaluation', array('evalID'=>$_POST['id']), array('hrStatus'=>2));
@@ -3411,6 +3447,8 @@ class Staff extends MY_Controller {
 			$data['queryRegular'] = $this->dbmodel->getQueryResults('staffs', 'username, empID, CONCAT(fname," ",lname) AS name, email, title, startDate, (SELECT CONCAT(fname," ",lname) FROM staffs s WHERE s.empID=staffs.supervisor) AS isName, perStatus', 'empStatus="regular" AND staffs.active=1', 'LEFT JOIN newPositions ON position=posID');
 			
 			$data['queryEval'] = $this->dbmodel->getQueryResults('staffEvaluation', 'evalID, empID_fk, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=empID_fk) AS name, finalRating, (SELECT CONCAT(fname," ",lname) AS M FROM staffs WHERE empID=reviewerEmpID) AS reviewerName, hrStatus', '1');
+		} else {
+			$data['access'] = false;
 		}
 				
 		$this->load->view('includes/template', $data);
@@ -3733,12 +3771,12 @@ class Staff extends MY_Controller {
 			$_POST['dateSubmitted'] = date('Y-m-d H:i:s');
 			$_POST['empID_fk'] = $this->user->empID;
 			$_POST['when'] = date('Y-m-d', strtotime($_POST['when']));
-			$_POST['what'] = mysql_real_escape_string($_POST['what']);
-			$_POST['whatISaction'] = mysql_real_escape_string($_POST['whatISaction']);
-			$_POST['proof'] = mysql_real_escape_string($_POST['proof']);
-			$_POST['otherdetails'] = mysql_real_escape_string($_POST['otherdetails']);
+			$_POST['what'] = $_POST['what'];
+			$_POST['whatISaction'] = $_POST['whatISaction'];
+			$_POST['proof'] = $_POST['proof'];
+			$_POST['otherdetails'] = $_POST['otherdetails'];
 			$_POST['whatViolation'] = implode(',', $_POST['whatViolation']);
-			$_POST['whyExcludeIS'] = mysql_real_escape_string($_POST['whyExcludeIS']);
+			$_POST['whyExcludeIS'] = $_POST['whyExcludeIS'];
 			unset($_POST['donotccIS']);
 			
 			if(isset($_POST['submitanonymous'])){
@@ -3801,7 +3839,7 @@ class Staff extends MY_Controller {
 			if(!empty($_POST)){
 				if($_POST['submitType']=='changeStatus'){
 					$insArr['status'] = $_POST['status'];
-					$insArr['statusNote'] = mysql_real_escape_string($_POST['statusNote']);
+					$insArr['statusNote'] = $_POST['statusNote'];
 					$insArr['staffReportViolation_fk'] = $id;
 					$insArr['updatedBy'] = $this->user->username;
 					$insArr['dateUpdated'] = date('Y-m-d H:i:s');
@@ -4083,7 +4121,7 @@ class Staff extends MY_Controller {
 				
 				$data_config['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="33"');
 				$data_config['dynamic_call'] = true;
-				$data_config['pageType'] = 'empUpdate';
+				//$data_config['pageType'] = 'empUpdate';
 				$data_config['dataItemInfo']->payAmount = $med_request_info->approved_amount;
                 $data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
 				$data['disabled'] = 'disabled';
@@ -4258,6 +4296,12 @@ class Staff extends MY_Controller {
 							unset($payslip_array['payStartOnce']);
 							unset($payslip_array['selectPayPercent']);
 							unset($payslip_array['medrequestID']);
+							unset($payslip_array['payName']);
+							unset($payslip_array['mainItem']);
+							unset($payslip_array['payCategory']);
+							unset($payslip_array['payType']);
+							unset($payslip_array['payCDto']);
+							
 						}
 						
 						
@@ -4292,7 +4336,7 @@ class Staff extends MY_Controller {
 		$data['data_query_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status = 1 AND status_accounting NOT IN (2, 3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
 		
 		$data['data_approved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 2 AND status NOT IN (0)', 'LEFT JOIN staffs ON empID = empID_fk');
-		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting = 3 AND status IN (3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
+		$data['data_disapproved_accounting'] = $this->dbmodel->getQueryArrayResults('staffMedRequest', '*', 'status_accounting IN (3,4) OR status IN (3, 4)', 'LEFT JOIN staffs ON empID = empID_fk');
 		
 		$data['cnt_all'] = count($data['data_query_all']);
 		$data['cnt_medical'] = count($data['data_query_medical']);
@@ -4368,8 +4412,252 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 
-	
-}
+<<<<<<< HEAD
+=======
+	public function hdmf(){
+		$data['content'] = 'hdmf_loan';
+		$data['loan_purpose_array'] = $this->textM->constantArr('hdmf_loan_purpose');
+		$this->load->library('form_validation');
+		$all_staff = $this->dbmodel->getQueryArrayResults('staffs', 'empID, CONCAT(fname," ",lname) AS "name"', 'office = "PH-Cebu" AND active = 1 ORDER BY lname');
+		$all_staffs = array();
+		
+		foreach($all_staff as $key => $val ){
+			$all_staffs[$val->empID] = $val->name;
+		}
+		$data['all_staff'] = $all_staffs;
 
-?>
+		
+		if( $this->input->post('loan_id') ) {			
+			//upload
+			if( isset($_FILES) AND !empty($_FILES) ){
+				$upload_config['upload_path'] = FCPATH .'uploads/staffs/'.$this->input->post('username');
+				$upload_config['allowed_types'] = 'gif|jpg|png|pdf';
+				$upload_config['max_size']	= '2048';
+				$upload_config['overwrite']	= 'FALSE';								
+
+				$ext = pathinfo( $_FILES['loan_voucher']['name'], PATHINFO_EXTENSION );				
+				$upload_config['file_name'] = 'HDMF_loan_voucher.'.$ext;
+				$this->load->library('upload', $upload_config);					
+				//upload
+				if( $this->upload->do_upload('loan_voucher') ){
+					//update the table 
+					$upload_data = $this->upload->data();
+					$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $this->input->post('loan_id')), array('hdmf_loan_voucher_url' => $upload_data['full_path']));
+					$data['msg'] = 'Voucher has been uploaded.';
+				} else {
+					$data['upload_error'] = $this->upload->display_errors();
+				}
+			}
+		} 
+		//for accounting
+		if( $this->input->post('empID') ){
+			//add item to payslip and filter out discrepancies
+			$payslip_array = $_POST;
+			if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
+			if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
+			if(!empty($payslip_array['payStart'])) $payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStart']));
+			if(!empty($payslip_array['payEnd'])) $payslip_array['payEnd'] = date('Y-m-d', strtotime($payslip_array['payEnd']));
+			if($payslip_array['payAmount']=='regularHoliday') $payslip_array['payPercent'] = $payslip_array['selectPayPercent'];
+			if($payslip_array['payAmount']=='specialHoliday') $payslip_array['payPercent'] = 2;
+			if($payslip_array['payPeriod']=='once' && !empty($payslip_array['payStartOnce'])){
+				$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
+				$payslip_array['payEnd'] = $payslip_array['payStart'];
+			}
+			$payslip_array['empID_fk'] = $payslip_array['empID'];
+			$payslip_array['payID_fk'] = $payslip_array['payID'];
+			
+			unset($payslip_array['empID']);
+			unset($payslip_array['submit']);
+			unset($payslip_array['submitType']);
+			unset($payslip_array['payID']);
+			unset($payslip_array['inputPayAmount']);
+			unset($payslip_array['payAmountHourly']);
+			unset($payslip_array['payStartOnce']);
+			unset($payslip_array['selectPayPercent']);		
+			
+			if( isset($payslip_array) AND !empty($payslip_array) ){
+				$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $payslip_array);
+				//add notification to user that medicine requisition has been approved	
+				if( isset($insID) AND !empty($insID) ){
+					$ntexts = 'Salary deduction for Pag-IBIG loan has updated';
+					$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);
+				}				
+			}
+		}
+
+
+		$id = $this->uri->segment(2);
+		if( isset($id) AND !empty($id) ){
+
+			$info = $this->dbmodel->getSingleInfo('staff_hdmf_loan', 'staff_hdmf_loan.*, username', 'hdmf_loan_id = '.$id, 'LEFT JOIN staffs ON empID = empID_fk');
+			//prep the data
+			$data['loan_id'] = $info->hdmf_loan_id;
+			$data['loan_type'] =  $info->hdmf_loan_type;
+			$data['loan_amt'] =  $info->hdmf_loan_amt;
+			$data['loan_purpose'] =  $info->hdmf_loan_purpose;
+			$data['birth_place'] =  $info->hdmf_loan_birth_place;
+			$data['mo_maiden_name'] =  $info->hdmf_loan_mo_maiden_name;
+			$data['employer_1'] =  json_decode(stripslashes($info->hdmf_loan_employer_1), true);
+			$data['employer_2'] =  json_decode(stripslashes($info->hdmf_loan_employer_2), true);
+			$data['witness_2'] =  $this->input->post('witness_1');
+			$data['witness_2'] =  $this->input->post('witness_2');
+			$data['date_submitted'] = $info->hdmf_loan_date_submitted;
+			$data['empID'] = $info->empID_fk;
+			$data['username'] = $info->username;
+			$data['witness_1'] = $info->hdmf_loan_witness_1;
+			$data['witness_2'] = $info->hdmf_loan_witness_2;
+			
+
+			if( $this->input->get('a') == 'upload' ){
+				$data['upload'] = true;	
+			} else if( $this->input->get('a') == 'accounting' ) {
+				$data['accounting'] = true;
+				$data_config['dataItemInfo'] = $this->dbmodel->getSingleInfo('tcPayslipItems', '*', 'payID="19"');
+				$data_config['dynamic_call'] = true;
+				$data_config['pageType'] = 'empUpdate';				
+                $data['payroll_item_html'] = $this->load->view('v_timecard/v_manange_paymentitems', $data_config, true );
+			} else {
+				$this->staffM->hdmf_loan( $info->empID_fk, $data );
+			}
+
+		} else {
+
+			
+			$rules = array(
+					array('field' => 'loan_type', 'label' => '`Loan Type`', 'rules' => 'required'),
+					array('field' => 'loan_amt', 'label' => '`Loan Amount`', 'rules' => 'required'),
+					array('field' => 'loan_purpose' , 'label' => '`Loan Purpose`', 'rules' => 'required|callback_select_check["loan purpose"]'),
+					array('field' => 'birth_place' , 'label' => '`Birth Place`', 'rules' => 'required|xss_clean'),
+					array('field' => 'mo_maiden_name' , 'label' => '`Mother\'s Maiden Name`', 'rules' => 'required|xss_clean'),
+					array('field' => 'witness_1' , 'label' => 'First Witness', 'rules' => 'required|callback_select_check["first witness"]'),
+					array('field' => 'witness_2' , 'label' => 'Second Witness', 'rules' => 'required|callback_select_check["second witness"]'),
+					array('field' => 'employer_1[0]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[0]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[1]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[1]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[2]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[2]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+					array('field' => 'employer_1[3]' , 'label' => 'Employer First', 'rules' => 'xss_clean'),
+					array('field' => 'employer_2[3]' , 'label' => 'Employer Second', 'rules' => 'xss_clean'),
+				);
+			$this->form_validation->set_rules( $rules );
+			$this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+			if( isset($_POST) AND !empty($_POST) ){
+				
+				if( $this->form_validation->run() == TRUE ){
+					//insert the records to db
+					$insert_array = array(
+						'empID_fk' => $this->user->empID, 
+						'hdmf_loan_type' => $this->input->post('loan_type'),
+						'hdmf_loan_amt' => $this->input->post('loan_amt'),
+						'hdmf_loan_purpose' => $this->input->post('loan_purpose'),
+						'hdmf_loan_birth_place' => $this->input->post('birth_place'),
+						'hdmf_loan_mo_maiden_name' => $this->input->post('mo_maiden_name'),
+						'hdmf_loan_employer_1' => addslashes(json_encode($this->input->post('employer_1'))),
+						'hdmf_loan_employer_2' => addslashes(json_encode($this->input->post('employer_2'))),
+						'hdmf_loan_date_submitted' => date('Y-m-d H:i:s'),
+						'hdmf_loan_witness_1' => $this->input->post('witness_1'),
+						'hdmf_loan_witness_2' => $this->input->post('witness_2'),
+					);
+					$insert_id = $this->dbmodel->insertQuery('staff_hdmf_loan', $insert_array);
+
+					//add notification to accounting for hdmf loan application
+					$finance_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%finance%" OR access LIKE "%hr%"');						
+					$staff_name = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname, " ", lname) AS name', 'empID = '. $this->user->empID );
+					$ntexts = $staff_name->name.' has submitted HDMF loan application.';
+					foreach( $finance_id as $key => $val ){
+						$this->commonM->addMyNotif($val->empID, $ntexts, 5, 1);
+					}
+					$data['msg'] = 'Application has been submitted. You can view the form <a href="'.$this->config->base_url().'hdmf/'.$insert_id.'" target="_blank">here</a>';
+
+				} 			
+			}
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+		
+	}
+
+	//validator call back
+	public function select_check($val, $which_option){
+		if( $val == 0 ){
+			$this->form_validation->set_message('select_check', 'Please select a '.$which_option.'.');
+			return FALSE;
+		} else {
+			return TRUE;
+		}
+	}
+
+>>>>>>> 0b4996cdd0e611a2ad8c63f8dcf640361453c689
+	
+
+	//management page
+	public function hdmfs(){
+		$data['content'] = 'hdmf_loans';
+		
+		$data['headers'] =  array('applicant', 'loan type', 'status', 'date submitted', 'file');
+		$data['hdmf_loan_status'] = $this->textM->constantArr('hdmf_loan_status');
+		$data['col_options'] = '';
+
+		//check for post
+		if( $this->input->is_ajax_request() ){
+			$id = $this->input->post('id');
+			$status = $this->input->post('status');
+			if( isset($id) AND !empty($id) ){
+
+				$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $id), array('hdmf_loan_status' => $status) );
+
+				$ntexts = 'Update on your Pag-IBIG loan application. Click <a href="'.$this->config->base_url().'hdmf/'.$id.'">here</a> to view the application';
+				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);	
+			}
+		}
+
+		$data_query = $this->dbmodel->getQueryResults('staff_hdmf_loan', 'staff_hdmf_loan.*, CONCAT(fname, " ", lname) AS "applicant", username', 1, 'LEFT JOIN staffs ON empID = empID_fk');
+
+		foreach( $data_query as $val ){
+			$info = array();
+			$data['data_query_'. $val->hdmf_loan_status ]['headers'] = array('applicant', 'loan type', 'status', 'date submitted', 'file');
+			$info['applicant'] = $val->applicant;
+			$info['loan type'] = $val->hdmf_loan_type;
+			$info['date submitted'] = date('F d, Y', strtotime($val->hdmf_loan_date_submitted) );
+			$info['status'] = $this->textM->formfield('selectoption', 'hdmf_loan_status', $val->hdmf_loan_status, 'stat_select', '', 'data-id="'.$val->hdmf_loan_id.'" data-empid="'.$val->empID_fk.'"', $data['hdmf_loan_status']);
+
+			if( $val->hdmf_loan_status == 3 ){
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
+				if( !empty($val->hdmf_loan_voucher_url) ){
+					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+				} else {
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=upload">Upload voucher</a>';
+				}				
+			}
+			if( $val->hdmf_loan_status == 4 ){
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
+				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'action');
+				if( !empty($val->hdmf_loan_voucher_url) ){
+					
+					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+				} else {
+					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
+				}					
+				$info['action'] = ' <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=accounting">Payroll Setting</a>';
+			}
+
+			if( $val->hdmf_loan_status < 3 AND ($key = array_search( array('voucher', 'action'), $data['data_query_'.$val->hdmf_loan_status]['headers'] ) !== false ) ){
+				unset( $data['data_query_'. $val->hdmf_loan_status ]['headers'][$key] );
+			}
+
+			$info['file'] = '<a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+
+			$data['data_query_'. $val->hdmf_loan_status ][] = $info;
+		}
+		
+		//$this->textM->aaa($data);
+		$this->load->view('includes/template', $data);
+	}
+	
+} //end class
+
+
 

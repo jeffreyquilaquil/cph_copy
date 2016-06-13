@@ -115,7 +115,6 @@
 			foreach($dateArr AS $date){
 				echo '<tr class="trtaxIncome">';
 					echo '<td>'.date('d-M-Y', strtotime($date)).'</td>';
-					
 					if(isset($payArr[$date])){
 						$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
 						$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
@@ -141,12 +140,11 @@
 						echo '<td>'.(($regTaken>0)?'-':'').$regTaken.'</td>';
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->totalTaxable).'</td>';
 						echo '<td>'.$incomeTax.'</td>';
-						
+
 						//13th month computation = (basepay-deduction)/12 NO 13th month if end date before Jan 25
-						if($staffInfo->endDate>=date('Y').'-01-25'){
+						if($staffInfo->endDate>=date('Y').'-01-25' && ($this->commonM->dateDifference($staffInfo->startDate, $staffInfo->endDate) > 30)) {
 							$month13 = ($payArr[$date]->basePay - $regTaken)/12;
 						}
-						
 						echo '<td>'.$this->textM->convertNumFormat($month13).'</td>'; 
 						echo '<td><b><a href="javascript:void(0);" title="Click to remove" onClick="requestRemove('.$payArr[$date]->payslipID.')">'.$this->textM->convertNumFormat($payArr[$date]->net).'</a></b></td>';
 						
@@ -331,7 +329,9 @@
 				echo '<tr class="trlabel trAddOns"><td colspan=2>Add Ons &nbsp;&nbsp;'.(($pageType!='showpay')?'<button type="button" id="btnAddOn">+ Add</button>':'').'</td></tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>13th Month Pay</td>';
-					echo '<td>'.$this->textM->convertNumFormat($total13th).'</td>';
+					echo '<td>';
+						echo $this->textM->convertNumFormat($total13th);
+					echo '</td>';
 				echo '</tr>';
 				echo '<tr class="trAddOns">';
 					echo '<td>Unused Leave Credits</td>';

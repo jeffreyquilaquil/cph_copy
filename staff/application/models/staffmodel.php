@@ -266,9 +266,24 @@ class Staffmodel extends CI_Model {
 		$pdf->Write(0, date('F d, Y', strtotime($cis->effectivedate)));	
 		
 		$changes = json_decode($cis->changes);	
+
 		$pdf->SetFont('Arial','I',10);	
 		
 		$nextY = 85;
+		if(isset($changes->staffHolidaySched)){
+			$y = $nextY;
+			$pdf->setXY(18, $y);
+			$pdf->MultiCell(55, 4, "Change in Holiday Schedule",0,'L',false); $pdf->Ln();
+			
+			$pdf->setXY(73, $y);
+			$pdf->MultiCell(60, 4, $changes->staffHolidaySched->c,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
+			
+			$pdf->setXY(133, $y);
+			$pdf->MultiCell(60, 4, $changes->staffHolidaySched->n,0,'C',false); $pdf->Ln();
+			if($nextY<$pdf->getY()) $nextY = $pdf->getY();			
+		}
+
 		if(isset($changes->position)){
 			$y = $nextY;
 			$pdf->setXY(18, $y);
@@ -441,38 +456,43 @@ class Staffmodel extends CI_Model {
 		
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'COE_form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_standard.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
 		$pdf->SetFont('Arial','B',14);
-		$pdf->setXY(95, 91);
+		$pdf->setXY(85, 92);
 		$pdf->Write(0, $row->name);
-		$pdf->setXY(95, 100);
+		$pdf->setXY(85, 101);
 		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
-		$pdf->setXY(95, 109);
+		$pdf->setXY(85, 110);
 		$pdf->Write(0, $row->title);
 		
 		$sal = (double)str_replace(',','',$this->textM->decryptText($row->salary));
 		$allowance = (double)str_replace(',','',$row->allowance);
 		
-		$pdf->setXY(125, 127);
+		$pdf->setXY(115, 127);
 		$pdf->Write(0, $this->textM->convertNumFormat(($sal*12)));
-		$pdf->setXY(127, 137);
+		$pdf->setXY(117, 137);
 		$pdf->Write(0, $this->textM->convertNumFormat(($allowance*12)) );
-		$pdf->setXY(125, 155);
+		$pdf->setXY(115, 155);
 		$pdf->Write(0, $this->textM->convertNumFormat((($sal*12)+($allowance*12))));
 		
 		$pdf->SetFont('Arial','B',12);
-		$pdf->setXY(10, 177);
-		$pdf->MultiCell(180, 15, ((!empty($row->purposeEdited))?$row->purposeEdited:$row->purpose),0,'C',false);	
+		$pdf->setXY(15, 177);
+		$pdf->MultiCell(0, 15, ((!empty($row->purposeEdited))?$row->purposeEdited:$row->purpose),0,'C',false);	
 		
 		$pdf->setXY(87, 205);
 		$pdf->Write(0, date('F d, Y',strtotime($row->dateissued)));
 		
 		$pdf->SetFont('Arial','',10);
-		$pdf->setXY(151, 127);
+		$pdf->setXY(141, 127);
 		$pdf->Write(0, '(Excluding 13th month pay)');
+
+		$pdf->SetFont('Arial','B',12);
+
+		$pdf->setXY(15, 237);
+		$pdf->Cell(0, 8, $this->user->name, 0, 0, 'C');
 		
 		$pdf->Output('coe_form'.$row->coeID.'.pdf', 'I');
 	}
@@ -483,7 +503,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_last.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coe_separated_employee.pdf');
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 		
@@ -500,6 +520,9 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->setXY(87, 163);
 		$pdf->Write(0, date('F d, Y'));
+
+		$pdf->setXY(10, 195);
+		$pdf->Cell(0, 8, $this->user->name, 0, 1, 'C');
 		
 		
 		
@@ -1382,7 +1405,270 @@ class Staffmodel extends CI_Model {
 		$this->textM->aaa($data_array);
 		//$this->timeM->getAllStaffAttendance( $start, $end );
 	}
-	
-}
 
-?>
+	public function hdmf_loan( $empID, $other_info ){
+		//$this->textM->aaa($other_info);
+		$employee_info = $this->dbmodel->getSingleInfo('staffs', '*', 'empID = '. $empID );
+	//	$this->textM->aaa($employee_info);
+		$month = strtoupper(date('F', strtotime($other_info['date_submitted'])));
+		
+		$from = date('Y-m-01', strtotime($other_info['date_submitted'] . '-1 month') );
+		$to = date('Y-m-t', strtotime($other_info['date_submitted'] . '-1 month') );
+		
+		
+		$lf_name = strtoupper($employee_info->lname.' '.$employee_info->fname);
+		$complete_name = $employee_info->lname.'   '.$employee_info->fname;
+		if( !empty($employee_info->suffix) ){
+			$complete_name .= '   '.$employee_info->suffix;
+		} else {
+			$complete_name .= '                                              ';
+		}
+		$complete_name .= '   '.$employee_info->mname;
+
+		if( $employee_info->gender == 'F' AND $employee_info->maritalStatus != 'Single'){
+			$complete_name .= '   '.$employee_info->maiden_name;
+		}
+		$complete_name = strtoupper($complete_name);
+ 
+
+		$fl_name = strtoupper($employee_info->fname.' '.$employee_info->lname);
+		$lfm_name = strtoupper($employee_info->lname.'          '.$employee_info->fname.'          '.$employee_info->mname);
+		$address = strtoupper( $employee_info->address.' '.$employee_info->city.' '.$employee_info->zip);
+
+		$payslip_info = $this->payrollM->getPayslipOnTimeRange($empID, $from, $to, true);
+		//$this->textM->aaa($payslip_info);		
+
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+				
+		$pdf = new FPDI();
+		$pdf->AddPage();
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'hdmf_loan.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		//set font
+		$pdf->SetFont('Arial','B',8);
+		$pdf->SetTextColor(0, 0, 255);
+
+		//defaults values
+		$company_name = 'TATE PUBLISHING AND ENTERPRISES (PHILIPPINES), INC.';
+		$pdf->setXY(10, 67.5); 
+		$pdf->Write(0, $company_name);
+
+		$pdf->setXY(10, 74.5);
+		$pdf->MultiCell(115, 4, '4F JY SQUARE DISCOVERY MALL, SALINAS DRIVE, LAHUG, CEBU CITY 6000', 0, 'L');
+
+		$pdf->setXY(137,68);
+		$pdf->Cell(0, 0, '(032) 318-2586');
+
+		$pdf->setXY(25, 136.5); 
+		$pdf->setFontSize(7);
+		$pdf->Write(0, $company_name);
+
+		$pdf->setFontSize(8);
+		$pdf->setXY(153, 164); 
+		$pdf->Cell(0, 0, 'DIANA ROSE BARTULIN');
+
+		$pdf->setXY(153, 174); 
+		$pdf->Cell(0, 0, 'DIRECTOR OF OPERATIONS');
+
+		$pdf->setXY(140, 179); 
+		$pdf->Cell(0, 0, '2028-8357-0006');
+		//end of defaults
+
+		//infos
+		$complete_name = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $complete_name);
+		$pdf->setXY(10, 30);
+		$pdf->Cell(0, 0, strtoupper($complete_name) );
+
+		$pdf->setXY(10, 35);
+		$pdf->MultiCell(105, 6, $address, 0, 'L');
+
+		//gender
+		switch( $employee_info->gender ){
+			case 'M': $pdf->setXY(88.5, 59); break;
+			case 'F': $pdf->setXY(105, 59); break;
+		}		
+		$pdf->Cell(0, 0, '/');
+
+		//civil status
+		switch( $employee_info->maritalStatus ){
+			case 'Single': $pdf->setXY(9, 58); break;
+			case 'Married': $pdf->setXY(9, 61); break;
+			case 'Widowed': $pdf->setXY(44, 58); break;
+			case 'Separated': $pdf->setXY(44, 61); break;
+			case 'Divorced': $pdf->setXY(73, 58); break;
+		}
+		$pdf->Cell(0, 0, '/');
+
+		$pdf->setXY(173, 83);
+		$pdf->Cell(0, 0, $employee_info->idNum);
+
+		$pdf->setXY(173, 60);
+		$pdf->Cell(0, 0, $employee_info->phone1);
+
+		$pdf->setXY(137, 83);
+		$pdf->Cell(0, 0, '423-687-498-000');
+
+		$pdf->setXY(173, 52);
+		$pdf->Cell(0, 0, $this->textM->decryptText($employee_info->hdmf));
+
+		$pdf->setXY(137, 60);
+		$pdf->Cell(0, 0, $this->textM->decryptText($employee_info->sss));
+
+		//birthdate
+		$birth_date = explode('-', $employee_info->bdate);
+		$pdf->setXY(12, 52.5);
+		$pdf->Cell(0, 0, $birth_date[1]);		
+
+		$pdf->setXY(23, 52.5);
+		$pdf->Cell(0, 0, $birth_date[2]);		
+
+		$pdf->setXY(32, 52.5);
+		$pdf->Cell(0, 0, $birth_date[0]);		
+
+		$pdf->setXY(50, 180);
+		$pdf->Cell(0, 0, $fl_name);
+
+		$pdf->setXY(140, 254);
+		$pdf->Cell(0, 0, $fl_name);
+
+		//witnesses
+		$pdf->setXY(22, 252);
+		$pdf->Cell(0, 0, strtoupper($other_info['all_staff'][ $other_info['witness_1'] ]));
+
+		$pdf->setXY(72, 252);
+		$pdf->Cell(0, 0, strtoupper($other_info['all_staff'][ $other_info['witness_2'] ]));		
+		//end infos
+
+		//loan info
+		if( isset($other_info['loan_type']) ){
+			switch( $other_info['loan_type'] ){
+				case 'new': $pdf->setXY(136, 51); break;
+				case 'renew': $pdf->setXY(152, 51); break;
+			}
+			$pdf->Cell(0, 0, '/');	
+		}
+		
+
+		switch( $other_info['loan_amt'] ){
+			case 60: $pdf->setXY(136, 28); break;
+			case 70: $pdf->setXY(136, 31); break;	
+			case 80: $pdf->setXY(165.5, 28); break;	
+			case 90: $pdf->setXY(165.5, 31); break;	
+		}
+		$pdf->Cell(0, 0, '/');
+		if( $other_info['loan_amt'] == 00 ){
+			$pdf->setFontSize(7);
+			$pdf->setXY(188, 31);
+			$pdf->Cell(0, 0, $other_info['loan_amt_others']);
+		}		
+		$pdf->setFontSize(7);
+		$purpose_array = $this->textM->constantArr('hdmf_loan_purpose')[ $other_info['loan_purpose'] ];
+		$pdf->setXY(136, 39);
+		$pdf->MultiCell(73, 2.5, strtoupper($purpose_array), 0, 'L');
+
+		$pdf->setFontSize(8);
+
+		$pdf->setXY(43.5, 49);
+		$pdf->MultiCell(29, 2.5, strtoupper($other_info['birth_place']), 0, 'L' );
+
+		$pdf->setXY(73, 51);
+		$other_info['mo_maiden_name'] = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $other_info['mo_maiden_name']);
+		$pdf->Cell(0, 0, strtoupper($other_info['mo_maiden_name']) );
+
+
+
+
+		if( !empty($other_info['employer_1']) ){
+			$pdf->setFontSize(6);
+			$pdf->setXY(9, 96);
+			$pdf->Cell(69, 4, $other_info['employer_1'][0], 0, 0, 'L' );			
+			$pdf->Cell(94, 4, $other_info['employer_1'][1], 0, 0, 'L' );			
+			$pdf->Cell(20, 4, date('m/Y', strtotime($other_info['employer_1'][2])), 0, 0, 'L' );
+			$pdf->Cell(18, 4, date('m/Y', strtotime($other_info['employer_1'][3])), 0, 2, 'L' );			
+		}
+		if( !empty($other_info['employer_2']) ){
+			$pdf->setFontSize(6);
+			$pdf->setXY(9, 99);
+			$pdf->Cell(69, 4, $other_info['employer_2'][0], 0, 0, 'L' );			
+			$pdf->Cell(94, 4, $other_info['employer_2'][1], 0, 0, 'L' );
+			if( !empty($other_info['employer_2'][2] ) ){
+				$pdf->Cell(20, 4, date('m/Y', strtotime($other_info['employer_2'][2])), 0, 0, 'L' );	
+			} 			
+			if( !empty($other_info['employer_2'][3] ) ){
+				$pdf->Cell(18, 4, date('m/Y', strtotime($other_info['employer_2'][3])), 0, 0, 'L' );			
+			} 			
+			
+		}
+
+		//page 2
+		$pdf->AddPage();
+		$tplIdx = $pdf->importPage(2);
+		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+
+		$pdf->setFontSize(10);
+		$pdf->setXY(10, 39);
+		$pdf->Cell(85, 5, $fl_name, 0, 1, 'C');
+
+		$pdf->setXY(55, 55);
+		$pdf->Cell(0, 0, strtoupper( date('F', strtotime($from) ) ) );
+
+		$base_pay = $payslip_info['total_month']['basePay'];
+		$pdf->setXY(50, 68);
+		$pdf->Cell(0, 0, $this->textM->numFormat( $base_pay ) );
+
+		$pdf->setFontSize(7);
+		$pdf->setXY(13, 80);
+		foreach( $payslip_info['allowances'] as $name => $val ){			
+			$pdf->Cell(58, 5, strtoupper($name), 0, 0, 'L' );
+			$pdf->Cell(20, 5, $this->textM->numFormat($val), 0, 1, 'R');
+			$pdf->setX(13);
+			$total_allowance += $val;
+		}
+		$gross = $base_pay + $total_allowance;
+
+		$pdf->setXY(75, 140);
+		$pdf->setFontSize(9);
+		$pdf->Cell(0, 0, $this->textM->numFormat($gross));
+
+		$pdf->setFontSize(7);
+		$pdf->setXY(13, 160);
+		foreach( $payslip_info['deductions'] as $name => $val ){			
+			$pdf->Cell(58, 5, strtoupper($name), 0, 0, 'L' );
+			$pdf->Cell(20, 5, $this->textM->numFormat($val), 0, 1, 'R');
+			$pdf->setX(13);
+			$total_deductions += $val;
+		}
+
+		$net = $gross - $total_deductions;
+		$pdf->setXY(75, 206);
+		$pdf->setFontSize(9);
+		$pdf->Cell(0, 0, $this->textM->numFormat($total_deductions));
+
+		$pdf->setXY(75, 221);		
+		$pdf->Cell(0, 0, $this->textM->numFormat($net));
+
+		$pdf->setXY(32, 231);
+		$pdf->Cell(0, 0, $this->textM->ordinal(date('d', strtotime($other_info['date_submitted']) ) ) );
+
+		$pdf->setXY(56, 231);
+		$pdf->Cell(0, 0, $month);
+
+		$pdf->setXY(80, 231);
+		$pdf->Cell(0, 0, date('y', strtotime($other_info['date_submitted']) ) );
+
+		$pdf->setXY(18, 248); 
+		$pdf->Cell(75, 5, 'DIANA ROSE BARTULIN', 0, 1, 'C');
+
+		$pdf->setXY(38, 302); 
+		$pdf->Cell(55, 5, $fl_name, 0, 1, 'C');
+
+		$pdf->Output('hdmf_loan_'.$employee_info->username.'.pdf', 'I');
+
+		//redirect( $this->config->base_url() );
+		return true;
+	}
+	
+} //end class
+

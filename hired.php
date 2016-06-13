@@ -1,6 +1,6 @@
 <?php
 
-ini_set('display_errors', 1);
+//ini_set('display_errors', 1);
 require 'config.php';
 
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
@@ -95,7 +95,8 @@ if(isset($_POST) AND !empty($_POST)){
 	}
 	
 	//upload esignature to staff data and id to be used
-	
+	$hire['fname'] = ucwords($hire['fname']);
+	$hire['lname'] = ucwords($hire['lname']);
 	
 	if($postSuccess=='yes'){
 		if($_POST['office']== 'cebu') $s = 'PH-Cebu';
@@ -222,7 +223,7 @@ if(isset($_POST) AND !empty($_POST)){
 				</html>";
 		
 		sendEmail( $from, $to, $subject, $body, 'Career Index Auto Email' );	
-		
+
 		
 		$Abody = '
 			<style>p{font-family:arial;}</style>
@@ -234,8 +235,13 @@ if(isset($_POST) AND !empty($_POST)){
 			Your Immediate Supervisor is: '.$jobReq['supervisor'].'</p>
 			<p>On your first day, your immediate supervisor '.$jobReq['supervisor'].' will be waiting to welcome you.</p>
 			<p>To help you be prepared for your first day, please take time to read this page: <a href="http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/">http://employee.tatepublishing.net/hr/welcome-to-tate-publishing-for-new-employees/</a>.</p>		
-			<p>If you have questions, please do not hesitate to call HR at 09173015686 or (032)318-2586. You may also email us at <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a>.</p>
-			<p>Once again, congratulations and welcome to the Tate Family!</p>
+			<p>Please do not hesitate to approach your immediate supervisor'.$jobReq['supervisor'].', any of the leaders in the office, the HR team, the IT team or any of the support team members if you have questions or need any assistance.</p>
+			<p>All information you need is answered in <a href="http://employee.tatepublishing.net" target="_blank">employee.tatepublishing.net</a> but if you cannot find the answere there, you may email <br/>
+			hr.cebu@tatepublishing.net for HR related concerns<br/>
+			helpdesk.cebu@tatepublishing.net for IT releate concerns<br/>
+			accounting.cebu@tatepublishing.net for Payroll and Accounting related conrcerns</br/>
+			</p>
+			<p>We are so happy you are here and we wish you all the best in your carerer with Tate Publishing</p>
 			<p>Good Luck and God Bless.</p>
 			<p><br/></p>
 			<p>See you soon!</p>
@@ -245,6 +251,20 @@ if(isset($_POST) AND !empty($_POST)){
 
 		$db->updateQuery('applicants', array('processStat' => '0', 'processText' => 'Hired', 'hiredDate' => date('Y-m-d'), 'startDate' => date('Y-m-d', strtotime($startD))), 'id='.$_GET['id']);	
 		addStatusNote($_GET['id'], 'hired', '', $hire['position']);
+
+//send email to leaders
+		$pronoun = ($hire['gender'] == 'male') ? 'he':'she';
+		$possessive_pronoun = ($hire['gender'] == 'male') ? 'his':'her';
+		//send also to leaders and management us
+		$leaders_msg = '<p>Hello Tate Leaders!</p>
+		<p>Please help us welcome '.ucwords($hire['fname'].' '.$hire['lname']).'</p>
+		<p>'.$hire['fname'].' will be our new '.$hire['position'].' in the '.$department.'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotitme($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.$possessive_pronoun.' shift would be '.ucfirst($_POST['shift']).'.</p>
+		<p>We are very to have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
+		<p>Please help make '.$possesive_pronoun.' onboarding as smooth as possible. <span style="text-style: underline;">Please cascade this announcement to anyone in your team who needs to be informed.</span></p>
+		<p>Cheers!<br/>
+		<strong>The Human Resources Team</strong></p>';
+
+		sendEmail($from, 'management.us@tatepublishing.net,leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
 		
 		//once we all have our data then we can create now the template for temporary ID
 		//generate tmp ID

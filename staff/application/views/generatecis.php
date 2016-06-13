@@ -6,15 +6,35 @@ if($updated==false && count($row)>0){
 <table class="tableInfo">
 	<tr class="trlabel"><td colspan=2>Select the information to be updated</td></tr>
 	<tr><td colspan=2>
-		<input type="checkbox" id="title" <? if(isset($wonka->fieldname) && $wonka->fieldname=='title'){ echo 'checked'; } ?>> Position Title <br/>
-		<input type="checkbox" id="office" <? if(isset($wonka->fieldname) && $wonka->fieldname=='office'){ echo 'checked'; } ?>> Office branch <br/>
-		<input type="checkbox" id="shift" <? if(isset($wonka->fieldname) && $wonka->fieldname=='shift'){ echo 'checked'; } ?>> Shift Schedule <br/>
-		<input type="checkbox" id="isup"> Immediate Supervisor <br/>
-	<?php if($row->endDate!='0000-00-00'){ ?><input type="checkbox" id="enddate"> Separation Date <br/><? } ?>
-		<input type="checkbox" id="empstatus" <? if(isset($wonka->fieldname) && $wonka->fieldname=='regDate'){ echo 'checked'; } ?>> Employment Status / Regularization Date <br/>
-		<input type="checkbox" id="salary" <? if(isset($wonka->fieldname) && $wonka->fieldname=='sal'){ echo 'checked'; } ?>> Basic Salary <br/>
+		<input type="checkbox" id="holiday" <? if(isset($wonka->fieldname) && $wonka->fieldname=='holiday'){ echo 'checked'; } ?>><label for="holiday">Holiday Schedule</label> <br/>
+		<input type="checkbox" id="title" <? if(isset($wonka->fieldname) && $wonka->fieldname=='title'){ echo 'checked'; } ?>> <label for="title">Position Title</label> <br/>
+		<input type="checkbox" id="office" <? if(isset($wonka->fieldname) && $wonka->fieldname=='office'){ echo 'checked'; } ?>> <label for="office">Office branch</label> <br/>
+		<input type="checkbox" id="shift" <? if(isset($wonka->fieldname) && $wonka->fieldname=='shift'){ echo 'checked'; } ?>> <label for="shift">Shift Schedule</label> <br/>
+		<input type="checkbox" id="isup"> <label for="isup">Immediate Supervisor</label> <br/>
+	<?php if($row->endDate!='0000-00-00'){ ?><input type="checkbox" id="enddate"> <label for="enddate"> Separation Date</label> <br/><? } ?>
+		<input type="checkbox" id="empstatus" <? if(isset($wonka->fieldname) && $wonka->fieldname=='regDate'){ echo 'checked'; } ?>> <label for="empstatus"> Employment Status / Regularization Date</label> <br/>
+		<input type="checkbox" id="salary" <? if(isset($wonka->fieldname) && $wonka->fieldname=='sal'){ echo 'checked'; } ?>> <label for="salary">Basic Salary</label> <br/>
 	</td></tr>
 <form action="" method="POST" onSubmit="return validateform();">
+	<!----- Holiday Schedule ---->
+	<tr class="trholiday trblank hidden"><td colspan="2"><br/></td></tr>
+	<tr class="trlabel trholiday hidden">
+		<td width="40%">Current holiday schedule</td>
+		<td>Select new holiday schedule</td>
+	</tr>
+	<tr class="trholiday hidden">
+		<td><?php echo $holidaySched_array[ $row->staffHolidaySched ]; ?></td>
+		<td>
+			<select class="forminput" name="staffHolidaySched" id="valholiday">
+				<option value=""></option>
+				<?php foreach( $holidaySched_array as $key => $val){
+						echo '<option value="'.$key.'">'.$val.'</option>';
+					}
+				?>
+			</select>
+		</td>
+	</tr>
+
 	<!-------------------------------			TITLE				---------->
 	<tr class="trtitle trblank hidden"><td colspan=2><br/></td></tr>
 	<tr class="trlabel trtitle hidden">
@@ -169,6 +189,7 @@ if($updated==false && count($row)>0){
 		showhide('enddate');
 		showhide('empstatus');
 		showhide('salary');
+		showhide('holiday');
 		
 		$('#title').click(function(){ showhide('title'); });
 		$('#office').click(function(){ showhide('office'); });
@@ -176,7 +197,9 @@ if($updated==false && count($row)>0){
 		$('#isup').click(function(){ showhide('isup'); });
 		$('#enddate').click(function(){ showhide('enddate'); });
 		$('#empstatus').click(function(){ showhide('empstatus'); });
-		$('#salary').click(function(){ showhide('salary'); });	
+		$('#salary').click(function(){ showhide('salary'); });
+		$('#holiday').click(function(){ showhide('holiday'); });
+			
 	});
 	
 	function showhide(id){
@@ -261,6 +284,12 @@ echo '<table class="tableInfo">';
 	$cnum=0;
 	$cval = array();
 	$changes = json_decode($row->changes);	
+	if(isset($changes->staffHolidaySched)){
+		echo '<tr class="trhead"><td colspan=2>Change in Holiday Schedule</td></tr>';
+		echo '<tr><td width="30%">Current Info</td><td>'.$changes->staffHolidaySched->c.'</td></tr>';
+		echo '<tr><td width="30%">New Info</td><td class="errortext">'.$changes->staffHolidaySched->n.'</td></tr>';
+		echo '<tr><td colspan=2><br/></td></tr>';
+	}
 	if(isset($changes->position)){
 		echo '<tr class="trhead"><td colspan=2>Change in Position Title</td></tr>';
 		echo '<tr><td width="30%">Current Info</td><td>'.$changes->position->c.'</td></tr>';
@@ -309,24 +338,32 @@ echo '<table class="tableInfo">';
 		echo '<tr><td>Form</td><td><a class="iframe" href="'.$this->config->base_url().'cispdf/'.$row->cisID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td></tr>';
 		echo '<tr><td colspan=2><br/></td></tr>';		
 	}
-	
-	if($row->signedDoc!='' && file_exists(UPLOADS.'CIS/'.$row->signedDoc)){
+	if( $row->preparedby != $this->user->empID ){
+		if($row->signedDoc!='' && file_exists(UPLOADS.'CIS/'.$row->signedDoc)){
 		echo '<tr><td>Signed Document</td><td><a href="'.$this->config->base_url().UPLOADS.'CIS/'.$row->signedDoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a><input type="hidden" value="1" id="signed"/></td></tr>';		
-	}else{
-		echo '<tr><td>Upload signed document</td>
-			<td><input type="hidden" value="0" id="signed"/>
-				<form id="signedForm" action="" method="POST" enctype="multipart/form-data">
-					<input type="file" id="signedFile" name="signedFile"/>
-					<input type="hidden" name="submitType" value="signedCIS"/>					
-				</form>
-				</td></tr>';
+		}else{
+			echo '<tr><td>Upload signed document</td>
+				<td><input type="hidden" value="0" id="signed"/>
+					<form id="signedForm" action="" method="POST" enctype="multipart/form-data">
+						<input type="file" id="signedFile" name="signedFile"/>
+						<input type="hidden" name="submitType" value="signedCIS"/>					
+					</form>
+					</td></tr>';
+		}	
 	}
 	
+	
 	if($row->status==0){
-		echo '<tr><td>Approval</td><td><input type="radio" name="approval" value="1" checked> Approve&nbsp;&nbsp;&nbsp;<input type="radio" name="approval" value="2"> Disapprove</td></tr>';
-		echo '<tr id="efftr"><td>Effective date of this change</td><td><input type="text" value="'.date('F d, Y', strtotime($row->effectivedate)).'" name="effectivedate" id="effectivedate" class="forminput datepick"/></td></tr>';
-		echo '<tr><td>Reason for approve/disapprove</td><td><textarea class="forminput" name="reason" id="reason"></textarea></td></tr>';	
-		echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()" class="btnclass btngreen"/></td></tr>';
+		if( $row->preparedby == $this->user->empID ){
+			echo '<tr><td>Approval</td><td><input type="radio" name="approval" value="4" id="approval_4"><label for="approval_4">Cancel</labe></td></tr>';
+		} else {
+			echo '<tr><td>Approval</td><td><input type="radio" name="approval" value="1" id="approval_1" checked> <label for="approval_1">Approve</label>&nbsp;&nbsp;&nbsp;<input type="radio" name="approval" value="2" id="approval_2"> <label for="approval_2">Disapprove</label></td></tr>';
+		}
+			echo '<tr id="efftr"><td>Effective date of this change</td><td><input type="text" value="'.date('F d, Y', strtotime($row->effectivedate)).'" name="effectivedate" id="effectivedate" class="forminput datepick"/></td></tr>';
+			echo '<tr><td>Reason for approve/disapprove/cancellation</td><td><textarea class="forminput" name="reason" id="reason"></textarea></td></tr>';	
+			echo '<tr><td><br/></td><td><input type="button" value="Submit" onClick="appdis()" class="btnclass btngreen"/></td></tr>';	
+		
+		
 	}else{
 		echo '<tr class="trhead"><td colspan=2>Details</td></tr>';
 		echo '<tr><td>Status</td><td class="errortext">';
@@ -363,6 +400,22 @@ echo '<table class="tableInfo">';
 				$('#efftr').addClass('hidden');
 			}
 		});
+
+		$('#approval_4').click(function(){
+			var previousValue = $(this).attr('previousValue');
+		  var name = $(this).attr('name');
+
+		  if (previousValue == 'checked')
+		  {
+		    $(this).removeAttr('checked');
+		    $(this).attr('previousValue', false);
+		  }
+		  else
+		  {
+		    $("input[name="+name+"]:radio").attr('previousValue', false);
+		    $(this).attr('previousValue', 'checked');
+		  }
+		});
 		
 		$('#signedFile').change(function(){
 			displaypleasewait();
@@ -396,13 +449,24 @@ echo '<table class="tableInfo">';
 						location.reload();
 					});
 				}
-			}else{
+			}else if( train == 2 ){
 				if(confirm('Are you sure you want to DISAPPROVE this change in status for <?= $row->name ?>?')){
 					displaypleasewait();					
 					
 					$.post("<?= $this->config->base_url().'updatecis/'.$row->cisID.'/' ?>",{
 						submitType:'disapprove',
 						effectivedate:$('#effectivedate').val(),
+						reason:$('#reason').val()
+					},function(){
+						location.reload();
+					});
+				}
+			} else if( train == 4 ){
+				if(confirm('Are you sure you want to CANCEL this change in status for <?= $row->name ?>?')){
+					displaypleasewait();					
+					
+					$.post("<?= $this->config->base_url().'updatecis/'.$row->cisID.'/' ?>",{
+						submitType:'cancel',						
 						reason:$('#reason').val()
 					},function(){
 						location.reload();

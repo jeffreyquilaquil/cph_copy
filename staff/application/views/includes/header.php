@@ -84,7 +84,7 @@
 			
 		?>	
 
-		<?php  echo '<li>
+			<?php  echo '<li>
 						<a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">Employee Dashboard</a>
 						<ul class="dropdown">
 							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
@@ -96,7 +96,6 @@
 						</ul>
 					</li>';
 		?>	
-			
 		<?php
 			if($this->user->dept== 'IT'){
 				echo '<li '.(($content=='itchecklist')?'class="current"':'').'><a href="'.$this->config->base_url().'itchecklist/">IT Checklist</a>';
@@ -111,7 +110,14 @@
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
-					$cisNum = $this->commonM->countResults('cis');
+					
+					if( $this->user->is_supervisor == 1 AND $this->access->myaccess[0] == '' ){
+						$cisNum = $this->commonM->countResults('cis', true);	
+						
+					} else {
+						$cisNum = $this->commonM->countResults('cis');
+					}
+					
 					$coachingNum = $this->commonM->countResults('coaching');
 					$updateRequestNum = $this->commonM->countResults('updateRequest');
 					$pendingCOENum = $this->commonM->countResults('pendingCOE');
@@ -119,23 +125,28 @@
 					$nteNum = $this->commonM->countResults('nte');
 					$eval90th = $this->commonM->countResults('eval90th');
 					$medrequests = $this->commonM->countResults('medrequests');
+					$hdmf_loans = $this->commonM->countResults('hdmf_loans');
 					
 					if($this->access->accessFullHR==true){
 						$cntincidentreport = $this->commonM->countResults('incidentreport');
 						echo '<li '.(($content=='incidentreports')?'class="current"':'').'><a href="'.$this->config->base_url().'incidentreports/">HR Incident Reports '.(($cntincidentreport>0)?'['.$cntincidentreport.']':'').'</a></li>';
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Manage Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
-						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Manage CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';
+						
 						echo '<li '.(($content=='managecoe')?'class="current"':'').'><a href="'.$this->config->base_url().'managecoe/">Manage COE '.(($pendingCOENum>0)?'<b>['.$pendingCOENum.']</b>':'').'</a></li>';						
 					}
 					if($this->access->accessFullHR==true OR $this->user->level > 0){
+						echo '<li '.(($content=='staffcis')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcis/">Manage CIS '.(($cisNum>0)?'<b>['.$cisNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffcoaching')?'class="current"':'').'><a href="'.$this->config->base_url().'staffcoaching/">Manage Coaching '.(($coachingNum>0)?'<b>['.$coachingNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
-					}					
-					if($this->access->accessFullHR){
+					}	
+					if($this->access->accessMedPerson OR $this->access->accessFullHR){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
+					}				
+					if($this->access->accessFullHR){						
 						echo '<li '.(($content=='referralmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'referralmanagement/">Referral Management</a></li>';
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
+						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application '.(($hdmf_loans > 0)?'<b>['.$hdmf_loans.']</b>':'').'</a></li>';
 					}
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
@@ -156,10 +167,7 @@
 
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
-					}
-					
 					echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk</a></li>';
-
 				echo '</ul>';
 				echo '</li>';
 			}

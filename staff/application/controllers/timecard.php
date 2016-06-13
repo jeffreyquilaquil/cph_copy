@@ -787,7 +787,7 @@ class Timecard extends MY_Controller {
 		$data['isUnder'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-				
+		//$this->textM->aaa($data, false);
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
 	
@@ -1216,6 +1216,7 @@ class Timecard extends MY_Controller {
 		$data['content'] = 'v_timecard/v_payslipdetail';	
 		$data['tpage'] = 'payslips';
 		
+
 		if($this->user!=false){				
 			$empID = $this->uri->segment(2);
 			if(!is_numeric($empID)){
@@ -1425,6 +1426,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function computelastpay(){
+
 		$data['content'] = 'v_timecard/v_computelastpay';
 		
 		if($this->user!=false){			
@@ -1440,6 +1442,9 @@ class Timecard extends MY_Controller {
 					exit;
 				}else if($_POST['submitType']=='removePayslip'){
 					$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
+					//notes
+					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay payslip has been removed.', 1, 0, $this->user->empID);
+					//end notes
 					exit;
 				}else if($_POST['submitType']=='savecomputation'){ //saving computation				
 					unset($_POST['submitType']);						
@@ -1460,9 +1465,14 @@ class Timecard extends MY_Controller {
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
 					}else{
+						$_POST['status'] = 1;
 						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
 					}
 					
+					//notes
+					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay computation has been updated.', 1, 1, $this->user->empID);
+					//end notes
+
 					echo $lastpayID;
 					exit;
 				}
@@ -1474,7 +1484,9 @@ class Timecard extends MY_Controller {
 				if(isset($_GET['empID'])){
 					$empID = $_GET['empID'];
 				}
-
+				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){
+					$data['content'] = 'v_timecard/v_uploadlastpay';
+				}
 				$data['pageType'] = 'showpay';
 				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
 				if(count($data['payInfo'])==0) $data['access'] = false;
@@ -1488,7 +1500,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1502,16 +1514,17 @@ class Timecard extends MY_Controller {
 				$data['periodTo'] = $_GET['periodTo'];
 			}
 			
-			if(isset($data['periodFrom']) && isset($data['periodTo'])){			
-				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo']);
+			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
+				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
-
+				$data['allowances'] = $datum['allowances'];
 			}
-							
+
 			///THIS IS FOR THE PDF
 			if(isset($_GET['show'])){
+					
 				$bdate = date('ymd', strtotime($data['staffInfo']->bdate));
 				if($_GET['show']=='pdf' && $this->access->accessFullHRFinance==false){
 					$acc = true;
@@ -1534,7 +1547,8 @@ class Timecard extends MY_Controller {
 					if($acc==false) $data['access'] = false;
 					else exit;
 				}else{
-					if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
+					if(/*$bdate==$this->textM->decryptText($_GET['show'])*/$_GET['show']=='pdf' || $this->access->accessFullHRFinance==true){
+					
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
 							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
@@ -1546,20 +1560,23 @@ class Timecard extends MY_Controller {
 							case 'release': //release waiver and quitclam
 								$staff_details->amount_in_words = $this->textM->convert_number_to_words($data['payInfo']->netLastPay);
 								$staff_details->amount_in_figure = $this->textM->convertNumFormat($data['payInfo']->netLastPay);
-								$this->payrollM->pdfReleaseClaim($staff_details);	
+								ob_clean();
+								$this->payrollM->pdfReleaseClaim($staff_details);
+								exit();
 							break;
 							case 'bir':
 							 		//$this->textM->aaa($data);
 									//for active employee
 									if( isset($_GET['is_active']) ){
 										$sDate = $data['staffInfo']->startDate;
-										if( $sDate < '2016-01-01' )
-											$sDate = '2016-01-01';
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, $sDate, date('Y-12-31') );
-										$data['dataArr'] = $datum['dateArr'];
+										// if( $sDate < '2016-01-01' )
+										// 	$sDate = '2016-01-01';
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31') );
+										$data['dateArr'] = $datum['dateArr'];
 										$data['dataMonth'] = $datum['dataMonth'];
 										$data['dataMonthItems'] = $datum['dataMonthItems'];
 										$data['staffInfo']->endDate = date('Y-12-31');
+										$data['is_active'] = TRUE;
 									}
 									// echo "<pre>";
 									// var_dump($data);
@@ -1581,6 +1598,7 @@ class Timecard extends MY_Controller {
 				}									
 			}
 		}
+		// $this->textM->aaa($data);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -1622,10 +1640,11 @@ class Timecard extends MY_Controller {
 						}
 						//$this->textM->aaa($data['dataQuery']);						
 						foreach( $data['dataQuery'] as $key => $val ){
-							$datum = $this->payrollM->getPayslipOnTimeRange($val->empID, $from_, $to_);
+							$datum = $this->payrollM->getPayslipOnTimeRange($val->empID, $from_, $to_, TRUE);
 							$data['dataQuery'][$key]->dateArr = $datum['dateArr'];
 							$data['dataQuery'][$key]->dataMonth = $datum['dataMonth'];
 							$data['dataQuery'][$key]->dataMonthItems = $datum['dataMonthItems'];
+							$data['dataQuery'][$key]->allowances = $datum['allowances'];
 						}
 
 						//$this->textM->aaa($data);
@@ -1636,18 +1655,116 @@ class Timecard extends MY_Controller {
 				}
 			}
 		}
-		$this->output->enable_profiler(true);
+		//$this->output->enable_profiler(true);
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
 
+	public function uploadlastpay(){
+		$data['content'] = 'v_timecard/v_uploadlastpay';
+		//upload files
+		if( $this->input->post('lastPayID') ){
+
+			$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('lastPayID'), 'LEFT JOIN staffs ON empID=empID_fk' );
+			
+
+			if( isset($_FILES) AND !empty($_FILES) ){
+				$files = $_FILES;					
+				/* config data */
+				$upload_config['upload_path'] = FCPATH .'uploads/lastpay_docs';
+				$upload_config['allowed_types'] = 'gif|jpg|png|pdf';
+				$upload_config['max_size']	= '2048';
+				$upload_config['overwrite']	= 'FALSE';						
+				$this->load->library('upload');
+
+				//check how many to upload
+				$upload_count = count( $_FILES['lastpay_doc']['name'] );
+				for( $x = 0; $x < $upload_count; $x++ ){
+					$_FILES['to_upload']['name'] = $files['lastpay_doc']['name'][$x];
+					$_FILES['to_upload']['type'] = $files['lastpay_doc']['type'][$x];
+					$_FILES['to_upload']['tmp_name'] = $files['lastpay_doc']['tmp_name'][$x];
+					$_FILES['to_upload']['error'] = $files['lastpay_doc']['error'][$x];
+					$_FILES['to_upload']['size'] = $files['lastpay_doc']['size'][$x];
+					
+					$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+					$uniq_id = uniqid();
+					$upload_config['file_name'] = $last_pay_info->empID_fk .'_'. $uniq_id .'_'. $x .'.'.$ext;
+					
+					$this->upload->initialize( $upload_config );
+					
+					if( ! $this->upload->do_upload('to_upload') ){
+						$error_data[$x] = $this->upload->display_errors('<span>', '</span>');
+					} else {
+						$upload_data[$x] = $this->upload->data();
+					}
+				}
+			}
+			//save data
+			if( isset($error_data) ){
+				unset($data['upload_data']);
+				$data['upload_error'] = implode('<br/>', $error_data);				
+			} else if( isset($upload_data)  ){
+
+				foreach( $upload_data as $data_upload ){
+					$filenames[] = $data_upload['file_name'];
+				}
+
+				$filename = json_encode($filenames);
+
+				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
+
+				//notes
+				$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `Released`.', 1, 1, $this->user->empID);
+				//end notes
+
+				$data['upload_error'] = 'Document has been uploaded.';
+				$data['js'] = true;
+			} 
+			
+		}
+		//end upload files
+		
+		$this->load->view('includes/templatecolorbox', $data);		
+	}
+
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
+		$data['dataTableProperties'] = '{columnDefs:[{ targets: 8,  orderDataType: "dom-select"}]}';
+		
+		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
+
 		
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
-				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', '1', 'LEFT JOIN staffs ON empID=empID_fk');				
+				$data['error_data'] = '';
+				$condition = '1';
+				if( $this->input->is_ajax_request() ){
+					//update					
+					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
+
+
+					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
+					//notes
+					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $this->input->post('status') ].'`.', 1, 1, $this->user->empID);
+					//end notes
+
+					
+					exit();
+				}
+
+				
+				if( $this->input->post('date_range') ) {
+					if( !empty($this->input->post('dateFrom')) AND !empty($this->input->post('dateTo')) ){
+						$dateFrom = date('Y-m-d', strtotime( $this->input->post('dateFrom')) );
+						$dateTo = date('Y-m-d', strtotime( $this->input->post('dateTo')) );
+						$condition = '(dateGenerated BETWEEN "'.$dateFrom.'" AND "'.$dateTo.'")';
+					} else {
+						$data['error_data'] = '<span class="error">Please specify date range.</span>';
+					}
+				}
+
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', $condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');				
 			}
 		}
 		
@@ -1833,15 +1950,29 @@ class Timecard extends MY_Controller {
 			$dataPayroll = $this->dbmodel->getSingleInfo('tcPayrolls', '*', 'payrollsID="'.$payrollsID.'"');
 									
 			$payInfo = $this->dbmodel->getQueryResults('tcPayslips', 
-						'fname, lname, empID_fk, idNum, payslipID, payrollsID, empID, monthlyRate, basePay, monthlyRate, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation', 
+						'fname, lname, tcPayslips.empID_fk AS "empID_fk", lastPayID, endDate, idNum, payslipID, payrollsID, empID, tcPayslips.monthlyRate, basePay, earning, bonus, tcPayslips.allowance, adjustment, deduction, totalTaxable, net, payPeriodStart, payPeriodEnd, payType, payDate, startDate, bdate, title, tcPayrolls.status, levelName, staffHolidaySched, employerShare, eCompensation, payPeriodStart as "payroll_start", payPeriodEnd AS "payroll_end", dateFrom as "lastpay_start", dateTo as "lastpay_start"', 
 						'payrollsID="'.$payrollsID.'" AND pstatus=1', 
 						'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk 
-						LEFT JOIN staffs ON empID=empID_fk 
+						LEFT JOIN staffs ON empID=empID_fk
+						LEFT JOIN tcLastPay ON tcLastPay.empID_fk =  tcPayslips.empID_fk
 						LEFT JOIN newPositions ON posID=position 
 						LEFT JOIN orgLevel ON levelID=orgLevel_fk
-						LEFT JOIN sssTable ON monthlyRate BETWEEN minRange AND maxRange', 
+						LEFT JOIN sssTable ON tcPayslips.monthlyRate BETWEEN minRange AND maxRange', 
 						'lname');
 
+			
+
+			//get the separated employee to be used at the second tab
+			$separated_employee = array();
+			$payInfo_ = array();
+			foreach( $payInfo as $pay_ ){			
+				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate >= $pay_->payroll_start AND $pay_->endDate <= $pay_->payroll_end ) ){
+					$separated_employee[ $pay_->empID_fk ] = $pay_;
+				} else {
+					$payInfo_[] = $pay_;
+				}
+			}	
+			$payInfo = $payInfo_;
 
 			require_once('includes/excel/PHPExcel/IOFactory.php');
 			$fileType = 'Excel5';
@@ -1884,6 +2015,8 @@ class Timecard extends MY_Controller {
 				'24HR' => 'Special PHL Holiday Worked (hours)',
 				'26' => 'Regular US Holiday Worked',
 				'26HR' => 'Regular US Holiday Worked (hours)',
+				'27' => 'Regular Holiday Premium',
+				'27HR' => 'Regular Holiday Premium (hours)',
 				'11' => 'Over Time Worked',
 				'11HR' => 'Over Time Worked (hours)',
 				'42' => 'OT Hours Added',
@@ -1902,11 +2035,13 @@ class Timecard extends MY_Controller {
 				'5' => 'Medical Cash Allowance',
 				'1' => 'Rice Allowances',
 				'44' => 'Pro-rated Allowance',
+				'47' => 'Training Allowance',
 				'14' => 'Performance Bonus',
 				'15' => 'Kudos Bonus',
 				'31' => 'Discrepancy on Previous Bonus',
 				'21' => 'Vacation Pay',
 				'30' => 'Cost of Vaccines',
+				'46' => 'Refund on Cost of Vaccines',
 				'43' => 'Tax Refund',
 				'20' => 'Tax Deficit',
 				'18' => 'Sun Life',
@@ -1917,6 +2052,8 @@ class Timecard extends MY_Controller {
 				'40' => 'Payslip Adjustment',
 				'36' => '13th Month Adjustment',
 				'38' => 'Cost of Community Tax Certificate',
+				'45' => 'One Plus Shop',
+				'48' => 'ID Replacement',
 				'6' => 'BIR',
 				'net' => 'Net Pay',
 				'net_' => 'Cheque Payroll',
@@ -1941,49 +2078,7 @@ class Timecard extends MY_Controller {
 
 			$data_excel = array();
 			foreach( $payInfo as $pay_info ){
-				$dataItems = $this->dbmodel->getQueryResults('tcPayslipDetails', 'payID, payCode, payValue, payType, payName, payCategory, numHR, payAmount', 'payslipID_fk="'.$pay_info->payslipID.'" AND payValue!="0.00"', 'LEFT JOIN tcPayslipItems ON payID=payItemID_fk', 'payCategory, payAmount, payType');
-
-				$data_excel_array = array();
-
-				$data_excel_array['name'] = $pay_info->lname.', '.$pay_info->fname;
-				$data_excel_array['id_num'] = $pay_info->idNum;
-				$data_excel_array['net'] = $pay_info->net;
-				$data_excel_array['net_'] = $pay_info->net;
-				$data_excel_array['earning'] = $pay_info->earning;
-				$data_excel_array['earning_'] = $pay_info->earning;
-				$data_excel_array['eCompensation'] = '-'.$pay_info->eCompensation;
-				$data_excel_array['employerShare'] = '-'.$pay_info->employerShare;
-				$data_excel_array['totalTaxable'] = $pay_info->totalTaxable;
-				$data_excel_array['basePay'] = $pay_info->basePay;
-
-				foreach( $dataItems as $item ){
-					if( $item->payType == 'debit')	{
-						$item->payValue = '-'.$item->payValue;
-					}
-					if( isset($header_array_sequence[ $item->payID ] ) ){
-						$key = $item->payID;
-						$data_excel_array[ $key ]= $item->payValue;
-					}
-					if( $item->numHR > 0 ){
-						$key = $item->payID.'HR';
-						$data_excel_array[ $key ] = $item->numHR;
-					}
-					//for tax refund
-					//deduct tax refund from gross pay
-					if( isset($item->payID) AND $item->payID == 43 ){
-						$data_excel_array['earning'] = $data_excel_array['earning'] - $item->payValue;
-						$data_excel_array['earning_'] = $data_excel_array['earning_'] - $item->payValue;
-					}
-				}
-				if( !isset($data_excel_array['22HR']) ){
-					unset($data_excel_array['22']);
-				}
-				if( isset($data_excel_array['22']) ){
-					unset($data_excel_array['basePay']);
-				}
-
-
-				$data_excel[$pay_info->empID_fk] = $data_excel_array;
+				$data_excel[ $pay_info->empID_fk ] = $this->payrollM->getEmployeePayrollDistro( $pay_info, $header_array_sequence );
 			}
 
 			//$this->textM->aaa($data_excel);
@@ -2023,6 +2118,134 @@ class Timecard extends MY_Controller {
 									)
 				 )
 			);
+
+			//header for second page
+			$header_array_sequence = $header_col =  array(
+				'name' => 'Employee',
+				'id_num' => 'Employee ID',
+				'12' => 'Regular Taken',
+				'22' => 'Regular Worked',				
+				'10' => 'ND:Regular',
+				'earning' => 'Gross Pay',				
+				'9' => 'Pag-ibig Contribution',
+				'8' => 'SSS Contribution',
+				'7' => 'Philhealth Contribution',
+				'totalTaxable' => 'Taxable Pay',
+				'33' => 'Medicine Reimbursement',
+				'44' => 'Pro-rated Allowance',
+				'14' => 'Performance Bonus',
+				'15' => 'Kudos Bonus',
+				'31' => 'Discrepancy on Previous Bonus',
+				'21' => 'Vacation Pay',
+				'13thMonth' => 'Total 13th Month Pay',
+				'taxFromPrevious' => 'Tax Refund Previous Year',
+				'20' => 'Tax Deficit Previous Year',
+				'18' => 'Sun Life',
+				'17' => 'Healthcare Dependent/s',
+				'47' => 'Training Allowance',
+				'19' => 'Pag-ibig Loan',
+				'13' => 'SSS Loan',
+				'39' => 'Loan Adjustment',
+				'40' => 'Payslip Adjustment',
+				'36' => '13th Month Adjustment',				
+				'30' => 'Cost of Vaccines',
+				'46' => 'Refund on Cost of Vaccines',
+				'38' => 'Cost of Community Tax Certificate',
+				'45' => 'One Plus Shop',
+				'48' => 'ID Replacement',
+				'taxWithheld' => 'Total Tax Withheld',
+				'taxDue' => 'Tax Due',
+				'net' => 'Last Pay',
+				'net_' => 'Cheque Payroll',
+				'eCompensation' => 'SSS Employer Compensation',
+				'employerShare' => 'SSS Employer Share');
+
+			//second page
+			// Add new sheet
+			$objWorkSheet = $objPHPExcel->createSheet(1); //Setting index when creating
+
+			//Write cells
+			
+			//header
+			$objWorkSheet->mergeCells('A1:AL1');
+			$objWorkSheet->setCellValue('A1', 'DISTRIBUTION REPORT FOR SEPARATED EMPLOYEE - ' . date('Y') )
+				->getStyle('A1')
+				->getAlignment()
+				->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+			$objWorkSheet->getStyle('A1')
+				->getFont()
+				->setBold(true);
+			$objWorkSheet->getRowDimension(1)->setRowHeight(28);
+
+			$objWorkSheet->getRowDimension(2)->setRowHeight(28);
+			$col_header = 'A';
+			foreach( $header_col as $header ){
+				$objWorkSheet->setCellValue($col_header.'2', $header);
+				$objWorkSheet->getColumnDimension($col_header)->setAutoSize(true);
+				$col_header++;
+			}
+			$objWorkSheet->freezePane('B3');
+			//end header
+
+			//body
+
+			//traverse through $separated Employee
+			
+			$data_excel = array();
+			foreach( $separated_employee as $empID => $details ){
+				$data_excel[ $empID ] = $this->payrollM->getEmployeePayrollDistro( $details, $header_array_sequence, true );
+			};
+			
+			$row_ = 3;
+			foreach( $data_excel as $empID => $details ){
+				$col_name = 'A';
+				foreach( $header_array_sequence as $key => $val ){
+					if( isset($details[ $key ]) ){
+						$objWorkSheet->setCellValue($col_name.$row_, $details[ $key ]);	
+					} else {
+						$objWorkSheet->setCellValue($col_name.$row_, 0);	
+					}
+					
+					$col_name++;
+				}
+				$row_++;
+			}
+			//end body
+
+			//footer
+			//TOTALS
+			$objWorkSheet->setCellValue('A'.$row_, 'TOTALS:');
+			$last_row = $row_ - 1;
+			$col_header = 'C';
+			unset($header_col['name']);
+			unset($header_col['id_num']);
+			
+			if( count($data_excel) > 0 ){
+				foreach( $header_col as $payID => $payDetails ){
+					$objWorkSheet->setCellValue($col_header.$row_, '=SUM('.$col_header.'3:'.$col_header.$last_row.')');
+					$col_header++;
+				}	
+			}			
+			
+			
+			
+			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->getFont()->setBold(true);
+			$objWorkSheet->getStyle('A'.$row_.':'.($col_header--).$row_)->applyFromArray(
+			array('fill' 	=> array(
+										'type'		=> PHPExcel_Style_Fill::FILL_SOLID,
+										'color'		=> array('argb' => 'FFF000')
+									)
+				 )
+			);
+
+			//end footer
+
+			
+			// Rename sheet
+			$objWorkSheet->setTitle("Separated Employee");
+
+			//end second page
+
 							
 			//$this->textM->aaa($arrCell);
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
@@ -2031,6 +2254,7 @@ class Timecard extends MY_Controller {
 			header('Content-type: application/vnd.ms-excel');
 			header('Content-Disposition: attachment; filename="Payroll_Distribution_Report.xls"');
 			$objWriter->save('php://output');			
+			
 		}	
 	}
 	

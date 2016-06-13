@@ -100,6 +100,10 @@ class Textmodel extends CI_Model {
 	public function convertNumFormat($n){
 		return number_format((double)str_replace(',','',$n),2);
 	}
+
+	public function numFormat($i){
+		return number_format( $i, 2, '.', ',');
+	}
 	
 	function convertTimeToMinHours($tdiff, $numOnly=false){
 		$tText = '';
@@ -198,6 +202,7 @@ class Textmodel extends CI_Model {
 						</th>
 						<th>Immediate Supervisor</th>
 						<th>Prepared By</th>
+						<th>Updated By</th>
 						<th><br/></th>
 						<th><br/></th>
 					</tr>
@@ -205,9 +210,13 @@ class Textmodel extends CI_Model {
 			';
 		if(count($info)>0){
 			foreach($info AS $a):
-				$c = json_decode($a->changes);
+				$c = json_decode(stripslashes($a->changes));
 				$cnt = 0;
 				$arr = array();
+				if(isset($c->staffHolidaySched)){
+					$arr[$cnt][0] = 'Holiday Schedule'; $arr[$cnt][1] = $c->staffHolidaySched->c; $arr[$cnt][2] = $c->staffHolidaySched->n;
+					$cnt++;
+				}
 				if(isset($c->position)){
 					$arr[$cnt][0] = 'Position Title'; $arr[$cnt][1] = $c->position->c; $arr[$cnt][2] = $c->position->n;
 					$cnt++;
@@ -263,6 +272,7 @@ class Textmodel extends CI_Model {
 				
 				$disp .= '<td>'.$a->supName.'</td>';
 				$disp .= '<td>'.$a->prepby.'</td>';
+				$disp .= '<td>'.$a->updatedby.'</td>';
 				
 			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d')){
 				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/'.$a->signedDoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
@@ -413,6 +423,47 @@ class Textmodel extends CI_Model {
 		return $disp;
 	}
 	
+	//kudos table
+	public function kudosRequestTableDisplay($data, $hide = false, $all = FALSE, $tableClass = '', $display = TRUE){
+		$hiddenClass = (!$display)? "hidden": '';
+		$displayTable = "<div class = 'table".$tableClass." $hiddenClass'>
+			<table class='datatable tableInfo fs11px'>
+				<thead>
+					<tr><th>Requests</th><th>Name of Employee</th><th>Name of Requestor</th><th>Reason for KBR</th><th>Amount</th><th>Date Submitted</th><th>Status</th></tr>
+				</thead>";
+
+		$displayTable .= "<tbody>";
+		foreach ($data as $key => $value) {
+			$show = TRUE;
+			if($all && $hide && $value->kudosReceiverSupID != $this->user->empID ){	
+				if( !$this->access->accessFull && !$this->access->accessFinance ){
+					$show = FALSE;
+				}
+			}
+			
+			if( $show ){
+				$displayTable .= "<tr>
+						<td>".$value->kudosRequestID."</td>
+						<td>".$value->staffName."</td>
+						<td>".$value->requestorName."</td>
+						<td>".$value->kudosReason."</td>
+						<td>".$value->kudosAmount."</td>
+						<td>".$value->dateRequested."</td>";
+					if(!$display)
+						$displayTable .= "<td>$value->statusName</td>";
+					else{
+						$displayTable .= "<td><a href='".$this->config->base_url()."kudosrequest/evaluation/".$value->kudosRequestID."/".$value->kudosRequestStatus."' class='iframe'>".$value->statusName."</a></td>
+					
+						</tr>
+					";
+				}
+			}
+		}
+		$displayTable .= '</tbody>';
+		$displayTable .= "</table></div>";
+
+		return $displayTable;
+	}
 	
 	
 	//assign $time to empty if you dont want to call customTimeArrayByCat function. Please call customTimeArrayByCat first if this is loop
@@ -435,7 +486,7 @@ class Textmodel extends CI_Model {
 	}
 	
 	
-	function constantText($t){
+	function constantText($t, $special = ''){
 		$txt = '';
 		if($t=='txt_fname') $txt = 'First Name';
 		else if($t=='txt_lname') $txt = 'Last Name';
@@ -455,6 +506,7 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_bdate') $txt = 'Birthday';
 		else if($t=='txt_gender') $txt = 'Gender';
 		else if($t=='txt_maritalStatus') $txt = 'Marital Status';
+		else if($t=='txt_maiden_name') $txt = 'Maiden Name';
 		else if($t=='txt_spouse') $txt = 'Spouse';
 		else if($t=='txt_dependents') $txt = 'Dependents';
 		else if($t=='txt_sss') $txt = 'SSS';
@@ -499,6 +551,10 @@ class Textmodel extends CI_Model {
 		else if($t=='txt_emergency_person') $txt = 'Emergency Contact Person';
 		else if($t=='txt_emergency_number') $txt = 'Emergency Contact Number';
 		else if($t=='txt_emergency_address') $txt = 'Emergency Contact Address';
+		elseif($special != ''){
+			$txt = str_replace("ñ", 'N', $special);
+			//echo $txt;
+		}
 		return $txt;
 	}
 	
@@ -832,6 +888,26 @@ class Textmodel extends CI_Model {
 					'4' => 'Disapproved by accounting',
 					'5' => 'Cancelled'
 			);
+		}else if($a == 'hdmf_loan_purpose'){
+			$arr = array(
+				1 => 'Minor home improvement/home renovation/upgrades', 
+				2 => 'Livelihood/additional capital in small business', 
+				3 => 'Tuition/education expense', 
+				4 => 'Health and wellness', 
+				5 => 'Purchase of appliance and furniture/electronic gadgets', 
+				6 => 'Bill/credit card payment', 
+				7 => 'Vacation/travel', 
+				8 => 'Special events', 
+				9 => 'Car repair', 
+				10 => 'Balance transfer/debt consolidation', 
+				11 => 'Other needs');
+		} else if( $a == 'hdmf_loan_status' ){
+			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
+
+		} else if($a == 'allowances'){
+			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if( $a == 'last_pay_status' ){
+			$arr = array('Pending requirements', 'For review', 'For releasing', 'Released');
 		}
 		
 		return $arr;
@@ -1151,9 +1227,42 @@ class Textmodel extends CI_Model {
 		
 		return $string;
 	}
-	
-	
-		
-}
 
-?>
+	//render table universal	
+	public function renderTable( $headers, $col_options, $data_query, $data_table = true, $display = true ){
+
+		$table = '';
+		$dataTable = ( $data_table == true ) ? 'class="datatable"' : '';
+		$table .= '<table '.$dataTable.' style="width: 100%;">';
+		//thead
+		$table .= '<thead><tr>';
+			foreach( $headers as $val ){
+				$table .= '<td>'.ucwords( $val ).'</td>'; 
+			}
+		$table .= '</tr></thead>';
+		//tbody
+		$table .= '<tbody>';
+		if( isset($data_query) AND !empty($data_query) ){
+			unset($data_query['headers']);
+			foreach( $data_query as $val ){
+				$table .= '<tr>';
+				foreach( $headers as $val_ ){
+					$table .= '<td>'.$val[ $val_ ].'</td>'; 		
+				}				
+				$table .= '</tr>';
+			}
+		}
+			
+		$table .= '</tbody>';
+
+		$table .= '</table>';
+
+		if( $display == true ){
+			echo $table;
+		} else {
+			return $table;
+		}
+	}
+
+		
+} //end class

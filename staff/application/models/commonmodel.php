@@ -148,10 +148,18 @@ class Commonmodel extends CI_Model {
 		return true;
 	}
 	
-	function countResults($type){
+	//own means for supervisor
+	function countResults($type, $own = false){
 		$cnt = 0;
 		if($type=='cis'){
-			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0');
+			$condition = '';
+			if( $own === true ){
+				
+				$condition = 'AND preparedby ='.$this->user->empID;
+			}
+
+
+			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0 '.$condition);
 		}else if($type=='coaching'){
 			$condition = '';
 			if($this->access->accessHR==false){
@@ -226,6 +234,8 @@ class Commonmodel extends CI_Model {
 			 $cnt = $this->dbmodel->getSingleField('staffReportViolation', 'count(reportID)', 'status>=1 AND status<10', 'dateSubmitted DESC');
 		} else if( $type == 'medrequests' ){
  			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
+		} else if( $type == 'hdmf_loans' ){
+			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		}
 		
 		return $cnt;
@@ -329,6 +339,17 @@ class Commonmodel extends CI_Model {
 										
 		return $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
 	}
+
+	public function _getAllStaff($key){
+
+		$tmp = array();
+		$all_staff = $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, CONCAT(fname, " ", lname) AS "name", newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
+		foreach($all_staff as $staff){
+
+			$tmp[ $staff->$key ] = $staff;
+		} 
+		return $tmp;
+	}
 	
 	
 	public function getSchedTimeArray(){
@@ -429,9 +450,22 @@ class Commonmodel extends CI_Model {
 		$diff = date_diff( $date1, $date2 );
 		
 		$return =  $diff->format( $format );
-		return date('H:i:s', strtotime($return));
+		return $return;//date('H:i:s', strtotime($return));
 	}
 	
+	// public function dateDifferenceDays( $date1, $date2, $format = '%a'){
+
+	// 	$date1 = date('Y-m-d H:i:s', strtotime($date1) );
+	// 	$date2 = date('Y-m-d H:i:s', strtotime($date2) );
+
+	// 	$date1 = date_create( $date1 );
+	// 	$date2 = date_create( $date2 );	
+
+	// 	$diff = date_diff( $date1, $date2 );
+		
+	// 	$return =  $diff->format( $format );
+	// 	return $return;//date('m', strtotime($return));
+	// }
 	
 }
 

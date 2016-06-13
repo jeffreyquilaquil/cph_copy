@@ -5,6 +5,11 @@ class MY_Controller extends CI_Controller {
 	public function __construct(){
 		parent::__construct();
 		
+		$this->load->helper('form');
+
+		if($this->config->item('devmode')===true)
+			$this->db = $this->load->database('defaultdev', TRUE);
+		else
 			$this->db = $this->load->database('default', TRUE);
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
 		
@@ -48,6 +53,7 @@ class MY_Controller extends CI_Controller {
 		$access->accessFullHRFinance = false;
 		$access->accessHRFinance = false;
 		$access->accessMedPerson = false;
+		
 		
 		if($this->user!=false){
 			$access->myaccess = explode(',',$this->user->access);
