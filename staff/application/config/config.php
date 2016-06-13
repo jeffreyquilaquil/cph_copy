@@ -16,16 +16,29 @@
 */
 
 $host = $_SERVER['HTTP_HOST'];
+if($host == 'careerph.tatepublishing.net'){
+       $config['base_url']     = 'https://careerph.tatepublishing.net/staff/';
+       $config['career_url']   = 'https://careerph.tatepublishing.net';
+       $config['career_uri']   = 'https://careerph.tatepublishing.net'.$_SERVER['REQUEST_URI'];
+       $config['toEmail']      = '';
+       $config['demnCrypt']    = 'hiCebuITteamIamDivi';
+       $config['demnCryptIV']  = 'TaTe';
+       $config['devmode'] = false;
+       $config['showProfiler'] = false;
+       $config['timeCardTest'] = false;
+}else{
+       $config['base_url']     = 'http://10.100.0.1/staff/';
+       $config['career_url']   = 'http://10.100.0.1';
+       $config['career_uri']   = 'http://10.100.0.1'.$_SERVER['REQUEST_URI'];
+       $config['toEmail']      = 'ludivina.marinas@tatepublishing.net';
 
-	$config['base_url']	= 'https://app01.tatepublishing.net/~shem/staff/';
-	$config['career_url']	= 'https://app01.tatepublishing.net/~shem/staff/';
-	$config['career_uri']	= 'https://app01.tatepublishing.net/~shem/staff'.$_SERVER['REQUEST_URI'];
-	$config['toEmail']	= 'shem.chavez@tatepublishing.net';
-	$config['demnCrypt']	= 'hiCebuITteamIamDivi';
-	$config['demnCryptIV']	= 'TaTe';
-	$config['devmode'] = true; //change to false if you want to use live database
-	$config['showProfiler'] = false;
-	$config['timeCardTest'] = true;
+        $config['demnCrypt']    = 'hiCebuITteamIamDivi';
+        $config['demnCryptIV']  = 'TaTe';
+        $config['devmode'] = true; //change to false if you want to use live database
+        $config['showProfiler'] = false;
+        $config['timeCardTest'] = true;
+-}
+
 
 /*
 |--------------------------------------------------------------------------
