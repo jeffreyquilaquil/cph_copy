@@ -26,7 +26,7 @@
 	if(!isset($current)) $current = '';	
 ?>
 	<div id="logo"></div>
-<?php if($content != 'changepassword'){ ?>
+<?php if($content != 'changepassword'){  ?>
 	<div id="menubar">
 		<ul class="menu">
 			<li <?php if($content=='index'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>">Homepage</a></li>
