@@ -119,6 +119,7 @@
 <div> 
 
 <?php foreach ($HrIncident as $key => $value): ?>
+	adfasf
 <?php endforeach ?>
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
@@ -231,7 +232,7 @@
 		<tr>
 			<td style="border: solid 1px #4a7ebb;">
 				<div class="employee_msg_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>
 				<div class="messages">

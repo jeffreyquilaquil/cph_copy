@@ -14,7 +14,6 @@
 			}
 
 		public function index(){
-
             $data['content']= 'askHR_submissionpage';
             $data['msg_newID']= 0;
 
@@ -201,6 +200,9 @@
            		$data['content']='hr_incidentinfo';
 
                 $insedent_id = $this->uri->segment(3);
+
+                $data['all_staff'] = $this->commonM->_getAllStaff('username');
+                
 
             	
 
