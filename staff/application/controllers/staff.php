@@ -4412,6 +4412,7 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 
+
 	public function hdmf(){
 		$data['content'] = 'hdmf_loan';
 		$data['loan_purpose_array'] = $this->textM->constantArr('hdmf_loan_purpose');
@@ -4585,6 +4586,7 @@ class Staff extends MY_Controller {
 			return TRUE;
 		}
 	}
+
 
 	
 

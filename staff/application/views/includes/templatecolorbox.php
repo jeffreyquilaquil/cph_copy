@@ -8,7 +8,7 @@
 	
 	<link href="<?= $this->config->base_url() ?>css/main.style.css" rel="stylesheet" type="text/css" />
 	<link href="<?= $this->config->base_url() ?>css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />
-	
+	<link href="<?= $this->config->base_url() ?>css/jquery.dataTables.css" rel="stylesheet" type="text/css" />';
 	<script src="<?= $this->config->base_url() ?>js/jquery.js" type="text/javascript"></script>
 	<script src="<?= $this->config->base_url() ?>js/jquery.datetimepicker.js" type="text/javascript"></script>
 </head>
@@ -34,10 +34,13 @@
 <?php
 	if($_SERVER['HTTP_HOST']=='129.3.252.99')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
+
+echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.min.js" type="text/javascript"></script>';
 ?>
+
 <script type="text/javascript">
 	$( function () {
-		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
+		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });		
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
 		$('.timepick').datetimepicker({ format:'H:i', datepicker:false });
 		
@@ -50,6 +53,20 @@
 		$('#please_wait').removeClass('hidden');
 		$('#colorboxcontent').addClass('hidden');
 	}
+
+	$(document).ready(function(){
+		$('.datatable').DataTable();
+
+		$('ul.tabs li').click(function(){
+			var tab_id = $(this).attr('data-tab');
+
+			$('ul.tabs li').removeClass('current');
+			$('.tab-content').removeClass('current');
+
+			$(this).addClass('current');
+			$("#"+tab_id).addClass('current');
+		});		
+	})
 </script>
 </body>
 </html>

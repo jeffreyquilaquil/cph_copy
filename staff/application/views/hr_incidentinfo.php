@@ -119,7 +119,6 @@
 <div> 
 
 <?php foreach ($HrIncident as $key => $value): ?>
-	adfasf
 <?php endforeach ?>
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">

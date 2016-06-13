@@ -51,8 +51,10 @@ $active_record = TRUE;
 $db['default']['hostname'] = 'sql01.tatepublishing.net';
 $db['default']['username'] = 'cph_app01';
 $db['default']['password'] = '40n6LtpCmqT7';
+
 $db['default']['database'] = 'careerph_prod';
 $db['default']['dbdriver'] = 'mysqli';
+
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = FALSE;
 $db['default']['db_debug'] = TRUE;
