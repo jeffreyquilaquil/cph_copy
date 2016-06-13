@@ -37,7 +37,7 @@ if($host == 'careerph.tatepublishing.net'){
         $config['devmode'] = true; //change to false if you want to use live database
         $config['showProfiler'] = false;
         $config['timeCardTest'] = true;
--}
+}
 
 
 /*
