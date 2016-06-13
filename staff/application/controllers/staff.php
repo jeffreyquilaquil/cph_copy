@@ -4351,16 +4351,16 @@ class Staff extends MY_Controller {
 	
 	function test(){
 		
-		$id = $this->uri->segment(2);
-		var_dump($id);
-		
-		$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');
-			echo '<pre>';
-		var_dump($med_person_id);
-		foreach( $med_person_id as $key => $val ){
-			var_dump($val->empID);
-		}
-        echo '</pre>';
+		// $today = date_create(date('Y-m-d'));
+		// dd($today, false);
+		// $twodays = date_add($today, date_interval_create_from_date_string('2 days') );
+		// $twodays = date_format( $twodays, 'Y-m-d' );
+		// dd($twodays);
+		$info->name = 'Marjune';
+		$info->gender = 'M';
+		$info->endDate = '2016-06-15';
+		$info->supEmail = 'marjune.abellana@tatepublishing.net';
+		$this->emailM->emailSeparationDateAdvanceNotice( $info );
     }
 	public function reports(){
 		$data['content'] = 'reports';
@@ -4411,6 +4411,7 @@ class Staff extends MY_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
+
 
 	public function hdmf(){
 		$data['content'] = 'hdmf_loan';
@@ -4585,6 +4586,7 @@ class Staff extends MY_Controller {
 			return TRUE;
 		}
 	}
+
 
 	
 

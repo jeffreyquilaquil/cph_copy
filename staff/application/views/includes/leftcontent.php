@@ -74,13 +74,21 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	
 	echo '<ul id="leftMenu">';
 		if($this->user->username == $row->username){
+    		echo '<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask a Question</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>';
 			echo '<li><a href="http://employee.tatepublishing.net/hr/code-of-conduct-and-policy-manual-2015-faqs/" target="_blank">Tate Code of Conduct</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'fileleave/" class="iframe">File for a Leave/Offset</a></li>';
 			
-			if(isset($row->empStatus) && $row->empStatus=='probationary')
+			if(isset($row->empStatus) && $row->empStatus=='probationary'){
 				echo '<li><a href="'.$this->config->base_url().'evaluationself/" class="iframe">Submit Self-Evaluation</a></li>';
+			}
+			//echo '<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>';
+			//echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
+			//echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>';
+			//echo '<li><a href="'.$this->config->base_url().'medrequest/" class="iframe">Request for Medicine Reimbursement</a></li>';
 			
+			
+	
 			//echo '<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>';
 			//echo '<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>';
@@ -102,13 +110,14 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		if((($content!='staffinfo' && $this->uri->segment(1)!='timecard') || ($content=='staffinfo' && $current=='myinfo')) && ($this->access->accessFullHR==true || $this->user->level>0)){
 			echo '<li><a href="'.$this->config->base_url().'generatecode/" class="iframe">Generate Code</a></li>';
 			echo '<li><a href="'.$this->config->item('career_url').'/jobrequisition.php" target="_blank">Request for Job Requisition</a></li>';		
+			
 		}
 				
 		if($this->access->accessFull==true)
 			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
-	
-		echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';	
-		echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
+			echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';		
+			echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
+
 	echo '</ul>';	
 	echo '</center>';
 	

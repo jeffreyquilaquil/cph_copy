@@ -13,6 +13,7 @@
 	echo '<link href="'.$this->config->base_url().'css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/colorbox.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/main.style.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/balloon.css" rel="stylesheet" type="text/css" />';
 	
 	if(isset($showtemplatefull))
 		echo '<link href="'.$this->config->base_url().'css/templatefull.style.css" rel="stylesheet" type="text/css" />';
@@ -164,7 +165,20 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 
 			$(this).addClass('current');
 			$("#"+tab_id).addClass('current');
-		});			
+
+		});	
+
+		$('ul.settings_tabs li').click(function(){
+			var tb_id = $(this).attr('dt-tab');
+
+			$('ul.settings_tabs li').removeClass('curr');
+			$('.tab-cont').removeClass('curr');
+
+			$(this).addClass('curr');
+			$("#"+tb_id).addClass('curr');
+		})
+
+	
 	});	
 
 	function displaypleasewait(){
