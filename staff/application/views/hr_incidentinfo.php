@@ -216,9 +216,9 @@
 
 	<br>
 
-	<!-- When user access is full/hr/finance and his/her incident is new/active -->
-	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true)&&
-			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
+	<!-- When user access is full/hr/finance and his/her incident is new/active --> 
+	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true) &&
+			(in_array( $this->uri->segment(4), ['new', 'active', 'onproc'] ) ) ) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
 
