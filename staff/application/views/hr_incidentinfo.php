@@ -49,7 +49,16 @@
 				?>
 			</td>
 		</tr>
+		<!-- assigning of category -->
+		<?php if( $this->user->empID != $ticket->cs_post_agent ){ ?>
 		
+		<tr>
+			<td>Assigned to</td>
+			<td>
+				<?php echo $all_staff_empID[ $ticket->cs_post_agent ]->name; ?>
+			</td>
+		</tr>
+		<?php } //end assigned to ?>
 		<?php if($this->uri->segment(4)== 'new'){?> 
 		
 		<?php }elseif($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'resolved'){ ?>
@@ -74,16 +83,7 @@
 				</select>
 			</td>
 		</tr>
-		<!-- assigning of category -->
-		<?php if( $this->user->empID != $ticket->cs_post_agent ){ ?>
 		
-		<tr>
-			<td>Assigned to</td>
-			<td>
-				<?php echo $all_staff_empID[ $ticket->cs_post_agent ]->name; ?>
-			</td>
-		</tr>
-		<?php } //end assigned to ?>
 		<!-- choosing priority level & resolved date -->
 		<tr>
 			<td>Choose priority level & Resolved date</td>
