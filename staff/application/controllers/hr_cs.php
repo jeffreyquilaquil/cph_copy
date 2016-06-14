@@ -204,11 +204,11 @@
  						} 
 					}
 
-					if( $ticket->reply_empUser == $empuser AND $ticket->incident_status == 1 ){
+					if( $ticket->hr_own_empUSER == $empuser AND $ticket->incident_status == 1 ){
 						$data['Canceltransfer'][] = $ticket;	
 					}
 
-					if( $ticket->reply_empUser == $empuser ){
+					if( $ticket->hr_own_empUSER == $empuser ){
 						$data['MyTicket'][] = $ticket;
 					}
 				
