@@ -74,6 +74,16 @@
 				</select>
 			</td>
 		</tr>
+		<!-- assigning of category -->
+		<?php if( $this->user->empID != $ticket->cs_post_agent ){ ?>
+		
+		<tr>
+			<td>Assigned to</td>
+			<td>
+				<?php echo $all_staff_empID[ $ticket->cs_post_agent ]->name; ?>
+			</td>
+		</tr>
+		<?php } //end assigned to ?>
 		<!-- choosing priority level & resolved date -->
 		<tr>
 			<td>Choose priority level & Resolved date</td>
@@ -143,7 +153,7 @@
 		<tr>
 			<td style="border: solid 1px #be4b48;">
 				<div class="hr_msg_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float:right;">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>	
 				<div class="messages">		
@@ -178,7 +188,7 @@
 		<tr>
 			<td style="border: solid 1px black;">
 				<div class="internal_notes_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float: right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>
 				<div class="messages">
