@@ -82,25 +82,30 @@ if($this->user->access == "exec"){
 	  	//dd($this->access);
 
 	  	// Title & access in new tab
-	  	if($this->access->accessFull == true){
-			$NewIncident = $NewIncidentFull;
-			$ActiveIncident = $ActiveIncidentFull;
-			$ResolveIncident = $ResolveIncidentFull;
-			$CancelIncident = $CancelIncidentFull;
-			$title = "Admin HelpDesk";
-		} else if($this->access->accessHR == true ){
+	  	
+		
+		if($this->access->accessHR == true ){
 	  		$NewIncident = $NewIncidentHR;
 	  		$ActiveIncident = $ActiveIncidentHR;
 	  		$ResolveIncident = $ResolveIncidentHR;
 	  		$CancelIncident = $CancelIncidentHR;
 	  		$title = "HR HelpDesk";
-	  	} else if($this->access->accessFinance == true ){
+	  	} 
+	  	if($this->access->accessFinance == true ){
 	  		$NewIncident = $NewIncidentAcc;
 	  		$ActiveIncident = $ActiveIncidentAcc;
 	  		$ResolveIncident = $ResolveIncidentAcc;
 	  		$CancelIncident = $CancelIncidentAcc;
 	  		$title = "Accounting HelpDesk";
 	  	}
+	  	if($this->access->accessFull == true){
+			$NewIncident = $NewIncidentFull;
+			$ActiveIncident = $ActiveIncidentFull;
+			$ResolveIncident = $ResolveIncidentFull;
+			$CancelIncident = $CancelIncidentFull;
+			$title = "Admin HelpDesk";
+		} 
+
 	?>
 
 <!-- hr help desk tabs -->
@@ -143,7 +148,7 @@ if($this->user->access == "exec"){
 
 			<?php 
 
-	
+
 			foreach ($MyTicket as $myticket_key => $myticket) { ?>
 
 			<tr>
