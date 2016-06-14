@@ -1,7 +1,8 @@
 
-<div class="inciden_info"> 
+<div class="incident_info"> 
 
-
+<?php foreach ($HrIncident as $key => $value): ?>
+<?php endforeach ?>
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
@@ -212,7 +213,7 @@
 	<br>
 
 	<!-- When user access is full/hr/finance and his/her incident is new/active -->
-	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true )&&
+	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true)&&
 			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
