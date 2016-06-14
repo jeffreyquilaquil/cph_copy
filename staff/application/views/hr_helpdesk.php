@@ -66,6 +66,9 @@ if($this->user->access == "exec"){
 	.tab-cont.curr{
 		display: inherit;
 	}
+	.tab_indicator{
+		font-weight: bold; color: darkred;
+	}
  
 </style>
 	
@@ -76,44 +79,28 @@ if($this->user->access == "exec"){
 	  	$CancelIncident = array();
 	  	$title = '';
 
+	  	//dd($this->access);
+
 	  	// Title & access in new tab
-	  	if($this->user->access == "hr"){
-	  		$NewIncident = $NewIncidentHR;
-	  		$title = "HR HelpDesk";
-	  	}else if($this->user->access == "finance"){
-	  		$NewIncident = $NewIncidentAcc;
-	  		$title = "Accounting HelpDesk";
-	  	}else if($this->user->access == "full"){
+	  	if($this->access->accessFull == true){
 			$NewIncident = $NewIncidentFull;
-			$title = "Admin HelpDesk";
-		}
-
-		// Access in active tab
-		if($this->user->access == "hr"){
-	  		$ActiveIncident = $ActiveIncidentHR;
-	  	}else if($this->user->access == "finance"){
-	  		$ActiveIncident = $ActiveIncidentAcc;	
-	  	}else if($this->user->access == "full"){
 			$ActiveIncident = $ActiveIncidentFull;
-		}
-
-		// Access in resolved tab
-		if($this->user->access == "hr"){
-	  		$ResolveIncident = $ResolveIncidentHR;
-	  	}else if($this->user->access == "finance"){
-	  		$ResolveIncident = $ResolveIncidentAcc;	
-	  	}else if($this->user->access == "full"){
 			$ResolveIncident = $ResolveIncidentFull;
-		}
-
-		// Access in close tab
-		if($this->user->access == "hr"){
-	  		$CancelIncident = $CancelIncidentHR;
-	  	}else if($this->user->access == "finance"){
-	  		$CancelIncident = $CancelIncidentAcc;	
-	  	}else if($this->user->access == "full"){
 			$CancelIncident = $CancelIncidentFull;
-		}
+			$title = "Admin HelpDesk";
+		} else if($this->access->accessHR == true ){
+	  		$NewIncident = $NewIncidentHR;
+	  		$ActiveIncident = $ActiveIncidentHR;
+	  		$ResolveIncident = $ResolveIncidentHR;
+	  		$CancelIncident = $CancelIncidentHR;
+	  		$title = "HR HelpDesk";
+	  	} else if($this->access->accessFinance == true ){
+	  		$NewIncident = $NewIncidentAcc;
+	  		$ActiveIncident = $ActiveIncidentAcc;
+	  		$ResolveIncident = $ResolveIncidentAcc;
+	  		$CancelIncident = $CancelIncidentAcc;
+	  		$title = "Accounting HelpDesk";
+	  	}
 	?>
 
 <!-- hr help desk tabs -->
@@ -121,11 +108,11 @@ if($this->user->access == "exec"){
 
 	<h2><?php echo $title; ?></h2>
 
-	<li class="dbold tab-link current" data-tab="tab-0">My Ticket</li>
-	<li class="dbold tab-link" data-tab="tab-1">New <span style="font-weight: bold; color: darkred;"><?php if(count($NewIncident)=='0'){}else{echo '('.count($NewIncident).')'; } ?></span></li>
-	<li class="dbold tab-link" data-tab="tab-2">Active</li>
-	<li class="dbold tab-link" data-tab="tab-3">Resolved</li>
-	<li class="dbold tab-link" data-tab="tab-4">Closed</li>
+	<li class="dbold tab-link current" data-tab="tab-0">My Ticket <span class="tab_indicator"><?php echo (count($MyTicket) > '0') ? '('.count($MyTicket).')' : '';  ?></span></li>
+	<li class="dbold tab-link" data-tab="tab-1">New <span class="tab_indicator"><?php echo (count($NewIncident) > '0') ? '('.count($NewIncident).')' : '';  ?></span></li>
+	<li class="dbold tab-link" data-tab="tab-2">Active <span class="tab_indicator"><?php echo (count($ActiveIncident) > '0') ? '('.count($ActiveIncident).')' : ''; ?></span></li>
+	<li class="dbold tab-link" data-tab="tab-3">Resolved <span class="tab_indicator"><?php echo (count($ResolveIncident) > '0') ? '('.count($ResolveIncident).')' : ''; ?></span></li>
+	<li class="dbold tab-link" data-tab="tab-4">Closed <span class="tab_indicator"><?php echo (count($CancelIncident) > '0') ? '('.count($CancelIncident).')' : ''; ?></span></li>
 
 	<div class=" dbold options-right">
 		<a class="other_links" id="active_hide" href="<?php echo $this->config->base_url(); ?>hr_cs/hr_custom_satisfaction">HR/Accounting Customer CSatResults</a>
@@ -154,7 +141,10 @@ if($this->user->access == "exec"){
 			</tr>
 		</thead>
 
-			<?php foreach ($MyTicket as $myticket_key => $myticket) { ?>
+			<?php 
+
+	
+			foreach ($MyTicket as $myticket_key => $myticket) { ?>
 
 			<tr>
 				<td class="td_hover">
@@ -348,7 +338,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $active_val->hr_own_empUSER; ?></td>				
+				<td><?php echo $all_staff[$active_val->hr_own_empUSER]->name; ?></td>				
 			</tr>
 		<?php } ?>    	 
 	</table>

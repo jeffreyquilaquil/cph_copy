@@ -340,7 +340,7 @@ class Commonmodel extends CI_Model {
 		return $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
 	}
 
-	public function _getAllStaff($key){
+	public function _getAllStaff($key, $condition = ''){
 
 		$tmp = array();
 		$all_staff = $this->dbmodel->getQueryResults('staffs', 'empID, username, lname, fname, CONCAT(fname, " ", lname) AS "name", newPositions.title, shift, dept, (SELECT CONCAT(fname," ",lname) AS name FROM staffs s WHERE s.empID=staffs.supervisor AND staffs.supervisor!=0 LIMIT 1) AS leader, staffHolidaySched', (($condition=="")?'1':$condition), 'LEFT JOIN newPositions ON posId=position', 'lname');
