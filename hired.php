@@ -192,7 +192,7 @@ if(isset($_POST) AND !empty($_POST)){
 		$reqEmail = $ptDb->selectSingleQuery('staff', 'email' , 'username="'.$jobReq['requestor'].'"');	
 				
 		if($_POST['office'] == 'cebu'){
-			$to = 'helpdesk.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,'.$supEmail.','.$reqEmail;
+			$to = 'helpdesk.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,clinic.cebu@tatepublishing.net,raymond.ordono@tatepublishing.net,'.$supEmail.','.$reqEmail;
 			$from = 'kenneth.bagao@tatepublishing.net';			
 		}else{
 			$to = 'helpdesk.us@tatepublishing.net';
