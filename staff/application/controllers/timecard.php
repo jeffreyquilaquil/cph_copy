@@ -787,7 +787,7 @@ class Timecard extends MY_Controller {
 		$data['isUnder'] = $this->commonM->checkStaffUnderMe($data['row']->username);
 		$data['staffHoliday'] = $this->dbmodel->getSingleField('staffs', 'staffHolidaySched', 'empID="'.$id.'"');
 		$data['logtypeArr'] = $this->textM->constantArr('timeLogType');
-				
+		//$this->textM->aaa($data, false);
 		$this->load->view('includes/templatecolorbox', $data);		
 	}
 	
@@ -1442,6 +1442,9 @@ class Timecard extends MY_Controller {
 					exit;
 				}else if($_POST['submitType']=='removePayslip'){
 					$this->dbmodel->updateQueryText('tcPayslips', 'pstatus=0', 'payslipID="'.$_POST['payslipID'].'"');
+					//notes
+					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay payslip has been removed.', 1, 0, $this->user->empID);
+					//end notes
 					exit;
 				}else if($_POST['submitType']=='savecomputation'){ //saving computation				
 					unset($_POST['submitType']);						
@@ -1462,9 +1465,14 @@ class Timecard extends MY_Controller {
 					if(!empty($lastpayID)){
 						$this->dbmodel->updateQuery('tcLastPay', array('lastpayID'=>$lastpayID), $_POST);
 					}else{
+						$_POST['status'] = 1;
 						$lastpayID = $this->dbmodel->insertQuery('tcLastPay', $_POST);
 					}
 					
+					//notes
+					$this->commonM->addMyNotif($_POST['empID_fk'], 'Last pay computation has been updated.', 1, 1, $this->user->empID);
+					//end notes
+
 					echo $lastpayID;
 					exit;
 				}
@@ -1476,7 +1484,9 @@ class Timecard extends MY_Controller {
 				if(isset($_GET['empID'])){
 					$empID = $_GET['empID'];
 				}
-
+				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){
+					$data['content'] = 'v_timecard/v_uploadlastpay';
+				}
 				$data['pageType'] = 'showpay';
 				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
 				if(count($data['payInfo'])==0) $data['access'] = false;
@@ -1588,6 +1598,7 @@ class Timecard extends MY_Controller {
 				}									
 			}
 		}
+		// $this->textM->aaa($data);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -1649,13 +1660,111 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/template', $data);
 	}
 
+	public function uploadlastpay(){
+		$data['content'] = 'v_timecard/v_uploadlastpay';
+		//upload files
+		if( $this->input->post('lastPayID') ){
+
+			$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('lastPayID'), 'LEFT JOIN staffs ON empID=empID_fk' );
+			
+
+			if( isset($_FILES) AND !empty($_FILES) ){
+				$files = $_FILES;					
+				/* config data */
+				$upload_config['upload_path'] = FCPATH .'uploads/lastpay_docs';
+				$upload_config['allowed_types'] = 'gif|jpg|png|pdf';
+				$upload_config['max_size']	= '2048';
+				$upload_config['overwrite']	= 'FALSE';						
+				$this->load->library('upload');
+
+				//check how many to upload
+				$upload_count = count( $_FILES['lastpay_doc']['name'] );
+				for( $x = 0; $x < $upload_count; $x++ ){
+					$_FILES['to_upload']['name'] = $files['lastpay_doc']['name'][$x];
+					$_FILES['to_upload']['type'] = $files['lastpay_doc']['type'][$x];
+					$_FILES['to_upload']['tmp_name'] = $files['lastpay_doc']['tmp_name'][$x];
+					$_FILES['to_upload']['error'] = $files['lastpay_doc']['error'][$x];
+					$_FILES['to_upload']['size'] = $files['lastpay_doc']['size'][$x];
+					
+					$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+					$uniq_id = uniqid();
+					$upload_config['file_name'] = $last_pay_info->empID_fk .'_'. $uniq_id .'_'. $x .'.'.$ext;
+					
+					$this->upload->initialize( $upload_config );
+					
+					if( ! $this->upload->do_upload('to_upload') ){
+						$error_data[$x] = $this->upload->display_errors('<span>', '</span>');
+					} else {
+						$upload_data[$x] = $this->upload->data();
+					}
+				}
+			}
+			//save data
+			if( isset($error_data) ){
+				unset($data['upload_data']);
+				$data['upload_error'] = implode('<br/>', $error_data);				
+			} else if( isset($upload_data)  ){
+
+				foreach( $upload_data as $data_upload ){
+					$filenames[] = $data_upload['file_name'];
+				}
+
+				$filename = json_encode($filenames);
+
+				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
+
+				//notes
+				$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `Released`.', 1, 1, $this->user->empID);
+				//end notes
+
+				$data['upload_error'] = 'Document has been uploaded.';
+				$data['js'] = true;
+			} 
+			
+		}
+		//end upload files
+		
+		$this->load->view('includes/templatecolorbox', $data);		
+	}
+
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
+		$data['dataTableProperties'] = '{columnDefs:[{ targets: 8,  orderDataType: "dom-select"}]}';
+		
+		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
+
 		
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
-				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', '1', 'LEFT JOIN staffs ON empID=empID_fk');				
+				$data['error_data'] = '';
+				$condition = '1';
+				if( $this->input->is_ajax_request() ){
+					//update					
+					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
+
+
+					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
+					//notes
+					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $this->input->post('status') ].'`.', 1, 1, $this->user->empID);
+					//end notes
+
+					
+					exit();
+				}
+
+				
+				if( $this->input->post('date_range') ) {
+					if( !empty($this->input->post('dateFrom')) AND !empty($this->input->post('dateTo')) ){
+						$dateFrom = date('Y-m-d', strtotime( $this->input->post('dateFrom')) );
+						$dateTo = date('Y-m-d', strtotime( $this->input->post('dateTo')) );
+						$condition = '(dateGenerated BETWEEN "'.$dateFrom.'" AND "'.$dateTo.'")';
+					} else {
+						$data['error_data'] = '<span class="error">Please specify date range.</span>';
+					}
+				}
+
+				$data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', $condition, 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated DESC');				
 			}
 		}
 		
@@ -1857,7 +1966,7 @@ class Timecard extends MY_Controller {
 			$separated_employee = array();
 			$payInfo_ = array();
 			foreach( $payInfo as $pay_ ){			
-				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate > $pay_->payroll_start AND $pay_->endDate < $pay_->payroll_end ) ){
+				if( ( strcmp($pay_->endDate,'0000-00-00') !== 0 ) AND !empty($pay_->lastPayID) AND ( $pay_->endDate >= $pay_->payroll_start AND $pay_->endDate <= $pay_->payroll_end ) ){
 					$separated_employee[ $pay_->empID_fk ] = $pay_;
 				} else {
 					$payInfo_[] = $pay_;

@@ -60,7 +60,7 @@
 			<td>Supporting Documents</td>
 			<td>
 				<?php 
-					$docs_url = json_decode( $employee_info->supporting_docs_url );
+					$docs_url = json_decode( stripslashes($employee_info->supporting_docs_url) );
 					foreach( $docs_url as $key => $url ){						
 						$_url = str_replace(FCPATH, '', $url);
 						echo '<a href="'. $this->config->base_url() . $_url .'" target="_blank" style="margin-right: 5px;"><img src="'. $this->config->base_url() .'css/images/pdf-icon.png" /></a>';

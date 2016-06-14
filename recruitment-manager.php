@@ -117,7 +117,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
-				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -136,7 +135,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$aa['id'].'">'.$aa['name'].'</a></td>
 							<td><a href="mailto:'.$aa['email'].'">'.$aa['email'].'</a></td>
 							<td>'.$aa['mnumber'].'</td>
-							<td>'.$aa['last_employer'].'</td>
 							<td>'.$aa['title'].'</td>
 							<td>'.date('Y-m-d',strtotime($aa['date_created'])).'</td>
 							<td>'.$aa['processType'].' '.$txt.'</td>';
@@ -168,7 +166,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
-				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -187,7 +184,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
-							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>';
@@ -219,7 +215,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
-				<th>Previous Employer</th>
 				<th>Position</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -237,7 +232,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
-							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>
@@ -263,7 +257,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
-				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Status</th>
@@ -280,7 +273,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 						<td><a href="view_info.php?id='.$info['id'].'">'.$info['name'].'</a></td>
 						<td><a href="mailto:'.$info['email'].'">'.$info['email'].'</a></td>
 						<td>'.$info['mnumber'].'</td>
-						<td>'.$info['last_employer'].'</td>
 						<td>'.$info['title'].$nw.'</td>
 						<td>'.date('Y-m-d', strtotime($info['date_created'])).'</td>';
 				if(empty($info['processText'])) echo '<td>'.$info['processType'].' <span style="color:green;">[in progress]</span></td>';
@@ -309,7 +301,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 				<th>Applicant's Name</th>
 				<th>Email</th>
 				<th>Contact Number</th>
-				<th>Previous Employer</th>
 				<th>Position Applied</th>
 				<th>Date Applied</th>
 				<th>Recruitment Status</th>
@@ -328,7 +319,6 @@ $infoQuery = $db->selectQuery("applicants", "applicants.id, CONCAT(fname, ' ', l
 					echo '<td><a href="view_info.php?id='.$a['id'].'">'.$a['name'].'</a></td>
 							<td><a href="mailto:'.$a['email'].'">'.$a['email'].'</a></td>
 							<td>'.$a['mnumber'].'</td>
-							<td>'.$a['last_employer'].'</td>
 							<td>'.$a['title'].'</td>
 							<td>'.date('Y-m-d', strtotime($a['date_created'])).'</td>
 							<td>'.$a['processType'].' '.$txt.'</td>';

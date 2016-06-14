@@ -423,6 +423,47 @@ class Textmodel extends CI_Model {
 		return $disp;
 	}
 	
+	//kudos table
+	public function kudosRequestTableDisplay($data, $hide = false, $all = FALSE, $tableClass = '', $display = TRUE){
+		$hiddenClass = (!$display)? "hidden": '';
+		$displayTable = "<div class = 'table".$tableClass." $hiddenClass'>
+			<table class='datatable tableInfo fs11px'>
+				<thead>
+					<tr><th>Requests</th><th>Name of Employee</th><th>Name of Requestor</th><th>Reason for KBR</th><th>Amount</th><th>Date Submitted</th><th>Status</th></tr>
+				</thead>";
+
+		$displayTable .= "<tbody>";
+		foreach ($data as $key => $value) {
+			$show = TRUE;
+			if($all && $hide && $value->kudosReceiverSupID != $this->user->empID ){	
+				if( !$this->access->accessFull && !$this->access->accessFinance ){
+					$show = FALSE;
+				}
+			}
+			
+			if( $show ){
+				$displayTable .= "<tr>
+						<td>".$value->kudosRequestID."</td>
+						<td>".$value->staffName."</td>
+						<td>".$value->requestorName."</td>
+						<td>".$value->kudosReason."</td>
+						<td>".$value->kudosAmount."</td>
+						<td>".$value->dateRequested."</td>";
+					if(!$display)
+						$displayTable .= "<td>$value->statusName</td>";
+					else{
+						$displayTable .= "<td><a href='".$this->config->base_url()."kudosrequest/evaluation/".$value->kudosRequestID."/".$value->kudosRequestStatus."' class='iframe'>".$value->statusName."</a></td>
+					
+						</tr>
+					";
+				}
+			}
+		}
+		$displayTable .= '</tbody>';
+		$displayTable .= "</table></div>";
+
+		return $displayTable;
+	}
 	
 	
 	//assign $time to empty if you dont want to call customTimeArrayByCat function. Please call customTimeArrayByCat first if this is loop
@@ -863,9 +904,10 @@ class Textmodel extends CI_Model {
 		} else if( $a == 'hdmf_loan_status' ){
 			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
 
-		}
-		elseif($a == 'allowances'){
+		} else if($a == 'allowances'){
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if( $a == 'last_pay_status' ){
+			$arr = array('Pending requirements', 'For review', 'For releasing', 'Released');
 		}
 		
 		return $arr;

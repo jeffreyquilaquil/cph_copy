@@ -102,7 +102,8 @@ class Emailmodel extends CI_Model {
 			($info->accessEndDate=='0000-00-00' && $info->endDate!='0000-00-00' && strtotime($info->endDate)<strtotime($dateToday))
 		){
 			$this->emailM->emailUrgentTerminateAllAccess($info);
-		}	
+		}
+		
 	}
 	
 	//send email if end date is today
@@ -125,8 +126,14 @@ class Emailmodel extends CI_Model {
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');		
 
+		
+	}
+
+	//advance notice
+	public function emailSeparationDateAdvanceNotice($info){
 		$pronoun = ( $info->gender == 'M' ) ? 'he' : 'she';
 		$possesive_pronoun = ( $info->gender == 'M' ) ? 'his' : 'her';
+		$sujet = 'Separation Date Alert ('.$info->name.')';
 		//send email to leaders
 		$sender = 'careers.cebu@tatepublishing.net';
 		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
@@ -135,19 +142,24 @@ class Emailmodel extends CI_Model {
 		<p>A separation date has been entered for '. $info->name .' and the last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
 		<p>This is an automatic notification using data that is captured on CareerPH system.</p>
 		<p style="text-style: underline;">Please cascade this information to anyone in your team who may need to be informed.</p>
-		<br/><br/>
+		<p>Thank you very much,</p>
+		<p>The Human Resources Team</p>';
 
-		<p style="font-weight: bold;">Dear immediate supervisor '.$info->supName.'</p>
+		$this->emailM->sendEmail($sender, $receiver, $sujet, $msg, 'CareerPH');
+		
+		$msg = '
+		<p style="font-weight: bold;">Dear '.$info->supName.'</p>
 		<p>Please reply to this email with information on:<br/>
 		<ul>
 			<li>who will be responsible for the tasks that were assigned to '.$info->name.'</li>
 			<li>whether a requisition will be opened to find a replacement.</li>
 			<li>other process changes related to this offboarding.</li>
 		</ul>
+		<p>Kindly fill out the form below for your feedback on the performance of '. $info->name .'. Your evaluation is needed to complete '.$possesive_pronoun .' exit clearance. Please be objective in your evaluation. <a href="http://goo.gl/forms/ybu8ny16Cx72U17n2">http://goo.gl/forms/ybu8ny16Cx72U17n2</a></p>
 		<p>Thank you very much,</p>
 		<p>The Human Resources Team</p>
 		';
-		$this->emailM->sendEmail($sender, $receiver, $sujet, $msg, 'CareerPH');
+		$this->emailM->sendEmail($sender, $info->supEmail, $sujet, $msg, 'CareerPH');
 	}
 	
 	//send email if access end date is today AND deactivate staff and PT accesses
@@ -206,7 +218,27 @@ class Emailmodel extends CI_Model {
 		$corps .= '<p><br/><br/><i>THIS IS FROM CAREERPH</i></p>';
 		
 		$this->emailM->sendEmail($de, $sur, $sujet, $corps, 'CareerPH');
+
+
+		//for employee
+		$from = 'careers.cebu@tatepublishing.net';
+		$to = $info->email;
+		$subject = 'End of Employment Notice';
+
+		$msg = '<p>Hello '.$info->name.',</p>';
+		$msg .= '<p>This is to confirm that HR has received your resignation letter duly approved by your immediate supervisor. Careerph is now updated with your effective separation date which is on '. date('F d, Y', strtotime($info->endDate) ).'.</p>';
+		$msg .= '<p>Please come to HR two days before your last day of employment and claim two copies of your exit clearance form. Note that it is your responsibility to complete the exit clearance form. Your last pay shall be release thirty (30) days after the exit clearance form is completed. For addition information, please visit <a href=" http://employee.tatepublishing.net/hr/exit-process/" alt="http://employee.tatepublishing.net/hr/exit-process/">http://employee.tatepublishing.net/hr/exit-process/</a>';
+		$msg .= '<p>Reply to this email if you have questions about the exit process.</p>';
+		$msg .= '<p>Best Regards,</p>';
+		$msg .= '<p>Human Resources Department</p>';
+
+		$this->emailM->sendEmail($from, $to, $subject, $msg, 'CareerPH');
+
+		//add notification
+		$this->load->model('commonmodel', 'commonM');
+		$this->commonM->addMyNotif($info->empID, $msg, 0, 1);
 	}
+
 	
 	//send email if access and end date entered on or before
 	public function emailUrgentTerminateAllAccess($info){

@@ -13,6 +13,7 @@
 	echo '<link href="'.$this->config->base_url().'css/jquery.datetimepicker.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/colorbox.css" rel="stylesheet" type="text/css" />';
 	echo '<link href="'.$this->config->base_url().'css/main.style.css" rel="stylesheet" type="text/css" />';
+	echo '<link href="'.$this->config->base_url().'css/balloon.css" rel="stylesheet" type="text/css" />';
 	
 	if(isset($showtemplatefull))
 		echo '<link href="'.$this->config->base_url().'css/templatefull.style.css" rel="stylesheet" type="text/css" />';
@@ -108,7 +109,40 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
 		$(".iframesmall").colorbox({iframe:true, width:"40%", height:"60%"});
 		$(".inline").colorbox({inline:true, width:"40%", height:"60%"});
-		$('.datatable').dataTable();		
+		$('.datatable').dataTable(<?php echo (isset($dataTableProperties) ? $dataTableProperties:''); ?>);
+		
+		/* Create an array with the values of all the input boxes in a column */
+		$.fn.dataTable.ext.order['dom-text'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).val();
+		    } );
+		}
+		 
+		/* Create an array with the values of all the input boxes in a column, parsed as numbers */
+		$.fn.dataTable.ext.order['dom-text-numeric'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).val() * 1;
+		    } );
+		}
+		 
+		/* Create an array with the values of all the select options in a column */
+		$.fn.dataTable.ext.order['dom-select'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('select', td).val();
+		    } );
+		}
+		 
+		/* Create an array with the values of all the checkboxes in a column */
+		$.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col )
+		{
+		    return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+		        return $('input', td).prop('checked') ? '1' : '0';
+		    } );
+		}
+
 		
 		$('.datetimepick').datetimepicker({ format:'F d, Y H:00' });
 		$('.datepick').datetimepicker({ format:'F d, Y', timepicker:false });
@@ -131,7 +165,20 @@ echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="tex
 
 			$(this).addClass('current');
 			$("#"+tab_id).addClass('current');
-		});			
+
+		});	
+
+		$('ul.settings_tabs li').click(function(){
+			var tb_id = $(this).attr('dt-tab');
+
+			$('ul.settings_tabs li').removeClass('curr');
+			$('.tab-cont').removeClass('curr');
+
+			$(this).addClass('curr');
+			$("#"+tb_id).addClass('curr');
+		})
+
+	
 	});	
 
 	function displaypleasewait(){

@@ -607,6 +607,13 @@ class Timecardmodel extends CI_Model {
 								
 			}
 			
+			//check if the leave is without pay
+			if( $sArr['leaveStatus'] == 2 ){
+				$insArr['publishDeduct'] = 8;
+			}
+			
+
+
 			///INSERTION
 			$insArr['slogDate'] = $today;
 			$insArr['empID_fk'] = $empID;

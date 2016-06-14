@@ -2578,10 +2578,11 @@ class Staff extends MY_Controller {
 	
 	public function staffcis(){
 		$data['content'] = 'staffcis';
+		
 				
 		if($this->user!=false){
 			
-			if( $this->user->is_supervisor == 1 AND $this->access->myaccess[0] == "" ){
+			if( $this->user->levelID_fk > 0 AND $this->access->myaccess[0] == "" ){
 				
 				$data['supervisor'] = $this->dbmodel->getQueryResults('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, username, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=staffs.supervisor) AS supName, (SELECT CONCAT(fname," ",lname) AS n FROM staffs WHERE empID=preparedby) AS prepby, updatedby', 'status=0 AND preparedby IN ('.$this->user->empID.')', 'LEFT JOIN staffs ON empID=empID_fk');
 			} else if( $this->access->accessFullHR == true ){
@@ -4295,6 +4296,12 @@ class Staff extends MY_Controller {
 							unset($payslip_array['payStartOnce']);
 							unset($payslip_array['selectPayPercent']);
 							unset($payslip_array['medrequestID']);
+							unset($payslip_array['payName']);
+							unset($payslip_array['mainItem']);
+							unset($payslip_array['payCategory']);
+							unset($payslip_array['payType']);
+							unset($payslip_array['payCDto']);
+							
 						}
 						
 						
@@ -4344,16 +4351,16 @@ class Staff extends MY_Controller {
 	
 	function test(){
 		
-		$id = $this->uri->segment(2);
-		var_dump($id);
-		
-		$med_person_id = $this->dbmodel->getQueryArrayResults('staffs', 'empID', 'access LIKE "%med_person%"');
-			echo '<pre>';
-		var_dump($med_person_id);
-		foreach( $med_person_id as $key => $val ){
-			var_dump($val->empID);
-		}
-        echo '</pre>';
+		// $today = date_create(date('Y-m-d'));
+		// dd($today, false);
+		// $twodays = date_add($today, date_interval_create_from_date_string('2 days') );
+		// $twodays = date_format( $twodays, 'Y-m-d' );
+		// dd($twodays);
+		$info->name = 'Marjune';
+		$info->gender = 'M';
+		$info->endDate = '2016-06-15';
+		$info->supEmail = 'marjune.abellana@tatepublishing.net';
+		$this->emailM->emailSeparationDateAdvanceNotice( $info );
     }
 	public function reports(){
 		$data['content'] = 'reports';
@@ -4404,6 +4411,7 @@ class Staff extends MY_Controller {
 		
 		$this->load->view('includes/templatecolorbox', $data);
 	}
+
 
 	public function hdmf(){
 		$data['content'] = 'hdmf_loan';
@@ -4578,6 +4586,7 @@ class Staff extends MY_Controller {
 			return TRUE;
 		}
 	}
+
 
 	
 
