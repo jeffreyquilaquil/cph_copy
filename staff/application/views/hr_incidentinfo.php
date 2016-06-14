@@ -1,125 +1,7 @@
 
-<style type="text/css">
-	.note{
-		font-style: italic;
-		font-size: x-small;
-	}
-
-	.btn_ans{
-		background-color: #CCCCCC; 
-		font-weight: bold;
-		width: 100%;
-		padding: 3px;
-	}
-
-	.btn_ans_small{
-		background-color: #CCCCCC; 
-		font-weight: bold; padding: 3px;
-	}
-
-	input[type=text]{
-
-		width: 100%;
-
-	}
-
-	a{
-		text-decoration: underline;
-		cursor: pointer;
-	}
-
-	table{
-		width: 100%;
-	}
-
-	
-
-	hr{
-		border-top: 1px solid #ccc;
-	}
-
-	#remark_list {
-    	background-color:#FF868E;
-    	text-align:center;
-    	padding:5px;
-   	 	width:500px;
-    	float:left;
-    	-moz-border-radius: 2px;
-        -webkit-border-radius: 2px;
-         border-radius: 2px;
-	}
-
-	input[type="radio"] {
-	  margin-top: -1px;
-	  vertical-align: middle;
-	}
-
-	.urgent{
-		background-color: #c9302c; 
-		border-color: #ac2925; 
-		border-radius: 4px; 
-		color: #fff; 
-		padding: 3px 9px;
-		display: inline-block;
-	}
-
-	.need_attention{
-		 background-color: #ec971f; 
-		 border-color: #d58512; 
-		 border-radius: 4px; 
-		 color: #fff; 
-		 padding: 3px 9px;
-		 display: inline-block;
-	}
-
-	.not_urgent{
-		background-color: #449d44; 
-		border-color: #398439; 
-		border-radius: 4px; color: #fff; 
-		padding: 3px 9px;
-		display: inline-block;
-	}
-
-	.employee_msg_lbl{
-		background: #f0f9ff;
-		background: -moz-linear-gradient(top,  #f0f9ff 0%, #cbebff 47%, #b9d1ff 100%);
-		background: -webkit-linear-gradient(top,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
-		background: linear-gradient(to bottom,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0f9ff', endColorstr='#b9d1ff',GradientType=0 );
-		padding: 7px;
-	}
+<div class="inciden_info"> 
 
 
-	.hr_msg_lbl{
-
-		background: #febbbb;
-		background: -moz-linear-gradient(top,  #febbbb 0%, #fe9090 45%, #ffa7a6 100%);
-		background: -webkit-linear-gradient(top,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
-		background: linear-gradient(to bottom,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febbbb', endColorstr='#ffa7a6',GradientType=0 );
-		padding: 7px;
-		
-	}
-
-	.internal_notes_lbl{
-		background: #eeeeee;
-		background: -moz-linear-gradient(top,  #eeeeee 0%, #bebebe 100%);
-		background: -webkit-linear-gradient(top,  #eeeeee 0%,#bebebe 100%);
-		background: linear-gradient(to bottom,  #eeeeee 0%,#bebebe 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#bebebe',GradientType=0 );
-		padding: 7px;
-	}
-
-	.messages{
-		padding: 7px;
-	}
-
-</style>
-
-<div> 
-
-<?php foreach ($HrIncident as $key => $value): ?>
-<?php endforeach ?>
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
@@ -330,7 +212,7 @@
 	<br>
 
 	<!-- When user access is full/hr/finance and his/her incident is new/active -->
-	<?php if(($this->user->access == "full" || $this->user->access == "hr" || $this->user->access == "finance")&&
+	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true )&&
 			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
