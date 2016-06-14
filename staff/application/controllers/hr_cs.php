@@ -268,21 +268,26 @@
 
                 $data['all_staff'] = $this->commonM->_getAllStaff('username');
                 $data['all_staff_empID'] = $this->commonM->_getAllStaff('empID');
-                
+               
 
+            	$data['ticket'] = $this->dbmodel->getSingleInfo('hr_cs_post', 'hr_cs_post.*, s.fname, s.lname, n.title, n.dept, (SELECT CONCAT(fname, " ", lname) FROM staffs ss WHERE ss.empID = s.supervisor ) AS "supervisor", MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update', 'cs_post_id = '.$insedent_id, 'LEFT JOIN staffs s ON s.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN newPositions n ON n.posID = s.position LEFT JOIN hr_cs_msg ON cs_msg_postID_fk = cs_post_id');
+
+            	//$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_msg.cs_msg_attachment, hr_cs_post.cs_post_agent, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
+
+            	//$data['ticket'] = $data['HrIncident'][0];
             	
-
-            	$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_msg.cs_msg_attachment, hr_cs_post.cs_post_agent, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
-
-            	$data['ticket'] = $data['HrIncident'][0];
-            	
-            		$data['HrIncident'][0]->supervisor = $this->ask_hr->getdata('CONCAT(fname, " ", lname) AS name','staffs','empID ='.$data['HrIncident'][0]->supervisor)[0]->name;
+            	//	$data['HrIncident'][0]->supervisor = $this->ask_hr->getdata('CONCAT(fname, " ", lname) AS name','staffs','empID ='.$data['HrIncident'][0]->supervisor)[0]->name;
 
             	
             	//$this->textM->aaa($data['HrIncident'], false);
 
 
-            		$data['category'] = $this->ask_hr->getdata('categorys','assign_category');
+            		$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
+            		foreach($categories as $category){
+            			$data['categories'][$category->category_id] = $category->categorys;
+            		}
+
+            		$data['category'] = $categories;
             		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 
             		$checkRemark = $this->ask_hr->getdata('*','incident_rating','post_id = '.$insedent_id);
@@ -293,7 +298,7 @@
             			$return = 0;
             		}
             		$data['check_remark'] = $return;
-            	
+            		
 					$this->load->view('includes/templatecolorbox',$data);
             	
 
