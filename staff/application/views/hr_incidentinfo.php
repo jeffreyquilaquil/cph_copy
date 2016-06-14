@@ -1,11 +1,10 @@
 
 <div class="incident_info"> 
 
-<?php foreach ($HrIncident as $key => $value): ?>
-<?php endforeach ?>
+
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
-<input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
+<input type="hidden" id="categoryid" name="postid" value="<?php echo $ticket->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
 <input type="hidden" id="inci_datesubmited" value="<?php echo $value->cs_post_date_submitted; ?>">
 <input type="hidden" id="inci_lastupdate" value="<?php echo $value->last_update; ?>">
@@ -15,43 +14,38 @@
 <form id="custom_ans_form">
 	<table class="tableInfo">
 		<tr>
-			<td colspan="2"><h2>HR Incident Number <?php echo $value->cs_post_id; ?></h2></td>	
+			<td colspan="2"><h2>HR Incident Number <?php echo $ticket->cs_post_id; ?></h2></td>	
 		</tr>
 		<tr>
 			<td >Employee Name</td>
 			<input type="hidden" id="fullname" value="<?php echo $value->fname." ". $value->lname; ?>">
-			<td><?php echo $value->fname." ". $value->lname; ?> </td>
+			<td><?php echo $ticket->fname." ". $ticket->lname; ?> </td>
 		</tr>
 		<tr>
 			<td>Department</td>
-			<td><?php echo $value->dept; ?></td>
+			<td><?php echo $ticket->dept; ?></td>
 		</tr>
 		<tr>
 			<td>Position</td>
-			<td><?php echo $value->title; ?></td>
+			<td><?php echo $ticket->title; ?></td>
 		</tr>
 		<tr>
 			<td>Immediate Supervisor</td>
-			<td><?php echo $value->supervisor; ?></td>
+			<td><?php echo $ticket->supervisor; ?></td>
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
-			<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
+			<td><?php echo date_format(date_create($ticket->cs_post_date_submitted), 'F d, Y G:i a'); ?></td>
 		</tr>
 		<tr>
 			<td>Subject</td>
-			<td><?php echo $value->cs_post_subject; ?></td>
+			<td><?php echo $ticket->cs_post_subject; ?></td>
 		</tr>
 		<tr>
 			<td>Priority level</td>
 			<td>
-				<?php if($value->cs_post_urgency=='Urgent'){ 
-				   			echo "<div class=\"urgent\">$value->cs_post_urgency</div>";
-						}elseif($value->cs_post_urgency=='Need Attention'){
-							echo "<div class=\"need_attention\">$value->cs_post_urgency</div>";
-						}elseif($value->cs_post_urgency=='Not Urgent'){
-							echo "<div class=\"not_urgent\">$value->cs_post_urgency</div>";
-						}
+				<?php 
+				echo '<div class="'. str_replace(' ', '', strtolower($ticket->cs_post_urgency) ).'">'.$ticket->cs_post_urgency.'</div>';
 				?>
 			</td>
 		</tr>
@@ -61,7 +55,7 @@
 		<?php }elseif($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'resolved'){ ?>
 			<tr>
 				<td>Due date</td>
-				<td><?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
+				<td><?php echo date_format(date_create($ticket->due_date), 'F d, Y'); ?></td>
 			</tr>
 		<?php } ?>
 
@@ -115,7 +109,7 @@
 			<td style="border: solid 1px #4a7ebb;">
 				<div class="employee_msg_lbl">
 				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
-				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
+				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:i a'); ?></span>
 				</div>
 				<div class="messages">
 				<?php 
@@ -178,7 +172,7 @@
 		</tr>
 		<!-- internal notes -->
 		<?php } elseif($conve->cs_msg_type == 2){ 
-			if($this->access->myaccess[0] == 'full' || $this->access->myaccess[0] == 'hr' || $this->access->myaccess[0] == 'finance'){
+			if($this->access->accessFull == true || $this->access->accessHR == true| $this->access->accessFinance == true){
 
 		?>
 		<tr>
