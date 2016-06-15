@@ -650,7 +650,7 @@ $(document).ready(function() {
 
 			
 			
-		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
+		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc' || tab_typ == 'onproc'){
 			var new_stat = '';
 			if(status == 4){
 				var new_stat = 5;
