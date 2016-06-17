@@ -6,9 +6,9 @@
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
 <input type="hidden" id="categoryid" name="postid" value="<?php echo $ticket->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
-<input type="hidden" id="inci_datesubmited" value="<?php echo $value->cs_post_date_submitted; ?>">
-<input type="hidden" id="inci_lastupdate" value="<?php echo $value->last_update; ?>">
-<input type="hidden" id="cs_post_empID_fk" value="<?php echo $value->cs_post_empID_fk; ?>">
+<input type="hidden" id="inci_datesubmited" value="<?php echo $ticket->cs_post_date_submitted; ?>">
+<input type="hidden" id="inci_lastupdate" value="<?php echo $ticket->last_update; ?>">
+<input type="hidden" id="cs_post_empID_fk" value="<?php echo $ticket->cs_post_empID_fk; ?>">
 
 <!-- incident info form -->
 <form id="custom_ans_form">
@@ -18,7 +18,7 @@
 		</tr>
 		<tr>
 			<td >Employee Name</td>
-			<input type="hidden" id="fullname" value="<?php echo $value->fname." ". $value->lname; ?>">
+			<input type="hidden" id="fullname" value="<?php echo $ticket->fname." ". $ticket->lname; ?>">
 			<td><?php echo $ticket->fname." ". $ticket->lname; ?> </td>
 		</tr>
 		<tr>
@@ -49,7 +49,16 @@
 				?>
 			</td>
 		</tr>
+		<!-- assigning of category -->
+		<?php if( $this->user->empID != $ticket->cs_post_agent ){ ?>
 		
+		<tr>
+			<td>Assigned to</td>
+			<td>
+				<?php echo $all_staff_empID[ $ticket->cs_post_agent ]->name; ?>
+			</td>
+		</tr>
+		<?php } //end assigned to ?>
 		<?php if($this->uri->segment(4)== 'new'){?> 
 		
 		<?php }elseif($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'resolved'){ ?>
@@ -74,6 +83,7 @@
 				</select>
 			</td>
 		</tr>
+		
 		<!-- choosing priority level & resolved date -->
 		<tr>
 			<td>Choose priority level & Resolved date</td>
@@ -143,7 +153,7 @@
 		<tr>
 			<td style="border: solid 1px #be4b48;">
 				<div class="hr_msg_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float:right;">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>	
 				<div class="messages">		
@@ -178,7 +188,7 @@
 		<tr>
 			<td style="border: solid 1px black;">
 				<div class="internal_notes_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float: right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>
 				<div class="messages">
@@ -206,9 +216,9 @@
 
 	<br>
 
-	<!-- When user access is full/hr/finance and his/her incident is new/active -->
-	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true)&&
-			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
+	<!-- When user access is full/hr/finance and his/her incident is new/active --> 
+	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true) &&
+			(in_array( $this->uri->segment(4), ['new', 'active', 'onproc'] ) ) ) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
 
@@ -393,9 +403,9 @@
 	<h2>Add A Note</h2>
 		<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/add_internal_note" target='_parent' enctype="multipart/form-data" target=''>
 				
-			<input type="hidden" name="incident_id" value="<?php echo $value->cs_post_id; ?>">
+			<input type="hidden" name="incident_id" value="<?php echo $ticket->cs_post_id; ?>">
 			<input type="hidden" name="reply_username" value="<?php echo $this->user->username; ?>">
-			<input type="hidden" name= "assign_category" value="<?php echo $value->assign_category; ?>">
+			<input type="hidden" name= "assign_category" value="<?php echo $ticket->assign_category; ?>">
 
 			<textarea class="hidden tiny" name= "internal_note_textarea" style="height:200px;"></textarea>
 			<br>
@@ -640,7 +650,7 @@ $(document).ready(function() {
 
 			
 			
-		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
+		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc' || tab_typ == 'onproc'){
 			var new_stat = '';
 			if(status == 4){
 				var new_stat = 5;
