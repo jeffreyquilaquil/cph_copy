@@ -1,184 +1,70 @@
 
-<style type="text/css">
-	.note{
-		font-style: italic;
-		font-size: x-small;
-	}
-
-	.btn_ans{
-		background-color: #CCCCCC; 
-		font-weight: bold;
-		width: 100%;
-		padding: 3px;
-	}
-
-	.btn_ans_small{
-		background-color: #CCCCCC; 
-		font-weight: bold; padding: 3px;
-	}
-
-	input[type=text]{
-
-		width: 100%;
-
-	}
-
-	a{
-		text-decoration: underline;
-		cursor: pointer;
-	}
-
-	table{
-		width: 100%;
-	}
-
-	
-
-	hr{
-		border-top: 1px solid #ccc;
-	}
-
-	#remark_list {
-    	background-color:#FF868E;
-    	text-align:center;
-    	padding:5px;
-   	 	width:500px;
-    	float:left;
-    	-moz-border-radius: 2px;
-        -webkit-border-radius: 2px;
-         border-radius: 2px;
-	}
-
-	input[type="radio"] {
-	  margin-top: -1px;
-	  vertical-align: middle;
-	}
-
-	.urgent{
-		background-color: #c9302c; 
-		border-color: #ac2925; 
-		border-radius: 4px; 
-		color: #fff; 
-		padding: 3px 9px;
-		display: inline-block;
-	}
-
-	.need_attention{
-		 background-color: #ec971f; 
-		 border-color: #d58512; 
-		 border-radius: 4px; 
-		 color: #fff; 
-		 padding: 3px 9px;
-		 display: inline-block;
-	}
-
-	.not_urgent{
-		background-color: #449d44; 
-		border-color: #398439; 
-		border-radius: 4px; color: #fff; 
-		padding: 3px 9px;
-		display: inline-block;
-	}
-
-	.employee_msg_lbl{
-		background: #f0f9ff;
-		background: -moz-linear-gradient(top,  #f0f9ff 0%, #cbebff 47%, #b9d1ff 100%);
-		background: -webkit-linear-gradient(top,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
-		background: linear-gradient(to bottom,  #f0f9ff 0%,#cbebff 47%,#b9d1ff 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0f9ff', endColorstr='#b9d1ff',GradientType=0 );
-		padding: 7px;
-	}
+<div class="incident_info"> 
 
 
-	.hr_msg_lbl{
-
-		background: #febbbb;
-		background: -moz-linear-gradient(top,  #febbbb 0%, #fe9090 45%, #ffa7a6 100%);
-		background: -webkit-linear-gradient(top,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
-		background: linear-gradient(to bottom,  #febbbb 0%,#fe9090 45%,#ffa7a6 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febbbb', endColorstr='#ffa7a6',GradientType=0 );
-		padding: 7px;
-		
-	}
-
-	.internal_notes_lbl{
-		background: #eeeeee;
-		background: -moz-linear-gradient(top,  #eeeeee 0%, #bebebe 100%);
-		background: -webkit-linear-gradient(top,  #eeeeee 0%,#bebebe 100%);
-		background: linear-gradient(to bottom,  #eeeeee 0%,#bebebe 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#bebebe',GradientType=0 );
-		padding: 7px;
-	}
-
-	.messages{
-		padding: 7px;
-	}
-
-</style>
-
-<div> 
-
-<?php foreach ($HrIncident as $key => $value): ?>
-<?php endforeach ?>
 
 <input type="hidden" id="tab_type" value="<?php echo $this->uri->segment(4); ?>">
-<input type="hidden" id="categoryid" name="postid" value="<?php echo $value->cs_post_id; ?>">
+<input type="hidden" id="categoryid" name="postid" value="<?php echo $ticket->cs_post_id; ?>">
 <input type="hidden" id="hr_username" name="postid" value="<?php echo $this->user->username; ?>">
-<input type="hidden" id="inci_datesubmited" value="<?php echo $value->cs_post_date_submitted; ?>">
-<input type="hidden" id="inci_lastupdate" value="<?php echo $value->last_update; ?>">
-<input type="hidden" id="cs_post_empID_fk" value="<?php echo $value->cs_post_empID_fk; ?>">
+<input type="hidden" id="inci_datesubmited" value="<?php echo $ticket->cs_post_date_submitted; ?>">
+<input type="hidden" id="inci_lastupdate" value="<?php echo $ticket->last_update; ?>">
+<input type="hidden" id="cs_post_empID_fk" value="<?php echo $ticket->cs_post_empID_fk; ?>">
 
 <!-- incident info form -->
 <form id="custom_ans_form">
 	<table class="tableInfo">
 		<tr>
-			<td colspan="2"><h2>HR Incident Number <?php echo $value->cs_post_id; ?></h2></td>	
+			<td colspan="2"><h2>HR Incident Number <?php echo $ticket->cs_post_id; ?></h2></td>	
 		</tr>
 		<tr>
 			<td >Employee Name</td>
-			<input type="hidden" id="fullname" value="<?php echo $value->fname." ". $value->lname; ?>">
-			<td><?php echo $value->fname." ". $value->lname; ?> </td>
+			<input type="hidden" id="fullname" value="<?php echo $ticket->fname." ". $ticket->lname; ?>">
+			<td><?php echo $ticket->fname." ". $ticket->lname; ?> </td>
 		</tr>
 		<tr>
 			<td>Department</td>
-			<td><?php echo $value->dept; ?></td>
+			<td><?php echo $ticket->dept; ?></td>
 		</tr>
 		<tr>
 			<td>Position</td>
-			<td><?php echo $value->title; ?></td>
+			<td><?php echo $ticket->title; ?></td>
 		</tr>
 		<tr>
 			<td>Immediate Supervisor</td>
-			<td><?php echo $value->supervisor; ?></td>
+			<td><?php echo $ticket->supervisor; ?></td>
 		</tr>
 		<tr>
 			<td>Date Submitted</td>
-			<td><?php echo date_format(date_create($value->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
+			<td><?php echo date_format(date_create($ticket->cs_post_date_submitted), 'F d, Y G:i a'); ?></td>
 		</tr>
 		<tr>
 			<td>Subject</td>
-			<td><?php echo $value->cs_post_subject; ?></td>
+			<td><?php echo $ticket->cs_post_subject; ?></td>
 		</tr>
 		<tr>
 			<td>Priority level</td>
 			<td>
-				<?php if($value->cs_post_urgency=='Urgent'){ 
-				   			echo "<div class=\"urgent\">$value->cs_post_urgency</div>";
-						}elseif($value->cs_post_urgency=='Need Attention'){
-							echo "<div class=\"need_attention\">$value->cs_post_urgency</div>";
-						}elseif($value->cs_post_urgency=='Not Urgent'){
-							echo "<div class=\"not_urgent\">$value->cs_post_urgency</div>";
-						}
+				<?php 
+				echo '<div class="'. str_replace(' ', '', strtolower($ticket->cs_post_urgency) ).'">'.$ticket->cs_post_urgency.'</div>';
 				?>
 			</td>
 		</tr>
+		<!-- assigning of category -->
+		<?php if( $this->user->empID != $ticket->cs_post_agent ){ ?>
 		
+		<tr>
+			<td>Assigned to</td>
+			<td>
+				<?php echo $all_staff_empID[ $ticket->cs_post_agent ]->name; ?>
+			</td>
+		</tr>
+		<?php } //end assigned to ?>
 		<?php if($this->uri->segment(4)== 'new'){?> 
 		
 		<?php }elseif($this->uri->segment(4) == 'active' || $this->uri->segment(4) == 'resolved'){ ?>
 			<tr>
 				<td>Due date</td>
-				<td><?php echo date_format(date_create($value->due_date), 'F d, Y'); ?></td>
+				<td><?php echo date_format(date_create($ticket->due_date), 'F d, Y'); ?></td>
 			</tr>
 		<?php } ?>
 
@@ -197,6 +83,7 @@
 				</select>
 			</td>
 		</tr>
+		
 		<!-- choosing priority level & resolved date -->
 		<tr>
 			<td>Choose priority level & Resolved date</td>
@@ -231,8 +118,8 @@
 		<tr>
 			<td style="border: solid 1px #4a7ebb;">
 				<div class="employee_msg_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
-				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
+				<span style="float:right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:i a'); ?></span>
 				</div>
 				<div class="messages">
 				<?php 
@@ -266,7 +153,7 @@
 		<tr>
 			<td style="border: solid 1px #be4b48;">
 				<div class="hr_msg_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float:right;">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>	
 				<div class="messages">		
@@ -295,13 +182,13 @@
 		</tr>
 		<!-- internal notes -->
 		<?php } elseif($conve->cs_msg_type == 2){ 
-			if($this->access->myaccess[0] == 'full' || $this->access->myaccess[0] == 'hr' || $this->access->myaccess[0] == 'finance'){
+			if($this->access->accessFull == true || $this->access->accessHR == true| $this->access->accessFinance == true){
 
 		?>
 		<tr>
 			<td style="border: solid 1px black;">
 				<div class="internal_notes_lbl">
-				Message from: <?php echo strip_tags($conve->reply_empUser); ?>
+				Message from: <?php echo $all_staff[ $conve->reply_empUser ]->name ; ?>
 				<span style="float: right">Date Submitted: <?php echo date_format(date_create($conve->cs_msg_date_submitted), 'F d, Y G:ia'); ?></span>
 				</div>
 				<div class="messages">
@@ -329,9 +216,9 @@
 
 	<br>
 
-	<!-- When user access is full/hr/finance and his/her incident is new/active -->
-	<?php if(($this->user->access == "full" || $this->user->access == "hr" || $this->user->access == "finance")&&
-			($this->uri->segment(4) == 'new' || $this->uri->segment(4) == 'active')) { ?>
+	<!-- When user access is full/hr/finance and his/her incident is new/active --> 
+	<?php if(($this->access->accessFull == true || $this->access->accessHR == true || $this->access->accessFinance == true) &&
+			(in_array( $this->uri->segment(4), ['new', 'active', 'onproc'] ) ) ) { ?>
 
 	<input type="hidden" id="incident_ownerID" value="<?php echo $this->user->empID; ?>">	
 
@@ -516,9 +403,9 @@
 	<h2>Add A Note</h2>
 		<form method="POST" action="<?php echo $this->config->base_url(); ?>hr_cs/add_internal_note" target='_parent' enctype="multipart/form-data" target=''>
 				
-			<input type="hidden" name="incident_id" value="<?php echo $value->cs_post_id; ?>">
+			<input type="hidden" name="incident_id" value="<?php echo $ticket->cs_post_id; ?>">
 			<input type="hidden" name="reply_username" value="<?php echo $this->user->username; ?>">
-			<input type="hidden" name= "assign_category" value="<?php echo $value->assign_category; ?>">
+			<input type="hidden" name= "assign_category" value="<?php echo $ticket->assign_category; ?>">
 
 			<textarea class="hidden tiny" name= "internal_note_textarea" style="height:200px;"></textarea>
 			<br>
@@ -763,7 +650,7 @@ $(document).ready(function() {
 
 			
 			
-		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc'){
+		}else if(tab_typ == 'active' || tab_typ == 'emp' || tab_typ == 'resolved' || tab_typ == 'reopen' || tab_typ == 'cinc' || tab_typ == 'onproc'){
 			var new_stat = '';
 			if(status == 4){
 				var new_stat = 5;

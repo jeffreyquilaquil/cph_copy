@@ -6,8 +6,9 @@
 	
 	//if($this->session->userdata('testing')==true){
 	if($this->config->item('devmode')==true || $this->session->userdata('testing')==true){
-		echo $this->user->name.' '.$this->user->empID.'---'.$this->user->idNum.'<br/>';
-		print_r($this->access->myaccess);
+		
+		echo $this->user->username.' '.$this->user->empID.'---'.$this->user->idNum.'<br/>';
+		var_dump($this->access->myaccess);
 		echo '<form action="'.$this->config->base_url().'hello/" method="POST">
 			<b>Change logged in user</b><br/>
 			<input type="text" name="username" value="" class="padding5px" placeholder="username"/><input type="submit" value="Submit"/><br/>
@@ -26,7 +27,7 @@
 	if(!isset($current)) $current = '';	
 ?>
 	<div id="logo"></div>
-<?php if($content != 'changepassword'){ ?>
+<?php if($content != 'changepassword'){  ?>
 	<div id="menubar">
 		<ul class="menu">
 			<li <?php if($content=='index'){ echo 'class="current"'; } ?>><a href="<?= $this->config->base_url() ?>">Homepage</a></li>
@@ -40,6 +41,7 @@
 					echo '<li '.(($segment2=='timelogs')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/timelogs/">My Time Logs</a></li>';
 					echo '<li '.(($segment2=='calendar')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/calendar/">My Calendar</a></li>';
 					echo '<li '.(($segment2=='payslips')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a></li>';
+
 					
 					if($this->user->level>0 || $this->access->accessFullHRFinance==true) 
 						echo '<li '.(($segment2=='attendance')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/attendance/">Attendance</a></li>';
@@ -80,7 +82,8 @@
 			
 			echo '</li>';
 			
-		?>			
+		?>	
+
 			<?php  echo '<li>
 						<a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">Employee Dashboard</a>
 						<ul class="dropdown">
@@ -151,6 +154,7 @@
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
+					
 					}
 						
 					echo '</ul>';
@@ -158,12 +162,16 @@
 				
 			}
 			
-			if($this->access->accessFullHR==true){
+			if($this->access->accessFullHRFinance==true){
 				echo '<li '.(($content=='CAREERPH')?'class="current"':'').'><a href="'.$this->config->item('career_url').'/" target="_blank">CAREERPH</a>';
 				echo '<ul class="dropdown">';
+
+					
+
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
 					echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk</a></li>';
+				
 				echo '</ul>';
 				echo '</li>';
 			}
