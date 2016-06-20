@@ -4348,6 +4348,138 @@ class Staff extends MY_Controller {
 		//var_dump($data['data_query']);
 		$this->load->view('includes/template', $data);	
 	}
+
+	public function kudosrequest(){
+		$data['id'] = $this->uri->segment(2);
+		if($data['id'] == 'evaluation'){
+			$data['requestID'] = $this->uri->segment(3);
+			$data['kudosRequestStatus'] = $this->uri->segment(4);
+
+			$evaluation = $this->dbmodel->getResultArray('kudosRequest', ' kudosReceiverID ,CONCAT(fname, " ", lname) AS requestor, kudosReason, kudosAmount', 'kudosRequestID = '.$data['requestID'], 'LEFT JOIN staffs ON kudosRequestorID = empID');
+
+			$data['evaluationContent'] = $evaluation;
+
+			$data['kudosEvaluation'] = $this->dbmodel->getSingleField('kudosRequest','kudosEvaluation', 'kudosRequestID = '.$data['requestID'] );
+			if( $data['kudosEvaluation'] != '' )
+				$data['kudosEvaluation'] = substr($data['kudosEvaluation'], 0, -1);
+
+			$data['content'] = 'kudosrequestevaluation';
+		}elseif( $data['id'] == 'viewrequest' ){
+			$data['requestID'] = $this->uri->segment(3);
+			$data['kudosRequestStatus'] = $this->uri->segment(4);
+
+			$evaluation = $this->dbmodel->getResultArray('kudosRequest', ' reasonForDisapproving, kudosReceiverID ,CONCAT(fname, " ", lname) AS requestor, kudosReason, kudosAmount', 'kudosRequestID = '.$data['requestID'], 'LEFT JOIN staffs ON kudosRequestorID = empID');
+
+			$data['evaluationContent'] = $evaluation;
+
+			$data['content'] = 'kudosview';
+		}
+		else{
+			$data['content'] = 'kudosrequest';
+			$data['supervisor'] = $this->dbmodel->getSingleField('staffs', 'supervisor', 'empID = '.$data['id']);
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+
+	public function submitKudosRequest(){
+		$p = $this->input->post();
+
+		if(isset($p['submitType']) && $p['submitType'] == 'updateStatus'){
+			unset($p['submitType']);
+			
+			$r['kudosRequestID'] = $p['kudosRequestID'];
+			unset($p['kudosRequestID']);
+
+			if( $p['kudosRequestStatus'] > 3 ){
+				$p['dateApproved'] = date('Y-m-d H:i:s');
+			}
+
+			if( $p['kudosRequestStatus'] == 4 ){
+				//insert to tcPayslipItemStaffs
+				//payStaffID	empID_fk	payID_fk 	payAmount	payPeriod	payStart	payEnd	status
+				$insertPay['empID_fk'] = $p['empID_fk'];
+				$insertPay['payID_fk'] = $p['payID_fk'];
+				$insertPay['payAmount'] = $p['payAmount'];
+				$insertPay['payPeriod'] = $p['payPeriod'];
+				$insertPay['payStart'] = $p['payStart'];
+				$insertPay['payEnd'] = $p['payEnd'];
+				$insertPay['status'] = $p['status'];
+
+				//get the payperiod date
+				$p['payPeriod'] = $p['payStart'];
+				//unset those stuffs
+				unset($p['empID_fk']);
+				unset($p['payID_fk']);
+				unset($p['payAmount']);
+				unset($p['payStart']);
+				unset($p['payEnd']);
+				unset($p['status']);
+
+				$insID = $this->dbmodel->insertQuery('tcPayslipItemStaffs', $insertPay);
+			}
+
+			$this->dbmodel->updateQuery('kudosRequest', $r, $p);
+
+			//send auto-email for approved kudos
+			if( $p['kudosRequestStatus'] == 4){
+				$this->emailM->sendKudosRequestEmail($r['kudosRequestID'], TRUE, $insertPay['payStart']);
+			}elseif( $p['kudosRequestStatus'] == 5 ){
+				$this->emailM->sendKudosRequestEmail($r['kudosRequestID'], FALSE);
+			}
+			echo "Request Updated";
+		}else{
+			$p['dateRequested'] = date("Y-m-d H:i:s");
+			$p['kudosReason'] = mysql_real_escape_string($p['kudosReason']);
+
+			$this->db->insert('kudosRequest', $p);
+			$insertID = $this->db->insert_id();
+			//insert notification for kudos
+			$staffName = $this->dbmodel->getSingleField('staffs', 'CONCAT(fname," ",lname) AS staffName', 'empID = '.$p['kudosReceiverID']);
+
+			$message = 'A Kudos Request has been given to '.$staffName.'<br/>Click <a href="'.$this->config->base_url().'kudosRequest/evaluation/'.$insertID.'/1">here</a> to view the Kudos Request';
+			$this->commonM->addMyNotif($p['kudosReceiverSupID'], $message, 6, 1);
+		}
+	}
+
+	public function kudosrequestM(){
+		$data['content'] = 'kudosrequestM';
+	
+		$condition = '';
+
+		$all = '';
+		$and = '';
+
+		if(!$this->access->accessFull && !$this->access->accessFinance){
+			$condition = 'kudosReceiverSupID = '.$this->user->empID;
+			$all = $condition;
+		}
+
+		if( $all != '')
+			$and = " AND ";
+
+		$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
+		$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
+		$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
+
+
+		$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
+		$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
+		$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
+
+		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID $conditionWhere ORDER BY kudosRequestID ");
+		
+		//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
+		$newData = array();
+
+		//Rearrange data base on statuses
+		foreach ($p as $key => $value) {
+			$newData[$value->kudosRequestStatus][] = $value;
+		}
+		$data['results'] = $newData;
+
+		$this->load->view('includes/template', $data);	
+	}
 	
 	function test(){
 		

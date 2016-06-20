@@ -29,8 +29,11 @@ class Databasemodel extends CI_Model {
 		return $this->db->query($sql);
 	}
 	
-	function getSingleField($table, $field, $where=1){
-		$query = $this->db->query('SELECT '.$field.' FROM '.$table.' WHERE '.$where.' LIMIT 1');
+	function getSingleField($table, $field, $where=''){
+		if( $where != '')
+			$where = "WHERE ".$where;
+
+		$query = $this->db->query('SELECT '.$field.' FROM '.$table.' '.$where.' LIMIT 1');
 		$f = '';
 		foreach($query->row() AS $r){
 			$f = $r;

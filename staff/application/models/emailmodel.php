@@ -106,6 +106,69 @@ class Emailmodel extends CI_Model {
 		
 	}
 	
+	//send email notification for kudos request
+	public function sendKudosRequestEmail($kudosID, $approved=TRUE, $payDate = ''){
+		$extraField = "CONCAT(s.fname,' ', s.lname) AS staffName , CONCAT(r.fname,' ', r.lname) AS rStaffName, r.email AS rEmail";
+		$extraJoin .= ' LEFT JOIN staffs r ON r.empID = kudosRequestorID';
+
+		$q = $this->dbmodel->getSQLQueryArrayResults("SELECT kudosRequestID, s.email AS sEmail, kudosReason, reasonForDisapproving, kudosAmount, kudosRequestStatus, dateRequested, statusName, $extraField FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID $extraJoin WHERE kudosRequestID = $kudosID ");
+
+		$from = 'careers.cebu@tatepublishing.net';
+		$to = ($approved)?$q[0]->sEmail:$q[0]->rEmail;
+		if($approved){
+			//get the day
+			$payDay = explode('-', $payDate);
+			$payMonth = $payDay[1];
+			$payMonth+=1;
+
+			//convert to 2 digit month
+			$payMonth = ($payMonth < 10)? '0'.$payMonth: $payMonth;
+
+			if( $payDay[2] <= 10 )
+				$datePay = date('F 15, Y', strtotime($payDate));
+			elseif( $payDay[2] >= 26 ){
+				$datePay = $payDay[0].'-'.$payMonth.'-15';
+				$datePay =  date('F d, Y', strtotime($datePay) ); //$payDay[0].'-'.$payMonth.'-15';
+				//$datePay = date('F d, Y', strtotime($datePay));
+			}
+			else
+				$datePay = date('F t, Y', strtotime($payDate));
+
+
+			$subject = "Congratulations!";
+
+			$body = '<h2 style="text-align:center;">Congratulations '.$q[0]->staffName.'<br/>You will receive Php '.$q[0]->kudosAmount.'</h2>';	
+			$body .= '<div style="text-align:center;">
+				<p>The reward will reflect in your <strong>'.$datePay.'</strong> payslip (tax-free) as "Kudos Bonus"</p>
+				<p>Thanks for being an asset to the company, a trusty subordinate to the team and a source of</p>
+				<p>inspiration for your colleagues.</p>
+			</div>';
+
+			$subject2 = "Your Kudos Request was Approved";
+			$to2 = $q[0]->rEmail;
+			$body2 = "Please be informed that your Kudos Bonus request for ".$q[0]->staffName." is now fully processed by HR and Accounting. This reward will be reflected on ".$datePay." payslip. Thank you and have a great day!<br/>
+			";
+			$body2 .= '<br/>Best regards,<br/>Tatepublishing HR';
+			$this->emailM->sendEmail( $from, $to2, $subject2, $body2);
+		}
+		else{
+			$subject = 'We are sorry';
+
+			$body = 'We regret to inform you that the Kudos request submitted on '.date('M-d-Y', strtotime($q[0]->dateRequested)).' for employee <strong>'.$q[0]->staffName.'</strong> is disapproved.<br/><br/>
+
+				<strong>Reason for disapproval:</strong><br/><br/>
+
+				<i>'.$q[0]->reasonForDisapproving.'</i><br/><br/>
+
+				If you have concerns about this matter, kindly reply to this email. <br/>
+				Other requests you may have are currently in process.<br/>
+				';
+		}
+
+		$body.= '<br/>Best regards,<br/>Tatepublishing HR';
+		$this->emailM->sendEmail( $from, $to, $subject, $body);
+	}
+
 	//send email if end date is today
 	public function emailSeparationDateAlert($info){
 		$de = 'kent.ybanez@tatepublishing.net';
