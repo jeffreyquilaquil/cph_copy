@@ -424,13 +424,20 @@ class Textmodel extends CI_Model {
 	}
 	
 	//kudos table
-	public function kudosRequestTableDisplay($data, $hide = false, $all = FALSE, $tableClass = '', $display = TRUE){
+	public function kudosRequestTableDisplay($data, $hide = false, $all = FALSE, $tableClass = '', $display = TRUE, $isApproved = ''){
 		$hiddenClass = (!$display)? "hidden": '';
 		$displayTable = "<div class = 'table".$tableClass." $hiddenClass'>
 			<table class='datatable tableInfo fs11px'>
 				<thead>
-					<tr><th>Requests</th><th>Name of Employee</th><th>Name of Requestor</th><th>Reason for KBR</th><th>Amount</th><th>Date Submitted</th><th>Status</th></tr>
-				</thead>";
+					<tr><th>Requests</th><th>Name of Employee</th><th>Name of Requestor</th><th>Reason for KBR</th><th>Amount</th><th>Date Submitted</th><th>Status</th>";
+
+		if( $isApproved == 'approved' )
+			$displayTable .= '<th>Date Approved</th><th>Pay Period</th>';
+		elseif( $isApproved == 'disapproved' ){
+			$displayTable .= '<th>Date Disapproved</th><th>Reason</th>';
+		}
+
+		$displayTable .= "</tr></thead>";
 
 		$displayTable .= "<tbody>";
 		foreach ($data as $key => $value) {
@@ -442,21 +449,36 @@ class Textmodel extends CI_Model {
 			}
 			
 			if( $show ){
+				$value->kudosReason = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->kudosReason)));
+				$value->reasonForDisapproving = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->reasonForDisapproving)));
+
+
+				$textR = $value->reasonForDisapproving;
+				$textK = strlen($value->kudosReason) > 25?substr_replace($value->kudosReason, '<br/> <span class="toggleKudosR" data-tClass="reason" data-toggle="kudosR'.$value->kudosRequestID.'">See more</span>',25):$value->kudosReason;
+
+				if( strlen($textR) > 25){
+					$textR= substr_replace($textR, '<br/> <span class="toggleKudos" data-toggle="kudos'.$value->kudosRequestID.'">See more</span>', 25);
+				}
+
 				$displayTable .= "<tr>
-						<td>".$value->kudosRequestID."</td>
+						<td><a href='".$this->config->base_url()."kudosrequest/viewrequest/".$value->kudosRequestID."/".$value->kudosRequestStatus."' class='iframe'>".$value->kudosRequestID."</a></td></td>
 						<td>".$value->staffName."</td>
 						<td>".$value->requestorName."</td>
-						<td>".$value->kudosReason."</td>
+						<td><div class='tooltipR'>".$textK."<div id='kudosR".$value->kudosRequestID."' class='kudosRDiv'><p>".$value->kudosReason."</p></div></div></td>
 						<td>".$value->kudosAmount."</td>
 						<td>".$value->dateRequested."</td>";
 					if(!$display)
 						$displayTable .= "<td>$value->statusName</td>";
 					else{
-						$displayTable .= "<td><a href='".$this->config->base_url()."kudosrequest/evaluation/".$value->kudosRequestID."/".$value->kudosRequestStatus."' class='iframe'>".$value->statusName."</a></td>
-					
-						</tr>
-					";
-				}
+						$displayTable .= "<td><a href='".$this->config->base_url()."kudosrequest/evaluation/".$value->kudosRequestID."/".$value->kudosRequestStatus."' class='iframe'>".$value->statusName."</a></td>";
+					}
+					if( $isApproved == 'approved' )
+						$displayTable .= '<td>'.$value->dateApproved.'</td><td>'.$value->payPeriod.'</td>';
+					elseif( $isApproved == 'disapproved' ){
+						$displayTable .= '<td>'.$value->dateApproved.'</td><td><div class="tooltipR">'.$textR.'<div id="kudos'.$value->kudosRequestID.'" class="kudosDiv"><p>'.$value->reasonForDisapproving.'</p></div></div></td>';
+					}
+
+					$displayTable .="</tr>";
 			}
 		}
 		$displayTable .= '</tbody>';

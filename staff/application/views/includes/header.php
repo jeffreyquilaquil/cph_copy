@@ -126,6 +126,7 @@
 					$eval90th = $this->commonM->countResults('eval90th');
 					$medrequests = $this->commonM->countResults('medrequests');
 					$hdmf_loans = $this->commonM->countResults('hdmf_loans');
+					$kudosrequestM = $this->commonM->countResults('kudos');
 					
 					if($this->access->accessFullHR==true){
 						$cntincidentreport = $this->commonM->countResults('incidentreport');
@@ -148,6 +149,8 @@
 						echo '<li '.(($content=='writtenmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'writtenmanagement/">Written Warning Management</a></li>';
 						echo '<li '.(($content=='hdmf_loan')?'class="current"':'').'><a href="'.$this->config->base_url().'hdmfs/">HDMF Loan Application '.(($hdmf_loans > 0)?'<b>['.$hdmf_loans.']</b>':'').'</a></li>';
 					}
+					
+					echo '<li '.(($content=='kudosRequest')?'class="current"':'').'><a href="'.$this->config->base_url().'kudosrequestM/">Kudos Bonus Request '.(($kudosrequestM>0)?'<b>['.$kudosrequestM.']</b>':'').'</a></li>';
 						
 					if( $this->access->accessMedPerson OR $this->access->accessFullFinance ){
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';

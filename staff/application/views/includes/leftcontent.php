@@ -115,9 +115,14 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 				
 		if($this->access->accessFull==true)
 			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';		
-			echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
 
+		//Kudos Request
+		if( $this->user->username != $row->username && $this->user->is_supervisor ){
+			echo '<li><a href="'.$this->config->base_url().'kudosrequest/'.$row->empID.'/" class="iframe">Request Kudos Bunos</a></li>'; 
+		}
+	
+		echo '<li><a href="'.$this->config->base_url().'reportviolation/" class="iframe">Report a COC Violation</a></li>';	
+		echo '<li><a href="'.$this->config->base_url().'referafriend/" class="iframe" style="padding:15px 10px;"><b>Refer a Friend to Work in Tate</b></a></li>';
 	echo '</ul>';	
 	echo '</center>';
 	
