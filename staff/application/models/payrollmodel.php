@@ -1149,11 +1149,7 @@ class Payrollmodel extends CI_Model {
 		$dateArr = $data['dateArr'];
 		$dataMonth = $data['dataMonth'];
 		$dataMonthItems = $data['dataMonthItems'];
-
-		// echo "<pre>";
-		// var_dump($dataMonthItems);
-		// echo "</pre>";
-
+		
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		$pdf = new FPDI();	
@@ -1294,7 +1290,18 @@ class Payrollmodel extends CI_Model {
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
 		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
 		$leaveAmount = $payInfo->addLeave * $dailyRate;		
+		$addOnBonus = 0;
+		$unusedLeave = 0;
 		
+		if(!empty($payInfo->addOns)){
+			$addArr = unserialize(stripslashes($payInfo->addOns));
+			foreach($addArr AS $add){
+				if(isset($add[0]) && isset($add[1])){
+					if( $add[0] == 'Unpaid Bonuses' )
+						$addOnBonus += $add[1];
+				}
+			}
+		}
 		
 		$payArr = array();
 		foreach($dataMonth AS $m){
@@ -1309,6 +1316,7 @@ class Payrollmodel extends CI_Model {
 		foreach( $data_items as $di_key => $di_val ){
 			$$di_key = $di_val;
 		}
+
 		/****************************************
 		*										*
 		*			END OF PAY LOOP				*
@@ -1344,12 +1352,16 @@ class Payrollmodel extends CI_Model {
 				$totalDeminimis += $value;
 			}
 		}
+
+		$totalDeminimis += $leaveAmount;
+		$totalDeminimis += $addOnBonus;
+		$totalDeminimis += $unusedLeave;
 		
 		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp);
 
 		//FOR 21
 		$pdf->setXY(94, 229);
-		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$totalIncome),0,2,'R');
+		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$totalIncome+$leaveAmount+$addOnBonus),0,2,'R');
 
 		//FOR 22
 		$pdf->setXY(95, 236);
@@ -1706,6 +1718,7 @@ class Payrollmodel extends CI_Model {
 		$data['incomeTax'] = 0;
 		$data['month13c'] = 0;
 		$data['regTaken'] = 0;
+		$data['unusedLeave'] = 0;
 
 		$flag = 0;
 		// echo "<pre>";
@@ -1739,6 +1752,7 @@ class Payrollmodel extends CI_Model {
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
+				$data['unusedLeave'] += (isset($dataMonthItems[$payArr[$date]->payslipID]['unusedLeave']))?$dataMonthItems[$payArr[$date]->payslipID]['unusedLeave']:0;
 
 				if( isset($dataMonthItems[$payArr[$date]->payslipID]['taxRefund']) AND $dataMonthItems[$payArr[$date]->payslipID]['taxRefund'] > 0 ){
 					$payArr[$date]->earning -= $dataMonthItems[$payArr[$date]->payslipID]['taxRefund'];
