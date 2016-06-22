@@ -10,6 +10,7 @@
 		$this->load->helper('security');
 		$this->load->helper('url');
 		$this->load->model('ask_hr');	
+		$this->load->model('commonmodel', 'commonM');
 
 			}
 
@@ -214,32 +215,7 @@
 				
 				}
 
-				//This is for New incident 
-				// $data['NewIncidentFull']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 0  AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk','hr_cs_post.cs_post_id');
-				// $data['NewIncidentHR']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 0 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk', 'hr_cs_post.cs_post_id');
-				// $data['NewIncidentAcc']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 0 AND hr_cs_post.report_related = 1 AND hr_cs_post.hr_own_empUSER = "" GROUP BY cs_msg_postID_fk', 'hr_cs_post.cs_post_id');
-			 
-				// this is for the active incident
-				// $data['ActiveIncidentFull']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query.' WHERE hr_cs_post.cs_post_status = 1 GROUP BY cs_msg_postID_fk');
-				// $data['ActiveIncidentHR']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 0 GROUP BY cs_msg_postID_fk');
-				// $data['ActiveIncidentAcc']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 1 AND hr_cs_post.report_related = 1 GROUP BY cs_msg_postID_fk');
-
-				// this is for Resolve incident
-				// $data['ResolveIncidentFull']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 3 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				// $data['ResolveIncidentHR']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				// $data['ResolveIncidentAcc']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.cs_post_status = 3 AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-
-				//this is for Cancel incident
-				// $data['CancelIncidentFull']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5) GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				// $data['CancelIncidentHR']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5) AND hr_cs_post.report_related = 0 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-				// $data['CancelIncidentAcc']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE (hr_cs_post.cs_post_status = 4 OR hr_cs_post.cs_post_status = 5)  AND hr_cs_post.report_related = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-
-				// this is for  cancel transfer
-				// $data['Canceltransfer']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_msg.reply_empUser = "'.$empuser.'" AND hr_cs_msg.incident_status = 1 GROUP BY hr_cs_msg.cs_msg_postID_fk');
-
-
-				// // this is for Agent incident
-				// $data['MyTicket']=$this->ask_hr->hrhelpdesk($select_query, 'hr_cs_post', $join_query .' WHERE hr_cs_post.hr_own_empUSER = "'.$empuser.'" GROUP BY cs_msg_postID_fk');
+				
 
 				// get the name of all hr employee
 				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
@@ -260,49 +236,192 @@
 
             }//end of HrHelpDesk function
 
-            public function HrIncident(){
-            	
-           		$data['content']='hr_incidentinfo';
+		public function HrIncident(){
 
-                $insedent_id = $this->uri->segment(3);
+			$data['content']='hr_incidentinfo_';
 
-                $data['all_staff'] = $this->commonM->_getAllStaff('username');
-                $data['all_staff_empID'] = $this->commonM->_getAllStaff('empID');
-               
+			$insedent_id = $this->uri->segment(3);
 
-            	$data['ticket'] = $this->dbmodel->getSingleInfo('hr_cs_post', 'hr_cs_post.*, s.fname, s.lname, n.title, n.dept, (SELECT CONCAT(fname, " ", lname) FROM staffs ss WHERE ss.empID = s.supervisor ) AS "supervisor", MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update', 'cs_post_id = '.$insedent_id, 'LEFT JOIN staffs s ON s.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN newPositions n ON n.posID = s.position LEFT JOIN hr_cs_msg ON cs_msg_postID_fk = cs_post_id');
+			$data['all_staff'] = $this->commonM->_getAllStaff('username');
+			$data['all_staff_empID'] = $this->commonM->_getAllStaff('empID');
 
-            	//$data['HrIncident']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_msg.cs_msg_attachment, hr_cs_post.cs_post_agent, hr_cs_post.due_date, hr_cs_post.cs_post_empID_fk, hr_cs_post.cs_post_empID_fk, hr_cs_post.assign_category, hr_cs_post.invi_req, staffs.fname, staffs.lname, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_msg.cs_msg_text, MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, staffs.supervisor, staffs.position, newPositions.title, newPositions.dept','hr_cs_post','INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk INNER JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN newPositions ON newPositions.posID = staffs.position  WHERE hr_cs_post.cs_post_id ='.$insedent_id);
+			$data['ticket'] = $this->dbmodel->getSingleInfo('hr_cs_post', 'hr_cs_post.*, s.fname, s.lname, n.title, n.dept, (SELECT CONCAT(fname, " ", lname) FROM staffs ss WHERE ss.empID = s.supervisor ) AS "supervisor", MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, post_id', 'cs_post_id = '.$insedent_id, 'LEFT JOIN staffs s ON s.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN newPositions n ON n.posID = s.position LEFT JOIN hr_cs_msg ON cs_msg_postID_fk = cs_post_id LEFT JOIN incident_rating ON post_id = cs_post_id');
 
-            	//$data['ticket'] = $data['HrIncident'][0];
-            	
-            	//	$data['HrIncident'][0]->supervisor = $this->ask_hr->getdata('CONCAT(fname, " ", lname) AS name','staffs','empID ='.$data['HrIncident'][0]->supervisor)[0]->name;
+			$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
+			foreach($categories as $category){
+				$data['categories'][$category->category_id] = $category->categorys;
+			}
 
-            	
-            	//$this->textM->aaa($data['HrIncident'], false);
+			$data['category'] = $categories;
+			
+			$checkRemark = $this->ask_hr->getdata('*','incident_rating','post_id = '.$insedent_id);
+
+			if($checkRemark != null){
+				$return = $checkRemark;
+			}else{
+				$return = 0;
+			}
+			$data['check_remark'] = $return;
+
+			//check if we have reply
+			if( $this->input->post() ){
+				//dd($_POST);
+				//if we have attachment upload
+				//dd($_FILES);
+
+				//ratings
+				if( null !== $this->input->post('rating') AND !empty($this->input->post('rating')) ){
+					$insert_array['post_id'] = $this->input->post('ticket_id');
+					$insert_array['remark'] = $this->input->post('remark');
+					$insert_array['post_empID'] = $this->input->post('who_posted');
+					$insert_array['date_submited'] = date('Y-m-d H:i:s');
+					$insert_array['last_update'] = date('Y-m-d H:i:s');
+					$insert_array['rating'] = $this->input->post('rating');
+
+					$this->dbmodel->insertQuery('incident_rating', $insert_array);
+					
+					$this->_addNote( $this->input->post('ticket_id'), 'Remark has been posted');
+				} else {
+				 	if( !empty($_FILES['arr_attachments']['name'][0]) ){
+						
+						$files = $_FILES;					
+						// config of file upload 
+						$upload_config['upload_path'] ='uploads/cs_hr_attachments';
+						$upload_config['allowed_types'] = 'gif|jpg|png|pdf|docx|doc|csv';
+						$upload_config['max_size']	= '2048';
+						$upload_config['overwrite']	= 'FALSE';					
+						$this->load->library('upload');	
+
+						$upload_count = count( $_FILES['arr_attachments']['name'] );
+						for( $x = 0; $x < $upload_count; $x++ )
+						{
+							$_FILES['to_upload']['name'] = $files['arr_attachments']['name'][$x];
+							$_FILES['to_upload']['type'] = $files['arr_attachments']['type'][$x];
+							$_FILES['to_upload']['tmp_name'] = $files['arr_attachments']['tmp_name'][$x];
+							$_FILES['to_upload']['error'] = $files['arr_attachments']['error'][$x];
+							$_FILES['to_upload']['size'] = $files['arr_attachments']['size'][$x];
+
+							// Get extention
+							$ext = pathinfo( $_FILES['to_upload']['name'], PATHINFO_EXTENSION );
+							$uniq_id = uniqid();
+
+							$upload_config['file_name'] = $this->input->post('ticket_id') .'_'. $uniq_id .'_'. $x .'.'.$ext;
+							
+							$this->upload->initialize($upload_config);
+							
+							if( ! $this->upload->do_upload('to_upload') ){
+								$error_data[$x] = $this->upload->display_errors();
+							} else {
+								$upload_data[$x] = $this->upload->data();
+							}
+
+						} 
+
+						//if file is invalid
+		                if( isset($error_data) AND !empty($error_data) ){
+		                    	$data['error'] = '';
+							foreach( $error_data as $key1 => $val1 ){
+								$data['error'] .= $val1 ."\n";
+							}						
+						}
+
+						// If file is valid
+						if( isset($upload_data) AND !empty($upload_data) ){						
+							foreach( $upload_data as $key => $val ){
+								$docs_url[] = $val['file_name'];
+							}
+							$insert_array['cs_msg_attachment'] = json_encode( $docs_url );
+							
+						}					
+					
+					}
+				
+					if( !isset($data['error']) OR empty($data['error']) ){
+						$insert_array['cs_msg_postID_fk'] = $this->input->post('ticket_id');
+
+						if( !empty($this->input->post('reply_msg')) ){
+							if( $this->input->post('who_posted') == $data['ticket']->cs_post_empID_fk ){
+								$insert_array['cs_msg_type'] = 0;
+							} else {
+								$insert_array['cs_msg_type'] = 1;
+							}
+							$insert_array['cs_msg_text'] = $this->input->post('reply_msg');
+
+							//reopen
+							if( $data['ticket']->cs_post_status == 5 ){
+								$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $this->input->post('ticket_id'), ['cs_post_status' => 1] );
+								//add note
+								$this->_addNote($this->input->post('ticket_id'), 'Reopened by '.$data['all_staff_empID'][ $this->input->post('who_posted')]->name );
+							}
+						}
+						if( !empty($this->input->post('note_msg')) ){
+							$insert_array['cs_msg_type'] = 2;
+							$insert_array['cs_msg_text'] = $this->input->post('note_msg');
+						}
 
 
-            		$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
-            		foreach($categories as $category){
-            			$data['categories'][$category->category_id] = $category->categorys;
-            		}
+						$insert_array['reply_empUser'] = $this->input->post('reply_empUser');
+						$insert_array['cs_msg_date_submitted'] = date('Y-m-d H:i:s');
+						
+						$this->dbmodel->insertQuery('hr_cs_msg', $insert_array);
 
-            		$data['category'] = $categories;
-            		$data['conversation'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
+						if( $this->input->post('resolution') == 5 ){
+							$update_array['cs_post_status'] = 3;
+							$msg = 'Marked as Resolved.';
+						} else if( $this->input->post('resolution') == 6 ){
+							$update_array['cs_post_status'] = 5;
+							$msg = 'Marked as Cancelled.';
+						}
+						if( isset($update_array) AND !empty($update_array) ){
+							
+							$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $this->input->post('ticket_id'), $update_array );
+							//add note
+							$this->_addNote($this->input->post('ticket_id'), $msg);
+						}
+					}
 
-            		$checkRemark = $this->ask_hr->getdata('*','incident_rating','post_id = '.$insedent_id);
+				}
+				$data['redirect'] = true;
+			}
+			$data['conversations'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
+			$this->load->view('includes/templatecolorbox',$data);
 
-            		if($checkRemark != null){
-            			$return = $checkRemark;
-            		}else{
-            			$return = 0;
-            		}
-            		$data['check_remark'] = $return;
-            		
-					$this->load->view('includes/templatecolorbox',$data);
-            	
 
-            }//end of HrIncident function
+		}
+		private function _addNote( $ticket_id, $note ){
+			$insert_array = [];
+			$insert_array['cs_msg_postID_fk'] = $ticket_id;
+			$insert_array['cs_msg_date_submitted'] = date('Y-m-d H:i:s');
+
+			$insert_array['cs_msg_text'] = $note;
+			$insert_array['cs_msg_type'] = 2;
+
+			$this->dbmodel->insertQuery('hr_cs_msg', $insert_array);
+		}
+
+		public function update(){
+			$ticket_id = $this->uri->segment(3);
+			if( $this->input->is_ajax_request() ){
+
+				switch ($this->input->post('which')) {
+					case 'category':
+						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['assign_category' => $this->input->post('category') ]);
+						$this->_addNote( $ticket_id, 'Category reassigned.');
+						break;
+					case 'urgency':
+						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['cs_post_urgency' => $this->input->post('urgency') ]);
+						$this->_addNote( $ticket_id, 'Urgency reassigned.');
+					default:
+						# code...
+						break;
+				}
+				
+				echo json_encode(['success']);
+				exit();
+			}
+		}
+
+		//end of HrIncident function
 
 	        function addcategory(){
 	            	$data['categorys'] = $this->input->post('category_name');
