@@ -81,6 +81,7 @@ class Emailmodel extends CI_Model {
 		//On separation date send Separation Date Alert
 		if($info->endDate==$dateToday){
 			$this->emailM->emailSeparationDateAlert($info);
+			$this->emailM->emailSeparationDateAdvanceNotice($info);
 		}
 		
 		//On Access End Date send access End date alert
@@ -172,7 +173,7 @@ class Emailmodel extends CI_Model {
 	//send email if end date is today
 	public function emailSeparationDateAlert($info){
 		$de = 'kent.ybanez@tatepublishing.net';
-		$sur = 'it.security@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net,clinic.cebu@tatepublishing.net,hr-list@tatepublishing.net';
 		$sujet = 'Separation Date Alert ('.$info->name.')';
 		
 		$termArr = $this->textM->constantArr('terminationType');
@@ -199,7 +200,7 @@ class Emailmodel extends CI_Model {
 		$sujet = 'Separation Date Alert ('.$info->name.')';
 		//send email to leaders
 		$sender = 'careers.cebu@tatepublishing.net';
-		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
+		$receiver = 'leaders.cebu@tatepublishing.net,clinic.cebu@tatepublishing.net,'.$info->supEmail;
 		$msg = '<p>Hello Tate Leaders!</p>
 		<p>We are sorry to announce that '. $info->name .' is leaving Tate Publishing.</p>
 		<p>A separation date has been entered for '. $info->name .' and the last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
