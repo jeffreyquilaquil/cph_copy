@@ -192,7 +192,7 @@ if(isset($_POST) AND !empty($_POST)){
 		$reqEmail = $ptDb->selectSingleQuery('staff', 'email' , 'username="'.$jobReq['requestor'].'"');	
 				
 		if($_POST['office'] == 'cebu'){
-			$to = 'helpdesk.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,'.$supEmail.','.$reqEmail;
+			$to = 'helpdesk.cebu@tatepublishing.net,raymond.ordono@tatepublishing.net,clinic.cebu@tatepublishing.net,diana.bartulin@tatepublishing.net,hr.cebu@tatepublishing.net,'.$supEmail.','.$reqEmail;
 			$from = 'kenneth.bagao@tatepublishing.net';			
 		}else{
 			$to = 'helpdesk.us@tatepublishing.net';
@@ -210,7 +210,7 @@ if(isset($_POST) AND !empty($_POST)){
 					Start date: ".date('Y/m/d', strtotime($startD))." (yyyy/mm/dd)<br/>
 					Shift: ".ucfirst($_POST['shift'])."<br/>
 					Staff Index: OK<br/>
-					PayrollHero: OK<br/><br/>
+					CPH: OK<br/><br/>
 					
 					Hiring Manager - Please inform IT which computer will be assigned and welcome employee on his first day.<br/>
 					IT - Please coordinate with hiring manager regarding IT preparations, email address and PT account.";
