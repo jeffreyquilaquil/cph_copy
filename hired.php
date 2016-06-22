@@ -211,7 +211,7 @@ if(isset($_POST) AND !empty($_POST)){
 					Shift: ".ucfirst($_POST['shift'])."<br/>
 					Staff Index: OK<br/>
 					CPH: OK<br/><br/>
-					
+				   	
 					Hiring Manager - Please inform IT which computer will be assigned and welcome employee on his first day.<br/>
 					IT - Please coordinate with hiring manager regarding IT preparations, email address and PT account.";
 					
