@@ -220,7 +220,7 @@
 				// get the name of all hr employee
 				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%hr%" AND active = 1');
 				// get the name of all accounting employee
-				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%"" AND active = 1');
+				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%" AND active = 1');
 				// get the name of all Full Access employee
 				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full") AND active = 1');
 				//get all department infomation
