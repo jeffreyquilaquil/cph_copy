@@ -149,7 +149,7 @@
             	$empuser = $this->user->username;
    				
    				//mother of query
-				$select_query = 'hr_cs_post.*, hr_cs_msg.*, staffs.fname, staffs.lname, assign_category.*';
+				$select_query = 'hr_cs_post.*, hr_cs_msg.*, staffs.fname, staffs.lname, CONCAT(staffs.fname, " ", staffs.lname) AS "customer", assign_category.*';
 				$join_query = 'INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category';
 
 				$all_tickets = $this->dbmodel->getSQLQueryResults("SELECT $select_query, MAX(cs_msg_date_submitted) AS 'last_update' FROM hr_cs_post $join_query GROUP BY cs_msg_postID_fk ORDER BY hr_cs_post.cs_post_id");
@@ -218,11 +218,11 @@
 				
 
 				// get the name of all hr employee
-				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "hr"');
+				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%hr%" AND active = 1');
 				// get the name of all accounting employee
-				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access = "finance"');
+				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%"" AND active = 1');
 				// get the name of all Full Access employee
-				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full")');
+				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full") AND active = 1');
 				//get all department infomation
 				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
