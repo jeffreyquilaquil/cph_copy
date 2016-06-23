@@ -45,6 +45,23 @@
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
 			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');
 			$data['cs_post_status']= 0; 
+
+			//auto-assign HR related 
+			
+			$shiftSched = $this->dbmodel->getSingleField('staffs', 'shiftSched', 'empID ='. $empID);
+			if( $this->input->post('inquiry_type') == 0){
+				if ($shiftSched == 1) {
+				//nightshift
+					$data['hr_own_empUSER'] = 'kybanez';
+					$data['cs_post_agent'] = 330;				
+				} else {
+					//morningshift
+					$data['hr_own_empUSER'] = 'aobrero';
+					$data['cs_post_agent'] = 203;
+				}	
+			}
+			
+			//end auto-assign
 			
 			// Insert data1 to hr_cs_post
 			$data2['cs_msg_postID_fk'] = $this->ask_hr->askhr('hr_cs_post',$data);
@@ -229,7 +246,12 @@
 				$data['all_staff'] = $this->commonM->_getAllStaff('username');
 				//dd($data);
 				//$this->output->enable_profiler(true);
+				$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
+				foreach($categories as $category){
+					$data['categories'][$category->category_id] = $category->categorys;
+				}
 
+				$data['category'] = $categories;
 				$this->load->view('includes/template',$data);
 
 
