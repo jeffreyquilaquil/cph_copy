@@ -157,7 +157,7 @@ if($this->user->access == "exec"){
 					echo "<span style='color:red;'>&#9873;</span>";
 				}?>
 
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $myticket->cs_post_id; ?>/active/<?php echo $myticket->cs_post_empID_fk; ?>" class="iframe"><?php echo $myticket->cs_post_id;?></a>
+      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $myticket->cs_post_id; ?>/active/<?php echo $myticket->cs_post_empID_fk; ?>" class="iframe"><?php echo sprintf("%'.06d", $myticket->cs_post_id); ?></a>
       			</td>
 				<td><?php echo $myticket->cs_post_subject; ?></td>
 				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
@@ -180,7 +180,7 @@ if($this->user->access == "exec"){
 				?>	
 
 				<?php 
-				if($myticket->remark != ''){
+				if( isset($myticket->remark) AND !empty($myticket->remark) ){
 					echo "<td>". $myticket->remark."</td>";
 				}else{
 					echo "<td>Unrated</td>";
@@ -215,27 +215,26 @@ if($this->user->access == "exec"){
 							<li>
 								<small>Please select who:</small>
 								<select name="" id="redirect_select<?php echo $myticket->cs_post_id; ?>" style="width: 200px;">
-									<?php if ($this->access->myaccess[0] == "hr") { ?>
-											<option value=""></option>
-										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
-										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
-										
-									<?php }else if($this->access->myaccess[0] == "finance"){?>
-											<option value=""></option>
-										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
-										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
-										
-									<?php }else if($this->access->myaccess[0] == "full") { ?>
+									<?php if($this->access->accessFull == true) { ?>
 											<option value=""></option>
 										<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_full->fname." ".$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
 										<?php } ?>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+									<?php } else if ($this->access->accessHR == true) { ?>
+											<option value=""></option>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
+										<?php } ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+										
+									<?php }else if($this->access->accessFinance == true){?>
+											<option value=""></option>
+										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+										<?php } ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										
 									<?php } ?>
 								</select>
@@ -264,7 +263,7 @@ if($this->user->access == "exec"){
 		  		<th>Customer</th>
 		  		<th>Priority</th>	
 		  		<th>Date Submitted</th>
-		  		<th>Reassign</th>
+		  		<th>Assign</th>
 		  	</tr>
 	  	</thead>
 
@@ -290,14 +289,22 @@ if($this->user->access == "exec"){
 					<ul style="list-style: none; margin: 0px; padding: 0px;">
 						<li>
 							<small>Please select who:</small>
+
 							<select name="" id="new_redirect_select<?php echo $value->cs_post_id; ?>" style="width: 100px;">
 								<option></option>
-								<?php if($this->access->myaccess[0] == "full"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+								<?php if($this->access->accessFull == true){ ?>
+										<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+										<?php foreach( $getHRlist as $hr ){
+											echo '<option value="'.$value->cs_post_id.','.$this->user->username.',0,'.$hr->empID.'">'.$hr->fname.' '.$hr->lname.'</option>';
+										} ?>
+										<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
+										<?php foreach( $getACClist as $acc ){
+											echo '<option value="'.$value->cs_post_id.','.$this->user->username.',1,'.$acc->empID.'">'.$acc->fname.' '.$acc->lname.'</option>';
+										} ?>
+
+								<?php } else if($this->access->accessHR == true){ ?>
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
-								<?php }else if($this->access->myaccess[0] == "hr"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
-								<?php }else if($this->access->myaccess[0] == "finance"){ ?>
+								<?php }else if($this->access->accessFinance == true){ ?>
 								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
 								<?php } ?>
 							</select><br>
@@ -662,9 +669,10 @@ $(document).ready(function(){
 				data: dataredirect,
 				cache: false,
 					success: function(result){
-					alert("Success!");
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                     close();
+					//alert("Success!");
+					 //window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+                     //close();
+                     console.log(result);
 					}
 				});
 			}
