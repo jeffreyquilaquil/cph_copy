@@ -929,7 +929,7 @@ class Textmodel extends CI_Model {
 		} else if($a == 'allowances'){
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
 		} else if( $a == 'last_pay_status' ){
-			$arr = array('Pending requirements', 'For review', 'For releasing', 'Released');
+			$arr = array('Pending requirements', 'Pending Last Pay Calculation', 'For review', 'For releasing', 'Released');
 		}
 		
 		return $arr;
@@ -1268,8 +1268,16 @@ class Textmodel extends CI_Model {
 			unset($data_query['headers']);
 			foreach( $data_query as $val ){
 				$table .= '<tr>';
-				foreach( $headers as $val_ ){
-					$table .= '<td>'.$val[ $val_ ].'</td>'; 		
+				foreach( $headers as $key => $val_ ){
+					if( !is_int($key) ){
+						$val_ = $key;
+					}
+					if( is_object($val) ){
+						$table .= '<td>'.$val->$val_.'</td>'; 			
+					} else if( is_array($val) ){
+						$table .= '<td>'.$val[ $val_ ].'</td>'; 			
+					}
+					
 				}				
 				$table .= '</tr>';
 			}
