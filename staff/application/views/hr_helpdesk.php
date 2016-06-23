@@ -217,11 +217,13 @@ if($this->user->access == "exec"){
 								<select name="" id="redirect_select<?php echo $myticket->cs_post_id; ?>" style="width: 200px;">
 									<?php if($this->access->accessFull == true) { ?>
 											<option value=""></option>
-										<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_full->fname." ".$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
 										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
+											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+										<?php } ?>
+										
 									<?php } else if ($this->access->accessHR == true) { ?>
 											<option value=""></option>
 										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
@@ -456,9 +458,17 @@ if($this->user->access == "exec"){
 
 	<!-- add categories tab -->
 	<div id="tb-1" class="tab-cont">
+
 	    <label for="lbl_category_name">Enter category name: </label>
 	    <input id="category_name_txt" type="text" name="" value="" placeholder="">
     	<input class="btngreen" type="submit" id="add_categ_btn" name="" value="Submit">
+
+    	<h3>Current Categories</h3>
+    	<ul>
+    		<?php foreach ($categories as $category) {
+    			echo '<li>'.$category.'</li>';
+    		} ?>
+    	</ul>
     </div>
 
     <!-- edit hr permission tab --> 
