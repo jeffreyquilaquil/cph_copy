@@ -33,6 +33,16 @@ if(isset($_FILES) AND !empty($_FILES)){
 	
 }
 	
+if( !isset($signature_file) ){
+	echo '<p>Please upload signature for temporary ID.</p>';
+	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
+	exit();
+}
+if( !isset($tmp_id_file) ){
+	echo '<p>Please upload photo for temporary ID.</p>';
+	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
+	exit();
+}
 
 if(isset($_POST) AND !empty($_POST)){
 	date_default_timezone_set("Asia/Manila");
@@ -155,7 +165,10 @@ if(isset($_POST) AND !empty($_POST)){
 					'tin' => encryptText($_POST['tin']),
 					'philhealth' => encryptText($_POST['philhealth']),
 					'hdmf' => encryptText($_POST['hdmf']),
-					'maritalStatus' => $_POST['maritalStatus']
+					'maritalStatus' => $_POST['maritalStatus'],
+					'emergency_person' => $_POST['e_contact_person'],
+					'emergency_number' => $_POST['e_contact_number'],
+					'emergency_address' => $_POST['e_contact_address']
 				);
 		if($hire['agencyID']!=0){
 			$cstaffData['endDate'] = $hire['endDate'];
@@ -164,6 +177,7 @@ if(isset($_POST) AND !empty($_POST)){
 		}
 		
 		//INSERTING TO STAFFS TABLE
+		
 		$lastIDinserted = $db->insertQuery('staffs', $cstaffData);
 		$db->insertQuery('staffNewEmployees', array('empID_fk'=>$lastIDinserted)); //insert to staffNewEmployees for IT checklist
 		//insert uploaded files if agency hired
@@ -253,18 +267,18 @@ if(isset($_POST) AND !empty($_POST)){
 		addStatusNote($_GET['id'], 'hired', '', $hire['position']);
 
 //send email to leaders
-		$pronoun = ($hire['gender'] == 'male') ? 'he':'she';
-		$possessive_pronoun = ($hire['gender'] == 'male') ? 'his':'her';
+		$pronoun = ($cstaffData['gender'] == 'M') ? 'he':'she';
+		$possessive_pronoun = ($cstaffData['gender'] == 'M') ? 'his':'her';
 		//send also to leaders and management us
 		$leaders_msg = '<p>Hello Tate Leaders!</p>
 		<p>Please help us welcome '.ucwords($hire['fname'].' '.$hire['lname']).'</p>
-		<p>'.$hire['fname'].' will be our new '.$hire['position'].' in the '.$department.'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotitme($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.$possessive_pronoun.' shift would be '.ucfirst($_POST['shift']).'.</p>
+		<p>'.$hire['fname'].' will be our new '.$hire['position'].' in the '.$department.'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotime($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.$possessive_pronoun.' shift would be '.ucfirst($_POST['shift']).'.</p>
 		<p>We are very to have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
 		<p>Please help make '.$possesive_pronoun.' onboarding as smooth as possible. <span style="text-style: underline;">Please cascade this announcement to anyone in your team who needs to be informed.</span></p>
 		<p>Cheers!<br/>
 		<strong>The Human Resources Team</strong></p>';
 
-		sendEmail($from, 'management.us@tatepublishing.net,leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
+		sendEmail($from, 'leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
 		
 		//once we all have our data then we can create now the template for temporary ID
 		//generate tmp ID
