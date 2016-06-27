@@ -1484,9 +1484,17 @@ class Timecard extends MY_Controller {
 				if(isset($_GET['empID'])){
 					$empID = $_GET['empID'];
 				}
-				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){
+				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){					
 					$data['content'] = 'v_timecard/v_uploadlastpay';
+				} else if( isset($_GET['e']) AND $_GET['e'] == 'scheddate' ){
+					$data['content'] = 'v_timecard/v_updatelastpay';
+					$data['which_to'] = $_GET['e'];
+				} else if( isset($_GET['e']) AND $_GET['e'] == 'checkno' ){
+					$data['content'] = 'v_timecard/v_updatelastpay';
+					$data['which_to'] = $_GET['e'];
 				}
+
+
 				$data['pageType'] = 'showpay';
 				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
 				if(count($data['payInfo'])==0) $data['access'] = false;
@@ -1516,6 +1524,7 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
 				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
+				//dd($datum, false);
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
@@ -1729,7 +1738,7 @@ class Timecard extends MY_Controller {
 
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
-		$data['dataTableProperties'] = '{columnDefs:[{ targets: 8,  orderDataType: "dom-select"}]}';
+		$data['dataTableProperties'] = '{columnDefs:[{ targets: 6,  orderDataType: "dom-select"}]}';
 		
 		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
 
@@ -1739,17 +1748,35 @@ class Timecard extends MY_Controller {
 			else{
 				$data['error_data'] = '';
 				$condition = '1';
-				if( $this->input->is_ajax_request() ){
+				if( $this->input->post() ){
+
+					if( !empty($this->input->post('scheddate') ) ){
+						$which_update = 'Release Date';
+						$update_array = array('releasedDate' => date('Y-m-d H:i:s', strtotime($this->input->post('scheddate'))), 'status' => 2 );
+					} else if( !empty($this->input->post('checkno') ) ){
+						$which_update = 'Check No';
+						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 4 );
+
+					} else {
+						$update_array = array('status' => $this->input->post('status') );						
+					}
 					//update					
-					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
+					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), $update_array );						
 
 
 					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
 					//notes
-					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $this->input->post('status') ].'`.', 1, 1, $this->user->empID);
+					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $update_array['status'] ].'`.', 1, 1, $this->user->empID);
 					//end notes
-
+					if( $this->input->is_ajax_request() ){
+						echo json_encode([true]);	
+						exit();
+					} else {
+						$data['success'] = $which_update;
+						$data['content'] = 'v_timecard/v_updatelastpay';
+					}
 					
+					$this->load->view('includes/templatecolorbox', $data);
 					exit();
 				}
 
