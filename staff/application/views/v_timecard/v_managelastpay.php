@@ -43,7 +43,7 @@
 			
 			echo '<td>'.date('d-M-Y', strtotime($data->endDate)).'</td>';
 			echo '<td>
-					<input type="text" value="'.(( $data->releasedDate == '0000-00-00 00:00:00') ? '0000-00-00': date('Y-m-d', strtotime($data->releasedDate)) ).'" class="datepick scheddate" id="scheddate_'.$data->lastpayID.'" disabled data-id="'.$data->lastpayID.'" />
+					<input type="text" value="'.(( $data->releasedDate == '0000-00-00 00:00:00') ? 'YYYY-MM-DD': date('Y-m-d', strtotime($data->releasedDate)) ).'" class="datepick scheddate" id="scheddate_'.$data->lastpayID.'" disabled data-id="'.$data->lastpayID.'" />
 					<a href="#" class="editField" data-which="scheddate" data-id="'.$data->lastpayID.'">Edit</a>
 				</td>';
 			echo '<td>
