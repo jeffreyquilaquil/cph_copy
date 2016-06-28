@@ -41,7 +41,7 @@
 			echo '<td>'.$data->idNum.'</td>';
 			echo '<td><a href="'.$this->config->base_url().'staffinfo/'.$data->username.'/">'.$data->lname.', '.$data->fname.'</a></td>';
 			
-			echo '<td>'.date('d-M-Y', strtotime($data->endDate)).'</td>';
+			echo '<td>'.date('F d, Y', strtotime($data->endDate)).'</td>';
 			echo '<td>
 					<input type="text" value="'.(( $data->releasedDate == '0000-00-00 00:00:00') ? 'YYYY-MM-DD': date('Y-m-d', strtotime($data->releasedDate)) ).'" class="date_picker scheddate" id="scheddate_'.$data->lastpayID.'" disabled data-id="'.$data->lastpayID.'" />
 					<a href="#" class="editField" data-which="scheddate" data-id="'.$data->lastpayID.'">Edit</a>
