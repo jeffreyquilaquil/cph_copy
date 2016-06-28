@@ -112,6 +112,8 @@
  	
 
  	$('select[name="status"]').change(function(){
+ 		
+
  		var that = $(this);
  		
  		console.log(prev);
