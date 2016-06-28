@@ -1752,11 +1752,12 @@ class Timecard extends MY_Controller {
 
 					if( !empty($this->input->post('scheddate') ) ){
 						$which_update = 'Release Date';
-						$update_array = array('releasedDate' => date('Y-m-d H:i:s', strtotime($this->input->post('scheddate'))), 'status' => 2 );
+						$update_array = array('releasedDate' => date('Y-m-d H:i:s', strtotime($this->input->post('scheddate'))), 'status' => 1 );
+						$note = 'Schedule of release date for the last pay has updated. <br/>Release date: '. date('Y-m-d', strtotime($this->input->post('scheddate') ) );
 					} else if( !empty($this->input->post('checkno') ) ){
 						$which_update = 'Check No';
-						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 4 );
-
+						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 3 );
+						$note = 'Check number for the last pay has updated. <br/>Check number: '. $this->input->post('checkno');
 					} else {
 						$update_array = array('status' => $this->input->post('status') );						
 					}
@@ -1766,6 +1767,10 @@ class Timecard extends MY_Controller {
 
 					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
 					//notes
+					if( isset($note) ){
+						$this->commonM->addMyNotif( $last_pay_info->empID_fk, $note, 1, 1, $this->user->empID );
+					}
+
 					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $update_array['status'] ].'`.', 1, 1, $this->user->empID);
 					//end notes
 					if( $this->input->is_ajax_request() ){
