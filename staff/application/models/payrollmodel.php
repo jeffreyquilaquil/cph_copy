@@ -102,6 +102,8 @@ class Payrollmodel extends CI_Model {
 	public function getPaymentItemsForPayroll($info){
 		$kaonNapud = array();
 		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1, '', $info->payPeriodStart, $info->payPeriodEnd);
+		// echo "<pre>";
+		// var_dump($dessertItems);
 			
 		foreach($dessertItems AS $cake){
 			$eat = true;
@@ -115,16 +117,19 @@ class Payrollmodel extends CI_Model {
 						}else $eat = false;											
 					}else if($cake->payPeriod!='once'){						
 						if(($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($cake->payEnd>=$info->payPeriodStart && $cake->payEnd<=$info->payPeriodEnd)
-							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd)
-						) $eat = true;
+							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd) || $cake->payID_fk == 32 || $cake->payID_fk == 18
+						){
+							$eat = true; 
+						}
 						else $eat = false;
 					}
 				}
 				
-				if($eat==true) $kaonNapud[] = $cake;
+				if($eat==true){ 
+					$kaonNapud[] = $cake; 
+				}
 			}
 		}
-		
 		return $kaonNapud;		
 	}
 	
@@ -210,7 +215,9 @@ class Payrollmodel extends CI_Model {
 	public function insertPayEachDetail($payslipID, $itemID, $payValue, $hr=0){
 		$detailID = $this->dbmodel->getSingleField('tcPayslipDetails', 'detailID', 'payslipID_fk="'.$payslipID.'" AND payItemID_fk="'.$itemID.'"');
 		$payValue = str_replace(',', '', $payValue);
-		if(empty($detailID)){
+
+		//or this is an additional pag-ibig contribution
+		if(empty($detailID) || $itemID == 32){
 			$insDetails['payslipID_fk'] = $payslipID;
 			$insDetails['payItemID_fk'] = $itemID;				
 			$insDetails['payValue'] = $payValue;			
@@ -480,23 +487,47 @@ class Payrollmodel extends CI_Model {
 		
 		$first = $condition;
 		$second = $condition;
+
+		//determine if semi or monthly
+		$pst = '';
+		if($payStart != ''){
+			$pS = date('d', strtotime($payStart));
+
+			if($pS > 25 || $pS < 11){
+				$pst = ' AND s.payPeriod = "semi" ';
+			}
+			else{
+				$pst = ' AND s.payPeriod = "monthly" ';
+			}
+		}
 		
-		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd!='0000-00-00'){
-			$first .= ' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd))';
-			$second .= ' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd))';
+		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd != '0000-00-00'){
+			$first .= ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd > "2016-09-25")) ';
+			//' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd)) ';
+			$second .=  ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd > "2016-09-25")) ';
+
+			//' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd)  AND s.payPeriod = "'.$pst.'") ';
 		}
 		
 		$sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
-				WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.') '.$first.'
+				WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.' ) '.$first.'
 				UNION
 				SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
 				FROM tcPayslipItemStaffs AS s
-				LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$second.' 
+				LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$condition.' '.$pst.'
+
 				ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
-								
+				// SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
+				// FROM tcPayslipItemStaffs AS s
+				// LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE (empID_fk = '.$empID.' AND payID_fk IN (32,18) AND s.payEnd = "0000-00-00" AND s.status = 1  AND s.payPeriod = "'.$pst.'") OR empID_fk="'.$empID.'" '.$second.' 
+				
+
+		//echo $sql;
+
 		$query = $this->dbmodel->dbQuery($sql);
-					
+		// echo "<pre>";
+		// var_dump($query->result());
 		return $query->result(); 
 	}
 	
@@ -663,6 +694,7 @@ class Payrollmodel extends CI_Model {
 				if(!in_array($ded->payID_fk, $deadArr)){
 					$deduct .= $ded->payName."\n";
 					if(isset($deductArr[$ded->payID_fk])){
+						
 						$curr .= $this->textM->convertNumFormat($deductArr[$ded->payID_fk]->payValue)."\n";
 						array_push($deadArr, $ded->payID_fk);
 					}else $curr .= "-\n";
@@ -850,7 +882,10 @@ class Payrollmodel extends CI_Model {
 
 		foreach( $data['dataMonth'] as $key_m => $val_m ){
 			foreach( $val_m as $key_n => $val_n ){
-				$total_month[ $key_n ] += $val_n;
+				if(!isset( $total_month[ $key_n ] ))
+					$total_month[ $key_n ] = $val_n;
+				else
+					$total_month[ $key_n ] += $val_n;
 			}
 		}
 		$allowances = array();
@@ -863,10 +898,16 @@ class Payrollmodel extends CI_Model {
 					$key_e = explode('_', $key_);
 					
 					if( $key_e[1] == 'credit'){
-						$allowances[ $key_e[3] ] += $val_;
+						if( !isset($allowances[ $key_e[3] ] ) )
+							$allowances[ $key_e[3] ] = $val_;
+						else
+							$allowances[ $key_e[3] ] += $val_;
 					}
 					if( $key_e[1] == 'debit' ){
-						$deductions[ $key_e[3] ] += $val_;
+						if( !isset( $deductions[ $key_e[3] ] ) )
+							$deductions[ $key_e[3] ] = $val_;
+						else
+							$deductions[ $key_e[3] ] += $val_;
 					}	
  				}
 				
