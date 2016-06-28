@@ -541,6 +541,10 @@ class Staff extends MY_Controller {
 								if(isset($what2update['endDate']) || isset($what2update['accessEndDate'])){
 									$this->emailM->emailSeparationNotice($empID);
 								}
+
+								if( isset($what2update['regDate']) ){
+									$this->emailM->emailRegularization($empID);
+								}
 								
 								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
 								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
@@ -4488,11 +4492,62 @@ class Staff extends MY_Controller {
 		// $twodays = date_add($today, date_interval_create_from_date_string('2 days') );
 		// $twodays = date_format( $twodays, 'Y-m-d' );
 		// dd($twodays);
-		$info->name = 'Marjune';
-		$info->gender = 'M';
-		$info->endDate = '2016-06-15';
-		$info->supEmail = 'marjune.abellana@tatepublishing.net';
-		$this->emailM->emailSeparationDateAdvanceNotice( $info );
+		//$info->name = 'Marjune';
+		// $info->gender = 'M';
+		// $info->endDate = '2016-06-15';
+		// $info->supEmail = 'marjune.abellana@tatepublishing.net';
+		// $this->emailM->emailSeparationDateAdvanceNotice( $info );
+
+		$this->load->model('payrollmodel');
+		$numDays = $this->payrollmodel->getNumDays('2016-05-11', '2016-05-14');
+		dd($numDays, false);
+		$info->endDate = '2016-05-14';
+		$info->payPeriodStart = '2016-05-11';
+		$info->empID = 163;
+		$endDate_array = explode('-', $info->endDate);
+		$startDate_array = explode('-', '2016-05-11');
+		dd($endDate_array, false);
+		$endDate = $info->endDate;
+		 dd(strtotime($endDate), false);
+          dd(strtotime($info->payPeriodStart), false);
+          
+		while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
+			echo 'true';
+
+			$endDateDay = date('l', strtotime($endDate));
+			if( !in_array($endDateDay, array('Saturday','Sunday') ) ){
+				$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '.$info->empID );	
+				dd($hasPublish, false);
+				if( isset($hasPublish) AND empty($hasPublish) ){
+					$numDays--;
+				}	
+			}
+			dd($numDays, false);
+			$endDate_ = new DateTime($endDate);
+          	$endDate_->sub(new DateInterval('P1D') );
+          	$endDate = $endDate_->format('Y-m-d');
+          	dd( $endDate, false );
+			
+		}
+		echo 'final numdays';
+		dd($numDays);
+
+		/*for( $x = $endDate_array[2]; $x >= $startDate_array[2]; $x-- ){
+			$endDate = $endDate_array[0].'-'.$endDate_array[1].'-'.sprintf("%'.02d", $x);
+			$endDateDay = date('l', strtotime($endDate));
+			if( !in_array($endDateDay, array('Saturday','Sunday') ) ){
+				$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '.$info->empID );	
+				dd($hasPublish, false);
+				if( isset($hasPublish) AND empty($hasPublish) ){
+					$numDays--;
+				}	
+			}
+			
+			dd($numDays, false);
+		}*/
+		
+		
+		dd($numDays);
     }
 	public function reports(){
 		$data['content'] = 'reports';
