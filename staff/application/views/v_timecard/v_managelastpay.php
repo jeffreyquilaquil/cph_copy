@@ -1,3 +1,5 @@
+
+
 <div style="float:right;">
 	<button class="btnclass">Generate Alphalist</button>
 </div>
@@ -24,12 +26,10 @@
 <thead>
 	<tr>
 		<th>Employee ID</th>
-		<th>Employee Name</th>
-		<th>Start Date</th>
+		<th>Employee Name</th>		
 		<th>End Date</th>
-		<th>Tax Refund</th>
-		<th>Add Ons Total</th>
-		<th>Deductions Total</th>		
+		<th>Scheduled Release Date</th>
+		<th>Check No.</th>		
 		<th>NET Last Pay</th>
 		<th>Status</th>
 		<th><br/></th>
@@ -40,15 +40,21 @@
 		echo '<tr>';
 			echo '<td>'.$data->idNum.'</td>';
 			echo '<td><a href="'.$this->config->base_url().'staffinfo/'.$data->username.'/">'.$data->lname.', '.$data->fname.'</a></td>';
-			echo '<td>'.date('d-M-Y', strtotime($data->startDate)).'</td>';
+			
 			echo '<td>'.date('d-M-Y', strtotime($data->endDate)).'</td>';
-			echo '<td>'.$this->textM->convertNumFormat($data->taxRefund).'</td>';
-			echo '<td>'.$this->textM->convertNumFormat($data->addTotal).'</td>';
-			echo '<td>'.$this->textM->convertNumFormat($data->deductTotal).'</td>';			
+			echo '<td>
+					<input type="text" value="'.(( $data->releasedDate == '0000-00-00 00:00:00') ? 'YYYY-MM-DD': date('Y-m-d', strtotime($data->releasedDate)) ).'" class="date_picker scheddate" id="scheddate_'.$data->lastpayID.'" disabled data-id="'.$data->lastpayID.'" />
+					<a href="#" class="editField" data-which="scheddate" data-id="'.$data->lastpayID.'">Edit</a>
+				</td>';
+			echo '<td>
+					<input type="text" value="'.$data->checkNo.'" data-id="'.$data->lastpayID.'" id="checkno_'.$data->lastpayID.'" class="checkno" disabled>
+					<a href="#" class="editField" data-which="checkno" data-id="'.$data->lastpayID.'">Edit</a>
+				</td>';
+					
 			echo '<td><b>PHP '.$this->textM->convertNumFormat($data->netLastPay).'</b></td>'; 
 			
 			echo '<td>'. $this->textM->formfield('selectoption', 'status', $data->status, '', '', 'data-lastpayid="'.$data->lastpayID.'"', $status_labels).'<br/>';
-			if( $data->status == 3 ){
+			if( $data->status == 4 ){
 				$docs = json_decode($data->docs);
 				foreach( $docs as $doc ){
 					echo '<a href="'. $this->config->base_url().'uploads/lastpay_docs/'.$doc.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" />';
@@ -75,25 +81,51 @@
 </table>
 <script>
  $(function(){
+ 	$('.date_picker').datetimepicker({ format:'Y-m-d', timepicker:false });
+
+
+
  	var prev;
+ 	var prev_input;
  	$('.btnclass').click(function(){
  		window.location = '<?php echo $this->config->base_url(); ?>timecard/alphalist/?which=end';		
  	});
 
  	$('select[name="status"]').focus(function(){
-
  		prev = $(this).children('option').filter(':selected').val();
  	});
 
+ 	$('input[type="text"]').focus(function(){
+ 		prev_input = $(this).val();
+ 	})
+
+ 	$('a.editField').click(function(e){
+ 		e.preventDefault();
+ 		var that = $(this);
+ 		var id = that.data('id');
+ 		var which = that.data('which');
+ 		console.log(which);
+ 		console.log(id);
+ 		$('input#'+which+'_'+id).removeAttr('disabled').focus();
+ 	});
+
+ 	
+
  	$('select[name="status"]').change(function(){
+ 		
+
  		var that = $(this);
  		
  		console.log(prev);
  		var r = confirm('Proceed in updating the status to ' + that.children('option').filter(':selected').text() + '?');
 
  		if( r == true ){
- 			if( that.val() == 3 ){
+ 			if( that.val() == 1 ){
+ 				$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=scheddate&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
+ 			} else if( that.val() == 4 ){
 	 			$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=upload&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
+	 		} else if( that.val() == 3 ){	 			
+ 				$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=checkno&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
 	 		} else {
 	 			$.ajax({
 		 			type: 'POST',
@@ -109,11 +141,53 @@
  		} else {
 
  			that.val( prev );
- 		}
- 		
-
- 		
+ 		} 		
  	});
+
+	$('.scheddate').blur(function(){
+		console.log(prev_input);
+		var that = $(this);
+		var r = confirm('Schedule release date?');
+		var id = that.data('id');
+		if( r == true ){
+			$.ajax({
+				url: '<?php echo $this->config->base_url().'timecard/managelastpay' ?>',
+				type: 'POST',
+				dataType: 'JSON',
+				data: { id: id, scheddate: that.val() },
+				success: function(data){
+					alert('Release date has been scheduled');
+					window.location.reload();
+				}
+			});
+		} else {
+			that.val(prev_input);
+			that.attr('disabled', true);
+		}
+	});
+
+	$('.checkno').blur(function(){
+		var that = $(this);
+		var r = confirm('Set check number?');
+		var id = that.data('id');
+		console.log(id);
+		if( r == true ){
+			$.ajax({
+				url: '<?php echo $this->config->base_url().'timecard/managelastpay' ?>',
+				type: 'POST',
+				dataType: 'JSON',
+				data: { id: id, checkno: that.val() },
+				success: function(data){
+					alert('Check number has updated.');
+					window.location.reload();
+				}
+			});
+		} else {
+			that.val(prev_input);
+			that.attr('disabled', true);
+		}
+	});
+
 
 
  });
