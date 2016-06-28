@@ -54,7 +54,7 @@
 			echo '<td><b>PHP '.$this->textM->convertNumFormat($data->netLastPay).'</b></td>'; 
 			
 			echo '<td>'. $this->textM->formfield('selectoption', 'status', $data->status, '', '', 'data-lastpayid="'.$data->lastpayID.'"', $status_labels).'<br/>';
-			if( $data->status == 3 ){
+			if( $data->status == 4 ){
 				$docs = json_decode($data->docs);
 				foreach( $docs as $doc ){
 					echo '<a href="'. $this->config->base_url().'uploads/lastpay_docs/'.$doc.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" />';
@@ -114,11 +114,11 @@
  		var r = confirm('Proceed in updating the status to ' + that.children('option').filter(':selected').text() + '?');
 
  		if( r == true ){
- 			if( that.val() == 2 ){
+ 			if( that.val() == 1 ){
  				$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=scheddate&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
- 			} else if( that.val() == 3 ){
+ 			} else if( that.val() == 4 ){
 	 			$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=upload&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
-	 		} else if( that.val() == 4 ){	 			
+	 		} else if( that.val() == 3 ){	 			
  				$.colorbox({iframe:true, width:"990px", height:"600px", href: "<?php echo $this->config->base_url().'timecard/computelastpay/?e=checkno&payID='; ?>" + that.data('lastpayid'),onClosed: function(){ that.val( prev ); } });
 	 		} else {
 	 			$.ajax({
