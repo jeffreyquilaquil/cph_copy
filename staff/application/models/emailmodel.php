@@ -556,6 +556,24 @@ class Emailmodel extends CI_Model {
 		}
 		
 	}
+
+	public function emailRegularization( $empID ){
+
+		$info = $this->dbmodel->getSingleInfo('staffs s', 'CONCAT(fname, " ", lname) AS name, regDate, email, (SELECT email FROM staffs ss WHERE ss.empID = s.supervisor) AS supEmail, (SELECT supervisor FROM staffs ss WHERE ss.empID = s.supervisor) AS supEmpID, (SELECT email FROM staffs sss WHERE sss.empID = supEmpID) AS secondTier ', 'empID = '. $empID );
+		$to = $info->email;
+		$cc = $info->supEmail.','.$info->secondTier.',clinic.cebu@tatepublishing.net,hr-list@tatepublishing.net';
+		
+		$msg = 'Dear '.$info->name.',</p>';
+		$msg .= '<p>Good day!</p>';
+		$msg .= '<p>We congratulate you for successfully passing the performance evaluation of your probationary employment! In line with this, it is with great pleasure that we add you to the roster of regular employees of Tate Publishing and Enterprises (Philippines), Inc. effective '. date('F d, Y', strtotime($info->regDate)) .'.</p>';
+		$msg .= 'We are so proud of you and we appreciate all your efforts and involvement in each of our client\'s needs. We look forward to seeing you build your capabilities as you continue to make your contribution to the company. As a valued employee, you will be receiving additional benefits. Please check this link for more information on these benefits. <a href="http://employee.tatepublishing.net/hr/benefits-list/">http://employee.tatepublishing.net/hr/benefits-list/</a>';
+		$msg .= 'Please feel free to use the search bar in <a href="http://employee.tatepublishing.net/hr/">http://employee.tatepublishing.net/hr/</a> to find answers on other frequently asked questions. If you cannot find the answers in this site, you can also use the "Ask a Question" button under your Employee Dashboard in <a href="http://careerph.tatepublishing.net/staff">careerph.tatepublishing.net/staff</a> for assistance.</p>';
+		$msg .= '<p>Sincerely yours,</p>';
+		$msg .= '<p>Human Resources Department</p>';
+
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $to, 'Congratulations on your regularization!', $msg, 'CareerPH', $cc);
+
+	}
 	
 }
-?>
+
