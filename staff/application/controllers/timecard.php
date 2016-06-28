@@ -1738,7 +1738,7 @@ class Timecard extends MY_Controller {
 
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
-		$data['dataTableProperties'] = '{columnDefs:[{ targets: 6,  orderDataType: "dom-select"}]}';
+		$data['dataTableProperties'] = '{columnDefs:[{ targets: 6,  orderDataType: "dom-select"}, { targets: 3, orderDataType: "dom-text"}, {targets: 4, orderDataType: "dom-text"}]}';
 		
 		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
 

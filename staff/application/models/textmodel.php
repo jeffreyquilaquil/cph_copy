@@ -930,16 +930,16 @@ class Textmodel extends CI_Model {
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
 		} else if( $a == 'last_pay_status' ){
 			$arr_ = array(
-				1 => 'Pending requirements', 
-				2 => 'Pending Last Pay Calculation', 
-				3 => 'For review', 
-				4 => 'For releasing', 
-				5 => 'Released',
-				6 => 'For Check Generation'
+				0 => 'Pending requirements', 
+				1 => 'Pending Last Pay Calculation', 
+				2 => 'For review', 
+				3 => 'For releasing', 
+				4 => 'Released',
+				5 => 'For Check Generation'
 				);
 
 			//rearranged
-			$arranged = array(1, 2, 3, 6, 4, 5);
+			$arranged = array(0, 1, 2, 5, 3, 4);
 			foreach( $arranged as $key ){
 				$arr[ $key ] = $arr_[ $key ];
 			}
