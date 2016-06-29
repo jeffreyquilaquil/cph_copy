@@ -512,10 +512,12 @@ class Payrollmodel extends CI_Model {
 			$pS = date('d', strtotime($payStart));
 
 			if($pS > 25 || $pS < 11){
-				$pst = ' AND s.payPeriod IN ("once", "semi") ';
+				$pst = ' AND p.payPeriod IN ("once", "semi") ';
+				$p = ' AND payPeriod IN ("once", "semi", "per payroll") ';
 			}
 			else{
-				$pst = ' AND s.payPeriod IN ("once", "monthly")';
+				$pst = ' AND p.payPeriod IN ("once", "monthly")';
+				$p = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
 			}
 		}
 		
@@ -529,7 +531,7 @@ class Payrollmodel extends CI_Model {
 		
 		$sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
-				WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.' ) '.$first.'
+				WHERE mainItem = 1 '.$p.' AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.' ) '.$first.'
 				UNION
 				SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
 				FROM tcPayslipItemStaffs AS s
@@ -542,7 +544,7 @@ class Payrollmodel extends CI_Model {
 				
 
 		//echo $sql;
-
+	//	dd($sql);
 		$query = $this->dbmodel->dbQuery($sql);
 		// echo "<pre>";
 		// var_dump($query->result());
