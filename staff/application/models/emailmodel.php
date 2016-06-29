@@ -573,6 +573,11 @@ class Emailmodel extends CI_Model {
 
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $to, 'Congratulations on your regularization!', $msg, 'CareerPH', $cc);
 
+		//add note
+		$this->load->model('commonmodel');
+		$this->commonmodel->addMyNotif($empID, $msg, 0, 1);
+
+
 	}
 	
 }

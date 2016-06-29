@@ -181,6 +181,24 @@ class Payrollmodel extends CI_Model {
 					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd);
 				}else if($info->endDate!="0000-00-00" && $info->endDate>=$info->payPeriodStart && $info->endDate<$info->payPeriodEnd){
 					$hr = $this->payrollM->getNumDays($info->payPeriodStart, $info->endDate);
+					//check if the endDate has publish, if not then we can subtract to $hr;
+
+					$endDate = $info->endDate;
+					while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
+						//check if on weekends, don't subtract since $hr has already weekends subtracted
+						$endDateDay = date('l', strtotime($endDate) );
+						if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
+							$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
+							if( isset($hasPublish) AND empty($hasPublish) ){
+								$hr--;
+							}
+						}
+						//decrement
+						$endDateObj = new DateTime($endDate);
+						$endDateObj->sub( new DateInterval('P1D') );
+
+						$endDate = $endDateObj->format('Y-m-d');
+					}
 				}	
 				
 				if($item->prevAmount=='basePay'){					
