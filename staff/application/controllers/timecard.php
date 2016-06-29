@@ -1261,7 +1261,7 @@ class Timecard extends MY_Controller {
 					}else{
 						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 							$this->payrollM->pdfPayslip($empID, $payID);
-							exit;
+							//exit;
 						}else{
 							$data['access'] = false;
 						}
@@ -1286,7 +1286,7 @@ class Timecard extends MY_Controller {
 				}
 			}
 		}
-		
+		$this->output->enable_profiler(true);
 		$this->load->view('includes/template', $data);
 	}
 	
@@ -1719,8 +1719,13 @@ class Timecard extends MY_Controller {
 				}
 
 				$filename = json_encode($filenames);
+				$update_array['docs'] = $filename;
+				$update_array['status'] = 4;
+				if( $last_pay_info->status >= 4 ){
+					unset($update_array['status']);
+				}
 
-				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
+				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], $update_array);
 
 				//notes
 				$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `Released`.', 1, 1, $this->user->empID);

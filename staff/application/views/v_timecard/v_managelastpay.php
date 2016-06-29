@@ -56,9 +56,12 @@
 			echo '<td>'. $this->textM->formfield('selectoption', 'status', $data->status, '', '', 'data-lastpayid="'.$data->lastpayID.'"', $status_labels).'<br/>';
 			if( $data->status == 4 ){
 				$docs = json_decode($data->docs);
-				foreach( $docs as $doc ){
-					echo '<a href="'. $this->config->base_url().'uploads/lastpay_docs/'.$doc.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" />';
+				if( isset($docs) ){
+					foreach( $docs as $doc ){
+						echo '<a href="'. $this->config->base_url().'uploads/lastpay_docs/'.$doc.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" />';
+					}	
 				}
+				
 			}
 			echo '</td>';
 			echo '<td align="right">
