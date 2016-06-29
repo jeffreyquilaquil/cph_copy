@@ -512,17 +512,17 @@ class Payrollmodel extends CI_Model {
 			$pS = date('d', strtotime($payStart));
 
 			if($pS > 25 || $pS < 11){
-				$pst = ' AND s.payPeriod = "semi" ';
+				$pst = ' AND s.payPeriod IN ("once", "semi") ';
 			}
 			else{
-				$pst = ' AND s.payPeriod = "monthly" ';
+				$pst = ' AND s.payPeriod IN ("once", "monthly")';
 			}
 		}
 		
 		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd != '0000-00-00'){
-			$first .= ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd > "2016-09-25")) ';
+			$first .= ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 			//' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd)) ';
-			$second .=  ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd > "2016-09-25")) ';
+			$second .=  ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 
 			//' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd)  AND s.payPeriod = "'.$pst.'") ';
 		}
