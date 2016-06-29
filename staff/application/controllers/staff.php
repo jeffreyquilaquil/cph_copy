@@ -541,6 +541,10 @@ class Staff extends MY_Controller {
 								if(isset($what2update['endDate']) || isset($what2update['accessEndDate'])){
 									$this->emailM->emailSeparationNotice($empID);
 								}
+
+								if( isset($what2update['regDate']) ){
+									$this->emailM->emailRegularization($empID);
+								}
 								
 								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
 								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
