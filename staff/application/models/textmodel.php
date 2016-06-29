@@ -449,8 +449,8 @@ class Textmodel extends CI_Model {
 			}
 			
 			if( $show ){
-				$value->kudosReason = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->kudosReason)));
-				$value->reasonForDisapproving = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->reasonForDisapproving)));
+				$value->kudosReason = str_replace("\n",'<br/>',str_replace("\r\n", "<br/>",$value->kudosReason));
+				$value->reasonForDisapproving = str_replace("\n",'<br/>',str_replace("\r\n", "<br/>",$value->reasonForDisapproving));
 
 
 				$textR = $value->reasonForDisapproving;
