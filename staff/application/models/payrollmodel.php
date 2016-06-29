@@ -512,24 +512,29 @@ class Payrollmodel extends CI_Model {
 			$pS = date('d', strtotime($payStart));
 
 			if($pS > 25 || $pS < 11){
-				$pst = ' AND p.payPeriod IN ("once", "semi") ';
-				$p = ' AND payPeriod IN ("once", "semi", "per payroll") ';
+				//$pst = ' AND p.payPeriod IN ("once", "semi", "per payroll") ';
+				//$p = ' AND payPeriod IN ("once", "semi", "per payroll") ';
+				$pst = ' AND s.payPeriod IN ("once", "semi", "per payroll")';
+				$sst = ' AND payPeriod IN ("once", "semi", "per payroll") ';
+
 			}
 			else{
-				$pst = ' AND p.payPeriod IN ("once", "monthly")';
-				$p = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
+				$pst = ' AND s.payPeriod IN ("once", "monthly", "per payroll")';
+				$sst = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
+				//$pst = ' AND p.payPeriod IN ("once", "monthly", "per payroll")';
+				//$p = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
 			}
 		}
 		
 		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd != '0000-00-00'){
-			$first .= ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+			$first .= ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 			//' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd)) ';
-			$second .=  ' AND ((s.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+			$second .=  ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 
 			//' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd)  AND s.payPeriod = "'.$pst.'") ';
 		}
 		
-		$sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+		/* $sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
 				WHERE mainItem = 1 '.$p.' AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.' ) '.$first.'
 				UNION
@@ -541,10 +546,29 @@ class Payrollmodel extends CI_Model {
 				// SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
 				// FROM tcPayslipItemStaffs AS s
 				// LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE (empID_fk = '.$empID.' AND payID_fk IN (32,18) AND s.payEnd = "0000-00-00" AND s.status = 1  AND s.payPeriod = "'.$pst.'") OR empID_fk="'.$empID.'" '.$second.' 
-				
+		*/
+		$sql = '
+		SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+				FROM tcPayslipItems AS s
+				WHERE mainItem = 1  '.$sst.' AND payID NOT IN (
+					SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'"  AND status=1  
+					AND ( 
+							(payStart = "0000-00-00" AND payEnd = "0000-00-00") 
+							OR ( UNIX_TIMESTAMP(payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
+									AND UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
+								) 
+						)  
+					) AND payCategory=6 '.$condition.' AND (payEnd = "0000-00-00" OR UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") )
+UNION
+
+SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain FROM tcPayslipItemStaffs as s LEFT JOIN tcPayslipItems AS p ON s.payID_fk = p.payID WHERE empID_fk = 34  '.$condition.' AND p.payCategory = 6 '.$pst.' AND ( (s.payStart = "0000-00-00" AND s.payEnd = "0000-00-00") OR (UNIX_TIMESTAMP(s.payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") AND UNIX_TIMESTAMP(s.PayEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") ) ) 
+
+		';
+
+
 
 		//echo $sql;
-	//	dd($sql);
+		//dd($sql);
 		$query = $this->dbmodel->dbQuery($sql);
 		// echo "<pre>";
 		// var_dump($query->result());
