@@ -386,7 +386,7 @@ if($this->user->access == "exec"){
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-					<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>						
+					<td><?php echo $all_staff_empID[$resolve_val->cs_post_agent]->name; ?></td>						
 				</tr>
 			<?php } ?>     
 	</table>
