@@ -1286,7 +1286,7 @@ class Timecard extends MY_Controller {
 				}
 			}
 		}
-		$this->output->enable_profiler(true);
+		//$this->output->enable_profiler(true);
 		$this->load->view('includes/template', $data);
 	}
 	
