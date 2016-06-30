@@ -525,14 +525,31 @@ class Payrollmodel extends CI_Model {
 				//$p = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
 			}
 		}
+		$s_string = '';
+		$p_string = '';
+	
 		
-		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd != '0000-00-00'){
-			$first .= ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+		//if(empty($payStart) && empty($payEnd) && $payStart =='0000-00-00' && $payEnd == '0000-00-00'){
+		if(!empty($payStart) && !empty($payEnd) && $payStart !='0000-00-00' && $payEnd != '0000-00-00'){
+			//$first .= ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 			//' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd)) ';
-			$second .=  ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+			//$second .=  ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
 
 			//' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd)  AND s.payPeriod = "'.$pst.'") ';
-		}
+			$s_string = 'AND ( 
+							(payStart = "0000-00-00" AND payEnd = "0000-00-00") 
+							OR ( UNIX_TIMESTAMP(payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
+									AND UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
+								) 
+						)';
+
+			$p_string = 'AND ( 
+							(s.payStart = "0000-00-00" AND s.payEnd = "0000-00-00") OR 
+								( UNIX_TIMESTAMP(s.payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
+									AND UNIX_TIMESTAMP(s.PayEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
+								) 
+						) ';
+		} 
 		
 		/* $sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
@@ -552,18 +569,15 @@ class Payrollmodel extends CI_Model {
 				FROM tcPayslipItems AS s
 				WHERE mainItem = 1  '.$sst.' AND payID NOT IN (
 					SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'"  AND status=1  
-					AND ( 
-							(payStart = "0000-00-00" AND payEnd = "0000-00-00") 
-							OR ( UNIX_TIMESTAMP(payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
-									AND UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
-								) 
-						)  
+					  '. $s_string .'
 					) '.$condition.' AND (payEnd = "0000-00-00" OR UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") )
-UNION
+		UNION
 
-SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain FROM tcPayslipItemStaffs as s LEFT JOIN tcPayslipItems AS p ON s.payID_fk = p.payID WHERE empID_fk = '.$empID.'  '.$condition.' '.$pst.' AND ( (s.payStart = "0000-00-00" AND s.payEnd = "0000-00-00") OR (UNIX_TIMESTAMP(s.payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") AND UNIX_TIMESTAMP(s.PayEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") ) ) 
-
-		';
+		SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain 
+				FROM tcPayslipItemStaffs as s 
+				LEFT JOIN tcPayslipItems AS p 
+					ON s.payID_fk = p.payID 
+				WHERE empID_fk = '.$empID.'  '.$condition.' '.$pst.' '.$p_string;
 
 
 
