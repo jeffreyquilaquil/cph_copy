@@ -226,7 +226,7 @@
 						$data['Canceltransfer'][] = $ticket;	
 					}
 
-					if( $ticket->hr_own_empUSER == $empuser ){
+					if( $ticket->cs_post_agent == $this->user->empID ){
 						$data['MyTicket'][] = $ticket;
 					}
 				
@@ -235,7 +235,7 @@
 				
 
 				// get the name of all hr employee
-				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%hr%" AND active = 1');
+				$data['getHRlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%hr%" AND active = 1 AND username NOT IN ("jnapoles", "vemeterio")' );
 				// get the name of all accounting employee
 				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%" AND active = 1');
 				// get the name of all Full Access employee
@@ -244,6 +244,8 @@
 				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
 				$data['all_staff'] = $this->commonM->_getAllStaff('username');
+
+				$data['all_staff_empID'] = $this->commonM->_getAllStaff('empID');
 				//dd($data);
 				//$this->output->enable_profiler(true);
 				$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
@@ -356,12 +358,24 @@
 							
 						}					
 					
-					}
+					} //end upload
 				
 					if( !isset($data['error']) OR empty($data['error']) ){
 						$insert_array['cs_msg_postID_fk'] = $this->input->post('ticket_id');
 
 						if( !empty($this->input->post('reply_msg')) ){
+
+							//assign if first reply
+							if( $this->input->post('who_posted') != $data['ticket']->cs_post_empID_fk ){
+								if ( $data['ticket']->cs_post_status == 0 ) {
+									$update_array['cs_post_status'] = 1;
+									$update_array['cs_post_agent'] = $this->user->empID;
+									$msg = 'Ticket assigned to '.$data['all_staff_empID'][ $this->user->empID ]->name;
+								}	
+							}
+							
+
+
 							if( $this->input->post('who_posted') == $data['ticket']->cs_post_empID_fk ){
 								$insert_array['cs_msg_type'] = 0;
 							} else {
@@ -424,11 +438,40 @@
 		public function update(){
 			$ticket_id = $this->uri->segment(3);
 			if( $this->input->is_ajax_request() ){
+				$all_staff_empID = $this->commonM->_getAllStaff('empID');
 
 				switch ($this->input->post('which')) {
 					case 'category':
 						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['assign_category' => $this->input->post('category') ]);
-						$this->_addNote( $ticket_id, 'Category reassigned.');
+						$this->_addNote( $ticket_id, 'Category reassigned to '. $this->input->post('category') );
+
+						switch( $this->input->post('category') ){
+							case "Health Insurance":
+							case "Maxicare":							
+								$update_array['cs_post_agent'] = 526;
+								$update_array['hr_own_empUSER'] = 'kbriones';
+							break;
+							case "Recruitment Related":
+								$update_array['cs_post_agent'] = 473;
+								$update_array['hr_own_empUSER'] = 'kbagao';
+							break;
+							case "Benefits-SSS":
+							case "Benefits-Philhealth":
+							case "Benefits-Pag-IBIG":
+								$update_array['cs_post_agent'] = 522;
+								$update_array['hr_own_empUSER'] = 'jnapoles';
+							break;
+							case "Benefits-Leave Application":
+							case "Benefits-Medical Reimbursement":
+							case "Facilities and Maintenance":
+								$update_array['cs_post_agent'] = 530;
+								$update_array['hr_own_empUSER'] = 'vemeterio';
+							break;
+						}
+						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, $update_array);
+						$this->_addNote( $ticket_id, 'Reassigned to '. $all_staff_empID[ $update_array['cs_post_agent'] ]->name );
+
+
 						break;
 					case 'urgency':
 						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['cs_post_urgency' => $this->input->post('urgency') ]);

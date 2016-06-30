@@ -71,14 +71,14 @@
 					echo '<select name="assign_category">';
 						echo '<option value="">--</option>';
 						foreach( $categories as $key => $category ){
-							echo '<option value="'.$key.'"';
-								echo ( $key == $ticket->assign_category ) ? ' selected ': '';
+							echo '<option value="'.$category.'"';
+								echo ( $category == $ticket->assign_category ) ? ' selected ': '';
 							echo '>'.$category.'</option>';
 						}
-					echo '</select><span class="updated">Updated!</span>';
+					//echo '</select><span class="updated">Updated!</span>';
 					echo '</td>';
 				} else if( $this->user->empID == $ticket->cs_post_empID_fk ) {
-					echo '<td>'.(isset($categories[ $ticket->assign_category ]) ? $categories[ $ticket->cs_post_empID_fk ] : 'Unassigned').'</td>';
+					echo '<td>'.(isset($ticket->assign_category) ? $ticket->assign_category : 'Unassigned').'</td>';
 				} 
 				
 			?>
@@ -160,11 +160,9 @@
 
 	//end ticket thread ?>
 	<br/>
-	<?php if( !empty($ticket->post_id) ){
+	<?php if( empty($ticket->post_id) ){ ?>
 
-		exit();
-	} ?>
-
+		
 	<?php 
 		//if resolved then add stats
 		if( $ticket->cs_post_status == 3 AND ($this->user->empID == $ticket->cs_post_empID_fk) ){
@@ -260,6 +258,7 @@
 
 
 
+<?php } ?>
 
 
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
@@ -347,6 +346,5 @@
 		});
 	});
 </script>
-
 
 

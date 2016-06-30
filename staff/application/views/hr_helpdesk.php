@@ -140,7 +140,7 @@ if($this->user->access == "exec"){
 				<th>Due Date</th>
 				<th>Status</th>
 				<th>Mark</th>
-				<th>Owner</th>
+				
 				<th>Extend Due Date</th>
 				<th>Reassign</th>
 			</tr>
@@ -187,7 +187,7 @@ if($this->user->access == "exec"){
 				}
 				?>
 				
-				<td><?php echo $myticket->hr_own_empUSER; ?></td>
+				
 				<td>
 				<?php if($myticket->cs_post_status == 0 || $myticket->cs_post_status == 1){ ?>
 					<a style="cursor: pointer;" id="extend_date<?php echo $myticket->cs_post_id; ?>">Extend Date</a>
@@ -352,7 +352,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $all_staff[$active_val->hr_own_empUSER]->name; ?></td>				
+				<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>				
 			</tr>
 		<?php } ?>    	 
 	</table>
@@ -386,7 +386,7 @@ if($this->user->access == "exec"){
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
+					<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>						
 				</tr>
 			<?php } ?>     
 	</table>
@@ -420,7 +420,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php if($resolve_val->hr_own_empUSER==''){ echo 'No Owner';}else{ echo $resolve_val->hr_own_empUSER;} ?></td>
+				<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>		
 			<?php if($resolve_val->cs_post_status == 5){ ?>
 				<td>Closed Cancel</td>	
 			<?php } ?>
