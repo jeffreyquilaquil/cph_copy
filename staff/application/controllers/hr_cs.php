@@ -468,8 +468,11 @@
 								$update_array['hr_own_empUSER'] = 'vemeterio';
 							break;
 						}
-						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, $update_array);
-						$this->_addNote( $ticket_id, 'Reassigned to '. $all_staff_empID[ $update_array['cs_post_agent'] ]->name );
+						if( isset($update_array) AND !empty($update_array) ){
+							$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, $update_array);
+							$this->_addNote( $ticket_id, 'Reassigned to '. $all_staff_empID[ $update_array['cs_post_agent'] ]->name );	
+						}
+						
 
 
 						break;
