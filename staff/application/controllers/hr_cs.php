@@ -43,8 +43,11 @@
 			$data['cs_post_subject'] = $this->input->post('cs_post_subject');
 			$data['report_related']= $this->input->post('inquiry_type');
 			$data['cs_post_urgency']= $this->input->post('cs_post_urgency');
-			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');
+			$data['cs_post_date_submitted']= date('Y-m-d h:i:sa');			
 			$data['cs_post_status']= 0; 
+
+			//compute due date
+			$data['due_date'] = $this->_computeDueDate( $data['cs_post_date_submitted'], $data['cs_post_urgency'] );
 
 			//auto-assign HR related 
 			
@@ -477,8 +480,11 @@
 
 						break;
 					case 'urgency':
-						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['cs_post_urgency' => $this->input->post('urgency') ]);
+						$date_submitted = $this->dbmodel->getSingleField('hr_cs_post', 'cs_post_date_submitted', 'cs_post_id = '. $ticket_id);
+						$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $ticket_id, ['cs_post_urgency' => $this->input->post('urgency') ], ['due_date' => $this->_computeDueDate( $date_submitted, $this->input->post('urgency') ) ]);
 						$this->_addNote( $ticket_id, 'Urgency reassigned.');
+
+
 					default:
 						# code...
 						break;
@@ -487,6 +493,36 @@
 				echo json_encode(['success']);
 				exit();
 			}
+		}
+
+		//helper function that will compute the due_date based on urgency
+		private function _computeDueDate( $today, $urgency )
+		{
+			
+			switch( $urgency ){
+				case "Urgent": $time = 'P1D';
+				break;
+				case "Not Urgent": $time = 'P3D';
+				break;
+				case "Need Attention": $time = 'P2D';
+				break;
+				default: $time = 'P3D';
+				break;				
+			}
+			//update due date when based on urgency
+			$endDateObj = new DateTime($today);
+			$endDateObj->add( new DateInterval($time) );
+
+			$endDate = $endDateObj->format('Y-m-d');
+			return $endDate;
+		}
+
+		public function testPage()
+		{
+			$today = date('Y-m-d H:i:s');
+			$urgency = 'Urgent';
+			$due_date = $this->_computeDueDate( $today, $urgency );
+			dd($due_date);
 		}
 
 		//end of HrIncident function
