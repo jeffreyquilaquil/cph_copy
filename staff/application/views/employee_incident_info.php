@@ -26,7 +26,7 @@ if ($this->user->empID != $this->uri->segment(3)) {
 foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 
 <div>
-	<h2>HR/Accounting HelpDesk</h2>
+	<h2>Employee Dashboard</h2>
 	<?php if($num_mark->num_rate != 0){ ?>
 	<div id="nummark">
 		<h3 style="color: white;">You have <b><?php echo $num_mark->num_rate ?></b> Incident that already resolved please put a remark</h3>

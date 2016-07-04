@@ -938,8 +938,9 @@
             	$list = array();
             	$list = explode(",",$val);
             	$id = $list[0];
-            	$dep = $list[4];
+              	$dep = $list[4];
 
+            		// Transfer to HR
 	            	if($dep == "HR"){
 
 	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser = "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
@@ -960,7 +961,10 @@
 
 	            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", cs_post_status = 0, report_related = 0','cs_post_id = '.$id);
 
-	            	}else if($dep == "Finance"){
+	            	}
+	            	
+	            	// Transfer to Accounting
+	            	else if($dep == "Finance"){
 
 	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser =  "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
 	            		
@@ -978,7 +982,44 @@
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
 	            		$this->ask_hr->updatestatus('hr_cs_post','hr_own_empUSER = "", cs_post_agent = "", report_related = 1, cs_post_status = 0','cs_post_id = '.$id);
-	            	}else{
+	            	}
+
+
+	            	// Redirect specifically 
+	            	else if($dep == "Full"){
+
+	            		// Result if incident exista and closed transfer
+	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser =  "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
+	            		
+	            		// Set incident status to open, active, resolve
+	            		if($msg_id != null){
+	            			$this->ask_hr->updatestatus('hr_cs_msg','incident_status = 0 ','cs_msg_postID_fk = "'.$id.'"');
+	            		}
+
+		            	$data['cs_msg_postID_fk'] = $id;
+		            	$data['reply_empUser'] = $list[3];
+		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
+		            	$data['cs_msg_type'] = 1;
+		            	$data['incident_status'] = 1;
+		            	$data['cs_msg_text'] = "This Incident is Reassign to you from <b>".$list[3]." </b>";
+
+		            	$this->ask_hr->askhr('hr_cs_msg',$data);
+
+		            	$new_owner = $list[1];
+		            	$new_agent= $list[2];
+		            	
+		            	$this->ask_hr->updatestatus('hr_cs_post',
+		            								'hr_own_empUSER = " '. $new_owner .' ", 
+		            								 cs_post_agent = " '.$new_agent.' ",
+		            								 cs_post_status = 1
+		               								 ',
+		            								'cs_post_id = '.$id);
+
+	            	}
+
+
+
+	            	else{
 
 	            		$msg_id = $this->ask_hr->GetID('cs_msg_id','hr_cs_msg','WHERE reply_empUser =  "'.$list[1].'" AND (cs_msg_postID_fk = "'.$id.'" AND incident_status = 1)');
 	            		
