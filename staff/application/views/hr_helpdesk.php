@@ -200,7 +200,7 @@ if($this->user->access == "exec"){
 						<input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
 						<input type="hidden" id="inci_id<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->cs_post_id; ?>">
 						<input type="hidden" id="due_D<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->due_date; ?>">
-						<input type="submit" class="btngreen" id="add_days_btn<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
 					</span>
 				</td>
 				<td>
@@ -253,7 +253,7 @@ if($this->user->access == "exec"){
 							</li>
 							
 
-							<li><input type="submit" class="btngreen" id="redirect_btn<?php echo $myticket->cs_post_id ?>" name="" value="Submit" style="float:right;"></li>
+							<li><input type="submit" class="redirect_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit" style="float:right;"></li>
 						</ul>	
 					</div>
 				</td>		
@@ -306,7 +306,7 @@ if($this->user->access == "exec"){
 								<?php if($this->access->myaccess[0] == "full"){ ?>
 								
 								<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
-											<option value="<?php echo $value_full->username.','.$value_full->empID.','.$this->user->username.',Full'; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
+											<option value="<?php echo $value_full->username.','.$value_full->empID.','.$this->user->username.',Full,'.$value_full->fname.' '.$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
 								<?php } ?>
 											
 								<?php }
@@ -569,31 +569,32 @@ $(document).ready(function(){
 				$(this).text('Hide See All Redirection Departments');
 			}
 	});
-<?php foreach ($department_email as $id_d) { ?>
-	// Delete Department
-	$("#delete_department_btn<?php echo $id_d->dept_emil_id; ?>").click(function() {
 
-		var id_dep = $("#id_delete_department<?php echo $id_d->dept_emil_id; ?>").val();
-		var datacategorys = 'id_delete='+ id_dep;
-		
-		if (id_dep == '') {
-			alert("No ID Selected!");
-		} else {
-				
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/DeleteDeparment",
-				data: datacategorys,
-				cache: false,
-					success: function(result){
-					alert("Success!");
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                     close();
-					}
-				});
-			}
-	});
-<?php } ?>
+	<?php foreach ($department_email as $id_d) { ?>
+		// Delete Department
+		$("#delete_department_btn<?php echo $id_d->dept_emil_id; ?>").click(function() {
+
+			var id_dep = $("#id_delete_department<?php echo $id_d->dept_emil_id; ?>").val();
+			var datacategorys = 'id_delete='+ id_dep;
+			
+			if (id_dep == '') {
+				alert("No ID Selected!");
+			} else {
+					
+					$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/DeleteDeparment",
+					data: datacategorys,
+					cache: false,
+						success: function(result){
+						alert("Success!");
+						 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+	                     close();
+						}
+					});
+				}
+		});
+	<?php } ?>
 
 	// insert new category
 	$("#add_categ_btn").click(function() {
@@ -619,7 +620,7 @@ $(document).ready(function(){
 			}
 	});
 
-	// insert new Department Information
+	// Insert new department
 	$("#add_dep_btn").click(function() {
 
 		var new_name = $("#new_dept_name").val();
@@ -645,13 +646,16 @@ $(document).ready(function(){
 			}
 	});
 
-	<?php foreach ($MyTicket as $k => $v): ?>
+	
 		
-		// Redirection of owner
-	$("#redirect_btn<?php echo $v->cs_post_id?>").click(function() {
+	// Redirect my ticket
+	$(".redirect_btn").click(function() {
 		
-		var redirect_b = $("#redirect_select<?php echo $v->cs_post_id?> option:selected").val();
+		var btn_unique_id = $(this).data("btn");
+		var redirect_b = $('#redirect_select' +btn_unique_id+ ' option:selected').val();
 		var dataredirect_a = 'redirect_to='+ redirect_b;
+
+		console.log(dataredirect_a);
 
 		if (redirect_b == '') {
 			alert("Please Select!");
@@ -671,9 +675,9 @@ $(document).ready(function(){
 			}
 	});
 
-	<?php endforeach ?>
 
-	// New ticket redirection
+
+	// Redirect new ticket 
 	$('.btn_new_redirect').click(function() {
 		
 		var btn_unique_id = $(this).data("btn");
@@ -704,16 +708,20 @@ $(document).ready(function(){
 
 	});
 
-	// Additional days of owner incident
-	<?php foreach ($MyTicket as $k => $t): ?>
+	// Extend due date
 	
-	$("#add_days_btn<?php echo $t->cs_post_id; ?>").click(function() {
+	
+	$(".add_days_btn").click(function() {
 
-		var due = $('#due_D<?php echo $t->cs_post_id; ?>').val();
-		var i_id = $('#inci_id<?php echo $t->cs_post_id; ?>').val();
-		var addDay = $("#add_days<?php echo $t->cs_post_id; ?>").val();
+		var btn_unique_id = $(this).data("btn");
+
+		var due = $('#due_D' + btn_unique_id).val();
+		var i_id = $('#inci_id' + btn_unique_id).val();
+		var addDay = $("#add_days" + btn_unique_id).val();
 
 		var dataredirect = 'add_days='+ addDay + '&inci_id=' + i_id + '&due_date=' + due;
+
+		console.log(dataredirect);
 
 		if (addDay == '') {
 			alert("Please Select number of days!");
@@ -725,14 +733,13 @@ $(document).ready(function(){
 				data: dataredirect,
 				cache: false,
 					success: function(result){
-					alert("Success! Due: "+ due + " ID : " + i_id + " NumDays: " + addDay);
+					alert("Done extending date!);
 					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
                      close();
 					}
 				});
 			}
 	});
-	<?php endforeach ?>
 
 
 

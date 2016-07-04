@@ -954,7 +954,7 @@
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            	$data['cs_msg_type'] = 1;
 		            	$data['incident_status'] = 1;
-		            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+		            	$data['cs_msg_text'] = "This incident is not Accounting Related. <br><br> Transferred by <b>".$list[3]."</b>.";
 
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 		            	
@@ -977,7 +977,7 @@
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            	$data['cs_msg_type'] = 1;
 		            	$data['incident_status'] = 1;
-		            	$data['cs_msg_text'] = "<b>Good Day!<br><br></b>This Incident is Transfered by <b>".$list[3]." </b>";
+		               	$data['cs_msg_text'] = "This incident is not HR Related. <br><br> Transferred by <b>".$list[3]."</b>.";
 
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
@@ -1001,7 +1001,7 @@
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            	$data['cs_msg_type'] = 1;
 		            	$data['incident_status'] = 1;
-		            	$data['cs_msg_text'] = "This Incident is Reassign to you from <b>".$list[3]." </b>";
+		            	$data['cs_msg_text'] = "Hi ".$list[5]."!<br><br>This Incident is assigned by <b>CPH</b>.";
 
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
@@ -1032,7 +1032,7 @@
 		            	$data['cs_msg_date_submitted'] = date('Y-m-d h:i:sa');
 		            	$data['cs_msg_type'] = 1;
 		            	$data['incident_status'] = 1;
-		            	$data['cs_msg_text'] = "<b>Good Day!<br><br>Mr/Ms:".$dep."<br><br></b>This Incident is Reassign to you from <b>".$list[3]." </b>";
+		            	$data['cs_msg_text'] = "Hi ".$dep."!<br><br>This Incident is transferred by <b>".$list[3]."</b>.";
 
 		            	$this->ask_hr->askhr('hr_cs_msg',$data);
 
