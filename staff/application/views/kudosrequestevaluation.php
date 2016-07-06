@@ -38,7 +38,7 @@
 		<div class="panel-heading">Requestor Details</div>
 		<div class="panel-body">
 			<p><strong>Reason of Kudos Bonus.</strong></p>
-			<P><?= str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($evaluationContent[0]['kudosReason']))); ?></P>
+			<P><?=str_replace("\n",'<br/>',str_replace("\r\n", "<br/>", $evaluationContent[0]['kudosReason'])); ?></P>
 			<p><strong>Recommendation amount of Kudos Bonus.</strong></p> 
 			<input type='number' id='requestorAmount' value="<?=$evaluationContent[0]['kudosAmount']?>" title="This is required" data-toggle="tooltip" data-placement="top" name='requestorAmount' class='form-control' min=0 placeholder="00.00" />
 		</div>
