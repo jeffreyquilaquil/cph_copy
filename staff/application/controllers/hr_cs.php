@@ -1114,6 +1114,15 @@
 	  			$this->load->view('includes/template',$data);
             }// end test function
 
+
+    /* 
+	* cron jobs that send an email to staff of their unrated resolved ticket
+    */
+    public function eamilStaffOnResolvedTicket(){
+    	//get all resolved unrated ticket
+    	//then send eamil to staff reminding them that they have pending unrated resolved ticket
+    }
+
 } // end of class
 
 
