@@ -32,6 +32,8 @@ if(isset($_FILES) AND !empty($_FILES)){
 	
 	
 }
+
+
 	
 if( !isset($signature_file) ){
 	echo '<p>Please upload signature for temporary ID.</p>';
@@ -269,16 +271,17 @@ if(isset($_POST) AND !empty($_POST)){
 //send email to leaders
 		$pronoun = ($cstaffData['gender'] == 'M') ? 'he':'she';
 		$possessive_pronoun = ($cstaffData['gender'] == 'M') ? 'his':'her';
+		$ppronoun = ($cstaffData['gender'] == 'M') ? 'him':'her';
 		//send also to leaders and management us
 		$leaders_msg = '<p>Hello Tate Leaders!</p>
 		<p>Please help us welcome '.ucwords($hire['fname'].' '.$hire['lname']).'</p>
-		<p>'.$hire['fname'].' will be our new '.$hire['position'].' in the '.$department.'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotime($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.$possessive_pronoun.' shift would be '.ucfirst($_POST['shift']).'.</p>
-		<p>We are very to have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
-		<p>Please help make '.$possesive_pronoun.' onboarding as smooth as possible. <span style="text-style: underline;">Please cascade this announcement to anyone in your team who needs to be informed.</span></p>
+		<p>'.$hire['fname'].' will be our new '.$hire['title'].' in the '.$hire['dept'].'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotime($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.ucwords($possessive_pronoun).' shift is '.ucfirst($_POST['shift']).'.</p>
+		<p>We are very to pleased have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
+		<p>Please help us welcome '.$ppronoun.' and make '. $possesive_pronoun. ' onboarding as smooth as possible. Kindly cascade this announcement to anyone in your team who needs to be informed.</p>
 		<p>Cheers!<br/>
 		<strong>The Human Resources Team</strong></p>';
 
-		sendEmail($from, 'leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
+		sendEmail($from, 'marjune.abellana@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
 		
 		//once we all have our data then we can create now the template for temporary ID
 		//generate tmp ID
