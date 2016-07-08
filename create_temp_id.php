@@ -13,7 +13,7 @@ $_POST = array(
 	'e_contact_relationship' => 'Relationship',
 	'fname' => 'Marjune',
 	'lname' => 'Abellana',
-	'username' => 'jmonares';
+	'username' => 'jmonares'
 	);
 
 
