@@ -6,7 +6,46 @@ require 'config.php';
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	header("Location: login.php");
 	exit();
-} 
+}
+
+function resize_image($file, $w, $h, $save_path, $img_type ) {
+     list($width, $height) = getimagesize($file);
+     $r = $width / $height;
+     if ($crop) {
+         if ($width > $height) {
+             $width = ceil($width-($width*abs($r-$w/$h)));
+         } else {
+             $height = ceil($height-($height*abs($r-$w/$h)));
+         }
+         $newwidth = $w;
+         $newheight = $h;
+     } else {
+         if ($w/$h > $r) {
+             $newwidth = $h*$r;
+             $newheight = $h;
+         } else {
+             $newheight = $w/$r;
+             $newwidth = $w;
+         }
+     }
+     switch( $img_type ){
+         case 'jpg':
+             $src = imagecreatefromjpeg($file); break;
+         case 'png':
+             $src = imagecreatefrompng($file); break;
+     }
+     $dst = imagecreatetruecolor($newwidth, $newheight);
+     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+     switch( $img_type ){
+         case 'jpg':
+             imagejpeg( $dst, $save_path, 100); break;
+         case 'png':
+             imagepng( $dst, $save_path, 100); break;
+     }
+
+     return $save_path;
+
+ } 
 
 
 //for files uploaded
@@ -29,7 +68,12 @@ if(isset($_FILES) AND !empty($_FILES)){
 	
 	$sig_dimension = getimagesize($signature_file);
 	
-	
+	$d = time();
+ 	$save_path_sig = $full_path.'/signature_resized'.$d.'.png';
+ 	$save_path_id = $full_path.'/tmp_id_resized'.$d.'.jpg';
+
+ 	$signature_file = resize_image( $signature_file, 100, 70, $save_path_sig, 'png');
+ 	$tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 	
 }
 
@@ -281,7 +325,7 @@ if(isset($_POST) AND !empty($_POST)){
 		<p>Cheers!<br/>
 		<strong>The Human Resources Team</strong></p>';
 
-		sendEmail($from, 'marjune.abellana@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
+		sendEmail($from, 'leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
 		
 		//once we all have our data then we can create now the template for temporary ID
 		//generate tmp ID
@@ -338,9 +382,9 @@ if(isset($_POST) AND !empty($_POST)){
 			$pdf->Write(0, $full_name );
 			
 			//picture
-			$pdf->Image($tmp_id_file, 36, 96, -88, -110);
-			
-			$pdf->Image($signature_file, 70, 125);
+			 $pdf->Image($tmp_id_file, 36.5, 97);
+
+             $pdf->Image($signature_file, 80, 123);
 			
 			
 			$pdf->Output($full_path. '/' .$tmp_id_filename.'.pdf', 'F');
