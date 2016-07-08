@@ -197,10 +197,12 @@ if($this->user->access == "exec"){
 					<span id="extend_date_form<?php echo $myticket->cs_post_id; ?>">
 						<br>
 						<small>Plase select number of additional days:</small>
-						<input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
+						<input type="number" id="add_days_<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
+						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<!-- <input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
 						<input type="hidden" id="inci_id<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->cs_post_id; ?>">
 						<input type="hidden" id="due_D<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->due_date; ?>">
-						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit"> -->
 					</span>
 				</td>
 				<td>
@@ -713,27 +715,37 @@ $(document).ready(function(){
 	
 	$(".add_days_btn").click(function() {
 
-		var btn_unique_id = $(this).data("btn");
+		var that = $(this);
+		var id = that.data('btn');
+		console.log(id);
 
-		var due = $('#due_D' + btn_unique_id).val();
-		var i_id = $('#inci_id' + btn_unique_id).val();
-		var addDay = $("#add_days" + btn_unique_id).val();
+		var addDay = $('#add_days_'+id).val();
+		console.log(addDay);
+		// var btn_unique_id = $(this).data("btn");
 
-		var dataredirect = 'add_days='+ addDay + '&inci_id=' + i_id + '&due_date=' + due;
+		// var due = $('#due_D' + btn_unique_id).val();
+		// var i_id = $('#inci_id' + btn_unique_id).val();
+		// var addDay = $("#add_days" + btn_unique_id).val();
 
-		console.log(dataredirect);
+		// var dataredirect = 'add_days='+ addDay + '&inci_id=' + i_id + '&due_date=' + due;
+
+		// console.log(dataredirect);
 
 		if (addDay == '') {
 			alert("Please Select number of days!");
+		} else if( addDay > 5 ){
+			alert('You can only extend the due date up to 5 days.');		
 		} else {
 				
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/AdditionalDays",
-				data: dataredirect,
+				data: { add_days: addDay, inci_id : id },
 				cache: false,
-					success: function(result){
-					alert("Done extending date!);
+
+				success: function(result){
+					console.log(result);
+					alert("Done extending date!");
 					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
                      close();
 					}

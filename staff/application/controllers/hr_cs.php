@@ -1081,14 +1081,18 @@
 
             function AdditionalDays() // method to redirect the incident owner
             {
-            	$id = $this->input->post('inci_id');
-            	$dueDate = $this->input->post('due_date');
-            	$num_days = $this->input->post('add_days');
+            	if( $this->input->is_ajax_request() ){
+            		//update due date when based on urgency
+            		$add_string = 'P'.$this->input->post('add_days').'D';
+					$endDateObj = new DateTime( date('Y-m-d') );
+					$endDateObj->add( new DateInterval($add_string) );
 
-            	$Updated_date = date('Y-m-d', strtotime($dueDate. ' + '.$num_days.' days'));
-
-
-            	$this->ask_hr->updatestatus('hr_cs_post','due_date = "'. $Updated_date .'"','cs_post_id = '.$id);
+					$update_array['due_date'] = $endDateObj->format('Y-m-d');
+			
+            		$this->dbmodel->updateQuery('hr_cs_post','cs_post_id = '. $this->input->post('inci_id'), $update_array );
+            		$this->_addNote( $this->input->post('inci_id'), 'Update due date to '. $update_array['due_date'] );
+            	}
+            	
 
             }
 
