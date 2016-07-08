@@ -1,7 +1,7 @@
 <?php 
 
 $_POST = array(
-	'stardate' => 'July 08, 2016',
+	'startdate' => 'July 08, 2016',
 	'bdate' => 'Janury 01, 2000',
 	'sss' => '111111111',
 	'philhealth' => '11111111111111',
@@ -20,8 +20,8 @@ $_POST = array(
 $tmp_id_filename = 'tmp_id_'.$_POST['username'];
 $full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $_POST['username'];
 
-$signature_file =  $full_path.'/signature.JPG'.;
-	$tmp_id_file = $full_path.'/tmp_id_jmonares.JPG'.;
+$signature_file =  $full_path.'/signature.JPG';
+	$tmp_id_file = $full_path.'/tmp_id_jmonares.JPG';
 
 	
 	$sig_dimension = getimagesize($signature_file);
@@ -43,7 +43,7 @@ $signature_file =  $full_path.'/signature.JPG'.;
 			$pdf->Write(0, $_POST['startdate']);
 			//hbd
 			$pdf->setXY(41, 38.5);		
-			$pdf->Write(0, $hire['bdate'] );
+			$pdf->Write(0, $_POST['bdate'] );
 			
 			$pdf->setXY(41, 42.5);		
 			$pdf->Write(0, $_POST['sss'] );
@@ -72,7 +72,7 @@ $signature_file =  $full_path.'/signature.JPG'.;
 			$pdf->SetFont('Arial','B',9);
 			//$pdf->setTextColor(255, 255, 255);
 			$pdf->setTextColor(0, 0, 0);	
-		    $full_name = $hire['fname'].' '.$hire['lname'];	
+		    $full_name = $_POST['fname'].' '.$_POST['lname'];	
 			$full_name = strtoupper( $full_name );
 			$pdf->setXY(67, 118);		
 			$pdf->Write(0, $full_name );
