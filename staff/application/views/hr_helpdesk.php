@@ -198,7 +198,7 @@ if($this->user->access == "exec"){
 						<br>
 						<small>Plase select number of additional days:</small>
 						<input type="number" id="add_days_<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
-						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<input type="submit" id="btn_add_days_<?php echo $myticket->cs_post_id; ?>" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
 						<!-- <input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
 						<input type="hidden" id="inci_id<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->cs_post_id; ?>">
 						<input type="hidden" id="due_D<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->due_date; ?>">
@@ -716,25 +716,16 @@ $(document).ready(function(){
 	$(".add_days_btn").click(function() {
 
 		var that = $(this);
+		
 		var id = that.data('btn');
-		console.log(id);
-
-		var addDay = $('#add_days_'+id).val();
-		console.log(addDay);
-		// var btn_unique_id = $(this).data("btn");
-
-		// var due = $('#due_D' + btn_unique_id).val();
-		// var i_id = $('#inci_id' + btn_unique_id).val();
-		// var addDay = $("#add_days" + btn_unique_id).val();
-
-		// var dataredirect = 'add_days='+ addDay + '&inci_id=' + i_id + '&due_date=' + due;
-
-		// console.log(dataredirect);
-
+		var addDay = $('#add_days_'+id).val();	
+		$('#btn_add_days_'+id).attr('disabled', 'disabled');
 		if (addDay == '') {
 			alert("Please Select number of days!");
+			$('#btn_add_days_'+id).removeAttr('disabled');
 		} else if( addDay > 5 ){
 			alert('You can only extend the due date up to 5 days.');		
+			$('#btn_add_days_'+id).removeAttr('disabled');
 		} else {
 				
 				$.ajax({
