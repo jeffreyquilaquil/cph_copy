@@ -1679,7 +1679,6 @@ class Payrollmodel extends CI_Model {
 				$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
 			}
 			//declare payinfo manually (add13 = total13th, )
-			else
 
 
 			/****************************************
