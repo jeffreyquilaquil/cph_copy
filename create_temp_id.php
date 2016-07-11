@@ -24,8 +24,8 @@ $full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $username;
 $signature_file =  $full_path.'/signature.png';
 	$tmp_id_file = $full_path.'/tmp_id_'.$username.'.JPG';
 $d = time();
-$save_path_sig = $full_path.'/signature_resized'.$d.'.png';
-$save_path_id = $full_path.'/tmp_id_resized'.$d.'.jpg';
+$save_path_sig = $full_path.'/signature_resized.png';
+$save_path_id = $full_path.'/tmp_id_resized.jpg';
 	
 $signature_file = resize_image( $signature_file, 100, 70, $save_path_sig, 'png');
 $tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
