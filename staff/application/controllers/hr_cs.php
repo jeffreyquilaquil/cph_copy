@@ -11,6 +11,7 @@
 		$this->load->helper('url');
 		$this->load->model('ask_hr');	
 		$this->load->model('commonmodel', 'commonM');
+		$this->load->model('emailmodel');	
 
 			}
 
@@ -1115,17 +1116,44 @@
             }// end test function
 
 
-    /* 
-	* cron jobs that send an email to staff of their unrated resolved ticket
-    */
-    public function eamilStaffOnResolvedTicket(){
-    	//get all resolved unrated ticket
-    	//then send eamil to staff reminding them that they have pending unrated resolved ticket
-    }
+		    /* 
+			* cron jobs that send an email to staff of their unrated resolved ticket
+		    */
+		    public function eamilStaffOnResolvedTicket(){
+		    	
+		    	//get all resolved unrated ticket
+		    	$unratedTickets= $this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,
+		    													   staffs.email,
+		    													   staffs.fname,
+		    													   staffs.lname',
+		    													   'hr_cs_post',
+		    													   'LEFT JOIN staffs ON hr_cs_post.cs_post_empID_fk = staffs.empID 
+		    													    WHERE cs_post_status = 3 AND rate_status = 0',
+		    													   'ORDER BY staffs.email'
+		    													    );
 
-} // end of class
+		  		//then send eamil to staff reminding them that they have pending unrated resolved ticket
+				foreach($unratedTickets as $unratedTicket){
+					
+					$from = 'careers.cebu@tatepublishing.net';
+					$to = $unratedTicket->email;
+					$fromName = 'CPH';
+					$subject = 'Pending Unrated Resolved ticket';
+					$body = 'Dear '.$unratedTicket->fname.' '.$unratedTicket->lname.',
+							<br><br>
+							You have pending resolved ticket to be rated. please login to CPH and go to this link and rate the your ticket. Thanks!
+							<br><br>
+							Ticket # '.$unratedTicket->cs_post_id;
 
+					$headers = "From: ".$unratedTicket->email;
+					
+					$this->emailmodel->sendEmail($from, $to, $subject, $body, $fromName);
 
+				}
+
+		    }
+
+		} // end of class
 
   ?>
 	
