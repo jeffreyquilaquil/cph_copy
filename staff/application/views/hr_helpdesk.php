@@ -153,7 +153,7 @@ if($this->user->access == "exec"){
 
 			<tr>
 				<td class="td_hover">
-				<?php if (date('Y-m-d') >= $myticket->due_date) {
+				<?php if (date('Y-m-d') >= $myticket->due_date AND $myticket->cs_post_status < 3 ) {
 					echo "<span style='color:red;'>&#9873;</span>";
 				}?>
 
@@ -172,7 +172,7 @@ if($this->user->access == "exec"){
 					?>
 				</td>
 				<td><?php echo date_format(date_create($myticket->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo date_format(date_create($myticket->due_date),'F d, Y'); ?></td>
+				<td><?php echo ($myticket->due_date == '0000-00-00') ? '--' : date('F d, Y G:ia'); ?></td>
 				
 				<?php 
 					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed','Closed'];
@@ -433,7 +433,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>		
+				<td><?php echo $all_staff_empID[$resolve_val->cs_post_agent]->name; ?></td>		
 			<?php if($resolve_val->cs_post_status == 5){ ?>
 				<td>Closed Cancel</td>	
 			<?php } ?>
@@ -449,7 +449,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $c_transfer->fname." ".$c_transfer->lname; ?></td>
 				<td><?php echo $c_transfer->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($c_transfer->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $c_transfer->hr_own_empUSER; ?></td>
+				<td><?php echo $all_staff[$c_transfer->hr_own_empUSER]->name; ?></td>
 				<td>Closed Transfer</td>	
 
 			</tr>
