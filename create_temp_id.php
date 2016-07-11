@@ -1,5 +1,5 @@
 <?php 
-
+ini_set('display_errors', 1);
 $_POST = array(
 	'startdate' => 'July 08, 2016',
 	'bdate' => 'Janury 01, 2000',
@@ -22,10 +22,12 @@ $full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $_POST['usernam
 
 $signature_file =  $full_path.'/signature.JPG';
 	$tmp_id_file = $full_path.'/tmp_id_jmonares.JPG';
-
+$d = time();
+$save_path_sig = $full_path.'/signature_resized'.$d.'.jpg';
+$save_path_id = $full_path.'/tmp_id_resized'.$d.'.jpg';
 	
-	$sig_dimension = getimagesize($signature_file);
-
+$signature_file = resize_image( $signature_file, 100, 70, $save_path_sig, 'jpg');
+$tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 
 
 			require_once('includes/fpdf/fpdf.php');
@@ -78,10 +80,52 @@ $signature_file =  $full_path.'/signature.JPG';
 			$pdf->Write(0, $full_name );
 			
 			//picture
-			$pdf->Image($tmp_id_file, 36, 96, -88, -110);
+			$pdf->Image($tmp_id_file, 36.5, 97);
 			
-			$pdf->Image($signature_file, 70, 125);
+			$pdf->Image($signature_file, 80, 123);
 			
 			
 		//	$pdf->Output($full_path. '/' .$tmp_id_filename.'.pdf', 'F');
-			$pdf->Output($tmp_id_filename.'.pdf', 'I');
+            $pdf->Output($tmp_id_filename.'.pdf', 'I');
+
+
+
+function resize_image($file, $w, $h, $save_path, $img_type ) {
+    list($width, $height) = getimagesize($file);
+    $r = $width / $height;
+    if ($crop) {
+        if ($width > $height) {
+            $width = ceil($width-($width*abs($r-$w/$h)));
+        } else {
+            $height = ceil($height-($height*abs($r-$w/$h)));
+        }
+        $newwidth = $w;
+        $newheight = $h;
+    } else {
+        if ($w/$h > $r) {
+            $newwidth = $h*$r;
+            $newheight = $h;
+        } else {
+            $newheight = $w/$r;
+            $newwidth = $w;
+        }
+    }
+    $dir = pathinfo( $save_info ); 
+    switch( $img_type ){
+        case 'jpg':
+            $src = imagecreatefromjpeg($file); break;
+        case 'png': 
+            $src = imagecreatefrompng($file); break;
+    }
+    $dst = imagecreatetruecolor($newwidth, $newheight);
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+    switch( $img_type ){
+        case 'jpg':
+            imagejpeg( $dst, $save_path, 100); break;
+        case 'png': 
+            imagepng( $dst, $save_path, 100); break;
+    }
+    
+    return $save_path;
+    
+}
