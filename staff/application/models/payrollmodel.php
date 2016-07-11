@@ -508,6 +508,7 @@ class Payrollmodel extends CI_Model {
 
 		//determine if semi or monthly
 		$pst = '';
+		$sst = '';
 		if($payStart != ''){
 			$pS = date('d', strtotime($payStart));
 
@@ -568,7 +569,7 @@ class Payrollmodel extends CI_Model {
 		SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
 				WHERE mainItem = 1  '.$sst.' AND payID NOT IN (
-					SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'"  AND status=1  
+					SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'"  
 					  '. $s_string .'
 					) '.$condition.' AND (payEnd = "0000-00-00" OR UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") )
 		UNION
