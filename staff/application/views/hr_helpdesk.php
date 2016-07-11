@@ -172,7 +172,7 @@ if($this->user->access == "exec"){
 					?>
 				</td>
 				<td><?php echo date_format(date_create($myticket->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo ($myticket->due_date == '0000-00-00') ? '--' : date('F d, Y G:ia', strtotime($myticket->due_date)); ?></td>
+				<td><?php echo ($myticket->due_date == '0000-00-00 00:00:00') ? '--' : date('F d, Y G:ia', strtotime($myticket->due_date)); ?></td>
 				
 				<?php 
 					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed','Closed'];
