@@ -6,7 +6,46 @@ require 'config.php';
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	header("Location: login.php");
 	exit();
-} 
+}
+
+function resize_image($file, $w, $h, $save_path, $img_type ) {
+     list($width, $height) = getimagesize($file);
+     $r = $width / $height;
+     if ($crop) {
+         if ($width > $height) {
+             $width = ceil($width-($width*abs($r-$w/$h)));
+         } else {
+             $height = ceil($height-($height*abs($r-$w/$h)));
+         }
+         $newwidth = $w;
+         $newheight = $h;
+     } else {
+         if ($w/$h > $r) {
+             $newwidth = $h*$r;
+             $newheight = $h;
+         } else {
+             $newheight = $w/$r;
+             $newwidth = $w;
+         }
+     }
+     switch( $img_type ){
+         case 'jpg':
+             $src = imagecreatefromjpeg($file); break;
+         case 'png':
+             $src = imagecreatefrompng($file); break;
+     }
+     $dst = imagecreatetruecolor($newwidth, $newheight);
+     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
+     switch( $img_type ){
+         case 'jpg':
+             imagejpeg( $dst, $save_path, 100); break;
+         case 'png':
+             imagepng( $dst, $save_path, 100); break;
+     }
+
+     return $save_path;
+
+ } 
 
 
 //for files uploaded
@@ -29,9 +68,16 @@ if(isset($_FILES) AND !empty($_FILES)){
 	
 	$sig_dimension = getimagesize($signature_file);
 	
-	
+	$d = time();
+ 	$save_path_sig = $full_path.'/signature_resized'.$d.'.png';
+ 	$save_path_id = $full_path.'/tmp_id_resized'.$d.'.jpg';
+
+ 	$signature_file = resize_image( $signature_file, 100, 70, $save_path_sig, 'png');
+ 	$tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 	
 }
+
+
 	
 if( !isset($signature_file) ){
 	echo '<p>Please upload signature for temporary ID.</p>';
@@ -269,12 +315,13 @@ if(isset($_POST) AND !empty($_POST)){
 //send email to leaders
 		$pronoun = ($cstaffData['gender'] == 'M') ? 'he':'she';
 		$possessive_pronoun = ($cstaffData['gender'] == 'M') ? 'his':'her';
+		$ppronoun = ($cstaffData['gender'] == 'M') ? 'him':'her';
 		//send also to leaders and management us
 		$leaders_msg = '<p>Hello Tate Leaders!</p>
 		<p>Please help us welcome '.ucwords($hire['fname'].' '.$hire['lname']).'</p>
-		<p>'.$hire['fname'].' will be our new '.$hire['position'].' in the '.$department.'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotime($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.$possessive_pronoun.' shift would be '.ucfirst($_POST['shift']).'.</p>
-		<p>We are very to have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
-		<p>Please help make '.$possesive_pronoun.' onboarding as smooth as possible. <span style="text-style: underline;">Please cascade this announcement to anyone in your team who needs to be informed.</span></p>
+		<p>'.$hire['fname'].' will be our new '.$hire['title'].' in the '.$hire['dept'].'. '.ucwords($pronoun).' will join us on '.date('F d, Y', strtotime($startD)).' and will be reporting to '.$jobReq['supervisor'].'. '.ucwords($possessive_pronoun).' shift is '.ucfirst($_POST['shift']).'.</p>
+		<p>We are very to pleased have '.$hire['fname'].' onboard our awesome '.$hire['dept'].' team!</p>
+		<p>Please help us welcome '.$ppronoun.' and make '. $possesive_pronoun. ' onboarding as smooth as possible. Kindly cascade this announcement to anyone in your team who needs to be informed.</p>
 		<p>Cheers!<br/>
 		<strong>The Human Resources Team</strong></p>';
 
@@ -335,9 +382,9 @@ if(isset($_POST) AND !empty($_POST)){
 			$pdf->Write(0, $full_name );
 			
 			//picture
-			$pdf->Image($tmp_id_file, 36, 96, -88, -110);
-			
-			$pdf->Image($signature_file, 70, 125);
+			 $pdf->Image($tmp_id_file, 36.5, 97);
+
+             $pdf->Image($signature_file, 80, 123);
 			
 			
 			$pdf->Output($full_path. '/' .$tmp_id_filename.'.pdf', 'F');
