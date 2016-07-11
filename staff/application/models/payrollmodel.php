@@ -850,10 +850,10 @@ class Payrollmodel extends CI_Model {
 	******/
 	public function getMonthlyPeriod($type){
 		$arr = array();
-		$dateToday = date('Y-m-d');
+		$dateToday = date('Y-01-01');
 		
-		$dateprev = date('Y-m-d', strtotime($dateToday.' -3 months'));
-		$dateafter = date('Y-m-d', strtotime($dateToday.' +3 months'));
+		$dateprev = date('Y-m-d', strtotime($dateToday));
+		$dateafter = date('Y-m-d', strtotime($dateToday.' +12 months'));
 		
 		$d=$dateprev;
 		if($type=='semi'){			
@@ -1668,14 +1668,20 @@ class Payrollmodel extends CI_Model {
 			
 			$personalExemption = $this->payrollM->computeTaxExemption($staffInfo->taxstatus);
 
-			//for separated employee
-			$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
-
 			$month13c = 0;
 			$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $val->dateArr, $val->dataMonth, $val->dataMonthItems );
 			foreach( $data_items as $di_key => $di_val ){
 				$$di_key = $di_val;
 			}
+
+			//for separated employee
+			if(!$is_active){
+				$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
+			}
+			//declare payinfo manually (add13 = total13th, )
+			else
+
+
 			/****************************************
 			*										*
 			*			END OF PAY LOOP				*
