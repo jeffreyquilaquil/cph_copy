@@ -1123,31 +1123,38 @@
 		    /* 
 			* cron jobs that send an email to staff of their unrated resolved ticket
 		    */
-		    public function eamilStaffOnResolvedTicket(){
+		    public function emailStaffOnResolvedTicket(){
 		    	
 		    	//get all resolved unrated ticket
-		    	$unratedTickets= $this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,
-		    													   staffs.email,
-		    													   staffs.fname,
-		    													   staffs.lname',
-		    													   'hr_cs_post',
-		    													   'LEFT JOIN staffs ON hr_cs_post.cs_post_empID_fk = staffs.empID 
-		    													    WHERE cs_post_status = 3 AND rate_status = 0',
-		    													   'ORDER BY staffs.email'
-		    													    );
+		    	// $unratedTickets= $this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id,
+		    	// 												   staffs.email,
+		    	// 												   staffs.fname,
+		    	// 												   staffs.lname',
+		    	// 												   'hr_cs_post',
+		    	// 												   'LEFT JOIN staffs ON hr_cs_post.cs_post_empID_fk = staffs.empID 
+		    	// 												    WHERE cs_post_status = 3 AND rate_status = 0',
+		    	// 												   'ORDER BY staffs.email'
+		    	// 												    );
+
+		    	$unratedTickets = $this->dbmodel->getQueryResults('hr_cs_post', 'hr_cs_post.*, staffs.email, staffs.fname, staffs.lname', 'cs_post_status = 3 AND rate_status = 0', 'LEFT JOIN staffs ON cs_post_empID_fk = staffs.empID ');
+		    	//dd($unratedTickets);
 
 		  		//then send eamil to staff reminding them that they have pending unrated resolved ticket
 				foreach($unratedTickets as $unratedTicket){
 					
 					$from = 'careers.cebu@tatepublishing.net';
 					$to = $unratedTicket->email;
-					$fromName = 'CPH';
+					$fromName = 'CPH Auto-email';
 					$subject = 'Pending Unrated Resolved ticket';
 					$body = 'Dear '.$unratedTicket->fname.' '.$unratedTicket->lname.',
 							<br><br>
-							You have pending resolved ticket to be rated. please login to CPH and go to this link and rate the your ticket. Thanks!
+							You have pending resolved ticket to be rated. Please login to CPH rate the your ticket.
 							<br><br>
-							Ticket # '.$unratedTicket->cs_post_id;
+							Ticket # '.$unratedTicket->cs_post_id.'
+							<br><br>
+							Thanks!<br/>
+							CAREERPH';
+
 
 					$headers = "From: ".$unratedTicket->email;
 					
@@ -1156,10 +1163,7 @@
 				}
 
 		    }
-
-		} // end of class
-
-  ?>
+} // end of class
 	
 	
 
