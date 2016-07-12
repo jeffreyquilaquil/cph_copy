@@ -8,44 +8,7 @@ if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
 	exit();
 }
 
-function resize_image($file, $w, $h, $save_path, $img_type ) {
-     list($width, $height) = getimagesize($file);
-     $r = $width / $height;
-     if ($crop) {
-         if ($width > $height) {
-             $width = ceil($width-($width*abs($r-$w/$h)));
-         } else {
-             $height = ceil($height-($height*abs($r-$w/$h)));
-         }
-         $newwidth = $w;
-         $newheight = $h;
-     } else {
-         if ($w/$h > $r) {
-             $newwidth = $h*$r;
-             $newheight = $h;
-         } else {
-             $newheight = $w/$r;
-             $newwidth = $w;
-         }
-     }
-     switch( $img_type ){
-         case 'jpg':
-             $src = imagecreatefromjpeg($file); break;
-         case 'png':
-             $src = imagecreatefrompng($file); break;
-     }
-     $dst = imagecreatetruecolor($newwidth, $newheight);
-     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
-     switch( $img_type ){
-         case 'jpg':
-             imagejpeg( $dst, $save_path, 100); break;
-         case 'png':
-             imagepng( $dst, $save_path, 100); break;
-     }
 
-     return $save_path;
-
- } 
 
 
 //for files uploaded
@@ -214,7 +177,8 @@ if(isset($_POST) AND !empty($_POST)){
 					'maritalStatus' => $_POST['maritalStatus'],
 					'emergency_person' => $_POST['e_contact_person'],
 					'emergency_number' => $_POST['e_contact_number'],
-					'emergency_address' => $_POST['e_contact_address']
+					'emergency_address' => $_POST['e_contact_address'],
+					'emergency_relationship' => $_POST['e_contact_relationship']
 				);
 		if($hire['agencyID']!=0){
 			$cstaffData['endDate'] = $hire['endDate'];
@@ -312,7 +276,7 @@ if(isset($_POST) AND !empty($_POST)){
 		$db->updateQuery('applicants', array('processStat' => '0', 'processText' => 'Hired', 'hiredDate' => date('Y-m-d'), 'startDate' => date('Y-m-d', strtotime($startD))), 'id='.$_GET['id']);	
 		addStatusNote($_GET['id'], 'hired', '', $hire['position']);
 
-//send email to leaders
+		//send email to leaders
 		$pronoun = ($cstaffData['gender'] == 'M') ? 'he':'she';
 		$possessive_pronoun = ($cstaffData['gender'] == 'M') ? 'his':'her';
 		$ppronoun = ($cstaffData['gender'] == 'M') ? 'him':'her';
@@ -327,73 +291,10 @@ if(isset($_POST) AND !empty($_POST)){
 
 		sendEmail($from, 'leaders.cebu@tatepublishing.net', 'New Hire Announcement', $leaders_msg, 'Career Index Auto Email');
 		
-		//once we all have our data then we can create now the template for temporary ID
-		//generate tmp ID
-		if( file_exists($uploaded_file_id) ){
-			
-			ob_end_clean();
-			require_once('includes/fpdf/fpdf.php');
-			require_once('includes/fpdf/fpdi.php');
-			$pdf = new FPDI();
-			$pdf->AddPage();
-			$pdf->setSourceFile('includes/forms/temp_id_template.pdf');
-			$tplIdx = $pdf->importPage(1);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-
-			$pdf->SetFont('Arial','',6);
-			$pdf->setTextColor(0, 0, 0);
-			
-			$pdf->setXY(42, 34);
-			$pdf->Write(0, $_POST['startdate']);
-			//hbd
-			$pdf->setXY(41, 38.5);		
-			$pdf->Write(0, $hire['bdate'] );
-			
-			$pdf->setXY(41, 42.5);		
-			$pdf->Write(0, $_POST['sss'] );
-			
-			$pdf->setXY(41, 47);		
-			$pdf->Write(0, $_POST['philhealth'] );
-			
-			$pdf->setXY(42, 51);		
-			$pdf->Write(0, $_POST['hdmf'] );
-			
-			$pdf->setXY(40, 55.5);		
-			$pdf->Write(0, $_POST['tin'] );
-			
-			$pdf->setXY(80, 34);		
-			$pdf->Write(0, $_POST['e_contact_person'] );
-			
-			$pdf->setXY(82, 38.5);		
-			$pdf->Write(0, $_POST['e_contact_address'] );
-			
-			$pdf->setXY(84, 42.5);		
-			$pdf->Write(0, $_POST['e_contact_number'] );
-			
-			$pdf->setXY(85, 47);		
-			$pdf->Write(0, $_POST['e_contact_relationship'] );
-			
-			$pdf->SetFont('Arial','B',9);
-			//$pdf->setTextColor(255, 255, 255);
-			$pdf->setTextColor(0, 0, 0);	
-		    $full_name = $hire['fname'].' '.$hire['lname'];	
-			$full_name = strtoupper( $full_name );
-			$pdf->setXY(67, 118);		
-			$pdf->Write(0, $full_name );
-			
-			//picture
-			 $pdf->Image($tmp_id_file, 36.5, 97);
-
-             $pdf->Image($signature_file, 80, 123);
-			
-			
-			$pdf->Output($full_path. '/' .$tmp_id_filename.'.pdf', 'F');
-			$pdf->Output($tmp_id_filename.'.pdf', 'D');
-			
-		}
+		
 	}
 	
-	header('Location:editstatus.php?id='.$_GET['id'].'&hired='.$postSuccess.'&err='.urlencode($postError));
+	header('Location:editstatus.php?id='.$_GET['id'].'&hired='.$postSuccess.'&err='.urlencode($postError)).'&user='.$_POST['username'];
 	exit;
 }
 
