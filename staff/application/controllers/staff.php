@@ -2558,8 +2558,8 @@ class Staff extends MY_Controller {
 		
 		$row = $this->dbmodel->getSingleInfo('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=preparedby AND preparedby!=0) AS prepby, supervisor', 'cisID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		
-		$row->changes = stripslashes($row->changes);
-		$row->dbchanges = stripslashes($row->dbchanges);
+		//$row->changes = stripslashes($row->changes);
+		//$row->dbchanges = stripslashes($row->dbchanges);
 		//$this->textM->aaa($row);
 		if(count($row)>0){
 			$isupname = '';
@@ -2599,7 +2599,6 @@ class Staff extends MY_Controller {
 				$data['access'] = false;
 			}
 		}
-		
 		$this->load->view('includes/template', $data);			
 	}
 	
@@ -4492,12 +4491,31 @@ class Staff extends MY_Controller {
 		// $twodays = date_add($today, date_interval_create_from_date_string('2 days') );
 		// $twodays = date_format( $twodays, 'Y-m-d' );
 		// dd($twodays);
-		$info->name = 'Marjune';
-		$info->gender = 'M';
-		$info->endDate = '2016-06-15';
-		$info->supEmail = 'marjune.abellana@tatepublishing.net';
-		$this->emailM->emailSeparationDateAdvanceNotice( $info );
-    }
+		// $info->name = 'Marjune';
+		// $info->gender = 'M';
+		// $info->endDate = '2016-06-15';
+		// $info->supEmail = 'marjune.abellana@tatepublishing.net';
+		// $this->emailM->emailSeparationDateAdvanceNotice( $info );
+		$date13 = date('Y-m-d');
+		$endDateObj = new DateTime( $date13 );
+		$endDateObj->add( new DateInterval( 'P90D') );
+
+		//check if endDate is Tuesday
+		$endDate = $endDateObj->format('l');
+		dd($endDateObj->format('Y-m-d'), false);
+		//dd($endDate);
+		while( $endDate != 'Tuesday' ){
+
+			
+			$endDateObj->add( new DateInterval('P1D') );
+			$endDate = $endDateObj->format('l');
+
+			dd($endDate, false);
+		}
+		$releaseDate = $endDateObj->format('Y-m-d');
+		dd($releaseDate);
+		//$arrayOfDataThatIsNew['releaseDate'] = $releaseDate;
+}
 	public function reports(){
 		$data['content'] = 'reports';
 		$which_report = $this->uri->segment(2);
