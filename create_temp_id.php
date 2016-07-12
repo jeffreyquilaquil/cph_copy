@@ -1,7 +1,8 @@
 <?php 
 //ini_set('display_errors', 1);
 $username = $_GET['username'];
-if( !isset($username) AND empty($username) ){
+
+if( !isset($username) OR empty($username) ){
 	echo 'Please provide the username.';
 	exit();
 }
