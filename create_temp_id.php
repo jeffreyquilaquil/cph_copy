@@ -1,5 +1,5 @@
 <?php 
-
+ini_set('display_errors', 1);
 $username = $_GET['username'];
 if( !isset($username) AND empty($username) ){
 	echo 'Please provide the username.';
@@ -21,7 +21,7 @@ $hire = $db->selectSingleQueryArray('staffs', '*' , 'username = "'.$username.'"'
 $tmp_id_filename = 'tmp_id_'.$username;
 $full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $username;
 
-$signature_file =  $full_path.'/signature.png';
+$signature_file =  $full_path.'/signature.PNG';
 	$tmp_id_file = $full_path.'/tmp_id_'.$username.'.JPG';
 $d = time();
 $save_path_sig = $full_path.'/signature_resized.png';
@@ -49,28 +49,28 @@ $tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 			$pdf->Write(0, $hire['bdate'] );
 			
 			$pdf->setXY(41, 42.5);		
-			$pdf->Write(0, $hire['sss'] );
+			$pdf->Write(0, decryptText($hire['sss']) );
 			
 			$pdf->setXY(41, 47);		
-			$pdf->Write(0, $hire['philhealth'] );
+			$pdf->Write(0, decryptText($hire['philhealth']) );
 			
 			$pdf->setXY(42, 51);		
-			$pdf->Write(0, $hire['hdmf'] );
+			$pdf->Write(0, decryptText($hire['hdmf']) );
 			
 			$pdf->setXY(40, 55.5);		
-			$pdf->Write(0, $hire['tin'] );
+			$pdf->Write(0, decryptText($hire['tin']) );
 			
 			$pdf->setXY(80, 34);		
-			$pdf->Write(0, $hire['e_contact_person'] );
+			$pdf->Write(0, $hire['emergency_person'] );
 			
-			$pdf->setXY(82, 38.5);		
-			$pdf->Write(0, $hire['e_contact_address'] );
+			$pdf->setXY(82, 37.5);		
+			$pdf->MultiCell(44,1.8, $hire['emergency_address'],0,'L',false );
 			
-			$pdf->setXY(84, 42.5);		
-			$pdf->Write(0, $hire['e_contact_number'] );
+			$pdf->setXY(84, 43);		
+			$pdf->Write(0, $hire['emergency_number'] );
 			
-			$pdf->setXY(85, 47);		
-			$pdf->Write(0, $hire['e_contact_relationship'] );
+			$pdf->setXY(87, 47);		
+			$pdf->Write(0, $hire['emergency_relationship'].'asfafasf' );
 			
 			$pdf->SetFont('Arial','B',9);
 			//$pdf->setTextColor(255, 255, 255);
@@ -124,7 +124,7 @@ function resize_image($file, $w, $h, $save_path, $img_type ) {
         case 'jpg':
             imagejpeg( $dst, $save_path, 100); break;
         case 'png': 
-            imagepng( $dst, $save_path, 100); break;
+            imagepng( $dst, $save_path, 9); break;
     }
     
     return $save_path;
