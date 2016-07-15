@@ -3418,7 +3418,7 @@ class Staff extends MY_Controller {
 	public function probationmanagement(){
 		$data['content'] = 'probationmanagement';
 		
-		if($this->access->accessFullHR== true OR $this->access->accessMedPerson) 
+		if($this->access->accessFullHR== true OR $this->access->accessMedPerson || $this->user->empID == 474) 
 		{
 			if(!empty($_POST)){
 				if($_POST['submitType']=='printedEval'){
