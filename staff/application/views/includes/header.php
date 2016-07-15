@@ -106,7 +106,7 @@
 				echo '</li>';
 			}
 			
-			if($this->access->accessFullHRFinance==true ||  $this->access->accessMedPerson || $this->user->level>0){
+			if($this->access->accessFullHRFinance==true ||  $this->access->accessMedPerson || $this->user->level>0 || $this->user->empID == 474){
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
@@ -141,7 +141,7 @@
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
 					}	
-					if($this->access->accessMedPerson OR $this->access->accessFullHR){
+					if($this->access->accessMedPerson OR $this->access->accessFullHR || $this->user->empID == 474 ){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 					}				
 					if($this->access->accessFullHR){						
