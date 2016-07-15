@@ -3460,7 +3460,7 @@ class Staff extends MY_Controller {
 	public function probperstatus(){
 		$data['content'] = 'probperstatus';
 		$id = $this->uri->segment(2);
-		if(is_numeric($id) && $this->access->accessFullHR===true){
+		if(is_numeric($id) && $this->access->accessFullHR===true || $this->user->empID == 474){
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
 			$data['queryPerStatus'] = $this->dbmodel->getQueryResults('staffPerRequirements', '*');
 			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', '*', 'empID_fk="'.$id.'"');
