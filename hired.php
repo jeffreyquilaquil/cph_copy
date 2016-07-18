@@ -40,6 +40,17 @@ if(isset($_FILES) AND !empty($_FILES)){
 	
 }
 
+if( !file_exists($save_path_sig) ){
+	echo '<p>Please upload signature file in .PNG format.</p>';
+	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
+	exit();
+}
+
+if( !file_exists($save_path_id) ){
+	echo '<p>Please upload photo for temporary ID in .JPG format.</p>';
+	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
+	exit();
+}
 
 	
 if( !isset($signature_file) ){
