@@ -309,6 +309,9 @@
 					$this->dbmodel->insertQuery('incident_rating', $insert_array);
 					
 					$this->_addNote( $this->input->post('ticket_id'), 'Remark has been posted');
+
+					//update hr_cs_post					
+					$this->dbmodel->updateQuery('hr_cs_post', ['cs_post_id' => $this->input->post('ticket_id')], ['rate_status' => 1]);
 				} else {
 				 	if( !empty($_FILES['arr_attachments']['name'][0]) ){
 						
@@ -1089,6 +1092,7 @@
 					$endDateObj->add( new DateInterval($add_string) );
 
 					$update_array['due_date'] = $endDateObj->format('Y-m-d');
+					dd($update_array);
 			
             		$this->dbmodel->updateQuery('hr_cs_post','cs_post_id = '. $this->input->post('inci_id'), $update_array );
             		$this->_addNote( $this->input->post('inci_id'), 'Update due date to '. $update_array['due_date'] );
