@@ -629,7 +629,13 @@ class Timecardmodel extends CI_Model {
 			if(is_numeric($logID)){
 				//remove publish details
 				$insArr['publishTimePaid'] = 0;
-				$insArr['publishDeduct'] = 0;
+
+				if ($sArr['leaveStatus'] == 2) {
+					$insArr['publishDeduct'] = 8;
+				} else {
+					$insArr['publishDeduct'] = 0;
+				}
+
 				$insArr['publishND'] = 0;
 				$insArr['datePublished'] = '0000-00-00 00:00:00';
 				$insArr['publishBy'] = '';
