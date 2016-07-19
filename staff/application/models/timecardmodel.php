@@ -552,6 +552,8 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function insertToDailyLogs($empID, $today, $schedToday){
+
+		
 		$logID = '';
 		$insArr = array();
 		$todaySmall = date('j', strtotime($today));
@@ -606,10 +608,17 @@ class Timecardmodel extends CI_Model {
 				}
 								
 			}
+
+			$total_leave_hours = $this->dbmodel->getSinglefield('staffLeaves', 'totalHours', 'leaveID = '.$sArr['leaveID'][0] );
 			
 			//check if the leave is without pay
 			if( $sArr['leaveStatus'] == 2 ){
-				$insArr['publishDeduct'] = 8;
+
+				//auto publish for leave without pay
+				$insArr['datePublished'] = date('Y-m-d H:i:s');
+				$insArr['publishDeduct'] = $total_leave_hours;
+				$insArr['publishBy'] = 'system';
+				$insArr['publishNote'] = 'auto-publish on leave w/o pay approved';
 			}
 			
 
@@ -631,18 +640,26 @@ class Timecardmodel extends CI_Model {
 				$insArr['publishTimePaid'] = 0;
 
 				if ($sArr['leaveStatus'] == 2) {
-					$insArr['publishDeduct'] = 8;
+					$insArr['datePublished'] = date('Y-m-d H:i:s');
+					$insArr['publishDeduct'] = $total_leave_hours;
+					$insArr['publishBy'] = 'system';
+					$insArr['publishNote'] = 'auto-publish on leave w/o pay approved';
 				} else {
 					$insArr['publishDeduct'] = 0;
+					$insArr['datePublished'] = '0000-00-00 00:00:00';
+					$insArr['publishBy'] = '';
+					$insArr['publishNote'] = '';
 				}
 
 				$insArr['publishND'] = 0;
-				$insArr['datePublished'] = '0000-00-00 00:00:00';
-				$insArr['publishBy'] = '';
-				$insArr['publishNote'] = '';		
+						
+				
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
-			}else
+			}else{
+				
 				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);				
+			}
+				
 		}
 		
 		
