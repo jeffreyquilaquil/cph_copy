@@ -1,6 +1,6 @@
 <?php
 
-//ini_set('display_errors', 1);
+ini_set('display_errors', 1);
 require 'config.php';
 
 if(!isset($_SESSION['u']) || !in_array($_SESSION['u'], $authorized)){
@@ -25,44 +25,21 @@ if(isset($_FILES) AND !empty($_FILES)){
 		$uploaded_file_id = upload_file( $_FILES['e_photo'], $tmp_id_filename, $full_path );
 	}	
 	
-	$signature_file =  $uploaded_file_signature;
-	$tmp_id_file = $uploaded_file_id;
-
-	
-	$sig_dimension = getimagesize($signature_file);
-	
-	$d = time();
- 	$save_path_sig = $full_path.'/signature_resized'.$d.'.png';
- 	$save_path_id = $full_path.'/tmp_id_resized'.$d.'.jpg';
-
- 	$signature_file = resize_image( $signature_file, 100, 70, $save_path_sig, 'png');
- 	$tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 	
 }
 
-if( !file_exists($save_path_sig) ){
+/*if( !file_exists($uploaded_file_signature) ){
 	echo '<p>Please upload signature file in .PNG format.</p>';
 	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
 	exit();
 }
 
-if( !file_exists($save_path_id) ){
+if( !file_exists($uploaded_file_id ){
 	echo '<p>Please upload photo for temporary ID in .JPG format.</p>';
 	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
 	exit();
-}
+}*/
 
-	
-if( !isset($signature_file) ){
-	echo '<p>Please upload signature for temporary ID.</p>';
-	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
-	exit();
-}
-if( !isset($tmp_id_file) ){
-	echo '<p>Please upload photo for temporary ID.</p>';
-	echo '<a href="editstatus.php?id='.$_GET['id'].'" class="btn btn-primary">Back to profile</a>';
-	exit();
-}
 
 if(isset($_POST) AND !empty($_POST)){
 	date_default_timezone_set("Asia/Manila");
