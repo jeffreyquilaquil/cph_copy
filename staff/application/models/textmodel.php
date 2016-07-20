@@ -944,6 +944,8 @@ class Textmodel extends CI_Model {
 			foreach( $arranged as $key ){
 				$arr[ $key ] = $arr_[ $key ];
 			}
+		} else if( $a == 'hr_cs_ratings' ){
+			$arr = [ 5 => 'Very Satisfied', 4 => 'Satisfied', 3 => 'Neutral', 2 => 'Dissatified', 1 => 'Very Dissatified'];
 		}
 		
 		return $arr;

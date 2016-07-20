@@ -529,6 +529,17 @@
 			dd($due_date);
 		}
 
+		public function hr_custom_satisfaction(){
+            	$data['all_staff'] = $this->commonM->_getAllStaff('username');
+            	$data['ratings'] = $this->textM->constantArr('hr_cs_ratings');
+            	$data['content']='hr_cust_satisfaction_survey';
+
+            	$data['Remark_incident']=$this->ask_hr->hrhelpdesk('incident_rating.*, staffs.fname, staffs.lname, hr_cs_post.*','incident_rating','INNER JOIN staffs ON staffs.empID = incident_rating.post_EmpID INNER JOIN hr_cs_post ON hr_cs_post.cs_post_id = incident_rating.post_id WHERE remark_status = 0');
+
+	  			$this->load->view('includes/template',$data);
+
+            }
+
 		//end of HrIncident function
 
 	        function addcategory(){
@@ -803,14 +814,7 @@
             }
 
           
-            function hr_custom_satisfaction(){
-            	$data['content']='hr_cust_satisfaction_survey';
-
-            	$data['Remark_incident']=$this->ask_hr->hrhelpdesk('incident_rating.post_id, staffs.fname, staffs.lname, date_submited, last_update, hr_cs_post.assign_category, hr_cs_post.cs_post_subject, hr_cs_post.cs_post_urgency, hr_cs_post.hr_own_empUSER, remark','incident_rating','INNER JOIN staffs ON staffs.empID = incident_rating.post_EmpID INNER JOIN hr_cs_post ON hr_cs_post.cs_post_id = incident_rating.post_id WHERE remark_status = 0');
-
-	  			$this->load->view('includes/template',$data);
-
-            }
+           
             function give_update(){
             	$data['content']='give_update.php';
             	$data['department_email'] = $this->ask_hr->getdata('email,department','redirection_department');
