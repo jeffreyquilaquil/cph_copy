@@ -1,5 +1,5 @@
 <?php 
-//ini_set('display_errors', 1);
+ini_set('display_errors', 1);
 $username = $_GET['username'];
 
 if( !isset($username) OR empty($username) ){
@@ -22,8 +22,18 @@ $hire = $db->selectSingleQueryArray('staffs', '*' , 'username = "'.$username.'"'
 $tmp_id_filename = 'tmp_id_'.$username;
 $full_path = '/home/careerph/public_html/staff/uploads/staffs/'. $username;
 
-$signature_file =  $full_path.'/signature.PNG';
-	$tmp_id_file = $full_path.'/tmp_id_'.$username.'.JPG';
+
+if( file_exists( $full_path.'/signature.PNG' ) ){
+    $signature_file =  $full_path.'/signature.PNG';
+} else if( file_exists($full_path.'/signature.png') ){
+    $signature_file =  $full_path.'/signature.png';
+}
+
+if( file_exists( $full_path.'/tmp_id_'.$username.'.JPG') ){
+    $tmp_id_file = $full_path.'/tmp_id_'.$username.'.JPG';
+} else if( file_exists( $full_path.'/tmp_id_'.$username.'.jpg') ){
+    $tmp_id_file = $full_path.'/tmp_id_'.$username.'.jpg';
+}    
 $d = time();
 $save_path_sig = $full_path.'/signature_resized.png';
 $save_path_id = $full_path.'/tmp_id_resized.jpg';
@@ -71,7 +81,7 @@ $tmp_id_file = resize_image( $tmp_id_file, 105, 150, $save_path_id, 'jpg' );
 			$pdf->Write(0, $hire['emergency_number'] );
 			
 			$pdf->setXY(87, 47);		
-			$pdf->Write(0, $hire['emergency_relationship'].'asfafasf' );
+			$pdf->Write(0, $hire['emergency_relationship'] );
 			
 			$pdf->SetFont('Arial','B',9);
 			//$pdf->setTextColor(255, 255, 255);
@@ -115,11 +125,18 @@ function resize_image($file, $w, $h, $save_path, $img_type ) {
     $dir = pathinfo( $save_info ); 
     switch( $img_type ){
         case 'jpg':
-            $src = imagecreatefromjpeg($file); break;
+            $src = imagecreatefromjpeg($file);
+            $dst = imagecreatetruecolor($newwidth, $newheight);
+            break;
         case 'png': 
-            $src = imagecreatefrompng($file); break;
+            $dst = imagecreatetruecolor($newwidth, $newheight);
+            imagealphablending( $dst, false);
+            imagesavealpha( $dst, true);
+            $transparent = imagecolorallocatealpha( $dst, 255, 255, 255, 127);
+            imagefilledrectangle( $dst, 0, 0, $newwidth, $newheight, $transparent);
+            $src = imagecreatefrompng($file); 
+            break;
     }
-    $dst = imagecreatetruecolor($newwidth, $newheight);
     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
     switch( $img_type ){
         case 'jpg':
