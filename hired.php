@@ -282,7 +282,7 @@ if(isset($_POST) AND !empty($_POST)){
 		
 	}
 	
-	header('Location:editstatus.php?id='.$_GET['id'].'&hired='.$postSuccess.'&err='.urlencode($postError)).'&user='.$_POST['username'];
+	header('Location:editstatus.php?id='.$_GET['id'].'&hired='.$postSuccess.'&err='.urlencode($postError)).'&user='.$cstaffData['username'];
 	exit;
 }
 
