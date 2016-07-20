@@ -925,7 +925,7 @@ class Textmodel extends CI_Model {
 				10 => 'Balance transfer/debt consolidation', 
 				11 => 'Other needs');
 		} else if( $a == 'hdmf_loan_status' ){
-			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
+			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done', 'cancelled');
 
 		} else if($a == 'allowances'){
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
