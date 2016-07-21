@@ -264,6 +264,23 @@
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 	$(function(){
+		//check ratings
+		$('#submit_reply').click(function(e){
+			e.preventDefault();
+			var rating = parseInt( $('form input[name="rating"]:checked').val() );
+
+			var remark = $('textarea[name="remark"]').val();
+console.log(rating);
+			if( isNaN(rating) ){
+				alert('Please provide your rating.');
+			} else if( (rating == 1 || rating == 2 || rating == 'undefined') && remark == '' ){
+				alert('Please provide your remark on your rating');
+			} else {
+				$('form').submit();
+			}
+		});
+
+
 		// display toolbar in textarea
 		tinymce.init({
 		selector: "textarea.tiny",	
