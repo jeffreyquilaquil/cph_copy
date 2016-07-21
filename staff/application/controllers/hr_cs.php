@@ -425,7 +425,8 @@
 
 				}
 				$data['redirect'] = true;
-			}
+				unset($_POST);
+			} //end post
 			$data['conversations'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 			$this->load->view('includes/templatecolorbox',$data);
 

@@ -1,6 +1,6 @@
 <?php if (isset($redirect) AND $redirect == true) { ?>
 	<p>Post has submitted.</p>
-	<script type="text/javascript">parent.window.location.reload();</script>
+	
 <?php exit();} ?>
 
 <style type="text/css">
@@ -179,7 +179,7 @@
 			echo '<br/><br/>';
 			echo '<textarea name="remark" class="hidden tiny" style="height:200px;"></textarea>';
 			echo '<div style="text-align: right;">
-		<input type="submit" id="submit_reply" class="btn btngreen" value="Submit">
+		<input type="submit" id="submit_reply_rating" class="btn btngreen" value="Submit">
 	</div>';
 			
 		} else {
@@ -265,7 +265,7 @@
 <script type="text/javascript">
 	$(function(){
 		//check ratings
-		$('#submit_reply').click(function(e){
+		$('#submit_reply_rating').click(function(e){
 			e.preventDefault();
 			var rating = parseInt( $('form input[name="rating"]:checked').val() );
 
