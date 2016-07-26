@@ -117,7 +117,8 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'adminsettings/'.$row->empID.'/" class="iframe">Other Settings</a></li>';
 
 		//Kudos Request
-		if( $this->user->username != $row->username && $this->user->is_supervisor ){
+		
+		if( $this->user->username != $row->username && $this->user->level > 0 ){
 			echo '<li><a href="'.$this->config->base_url().'kudosrequest/'.$row->empID.'/" class="iframe">Request Kudos Bunos</a></li>'; 
 		}
 	
