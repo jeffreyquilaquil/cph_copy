@@ -954,7 +954,12 @@ class Timecard extends MY_Controller {
 			$data['computationtype'] = $_POST['computationtype'];
 			$data['start'] = date('Y-m-d', strtotime($_POST['start']));
 			$data['end'] = date('Y-m-d', strtotime($_POST['end']));
-			$data['empIDs'] = rtrim($_POST['empIDs'], ',');
+
+			if(is_array($_POST['empIDs']))
+				$data['empIDs'] = implode(',', $_POST['empIDs']);
+			else
+				$data['empIDs'] = rtrim($_POST['empIDs'],',');
+
 			
 			$data['dataAttendance'] = array();	
 			$dataEmps = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname, ", ",fname) AS name, staffHolidaySched', 'empID IN ('.$data['empIDs'].')', '', 'lname');
@@ -1607,7 +1612,8 @@ class Timecard extends MY_Controller {
 				}									
 			}
 		}
-		// $this->textM->aaa($data);
+		
+		//$this->textM->aaa($_POST);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -1656,7 +1662,6 @@ class Timecard extends MY_Controller {
 							$data['dataQuery'][$key]->allowances = $datum['allowances'];
 						}
 
-						//$this->textM->aaa($data);
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
 						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
