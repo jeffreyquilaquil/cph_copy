@@ -142,7 +142,7 @@
 					if(isset($data2['cs_msg_postID_fk'])){
 
 						// Insert data2 to hr_cs_msg
-						$this->ask_hr->askhr('hr_cs_msg',$data2);
+						$this->dbmodel->insertQuery('hr_cs_msg',$data2);
 
 			 
 					}
