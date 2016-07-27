@@ -57,11 +57,13 @@
 				if ($shiftSched == 1) {
 				//nightshift
 					$data['hr_own_empUSER'] = 'kybanez';
-					$data['cs_post_agent'] = 330;				
+					$data['cs_post_agent'] = 330;
+					$data['cs_post_status'] = 1;				
 				} else {
 					//morningshift
 					$data['hr_own_empUSER'] = 'aobrero';
 					$data['cs_post_agent'] = 203;
+					$data['cs_post_status'] = 1;
 				}	
 			}
 			
@@ -192,9 +194,6 @@
 
 					//for active incidents
 					if( $ticket->cs_post_status == 1 ){
-
-
-
 
 						$data['ActiveIncidentFull'][] = $ticket; 
 						//unassigned new tickets

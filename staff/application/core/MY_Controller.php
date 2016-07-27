@@ -62,6 +62,8 @@ class MY_Controller extends CI_Controller {
 			if(in_array('finance', $access->myaccess)) $access->accessFinance = true;
 			if(in_array('exec', $access->myaccess)) $access->accessExec = true;
 			if(in_array('med_person', $access->myaccess)) $access->accessMedPerson = true;
+			if(in_array('main_hr', $access->myaccess)) $access->accessMainHR = true;
+			if(in_array('main_finance', $access->myaccess)) $access->accessMainFinance = true;
 			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
 			if(count(array_intersect($access->myaccess,array('full','finance','med_finance')))>0) $access->accessFullFinance = true;
 			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;

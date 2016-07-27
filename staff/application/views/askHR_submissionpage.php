@@ -97,7 +97,7 @@
 		Your HR incident number is <h2><?php  echo $msg_newID->maxid; ?></h2>
 
 		When following on your request, please use the incident number above. Please expect to recieve feedback on this incident within
-		24 hours. You may monitor the progress of your HR incidents in your <a href="#" class="askhr-notif-link">career.tatepublishing.net/staff</a> homepage.
+		24 hours. You may monitor the progress of your HR incidents in your <a href="http://careerph.tatepublishing.net/staff/hr_cs/HrIncident/<?php echo $msg_newID->maxid; ?>" class="askhr-notif-link">careerph.tatepublishing.net/staff/hr_cs/HrIncident/<?php echo $msg_newID->maxid; ?></a> homepage.
 	</div>
 
 	<?php } ?>

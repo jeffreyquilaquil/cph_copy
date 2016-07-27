@@ -245,15 +245,25 @@ class Commonmodel extends CI_Model {
 		} elseif($type == 'hr_accounting'){
 			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
 			//getQueryResults($table, $fields, $where=1, $join='', $orderby='', $trace=false){
-			$cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post', ' (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id  AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1)  AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
+			// $cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post', ' (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id  AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1)  AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
 			
-			foreach( $cnt_dummy as $c ){
+			// foreach( $cnt_dummy as $c ){
 				
-				if( $c->cnt != $this->user->username ){
-					$cnt++;
-				}
+			// 	if( $c->cnt != $this->user->username ){
+			// 		$cnt++;
+			// 	}
+			// }
+		 	$string = '';
+		 	// dd($this->user, false);
+		 	// dd($this->access);
+			if( $this->access->accessMainHR == true ){
+				$string = ' AND report_related = 0';
+			} else if( $this->access->accessMainFinance == true ){
+				$string = ' AND report_related = 1';
 			}
-			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_agent= '.$this->user->empID);
+
+			$cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category', 'COUNT(cs_post_id) AS cnt', 'cs_post_status = 0 '.$string);
+			$cnt = $cnt_dummy[0]->cnt;
 		}
 		return $cnt;
 	}

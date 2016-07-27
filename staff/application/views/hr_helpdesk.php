@@ -84,21 +84,21 @@ if($this->user->access == "exec"){
 	  	// Title & access in new tab
 	  	
 		
-		if($this->access->accessHR == true ){
+		if($this->access->accessMainHR == "hr" ){
 	  		$NewIncident = $NewIncidentHR;
 	  		$ActiveIncident = $ActiveIncidentHR;
 	  		$ResolveIncident = $ResolveIncidentHR;
 	  		$CancelIncident = $CancelIncidentHR;
 	  		$title = "HR HelpDesk";
 	  	} 
-	  	if($this->access->accessFinance == true ){
+	  	if($this->access->accessMainFinance == "finance" ){
 	  		$NewIncident = $NewIncidentAcc;
 	  		$ActiveIncident = $ActiveIncidentAcc;
 	  		$ResolveIncident = $ResolveIncidentAcc;
 	  		$CancelIncident = $CancelIncidentAcc;
 	  		$title = "Accounting HelpDesk";
 	  	}
-	  	if($this->access->accessFull == true){
+	  	if($this->access->accessFull == "full"){
 			$NewIncident = $NewIncidentFull;
 			$ActiveIncident = $ActiveIncidentFull;
 			$ResolveIncident = $ResolveIncidentFull;
