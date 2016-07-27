@@ -239,9 +239,21 @@ class Commonmodel extends CI_Model {
 		} elseif( $type == 'kudos'){
 			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
 		} elseif($type == 'notifStatus'){
-			$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
+			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_empID_fk ='.$this->user->empID );
+			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
 		} elseif($type == 'hr_accounting'){
-			$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_agent= '.$this->user->empID);
+			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
+			//getQueryResults($table, $fields, $where=1, $join='', $orderby='', $trace=false){
+			$cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post', ' (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id  AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1)  AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
+			
+			foreach( $cnt_dummy as $c ){
+				
+				if( $c->cnt != $this->user->username ){
+					$cnt++;
+				}
+			}
+			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_agent= '.$this->user->empID);
 		}
 		return $cnt;
 	}

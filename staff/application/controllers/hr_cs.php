@@ -170,7 +170,9 @@
             	$empuser = $this->user->username;
    				
    				//mother of query
-				$select_query = 'hr_cs_post.*, hr_cs_msg.*, staffs.fname, staffs.lname, CONCAT(staffs.fname, " ", staffs.lname) AS "customer", assign_category.*';
+				$select_query = 'hr_cs_post.*, hr_cs_msg.*, staffs.fname, staffs.lname, CONCAT(staffs.fname, " ", staffs.lname) AS "customer", assign_category.*, 
+				IF( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) != "'. $this->user->username.'", 1, 0 ) AS notifStatus
+				';
 				$join_query = 'INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category';
 
 				$all_tickets = $this->dbmodel->getSQLQueryResults("SELECT $select_query, MAX(cs_msg_date_submitted) AS 'last_update' FROM hr_cs_post $join_query GROUP BY cs_msg_postID_fk ORDER BY hr_cs_post.cs_post_id");
@@ -385,13 +387,11 @@
 							}
 							
 							if( $this->input->post('who_posted') == $data['ticket']->cs_post_empID_fk ){
-							$insert_array['cs_msg_type'] = 0;
-							$this->dbmodel->updateQueryText('hr_cs_post','notifStatusHRAccounting = 0','cs_post_id='.$this->input->post('ticket_id'));
-
-
+								$insert_array['cs_msg_type'] = 0;
+							//$this->dbmodel->updateQueryText('hr_cs_post','notifStatusHRAccounting = 0','cs_post_id='.$this->input->post('ticket_id'));
 							} else {
 								$insert_array['cs_msg_type'] = 1;
-								$this->dbmodel->updateQueryText('hr_cs_post','notifStatus = 0','cs_post_id='.$this->input->post('ticket_id'));
+								//$this->dbmodel->updateQueryText('hr_cs_post','notifStatus = 0','cs_post_id='.$this->input->post('ticket_id'));
 							}
 
 							$insert_array['cs_msg_text'] = $this->input->post('reply_msg');
@@ -851,7 +851,8 @@
 
             	$data['content']='employee_incident_info';  
 
-  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.rate_status, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.hr_own_empUSER,hr_cs_post.notifStatus	','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
+  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.rate_status, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.hr_own_empUSER, 
+  						IF( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id ORDER BY cs_msg_date_submitted DESC LIMIT 1) != "'. $this->user->username.'", 0, 1 ) AS notifStatus','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
 
   				$data['reamark_status'] = $this->ask_hr->getdata('COUNT(rate_status) as num_rate','hr_cs_post','cs_post_status = 3 AND rate_status = 0 AND cs_post_empID_fk ='.$empid);
 

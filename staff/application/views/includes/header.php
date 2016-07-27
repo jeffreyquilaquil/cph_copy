@@ -91,7 +91,7 @@
 			echo '<li>
 						<a href="#">Employee Dashboard</a>
 						<ul class="dropdown">
-							<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">HELPDESK ['.$notifStatus.']</a></li>							
+							<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">HELPDESK <b>['.$notifStatus.']</b></a></li>							
 							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
 							<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>
 							<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>
@@ -178,7 +178,7 @@
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
 
-					echo '<li><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk ['.$hr_accounting.']</a></li>';
+					echo '<li><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk <b>['.$hr_accounting.']</b></a></li>';
 				
 				echo '</ul>';
 				echo '</li>';

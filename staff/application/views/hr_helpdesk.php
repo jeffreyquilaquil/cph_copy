@@ -150,7 +150,7 @@ if($this->user->access == "exec"){
 
 			foreach ($MyTicket as $myticket_key => $myticket) { ?>
 
-			<tr>
+			<tr <?php echo ($myticket->notifStatus == 1 AND $myticket->cs_post_status < 3) ? 'style="font-weight:bold;"':''; ?> >
 				<td class="td_hover">
 
 				<?php
@@ -160,7 +160,7 @@ if($this->user->access == "exec"){
 
 				}
 
-				if($myticket->notifStatusHRAccounting == 0){
+				if($myticket->notifStatus == 1 AND $myticket->cs_post_status < 3){
 					echo '<span style = "color:red">! </span>';
 				} 
 
@@ -790,25 +790,6 @@ $(document).ready(function(){
 
 });
 
-$('.update-notifStatus').click(function(){
-		
-		var that = $(this);
-		var id = that.data('id');
-		console.log(id);
-		
-		$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/updateNotifStatusHRAccounting",
-				data: { incident_number: id },
-				cache: false,
-
-				success: function(){
-                    
-					}
-				});
-		
-		
-});
 
 
 </script>

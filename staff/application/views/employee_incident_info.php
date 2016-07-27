@@ -54,7 +54,7 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	  	</thead>
 	  	<!-- array show incident #, date submitted, subject and status -->
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
-	  		<tr>
+	  		<tr <?php echo ($rep->notifStatus == 0) ? 'style="font-weight:bold;"':''; ?> >
 				<td>
 
 				<?php 
@@ -121,25 +121,3 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	</div>
 </div>
 
-<script type="text/javascript">
-	
-	$('.update-notifStatus').click(function(){
-		
-		var that = $(this);
-		var id = that.data('id');
-		
-		$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/updateNotifStatus",
-				data: { incident_number: id },
-				cache: false,
-
-				success: function(){
-                    
-					}
-				});
-		
-		
-	})
-
-</script>
