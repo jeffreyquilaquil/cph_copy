@@ -148,17 +148,28 @@ if($this->user->access == "exec"){
 
 			<?php 
 
-
 			foreach ($MyTicket as $myticket_key => $myticket) { ?>
 
 			<tr>
 				<td class="td_hover">
-				<?php if (date('Y-m-d') >= $myticket->due_date AND $myticket->cs_post_status < 3 ) {
-					echo "<span style='color:red;'>&#9873;</span>";
-				}?>
 
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $myticket->cs_post_id; ?>/active/<?php echo $myticket->cs_post_empID_fk; ?>" class="iframe"><?php echo sprintf("%'.06d", $myticket->cs_post_id); ?></a>
+				<?php
+
+				if(date('Y-m-d') >= $myticket->due_date AND $myticket->cs_post_status < 3 ){
+					echo "<span style='color:red;'>&#9873;</span>";
+
+				}
+
+				if($myticket->notifStatusHRAccounting == 0){
+					echo '<span style = "color:red">! </span>';
+				} 
+
+				echo ' <a href=" '.$this->config->base_url().'hr_cs/HrIncident/'.$myticket->cs_post_id.'/active/'.$myticket->cs_post_empID_fk.'" class = "iframe update-notifStatus" data-id = " '.$myticket->cs_post_id.' ">'.$myticket->cs_post_id.'</a> ';
+
+				?>			
+      			
       			</td>
+
 				<td><?php echo $myticket->cs_post_subject; ?></td>
 				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
 				<td>
@@ -170,6 +181,7 @@ if($this->user->access == "exec"){
 								echo "<div class='not_urgent'>$myticket->cs_post_urgency</div>";
 							}
 					?>
+
 				</td>
 				<td><?php echo date_format(date_create($myticket->last_update), 'F d, Y G:ia'); ?></td>
 				<td><?php echo ($myticket->due_date == '0000-00-00 00:00:00') ? '--' : date('F d, Y G:ia', strtotime($myticket->due_date)); ?></td>
@@ -254,7 +266,6 @@ if($this->user->access == "exec"){
 								</select>
 							</li>
 							
-
 							<li><input type="submit" class="redirect_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit" style="float:right;"></li>
 						</ul>	
 					</div>
@@ -491,7 +502,13 @@ if($this->user->access == "exec"){
 
     <!-- edit message template tab -->
     <div id="tb-3" class="tab-cont">
-     
+
+    <h3>Message Templates</h3>
+    	<ul>
+    		<?php foreach ($messageTemplates as $k_messageTemplate => $v_messageTemplate){
+    			echo '<li><a href="' .$this->config->base_url(). 'hr_cs/editMessageTemplate/' .$v_messageTemplate->id. '" class="iframe">'.$v_messageTemplate->messageType.'</a></li>';
+    			} ?>    		
+    	</ul>     
     </div>
 
     <!-- add redirection department tab -->
@@ -773,7 +790,25 @@ $(document).ready(function(){
 
 });
 
+$('.update-notifStatus').click(function(){
+		
+		var that = $(this);
+		var id = that.data('id');
+		console.log(id);
+		
+		$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/updateNotifStatusHRAccounting",
+				data: { incident_number: id },
+				cache: false,
 
+				success: function(){
+                    
+					}
+				});
+		
+		
+});
 
 
 </script>

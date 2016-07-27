@@ -158,9 +158,9 @@ class Commonmodel extends CI_Model {
 				$condition = 'AND preparedby ='.$this->user->empID;
 			}
 
-
 			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0 '.$condition);
-		}else if($type=='coaching'){
+		}
+		else if($type=='coaching'){
 			$condition = '';
 			if($this->access->accessHR==false){
 				$ids = '"",'; //empty value for staffs with no under yet
@@ -236,10 +236,13 @@ class Commonmodel extends CI_Model {
  			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
 		} else if( $type == 'hdmf_loans' ){
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
-		} elseif( $type == 'kudos' ){
+		} elseif( $type == 'kudos'){
 			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
+		} elseif($type == 'notifStatus'){
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
+		} elseif($type == 'hr_accounting'){
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_agent= '.$this->user->empID);
 		}
-		
 		return $cnt;
 	}
 	

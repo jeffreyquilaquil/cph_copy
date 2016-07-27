@@ -372,31 +372,41 @@
 
 						if( !empty($this->input->post('reply_msg')) ){
 
-							//assign if first reply
+							// assign if first reply
 							if( $this->input->post('who_posted') != $data['ticket']->cs_post_empID_fk ){
 								if ( $data['ticket']->cs_post_status == 0 ) {
+									
+									$update_array['hr_own_empUSER'] = $this->user->username;
 									$update_array['cs_post_status'] = 1;
 									$update_array['cs_post_agent'] = $this->user->empID;
+
 									$msg = 'Ticket assigned to '.$data['all_staff_empID'][ $this->user->empID ]->name;
 								}	
 							}
 							
-
-
 							if( $this->input->post('who_posted') == $data['ticket']->cs_post_empID_fk ){
-								$insert_array['cs_msg_type'] = 0;
+							$insert_array['cs_msg_type'] = 0;
+							$this->dbmodel->updateQueryText('hr_cs_post','notifStatusHRAccounting = 0','cs_post_id='.$this->input->post('ticket_id'));
+
+
 							} else {
 								$insert_array['cs_msg_type'] = 1;
+								$this->dbmodel->updateQueryText('hr_cs_post','notifStatus = 0','cs_post_id='.$this->input->post('ticket_id'));
 							}
+
 							$insert_array['cs_msg_text'] = $this->input->post('reply_msg');
 
 							//reopen
 							if( $data['ticket']->cs_post_status == 5 ){
 								$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $this->input->post('ticket_id'), ['cs_post_status' => 1] );
+								
 								//add note
 								$this->_addNote($this->input->post('ticket_id'), 'Reopened by '.$data['all_staff_empID'][ $this->input->post('who_posted')]->name );
 							}
+						
 						}
+
+						// note message
 						if( !empty($this->input->post('note_msg')) ){
 							$insert_array['cs_msg_type'] = 2;
 							$insert_array['cs_msg_text'] = $this->input->post('note_msg');
@@ -407,7 +417,7 @@
 						$insert_array['cs_msg_date_submitted'] = date('Y-m-d H:i:s');
 						
 						$this->dbmodel->insertQuery('hr_cs_msg', $insert_array);
-
+						
 						if( $this->input->post('resolution') == 5 ){
 							$update_array['cs_post_status'] = 3;
 							$msg = 'Marked as Resolved.';
@@ -415,6 +425,7 @@
 							$update_array['cs_post_status'] = 5;
 							$msg = 'Marked as Cancelled.';
 						}
+						
 						if( isset($update_array) AND !empty($update_array) ){
 							
 							$this->dbmodel->updateQuery('hr_cs_post', 'cs_post_id = '. $this->input->post('ticket_id'), $update_array );
@@ -835,7 +846,7 @@
 
             	$data['content']='employee_incident_info';  
 
-  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.rate_status, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.hr_own_empUSER','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
+  				$data['EmployeeDashboard']=$this->ask_hr->hrhelpdesk('hr_cs_post.cs_post_id, hr_cs_post.rate_status, hr_cs_post.cs_post_empID_fk,hr_cs_post.cs_post_status, hr_cs_post.cs_post_date_submitted, hr_cs_post.cs_post_subject, hr_cs_post.hr_own_empUSER,hr_cs_post.notifStatus	','hr_cs_post',' LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id WHERE cs_post_empID_fk = '.$empid.' GROUP BY cs_msg_postID_fk HAVING COUNT( cs_msg_postID_fk ) >=1');
 
   				$data['reamark_status'] = $this->ask_hr->getdata('COUNT(rate_status) as num_rate','hr_cs_post','cs_post_status = 3 AND rate_status = 0 AND cs_post_empID_fk ='.$empid);
 
@@ -1167,6 +1178,17 @@
 				}
 
 		    }
+
+		    // Update notification status of employee to read
+		    public function updateNotifStatus(){
+		    	$this->dbmodel->updateQueryText('hr_cs_post','notifStatus = 1','cs_post_id = '.$this->input->post('incident_number'));
+		    }
+
+		    // Update notification status of employee to read
+		    public function updateNotifStatusHRAccounting(){
+		    	$this->dbmodel->updateQueryText('hr_cs_post','notifStatusHRAccounting = 1','cs_post_id = '.$this->input->post('incident_number'));
+		    }
+
 } // end of class
 	
 	

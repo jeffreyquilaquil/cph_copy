@@ -56,18 +56,42 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
 	  		<tr>
 				<td>
-				<?php if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/open/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
-				<?php }elseif($rep->cs_post_status == 3){
 
-					if($rep->rate_status == 0){
-						echo "&#10067;";
-					} ?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/resolved/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+				<?php 
 
-				<?php }elseif($rep->cs_post_status == 4 || $rep->cs_post_status == 5 ){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
-				<?php } ?>
+				if($rep->notifStatus == 0){
+					
+					echo '<span style = "color:red">! </span>';
+			
+						if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){ 
+							
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/open/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';						
+						 } 
+
+						elseif($rep->cs_post_status == 3){
+							
+							if($rep->rate_status == 0){
+	
+								echo '&#10067';
+							}
+							
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/resolved/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';						
+						}
+
+						elseif($rep->cs_post_status == 4 || $rep->cs_post_status == 5 ){
+								
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/closed/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';												
+						}
+
+					}
+
+				else{
+
+					echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/open/'.$rep->cs_post_empID_fk.' class="iframe">'.$rep->cs_post_id.'</a>';						
+				}
+
+		      	?>
+
 				</td>
 	      		<td><?php echo date_format(date_create($rep->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
@@ -96,3 +120,26 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	</table>
 	</div>
 </div>
+
+<script type="text/javascript">
+	
+	$('.update-notifStatus').click(function(){
+		
+		var that = $(this);
+		var id = that.data('id');
+		
+		$.ajax({
+				type: "POST",
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/updateNotifStatus",
+				data: { incident_number: id },
+				cache: false,
+
+				success: function(){
+                    
+					}
+				});
+		
+		
+	})
+
+</script>
