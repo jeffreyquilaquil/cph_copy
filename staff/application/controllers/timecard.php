@@ -575,7 +575,7 @@ class Timecard extends MY_Controller {
 			//if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
 			//else $condition = '';
 			
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk AND status IN (1,2)', 'payDate DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -901,6 +901,9 @@ class Timecard extends MY_Controller {
 			header('Location: '.$this->config->base_url().'timecard/managepayroll/');
 			exit;
 		}else{
+			// echo "<pre>";
+			// var_dump($_POST);
+
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			
 			if(isset($_POST['type']) && $_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
@@ -925,7 +928,7 @@ class Timecard extends MY_Controller {
 
 				if($_POST['submitType'] == 'generatepayslip'){
 					///THIS IS FOR PAYROLL GENERATION
-					$genpayArr['empIDs'] =  ((is_array($_POST['empIDs']))?implode(',', $_POST['empIDs']):$_POST['empIDs']);
+					$genpayArr['empIDs'] =  ((is_array($_POST['empIDs']))?implode(',', $_POST['empIDs']):rtrim($_POST['empIDs'],','));
 					$genpayArr['dateStart'] =  date('Y-m-d', strtotime($_POST['start']));
 					$genpayArr['dateEnd'] =  date('Y-m-d', strtotime($_POST['end']));
 					
@@ -954,10 +957,17 @@ class Timecard extends MY_Controller {
 			$data['computationtype'] = $_POST['computationtype'];
 			$data['start'] = date('Y-m-d', strtotime($_POST['start']));
 			$data['end'] = date('Y-m-d', strtotime($_POST['end']));
-			$data['empIDs'] = rtrim($_POST['empIDs'], ',');
-			
+
+			if(is_array($_POST['empIDs']))
+				$data['empIDs'] = implode(',', $_POST['empIDs']);
+			else
+				$data['empIDs'] = rtrim($_POST['empIDs'],',');
+
+			//echo $data['empIDs'];
+
 			$data['dataAttendance'] = array();	
 			$dataEmps = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname, ", ",fname) AS name, staffHolidaySched', 'empID IN ('.$data['empIDs'].')', '', 'lname');
+
 			foreach($dataEmps AS $emp){
 				$data['dataAttendance'][$emp->empID]['name'] = $emp->name;
 				$data['dataAttendance'][$emp->empID]['staffHolidaySched'] = $emp->staffHolidaySched;
@@ -1607,7 +1617,8 @@ class Timecard extends MY_Controller {
 				}									
 			}
 		}
-		// $this->textM->aaa($data);
+		
+		//$this->textM->aaa($_POST);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -1656,7 +1667,6 @@ class Timecard extends MY_Controller {
 							$data['dataQuery'][$key]->allowances = $datum['allowances'];
 						}
 
-						//$this->textM->aaa($data);
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
 						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);

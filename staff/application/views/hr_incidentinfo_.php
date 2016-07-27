@@ -1,6 +1,6 @@
 <?php if (isset($redirect) AND $redirect == true) { ?>
 	<p>Post has submitted.</p>
-	<script type="text/javascript">parent.window.location.reload();</script>
+	
 <?php exit();} ?>
 
 <style type="text/css">
@@ -179,7 +179,7 @@
 			echo '<br/><br/>';
 			echo '<textarea name="remark" class="hidden tiny" style="height:200px;"></textarea>';
 			echo '<div style="text-align: right;">
-		<input type="submit" id="submit_reply" class="btn btngreen" value="Submit">
+		<input type="submit" id="submit_reply_rating" class="btn btngreen" value="Submit">
 	</div>';
 			
 		} else {
@@ -264,6 +264,23 @@
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">
 	$(function(){
+		//check ratings
+		$('#submit_reply_rating').click(function(e){
+			e.preventDefault();
+			var rating = parseInt( $('form input[name="rating"]:checked').val() );
+
+			var remark = $('textarea[name="remark"]').val();
+console.log(rating);
+			if( isNaN(rating) ){
+				alert('Please provide your rating.');
+			} else if( (rating == 1 || rating == 2 || rating == 'undefined') && remark == '' ){
+				alert('Please provide your remark on your rating');
+			} else {
+				$('form').submit();
+			}
+		});
+
+
 		// display toolbar in textarea
 		tinymce.init({
 		selector: "textarea.tiny",	
