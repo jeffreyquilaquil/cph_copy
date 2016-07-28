@@ -1922,8 +1922,10 @@ class Staff extends MY_Controller {
 								$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $_POST['toEmail'], $_POST['subjectEmail'], $_POST['message'], 'CareerPH' );
 								$this->dbmodel->updateConcat('staffLeaves', 'leaveID="'.$data['row']->leaveID.'"', 'addInfo', $addInfo);
 							}else{
-								if($_POST['status']!=$_POST['oldstatus'])
+								if($_POST['status']!=$_POST['oldstatus']){
 									$updateArr['status'] = $_POST['status'];
+								}
+									
 								$updateArr['hrapprover'] = $this->user->empID;
 								$updateArr['hrremarks'] = $_POST['remarks'];						
 								$updateArr['hrdateapproved'] = date('Y-m-d');
@@ -4603,8 +4605,11 @@ class Staff extends MY_Controller {
 			}
 		} 
 		//for accounting
-		if( $this->input->post('empID') ){
+		if( $this->input->post('empID_fk') ){
 			//add item to payslip and filter out discrepancies
+
+			
+
 			$payslip_array = $_POST;
 			if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
 			if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
@@ -4616,7 +4621,7 @@ class Staff extends MY_Controller {
 				$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
 				$payslip_array['payEnd'] = $payslip_array['payStart'];
 			}
-			$payslip_array['empID_fk'] = $payslip_array['empID'];
+			$payslip_array['empID_fk'] = $payslip_array['empID_fk'];
 			$payslip_array['payID_fk'] = $payslip_array['payID'];
 			
 			unset($payslip_array['empID']);
