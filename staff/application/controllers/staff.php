@@ -541,6 +541,10 @@ class Staff extends MY_Controller {
 								if(isset($what2update['endDate']) || isset($what2update['accessEndDate'])){
 									$this->emailM->emailSeparationNotice($empID);
 								}
+
+								if( isset($what2update['regDate']) ){
+									$this->emailM->emailRegularization($empID);
+								}
 								
 								//cancel coaching if effective separation date is set on or before today. Note CANCELLED DUE TO TERMINATION
 								if(isset($what2update['endDate']) && $what2update['endDate']<=date('Y-m-d')){
@@ -1918,8 +1922,10 @@ class Staff extends MY_Controller {
 								$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $_POST['toEmail'], $_POST['subjectEmail'], $_POST['message'], 'CareerPH' );
 								$this->dbmodel->updateConcat('staffLeaves', 'leaveID="'.$data['row']->leaveID.'"', 'addInfo', $addInfo);
 							}else{
-								if($_POST['status']!=$_POST['oldstatus'])
+								if($_POST['status']!=$_POST['oldstatus']){
 									$updateArr['status'] = $_POST['status'];
+								}
+									
 								$updateArr['hrapprover'] = $this->user->empID;
 								$updateArr['hrremarks'] = $_POST['remarks'];						
 								$updateArr['hrdateapproved'] = date('Y-m-d');
@@ -2554,8 +2560,8 @@ class Staff extends MY_Controller {
 		
 		$row = $this->dbmodel->getSingleInfo('staffCIS', 'staffCIS.*, CONCAT(fname," ",lname) AS name, (SELECT CONCAT(fname," ",lname) AS n FROM staffs s WHERE s.empID=preparedby AND preparedby!=0) AS prepby, supervisor', 'cisID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 		
-		$row->changes = stripslashes($row->changes);
-		$row->dbchanges = stripslashes($row->dbchanges);
+		//$row->changes = stripslashes($row->changes);
+		//$row->dbchanges = stripslashes($row->dbchanges);
 		//$this->textM->aaa($row);
 		if(count($row)>0){
 			$isupname = '';
@@ -2595,7 +2601,6 @@ class Staff extends MY_Controller {
 				$data['access'] = false;
 			}
 		}
-		
 		$this->load->view('includes/template', $data);			
 	}
 	
@@ -3415,7 +3420,7 @@ class Staff extends MY_Controller {
 	public function probationmanagement(){
 		$data['content'] = 'probationmanagement';
 		
-		if($this->access->accessFullHR== true OR $this->access->accessMedPerson) 
+		if($this->access->accessFullHR== true OR $this->access->accessMedPerson || $this->user->empID == 474) 
 		{
 			if(!empty($_POST)){
 				if($_POST['submitType']=='printedEval'){
@@ -3457,7 +3462,7 @@ class Staff extends MY_Controller {
 	public function probperstatus(){
 		$data['content'] = 'probperstatus';
 		$id = $this->uri->segment(2);
-		if(is_numeric($id) && $this->access->accessFullHR===true){
+		if(is_numeric($id) && $this->access->accessFullHR===true || $this->user->empID == 474){
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
 			$data['queryPerStatus'] = $this->dbmodel->getQueryResults('staffPerRequirements', '*');
 			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', '*', 'empID_fk="'.$id.'"');
@@ -4430,7 +4435,7 @@ class Staff extends MY_Controller {
 			echo "Request Updated";
 		}else{
 			$p['dateRequested'] = date("Y-m-d H:i:s");
-			$p['kudosReason'] = mysql_real_escape_string($p['kudosReason']);
+			//$p['kudosReason'] = mysql_real_escape_string($p['kudosReason']);
 
 			$this->db->insert('kudosRequest', $p);
 			$insertID = $this->db->insert_id();
@@ -4467,7 +4472,7 @@ class Staff extends MY_Controller {
 		$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
 		$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
 
-		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID $conditionWhere ORDER BY kudosRequestID ");
+		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
 		
 		//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
 		$newData = array();
@@ -4488,12 +4493,31 @@ class Staff extends MY_Controller {
 		// $twodays = date_add($today, date_interval_create_from_date_string('2 days') );
 		// $twodays = date_format( $twodays, 'Y-m-d' );
 		// dd($twodays);
-		$info->name = 'Marjune';
-		$info->gender = 'M';
-		$info->endDate = '2016-06-15';
-		$info->supEmail = 'marjune.abellana@tatepublishing.net';
-		$this->emailM->emailSeparationDateAdvanceNotice( $info );
-    }
+		// $info->name = 'Marjune';
+		// $info->gender = 'M';
+		// $info->endDate = '2016-06-15';
+		// $info->supEmail = 'marjune.abellana@tatepublishing.net';
+		// $this->emailM->emailSeparationDateAdvanceNotice( $info );
+		$date13 = date('Y-m-d');
+		$endDateObj = new DateTime( $date13 );
+		$endDateObj->add( new DateInterval( 'P90D') );
+
+		//check if endDate is Tuesday
+		$endDate = $endDateObj->format('l');
+		dd($endDateObj->format('Y-m-d'), false);
+		//dd($endDate);
+		while( $endDate != 'Tuesday' ){
+
+			
+			$endDateObj->add( new DateInterval('P1D') );
+			$endDate = $endDateObj->format('l');
+
+			dd($endDate, false);
+		}
+		$releaseDate = $endDateObj->format('Y-m-d');
+		dd($releaseDate);
+		//$arrayOfDataThatIsNew['releaseDate'] = $releaseDate;
+}
 	public function reports(){
 		$data['content'] = 'reports';
 		$which_report = $this->uri->segment(2);
@@ -4581,8 +4605,11 @@ class Staff extends MY_Controller {
 			}
 		} 
 		//for accounting
-		if( $this->input->post('empID') ){
+		if( $this->input->post('empID_fk') ){
 			//add item to payslip and filter out discrepancies
+
+			
+
 			$payslip_array = $_POST;
 			if($payslip_array['payAmount']=='specific amount') $payslip_array['payAmount'] = $payslip_array['inputPayAmount'];
 			if($payslip_array['payAmount']=='hourly' && isset($payslip_array['payAmountHourly'])) $payslip_array['payAmount'] = $payslip_array['payAmountHourly'];
@@ -4594,7 +4621,7 @@ class Staff extends MY_Controller {
 				$payslip_array['payStart'] = date('Y-m-d', strtotime($payslip_array['payStartOnce']));
 				$payslip_array['payEnd'] = $payslip_array['payStart'];
 			}
-			$payslip_array['empID_fk'] = $payslip_array['empID'];
+			$payslip_array['empID_fk'] = $payslip_array['empID_fk'];
 			$payslip_array['payID_fk'] = $payslip_array['payID'];
 			
 			unset($payslip_array['empID']);

@@ -20,9 +20,9 @@
 	?>
 	
 	</div>
-	<div style="text-align:right; padding:10px;">
+	<!-- <div style="text-align:right; padding:10px;">
 		If you have any questions or concerns: <input type="button" style="background-color:#6b8e00;" onClick="window.location.href='mailto:hr.cebu@tatepublishing.net'" value="Click Here to email HR."/>
-	</div>
+	</div> -->
 	<!--<div class="wrapper-mid-box">				
 		<h2 class="wheadtext">IMPORTANT ANNOUNCEMENTS</h2>
 		<h3 class="wheadtext">TATE CHRISTMAS PARTY 2014</h3>

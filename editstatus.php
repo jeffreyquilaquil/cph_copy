@@ -66,7 +66,7 @@
 				<p>Go to CPH recruitment manager, download the approved generated job offer and schedule job offer with the applicant.</p>
 			";
 			$subject = 'CPH Job Offer Generated Approved by the Hiring Manager';
-            sendEmail( $from, $to, $subject, $body, $hiring_manager_name);
+            // sendEmail( $from, $to, $subject, $body, $hiring_manager_name);
 			addEmailStatusNote( $id, $subject, $hiring_manager_email, $body);
             
 		}
@@ -123,7 +123,7 @@
 							<p><br/></p>
 							<p>Thank you very much!</p>';
 							
-						sendEmail( $from, $to, 'Mini Referral Bonus', $ebody, 'Career Index Auto Email' );
+						// sendEmail( $from, $to, 'Mini Referral Bonus', $ebody, 'Career Index Auto Email' );
 						
 						$valID = '';
 						foreach($bonusInfo AS $v){
@@ -235,7 +235,7 @@
 			<a href="'.$approve_url.'=N">'.$approve_url.'=N</a><br/>';			
 			
 			$subject = 'CPH Job Offer Generated for your approval';
-            sendEmail( $from, $to, $subject, $ebody, 'Career Index Auto Email' );			
+            // sendEmail( $from, $to, $subject, $ebody, 'Career Index Auto Email' );			
             addEmailStatusNote($id, $subject, $to, $ebody);
 			//end send email
 			
@@ -969,6 +969,7 @@
 				}else if($info['process']==6 && $info['processStat']==0){ //HIRED AND CLOSED STATUS ?>	
 					<div>
 						<b>Applicant is successfully hired on <?= date('F d, Y', strtotime($info['hiredDate'])) ?>. Start date is on <?= date('F d, Y', strtotime($info['startDate'])) ?>.<br/>An email has been sent to careerph.tatepublishing.net, immediate supervisor, IT, and the Job Requisition requester.</b>
+						<br/><a href="create_temp_id.php?username=<?php echo $_GET['username']; ?>">Click here</a> to generate temporary ID.
 						<br/><br/>
 					<?php
 						$empID = $db->selectSingleQuery('staffs', 'empID' , 'fname="'.$info['fname'].'" AND lname="'.$info['lname'].'" AND active="1"');
@@ -992,7 +993,7 @@
 						</div>
 				<?php } ?>
 					<p><button class="pad5px" onClick="window.location.href='editstatus.php?id=<?= $id ?>&pos=back&stat=5'">Back to Job Offer</button></p>
-					<form action="hired.php?id=<?= $id ?>" method="POST" onSubmit="return validateForm(<?=$info['isNew'] ?>);" enctype="multipart/form-data">
+					<form action="hired.php?id=<?= $id ?>" method="POST"  enctype="multipart/form-data">
 					<table border=0 cellspacing=0 cellpadding=0 width="80%">	
 						<tr>
 							<td width="40%">Username *</td>

@@ -102,6 +102,8 @@ class Payrollmodel extends CI_Model {
 	public function getPaymentItemsForPayroll($info){
 		$kaonNapud = array();
 		$dessertItems = $this->payrollM->getPaymentItems($info->empID_fk, 1, '', $info->payPeriodStart, $info->payPeriodEnd);
+		// echo "<pre>";
+		// var_dump($dessertItems);
 			
 		foreach($dessertItems AS $cake){
 			$eat = true;
@@ -115,16 +117,19 @@ class Payrollmodel extends CI_Model {
 						}else $eat = false;											
 					}else if($cake->payPeriod!='once'){						
 						if(($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($cake->payEnd>=$info->payPeriodStart && $cake->payEnd<=$info->payPeriodEnd)
-							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd)
-						) $eat = true;
+							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd) || $cake->payID_fk == 32 || $cake->payID_fk == 18
+						){
+							$eat = true; 
+						}
 						else $eat = false;
 					}
 				}
 				
-				if($eat==true) $kaonNapud[] = $cake;
+				if($eat==true){ 
+					$kaonNapud[] = $cake; 
+				}
 			}
 		}
-		
 		return $kaonNapud;		
 	}
 	
@@ -176,6 +181,24 @@ class Payrollmodel extends CI_Model {
 					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd);
 				}else if($info->endDate!="0000-00-00" && $info->endDate>=$info->payPeriodStart && $info->endDate<$info->payPeriodEnd){
 					$hr = $this->payrollM->getNumDays($info->payPeriodStart, $info->endDate);
+					//check if the endDate has publish, if not then we can subtract to $hr;
+
+					$endDate = $info->endDate;
+					while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
+						//check if on weekends, don't subtract since $hr has already weekends subtracted
+						$endDateDay = date('l', strtotime($endDate) );
+						if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
+							$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
+							if( isset($hasPublish) AND empty($hasPublish) ){
+								$hr--;
+							}
+						}
+						//decrement
+						$endDateObj = new DateTime($endDate);
+						$endDateObj->sub( new DateInterval('P1D') );
+
+						$endDate = $endDateObj->format('Y-m-d');
+					}
 				}	
 				
 				if($item->prevAmount=='basePay'){					
@@ -210,7 +233,9 @@ class Payrollmodel extends CI_Model {
 	public function insertPayEachDetail($payslipID, $itemID, $payValue, $hr=0){
 		$detailID = $this->dbmodel->getSingleField('tcPayslipDetails', 'detailID', 'payslipID_fk="'.$payslipID.'" AND payItemID_fk="'.$itemID.'"');
 		$payValue = str_replace(',', '', $payValue);
-		if(empty($detailID)){
+
+		//or this is an additional pag-ibig contribution
+		if(empty($detailID) || $itemID == 32){
 			$insDetails['payslipID_fk'] = $payslipID;
 			$insDetails['payItemID_fk'] = $itemID;				
 			$insDetails['payValue'] = $payValue;			
@@ -480,23 +505,88 @@ class Payrollmodel extends CI_Model {
 		
 		$first = $condition;
 		$second = $condition;
-		
-		if(!empty($payStart) && !empty($payEnd) && $payStart!='0000-00-00' && $payEnd!='0000-00-00'){
-			$first .= ' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd))';
-			$second .= ' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd))';
+
+		//determine if semi or monthly
+		$pst = '';
+		$sst = '';
+		if($payStart != ''){
+			$pS = date('d', strtotime($payStart));
+
+			if($pS > 25 || $pS < 11){
+				//$pst = ' AND p.payPeriod IN ("once", "semi", "per payroll") ';
+				//$p = ' AND payPeriod IN ("once", "semi", "per payroll") ';
+				$pst = ' AND s.payPeriod IN ("once", "semi", "per payroll")';
+				$sst = ' AND payPeriod IN ("once", "semi", "per payroll") ';
+
+			}
+			else{
+				$pst = ' AND s.payPeriod IN ("once", "monthly", "per payroll")';
+				$sst = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
+				//$pst = ' AND p.payPeriod IN ("once", "monthly", "per payroll")';
+				//$p = ' AND payPeriod IN ("once", "monthly", "per payroll") ';
+			}
 		}
+		$s_string = '';
+		$p_string = '';
+	
 		
-		$sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+		//if(empty($payStart) && empty($payEnd) && $payStart =='0000-00-00' && $payEnd == '0000-00-00'){
+		if(!empty($payStart) && !empty($payEnd) && $payStart !='0000-00-00' && $payEnd != '0000-00-00'){
+			//$first .= ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+			//' AND ((payStart="0000-00-00" AND payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN payStart AND payEnd)) ';
+			//$second .=  ' AND ((p.payEnd = "0000-00-00") OR (s.payEnd >= "'.$payEnd.'")) ';
+
+			//' AND ((s.payStart="0000-00-00" AND s.payEnd="0000-00-00") OR ("'.$payStart.'" AND "'.$payEnd.'" BETWEEN s.payStart AND s.payEnd)  AND s.payPeriod = "'.$pst.'") ';
+			$s_string = 'AND ( 
+							(payStart = "0000-00-00" AND payEnd = "0000-00-00") 
+							OR ( UNIX_TIMESTAMP(payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
+									AND UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
+								) 
+						)';
+
+			$p_string = 'AND ( 
+							(s.payStart = "0000-00-00" AND s.payEnd = "0000-00-00") OR 
+								( UNIX_TIMESTAMP(s.payStart) <= UNIX_TIMESTAMP("'.$payEnd.'") 
+									AND UNIX_TIMESTAMP(s.PayEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") 
+								) 
+						) ';
+		} 
+		
+		/* $sql= 'SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
 				FROM tcPayslipItems AS s
-				WHERE mainItem = 1 AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.') '.$first.'
+				WHERE mainItem = 1 '.$p.' AND payID NOT IN (SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'" '.$condition.' ) '.$first.'
 				UNION
 				SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
 				FROM tcPayslipItemStaffs AS s
-				LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$second.' 
+				LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE empID_fk="'.$empID.'" '.$condition.' '.$second.' '.$pst.'
+
 				ORDER BY status DESC, isMain DESC, payCategory, payAmount, payType, payName, payStart, payPeriod';
-								
+				// SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain  
+				// FROM tcPayslipItemStaffs AS s
+				// LEFT JOIN tcPayslipItems AS p ON payID_fk=payID WHERE (empID_fk = '.$empID.' AND payID_fk IN (32,18) AND s.payEnd = "0000-00-00" AND s.status = 1  AND s.payPeriod = "'.$pst.'") OR empID_fk="'.$empID.'" '.$second.' 
+		*/
+		$sql = '
+		SELECT payID, payID AS payID_fk, payCode, payName, payType, s.payPercent, s.payAmount AS 	prevAmount, payAmount, payPeriod, payStart, payEnd, payCDto, payCategory, mainItem, status, "0" AS empID_fk, "1" AS isMain  
+				FROM tcPayslipItems AS s
+				WHERE mainItem = 1  '.$sst.' AND payID NOT IN (
+					SELECT payID_fk FROM tcPayslipItemStaffs WHERE empID_fk="'.$empID.'"  
+					  '. $s_string .'
+					) '.$condition.' AND (payEnd = "0000-00-00" OR UNIX_TIMESTAMP(payEnd) >= UNIX_TIMESTAMP("'.$payEnd.'") )
+		UNION
+
+		SELECT payStaffID AS payID, payID_fk, payCode, payName, payType, p.payPercent, p.payAmount AS prevAmount, s.payAmount, s.payPeriod, s.payStart, s.payEnd, p.payCDto, payCategory, p.mainItem, s.status, empID_fk, "0" AS isMain 
+				FROM tcPayslipItemStaffs as s 
+				LEFT JOIN tcPayslipItems AS p 
+					ON s.payID_fk = p.payID 
+				WHERE empID_fk = '.$empID.'  '.$condition.' '.$pst.' '.$p_string;
+
+
+
+		//echo $sql;
+		//dd($sql);
 		$query = $this->dbmodel->dbQuery($sql);
-					
+		// echo "<pre>";
+		// var_dump($query->result());
 		return $query->result(); 
 	}
 	
@@ -663,6 +753,7 @@ class Payrollmodel extends CI_Model {
 				if(!in_array($ded->payID_fk, $deadArr)){
 					$deduct .= $ded->payName."\n";
 					if(isset($deductArr[$ded->payID_fk])){
+						
 						$curr .= $this->textM->convertNumFormat($deductArr[$ded->payID_fk]->payValue)."\n";
 						array_push($deadArr, $ded->payID_fk);
 					}else $curr .= "-\n";
@@ -760,10 +851,10 @@ class Payrollmodel extends CI_Model {
 	******/
 	public function getMonthlyPeriod($type){
 		$arr = array();
-		$dateToday = date('Y-m-d');
+		$dateToday = date('Y-01-01');
 		
-		$dateprev = date('Y-m-d', strtotime($dateToday.' -3 months'));
-		$dateafter = date('Y-m-d', strtotime($dateToday.' +3 months'));
+		$dateprev = date('Y-m-d', strtotime($dateToday));
+		$dateafter = date('Y-m-d', strtotime($dateToday.' +12 months'));
 		
 		$d=$dateprev;
 		if($type=='semi'){			
@@ -850,7 +941,10 @@ class Payrollmodel extends CI_Model {
 
 		foreach( $data['dataMonth'] as $key_m => $val_m ){
 			foreach( $val_m as $key_n => $val_n ){
-				$total_month[ $key_n ] += $val_n;
+				if(!isset( $total_month[ $key_n ] ))
+					$total_month[ $key_n ] = $val_n;
+				else
+					$total_month[ $key_n ] += $val_n;
 			}
 		}
 		$allowances = array();
@@ -863,10 +957,16 @@ class Payrollmodel extends CI_Model {
 					$key_e = explode('_', $key_);
 					
 					if( $key_e[1] == 'credit'){
-						$allowances[ $key_e[3] ] += $val_;
+						if( !isset($allowances[ $key_e[3] ] ) )
+							$allowances[ $key_e[3] ] = $val_;
+						else
+							$allowances[ $key_e[3] ] += $val_;
 					}
 					if( $key_e[1] == 'debit' ){
-						$deductions[ $key_e[3] ] += $val_;
+						if( !isset( $deductions[ $key_e[3] ] ) )
+							$deductions[ $key_e[3] ] = $val_;
+						else
+							$deductions[ $key_e[3] ] += $val_;
 					}	
  				}
 				
@@ -1569,14 +1669,19 @@ class Payrollmodel extends CI_Model {
 			
 			$personalExemption = $this->payrollM->computeTaxExemption($staffInfo->taxstatus);
 
-			//for separated employee
-			$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
-
 			$month13c = 0;
 			$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $val->dateArr, $val->dataMonth, $val->dataMonthItems );
 			foreach( $data_items as $di_key => $di_val ){
 				$$di_key = $di_val;
 			}
+
+			//for separated employee
+			if(!$is_active){
+				$payInfo = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'empID_fk = '.$staffInfo->empID);
+			}
+			//declare payinfo manually (add13 = total13th, )
+
+
 			/****************************************
 			*										*
 			*			END OF PAY LOOP				*

@@ -28,13 +28,13 @@
 		<div class="panel-body">
 			<p>Current Status: <strong><?=$this->dbmodel->getSingleField('kudosRequestStatusLabels','statusName','statusID ='. $kudosRequestStatus)?></strong></p>
 			<p><strong>Reason of Kudos Bonus.</strong></p>
-			<P><?= str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($evaluationContent[0]['kudosReason']))); ?></P>
+			<P><?= str_replace("\n",'<br/>',str_replace("\r\n", "<br/>", $evaluationContent[0]['kudosReason'])); ?></P>
 			 
 			<?php
 				if( $kudosRequestStatus == 5){
 			?>
 				<p><strong>Reason of Kudos Bonus.</strong></p>
-				<P><?= str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($evaluationContent[0]['reasonForDisapproving']))); ?></P>
+				<P><?= str_replace("\n",'<br/>',str_replace("\r\n", "<br/>", $evaluationContent[0]['reasonForDisapproving'])); ?></P>
 			<?php		
 				}
 			?>

@@ -81,6 +81,7 @@ class Emailmodel extends CI_Model {
 		//On separation date send Separation Date Alert
 		if($info->endDate==$dateToday){
 			$this->emailM->emailSeparationDateAlert($info);
+			$this->emailM->emailSeparationDateAdvanceNotice($info);
 		}
 		
 		//On Access End Date send access End date alert
@@ -172,7 +173,7 @@ class Emailmodel extends CI_Model {
 	//send email if end date is today
 	public function emailSeparationDateAlert($info){
 		$de = 'kent.ybanez@tatepublishing.net';
-		$sur = 'it.security@tatepublishing.net';
+		$sur = 'it.security@tatepublishing.net,clinic.cebu@tatepublishing.net,hr-list@tatepublishing.net';
 		$sujet = 'Separation Date Alert ('.$info->name.')';
 		
 		$termArr = $this->textM->constantArr('terminationType');
@@ -199,7 +200,7 @@ class Emailmodel extends CI_Model {
 		$sujet = 'Separation Date Alert ('.$info->name.')';
 		//send email to leaders
 		$sender = 'careers.cebu@tatepublishing.net';
-		$receiver = 'leaders.cebu@tatepublishing.net,'.$info->supEmail;
+		$receiver = 'leaders.cebu@tatepublishing.net,clinic.cebu@tatepublishing.net,'.$info->supEmail;
 		$msg = '<p>Hello Tate Leaders!</p>
 		<p>We are sorry to announce that '. $info->name .' is leaving Tate Publishing.</p>
 		<p>A separation date has been entered for '. $info->name .' and the last day of employment with Tate Publishing is on '. date('F d, Y', strtotime($info->endDate)).'</p>
@@ -485,7 +486,7 @@ class Emailmodel extends CI_Model {
 		
 		$body = '<p>Hi '.$name.',</p>';
 		$body .= '<p>Your payslip for the payroll period of '.$period.' '.(($isRegenereted==1)?'has been regenerated and ':'').' is ready for viewing. You can access this payslip through CareerPH Timecard and Payroll "<a href="'.$this->config->base_url().'timecard/payslips/">My Payslips</a>" page.</p>';
-		$body .= '<p>Kindly review your payslip and report any discrepancies by replying to this email immediately. To ensure prompt resolution, please remember to include important details in your email, such as the specific item on the payslip that is incorrect and any other supporting details that can validate your claim.</p>';
+		$body .= '<p>Kindly review your payslip and report any discrepancies by logging into careerph.tatepublishing.net/staff and clicking on the "Ask a Question" button under the "Employee Dashboard". To ensure prompt resolution, please remember to include important details in your inquiry, such as the specific item on the payslip that is incorrect and any other supporting details that can validate your claim.</p>';
 		$body .= '<p><br/><b>IMPORTANT:</b><i> Discrepancies on incentive / bonus amounts will only be entertained from managers and team leaders. If you are eligible for an incentive / bonus and it is not reflected on your payslip or if the incentive / bonus amount on your payslip is wrong, please escalate your concern to your team leader so they can validate it prior to forwarding to Accounting/HR.</i></p>';
 		$body .= '<p>&nbsp;</p>';
 		$body .= '<p>Thanks,</p>';
@@ -555,6 +556,29 @@ class Emailmodel extends CI_Model {
 		}
 		
 	}
+
+	public function emailRegularization( $empID ){
+
+		$info = $this->dbmodel->getSingleInfo('staffs s', 'CONCAT(fname, " ", lname) AS name, regDate, email, (SELECT email FROM staffs ss WHERE ss.empID = s.supervisor) AS supEmail, (SELECT supervisor FROM staffs ss WHERE ss.empID = s.supervisor) AS supEmpID, (SELECT email FROM staffs sss WHERE sss.empID = supEmpID) AS secondTier ', 'empID = '. $empID );
+		$to = $info->email;
+		$cc = $info->supEmail.','.$info->secondTier.',clinic.cebu@tatepublishing.net,hr-list@tatepublishing.net';
+		
+		$msg = 'Dear '.$info->name.',</p>';
+		$msg .= '<p>Good day!</p>';
+		$msg .= '<p>We congratulate you for successfully passing the performance evaluation of your probationary employment! In line with this, it is with great pleasure that we add you to the roster of regular employees of Tate Publishing and Enterprises (Philippines), Inc. effective '. date('F d, Y', strtotime($info->regDate)) .'.</p>';
+		$msg .= 'We are so proud of you and we appreciate all your efforts and involvement in each of our client\'s needs. We look forward to seeing you build your capabilities as you continue to make your contribution to the company. As a valued employee, you will be receiving additional benefits. Please check this link for more information on these benefits. <a href="http://employee.tatepublishing.net/hr/benefits-list/">http://employee.tatepublishing.net/hr/benefits-list/</a>';
+		$msg .= 'Please feel free to use the search bar in <a href="http://employee.tatepublishing.net/hr/">http://employee.tatepublishing.net/hr/</a> to find answers on other frequently asked questions. If you cannot find the answers in this site, you can also use the "Ask a Question" button under your Employee Dashboard in <a href="http://careerph.tatepublishing.net/staff">careerph.tatepublishing.net/staff</a> for assistance.</p>';
+		$msg .= '<p>Sincerely yours,</p>';
+		$msg .= '<p>Human Resources Department</p>';
+
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $to, 'Congratulations on your regularization!', $msg, 'CareerPH', $cc);
+
+		//add note
+		$this->load->model('commonmodel');
+		$this->commonmodel->addMyNotif($empID, $msg, 0, 1);
+
+
+	}
 	
 }
-?>
+

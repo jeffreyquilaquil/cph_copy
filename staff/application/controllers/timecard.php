@@ -575,7 +575,7 @@ class Timecard extends MY_Controller {
 			//if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
 			//else $condition = '';
 			
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk AND status IN (1,2)', 'payDate DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -901,6 +901,9 @@ class Timecard extends MY_Controller {
 			header('Location: '.$this->config->base_url().'timecard/managepayroll/');
 			exit;
 		}else{
+			// echo "<pre>";
+			// var_dump($_POST);
+
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			
 			if(isset($_POST['type']) && $_POST['type']=='generatepayslip') $_POST['submitType'] = 'generatepayslip';
@@ -925,7 +928,7 @@ class Timecard extends MY_Controller {
 
 				if($_POST['submitType'] == 'generatepayslip'){
 					///THIS IS FOR PAYROLL GENERATION
-					$genpayArr['empIDs'] =  ((is_array($_POST['empIDs']))?implode(',', $_POST['empIDs']):$_POST['empIDs']);
+					$genpayArr['empIDs'] =  ((is_array($_POST['empIDs']))?implode(',', $_POST['empIDs']):rtrim($_POST['empIDs'],','));
 					$genpayArr['dateStart'] =  date('Y-m-d', strtotime($_POST['start']));
 					$genpayArr['dateEnd'] =  date('Y-m-d', strtotime($_POST['end']));
 					
@@ -954,10 +957,17 @@ class Timecard extends MY_Controller {
 			$data['computationtype'] = $_POST['computationtype'];
 			$data['start'] = date('Y-m-d', strtotime($_POST['start']));
 			$data['end'] = date('Y-m-d', strtotime($_POST['end']));
-			$data['empIDs'] = rtrim($_POST['empIDs'], ',');
-			
+
+			if(is_array($_POST['empIDs']))
+				$data['empIDs'] = implode(',', $_POST['empIDs']);
+			else
+				$data['empIDs'] = rtrim($_POST['empIDs'],',');
+
+			//echo $data['empIDs'];
+
 			$data['dataAttendance'] = array();	
 			$dataEmps = $this->dbmodel->getQueryResults('staffs', 'empID, CONCAT(lname, ", ",fname) AS name, staffHolidaySched', 'empID IN ('.$data['empIDs'].')', '', 'lname');
+
 			foreach($dataEmps AS $emp){
 				$data['dataAttendance'][$emp->empID]['name'] = $emp->name;
 				$data['dataAttendance'][$emp->empID]['staffHolidaySched'] = $emp->staffHolidaySched;
@@ -1261,7 +1271,7 @@ class Timecard extends MY_Controller {
 					}else{
 						if($bdate==$this->textM->decryptText($_GET['show']) || $this->access->accessFullHRFinance==true){
 							$this->payrollM->pdfPayslip($empID, $payID);
-							exit;
+							//exit;
 						}else{
 							$data['access'] = false;
 						}
@@ -1286,7 +1296,7 @@ class Timecard extends MY_Controller {
 				}
 			}
 		}
-		
+		//$this->output->enable_profiler(true);
 		$this->load->view('includes/template', $data);
 	}
 	
@@ -1484,9 +1494,17 @@ class Timecard extends MY_Controller {
 				if(isset($_GET['empID'])){
 					$empID = $_GET['empID'];
 				}
-				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){
+				if(isset($_GET['e']) AND $_GET['e'] == 'upload'){					
 					$data['content'] = 'v_timecard/v_uploadlastpay';
+				} else if( isset($_GET['e']) AND $_GET['e'] == 'scheddate' ){
+					$data['content'] = 'v_timecard/v_updatelastpay';
+					$data['which_to'] = $_GET['e'];
+				} else if( isset($_GET['e']) AND $_GET['e'] == 'checkno' ){
+					$data['content'] = 'v_timecard/v_updatelastpay';
+					$data['which_to'] = $_GET['e'];
 				}
+
+
 				$data['pageType'] = 'showpay';
 				$data['payInfo'] = $this->dbmodel->getSingleInfo('tcLastPay', '*', 'lastpayID="'.$_GET['payID'].'"');
 				if(count($data['payInfo'])==0) $data['access'] = false;
@@ -1516,6 +1534,7 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
 				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
+				//dd($datum, false);
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
@@ -1598,7 +1617,8 @@ class Timecard extends MY_Controller {
 				}									
 			}
 		}
-		// $this->textM->aaa($data);
+		
+		//$this->textM->aaa($_POST);
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
@@ -1647,7 +1667,6 @@ class Timecard extends MY_Controller {
 							$data['dataQuery'][$key]->allowances = $datum['allowances'];
 						}
 
-						//$this->textM->aaa($data);
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
 						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
@@ -1710,8 +1729,13 @@ class Timecard extends MY_Controller {
 				}
 
 				$filename = json_encode($filenames);
+				$update_array['docs'] = $filename;
+				$update_array['status'] = 4;
+				if( $last_pay_info->status >= 4 ){
+					unset($update_array['status']);
+				}
 
-				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], ['docs' => $filename, 'status' => 3 ]);
+				$this->dbmodel->updateQuery('tcLastPay', ['lastpayID' => $this->input->post('lastPayID')], $update_array);
 
 				//notes
 				$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `Released`.', 1, 1, $this->user->empID);
@@ -1729,7 +1753,7 @@ class Timecard extends MY_Controller {
 
 	public function managelastpay(){
 		$data['content'] = 'v_timecard/v_managelastpay';
-		$data['dataTableProperties'] = '{columnDefs:[{ targets: 8,  orderDataType: "dom-select"}]}';
+		$data['dataTableProperties'] = '{columnDefs:[{ targets: 6,  orderDataType: "dom-select"}, { targets: 3, orderDataType: "dom-text"}, {targets: 4, orderDataType: "dom-text"}]}';
 		
 		$data['status_labels'] = $this->textM->constantArr('last_pay_status');
 
@@ -1739,17 +1763,56 @@ class Timecard extends MY_Controller {
 			else{
 				$data['error_data'] = '';
 				$condition = '1';
-				if( $this->input->is_ajax_request() ){
-					//update					
-					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), ['status' => $this->input->post('status')]);
-
+				if( $this->input->post() ){
 
 					$last_pay_info = $this->dbmodel->getSingleInfo('tcLastPay', 'tcLastPay.*, idNum, fname, lname, username, startDate, endDate, sal', 'lastpayID ='. $this->input->post('id'), 'LEFT JOIN staffs ON empID=empID_fk' );
+					
+
+					if( !empty($this->input->post('scheddate') ) ){
+						$which_update = 'Release Date';
+						$update_array = array('releasedDate' => date('Y-m-d H:i:s', strtotime($this->input->post('scheddate'))), 'status' => 1 );
+
+						//unset status if backtracked
+						if( $last_pay_info->status >= 1 ){
+							unset($update_array['status']);
+						}
+						$note = 'Schedule of release date for the last pay has updated. <br/>Release date: '. date('Y-m-d', strtotime($this->input->post('scheddate') ) );
+					} else if( !empty($this->input->post('checkno') ) ){
+						$which_update = 'Check No';
+						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 3 );
+
+						if( $last_pay_info->status >= 3 ){
+							unset($update_array['status']);
+						}
+
+						$note = 'Check number for the last pay has updated. <br/>Check number: '. $this->input->post('checkno');
+					} else {
+						$update_array = array('status' => $this->input->post('status') );						
+					}
+					//update					
+					$this->dbmodel->updateQuery('tcLastPay', 'lastpayID ='. $this->input->post('id'), $update_array );						
+
+
 					//notes
-					$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $this->input->post('status') ].'`.', 1, 1, $this->user->empID);
-					//end notes
+					if( isset($note) ){
+						$this->commonM->addMyNotif( $last_pay_info->empID_fk, $note, 1, 1, $this->user->empID );
+					}
+
+					if( isset($update_array['status']) AND !empty($update_array['status']) ){
+						$this->commonM->addMyNotif($last_pay_info->empID_fk, 'Last pay computation has been updated to `'. $data['status_labels'][ $update_array['status'] ].'`.', 1, 1, $this->user->empID);
+						//end notes
+					}
 
 					
+					if( $this->input->is_ajax_request() ){
+						echo json_encode([true]);	
+						exit();
+					} else {
+						$data['success'] = $which_update;
+						$data['content'] = 'v_timecard/v_updatelastpay';
+					}
+					
+					$this->load->view('includes/templatecolorbox', $data);
 					exit();
 				}
 

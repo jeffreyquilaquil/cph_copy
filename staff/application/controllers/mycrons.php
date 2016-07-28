@@ -209,10 +209,10 @@ class MyCrons extends MY_Controller {
 
 		foreach($query AS $q):
 			$chtext = '';
-			$changes = json_decode(stripslashes($q->dbchanges));
+			$changes = json_decode($q->dbchanges);
 
 			//for staffStatusHistory
-			$status_change = json_decode(stripslashes($q->changes));
+			$status_change = json_decode($q->changes);
 			foreach($status_change as $status_old => $status_old_val ){
 				$insert_array = array();
 				$insert_array['empID_fk'] = $q->empID_fk;

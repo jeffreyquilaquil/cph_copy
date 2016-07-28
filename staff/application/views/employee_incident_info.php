@@ -26,7 +26,7 @@ if ($this->user->empID != $this->uri->segment(3)) {
 foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 
 <div>
-	<h2>HR/Accounting HelpDesk</h2>
+	<h2>Employee Dashboard</h2>
 	<?php if($num_mark->num_rate != 0){ ?>
 	<div id="nummark">
 		<h3 style="color: white;">You have <b><?php echo $num_mark->num_rate ?></b> Incident that already resolved please put a remark</h3>
@@ -54,20 +54,44 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	  	</thead>
 	  	<!-- array show incident #, date submitted, subject and status -->
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
-	  		<tr>
+	  		<tr <?php echo ($rep->notifStatus == 0) ? 'style="font-weight:bold;"':''; ?> >
 				<td>
-				<?php if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/open/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
-				<?php }elseif($rep->cs_post_status == 3){
 
-					if($rep->rate_status == 0){
-						echo "&#10067;";
-					} ?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/resolved/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
+				<?php 
 
-				<?php }elseif($rep->cs_post_status == 4 || $rep->cs_post_status == 5 ){?>
-				<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $rep->cs_post_id; ?>/emp/closed/<?php echo $rep->cs_post_empID_fk; ?>" class="iframe"><?php echo $rep->cs_post_id; ?></a>
-				<?php } ?>
+				if($rep->notifStatus == 0){
+					
+					echo '<span style = "color:red">! </span>';
+			
+						if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){ 
+							
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/open/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';						
+						 } 
+
+						elseif($rep->cs_post_status == 3){
+							
+							if($rep->rate_status == 0){
+	
+								echo '&#10067';
+							}
+							
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/resolved/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';						
+						}
+
+						elseif($rep->cs_post_status == 4 || $rep->cs_post_status == 5 ){
+								
+							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/closed/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';												
+						}
+
+					}
+
+				else{
+
+					echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/open/'.$rep->cs_post_empID_fk.' class="iframe">'.$rep->cs_post_id.'</a>';						
+				}
+
+		      	?>
+
 				</td>
 	      		<td><?php echo date_format(date_create($rep->cs_post_date_submitted), 'F d, Y G:ia'); ?></td>
 	      		<td><?php echo $rep->cs_post_subject; ?></td>
@@ -96,3 +120,4 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	</table>
 	</div>
 </div>
+

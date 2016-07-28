@@ -19,6 +19,7 @@
 	      		<th>Subject</th>
 	      		<th>Priority</th>
 	      		<th>Owner</th>
+                        <th>Rating</th>
 	      		<th>Remark</th>	
 	      	</tr>
       	</thead>
@@ -43,7 +44,9 @@
                               }
                         ?>
                         </td>
-      			<td><?php echo $value->hr_own_empUSER ?></td>
+
+      			<td><?php echo (empty($value->hr_own_empUSER) ? 'unassigned': $all_staff[$value->hr_own_empUSER]->name); ?></td>
+                         <td><?php echo $ratings[ $value->rating ]; ?></td>
       			<td><?php echo $value->remark ?></td>
       		</tr>
             <?php } ?>  

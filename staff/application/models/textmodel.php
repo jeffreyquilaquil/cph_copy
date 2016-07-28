@@ -210,7 +210,8 @@ class Textmodel extends CI_Model {
 			';
 		if(count($info)>0){
 			foreach($info AS $a):
-				$c = json_decode(stripslashes($a->changes));
+				$c = json_decode($a->changes);
+				
 				$cnt = 0;
 				$arr = array();
 				if(isset($c->staffHolidaySched)){
@@ -449,8 +450,8 @@ class Textmodel extends CI_Model {
 			}
 			
 			if( $show ){
-				$value->kudosReason = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->kudosReason)));
-				$value->reasonForDisapproving = str_replace('\\\\n','<br/>',str_replace('\r\n',"<br/>",mysql_real_escape_string($value->reasonForDisapproving)));
+				$value->kudosReason = str_replace("\n",'<br/>',str_replace("\r\n", "<br/>",$value->kudosReason));
+				$value->reasonForDisapproving = str_replace("\n",'<br/>',str_replace("\r\n", "<br/>",$value->reasonForDisapproving));
 
 
 				$textR = $value->reasonForDisapproving;
@@ -924,12 +925,27 @@ class Textmodel extends CI_Model {
 				10 => 'Balance transfer/debt consolidation', 
 				11 => 'Other needs');
 		} else if( $a == 'hdmf_loan_status' ){
-			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done');
+			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done', 'cancelled');
 
 		} else if($a == 'allowances'){
 			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
 		} else if( $a == 'last_pay_status' ){
-			$arr = array('Pending requirements', 'For review', 'For releasing', 'Released');
+			$arr_ = array(
+				0 => 'Pending requirements', 
+				1 => 'Pending Last Pay Calculation', 
+				2 => 'For review', 
+				3 => 'For releasing', 
+				4 => 'Released',
+				5 => 'For Check Generation'
+				);
+
+			//rearranged
+			$arranged = array(0, 1, 2, 5, 3, 4);
+			foreach( $arranged as $key ){
+				$arr[ $key ] = $arr_[ $key ];
+			}
+		} else if( $a == 'hr_cs_ratings' ){
+			$arr = [ 5 => 'Very Satisfied', 4 => 'Satisfied', 3 => 'Neutral', 2 => 'Dissatified', 1 => 'Very Dissatified'];
 		}
 		
 		return $arr;
@@ -1268,8 +1284,16 @@ class Textmodel extends CI_Model {
 			unset($data_query['headers']);
 			foreach( $data_query as $val ){
 				$table .= '<tr>';
-				foreach( $headers as $val_ ){
-					$table .= '<td>'.$val[ $val_ ].'</td>'; 		
+				foreach( $headers as $key => $val_ ){
+					if( !is_int($key) ){
+						$val_ = $key;
+					}
+					if( is_object($val) ){
+						$table .= '<td>'.$val->$val_.'</td>'; 			
+					} else if( is_array($val) ){
+						$table .= '<td>'.$val[ $val_ ].'</td>'; 			
+					}
+					
 				}				
 				$table .= '</tr>';
 			}

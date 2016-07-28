@@ -84,9 +84,14 @@
 			
 		?>	
 
-			<?php  echo '<li>
-						<a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">Employee Dashboard</a>
+			<?php 
+			
+			$notifStatus = $this->commonM->countResults('notifStatus');
+			
+			echo '<li>
+						<a href="#">Employee Dashboard</a>
 						<ul class="dropdown">
+							<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">HELPDESK <b>['.$notifStatus.']</b></a></li>							
 							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
 							<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>
 							<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>
@@ -96,6 +101,7 @@
 						</ul>
 					</li>';
 		?>	
+
 		<?php
 			if($this->user->dept== 'IT'){
 				echo '<li '.(($content=='itchecklist')?'class="current"':'').'><a href="'.$this->config->base_url().'itchecklist/">IT Checklist</a>';
@@ -106,7 +112,7 @@
 				echo '</li>';
 			}
 			
-			if($this->access->accessFullHRFinance==true ||  $this->access->accessMedPerson || $this->user->level>0){
+			if($this->access->accessFullHRFinance==true ||  $this->access->accessMedPerson || $this->user->level>0 || $this->user->empID == 474){
 				echo '<li '.(($content=='manageStaff')?'class="current"':'').'><a href="'.$this->config->base_url().'manageStaff/">Manage Staff</a>';
 					echo '<ul class="dropdown">';
 					
@@ -141,7 +147,7 @@
 						echo '<li '.(($content=='staffleaves')?'class="current"':'').'><a href="'.$this->config->base_url().'staffleaves/">Manage Leaves '.(($staffLeavesNum>0)?'<b>['.$staffLeavesNum.']</b>':'').'</a></li>';
 						echo '<li '.(($content=='nteissued')?'class="current"':'').'><a href="'.$this->config->base_url().'nteissued/">Manage NTE '.(($nteNum>0)?'<b>['.$nteNum.']</b>':'').'</a></li>';
 					}	
-					if($this->access->accessMedPerson OR $this->access->accessFullHR){
+					if($this->access->accessMedPerson OR $this->access->accessFullHR || $this->user->empID == 474 ){
 						echo '<li '.(($content=='probationmanagement')?'class="current"':'').'><a href="'.$this->config->base_url().'probationmanagement/">Probation Management '.(($eval90th>0)?'<b>['.$eval90th.']</b>':'').'</a></li>';
 					}				
 					if($this->access->accessFullHR){						
@@ -163,14 +169,16 @@
 			}
 			
 			if($this->access->accessFullHRFinance==true){
+
+				$hr_accounting = $this->commonM->countResults('hr_accounting');
+
 				echo '<li '.(($content=='CAREERPH')?'class="current"':'').'><a href="'.$this->config->item('career_url').'/" target="_blank">CAREERPH</a>';
 				echo '<ul class="dropdown">';
 
-					
-
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-manager.php" target="_blank">Recruitment Manager</a></li>';
 					echo '<li><a href="'.$this->config->item('career_url').'/recruitment-interface.php" target="_blank">Job Requisitions</a></li>';
-					echo '<li '.(($content=='hr_helpdesk')?'class="current"':'').'><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk</a></li>';
+
+					echo '<li><a href="'.$this->config->base_url().'hr_cs/HrHelpDesk">HR/Accounting HelpDesk <b>['.$hr_accounting.']</b></a></li>';
 				
 				echo '</ul>';
 				echo '</li>';

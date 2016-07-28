@@ -158,9 +158,9 @@ class Commonmodel extends CI_Model {
 				$condition = 'AND preparedby ='.$this->user->empID;
 			}
 
-
 			$cnt = $this->dbmodel->getSingleField('staffCIS', 'COUNT(cisID) AS cnt', 'status=0 '.$condition);
-		}else if($type=='coaching'){
+		}
+		else if($type=='coaching'){
 			$condition = '';
 			if($this->access->accessHR==false){
 				$ids = '"",'; //empty value for staffs with no under yet
@@ -236,10 +236,35 @@ class Commonmodel extends CI_Model {
  			$cnt = $this->dbmodel->getSingleField('staffMedRequest', 'count(medrequestID)', 'status=0');
 		} else if( $type == 'hdmf_loans' ){
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
-		} elseif( $type == 'kudos' ){
+		} elseif( $type == 'kudos'){
 			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
+		} elseif($type == 'notifStatus'){
+			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_empID_fk ='.$this->user->empID );
+			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
+		} elseif($type == 'hr_accounting'){
+			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
+			//getQueryResults($table, $fields, $where=1, $join='', $orderby='', $trace=false){
+			// $cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post', ' (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id  AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1)  AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
+			
+			// foreach( $cnt_dummy as $c ){
+				
+			// 	if( $c->cnt != $this->user->username ){
+			// 		$cnt++;
+			// 	}
+			// }
+		 	$string = '';
+		 	// dd($this->user, false);
+		 	// dd($this->access);
+			if( $this->access->accessMainHR == true ){
+				$string = ' AND report_related = 0';
+			} else if( $this->access->accessMainFinance == true ){
+				$string = ' AND report_related = 1';
+			}
+
+			$cnt_dummy = $this->dbmodel->getQueryResults('hr_cs_post INNER JOIN staffs ON staffs.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN hr_cs_msg ON hr_cs_msg.cs_msg_postID_fk = hr_cs_post.cs_post_id LEFT JOIN assign_category ON assign_category.categorys = hr_cs_post.assign_category', 'COUNT(cs_post_id) AS cnt', 'cs_post_status = 0 '.$string);
+			$cnt = $cnt_dummy[0]->cnt;
 		}
-		
 		return $cnt;
 	}
 	
@@ -468,6 +493,33 @@ class Commonmodel extends CI_Model {
 	// 	$return =  $diff->format( $format );
 	// 	return $return;//date('m', strtotime($return));
 	// }
+
+	public function slugify($text)
+	{
+	  // replace non letter or digits by -
+	  $text = preg_replace('~[^\pL\d]+~u', '_', $text);
+
+	  // transliterate
+	  $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+
+	  // remove unwanted characters
+	  $text = preg_replace('~[^-\w]+~', '', $text);
+
+	  // trim
+	  $text = trim($text, '_');
+
+	  // remove duplicate -
+	  $text = preg_replace('~-+~', '_', $text);
+
+	  // lowercase
+	  $text = strtolower($text);
+
+	  if (empty($text)) {
+	    return 'n-a';
+	  }
+
+	  return $text;
+	}
 	
 }
 

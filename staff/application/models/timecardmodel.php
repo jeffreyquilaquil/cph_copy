@@ -552,6 +552,8 @@ class Timecardmodel extends CI_Model {
 	}
 	
 	public function insertToDailyLogs($empID, $today, $schedToday){
+
+		
 		$logID = '';
 		$insArr = array();
 		$todaySmall = date('j', strtotime($today));
@@ -606,12 +608,7 @@ class Timecardmodel extends CI_Model {
 				}
 								
 			}
-			
-			//check if the leave is without pay
-			if( $sArr['leaveStatus'] == 2 ){
-				$insArr['publishDeduct'] = 8;
-			}
-			
+
 
 
 			///INSERTION
@@ -623,20 +620,50 @@ class Timecardmodel extends CI_Model {
 				} else {
 					$insArr['leaveID_fk'] = $sArr['leaveID'];		
 				}
-			} 
+			}
+
+			if( !empty($insArr['leaveID_fk']) ){
+				$total_leave_hours = $this->dbmodel->getSinglefield('staffLeaves', 'totalHours', 'leaveID = '.$insArr['leaveID_fk'] );	
+			}
+			
+			
+			//check if the leave is without pay
+			if( $sArr['leaveStatus'] == 2 ){
+
+				//auto publish for leave without pay
+				$insArr['datePublished'] = date('Y-m-d H:i:s');
+				$insArr['publishDeduct'] = $total_leave_hours;
+				$insArr['publishBy'] = 'system';
+				$insArr['publishNote'] = 'auto-publish on leave w/o pay approved';
+			}
+			 
 				
 			$logID = $this->dbmodel->getSingleField('tcStaffLogPublish', 'slogID', 'empID_fk="'.$empID.'" AND slogDate="'.$today.'" AND showStatus=1'); //check if not exist insert if not	
 			if(is_numeric($logID)){
 				//remove publish details
 				$insArr['publishTimePaid'] = 0;
-				$insArr['publishDeduct'] = 0;
+
+				if ($sArr['leaveStatus'] == 2) {
+					$insArr['datePublished'] = date('Y-m-d H:i:s');
+					$insArr['publishDeduct'] = $total_leave_hours;
+					$insArr['publishBy'] = 'system';
+					$insArr['publishNote'] = 'auto-publish on leave w/o pay approved';
+				} else {
+					$insArr['publishDeduct'] = 0;
+					$insArr['datePublished'] = '0000-00-00 00:00:00';
+					$insArr['publishBy'] = '';
+					$insArr['publishNote'] = '';
+				}
+
 				$insArr['publishND'] = 0;
-				$insArr['datePublished'] = '0000-00-00 00:00:00';
-				$insArr['publishBy'] = '';
-				$insArr['publishNote'] = '';		
+						
+				
 				$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID'=>$logID), $insArr);
-			}else
+			}else{
+				
 				$logID = $this->dbmodel->insertQuery('tcStaffLogPublish', $insArr);				
+			}
+				
 		}
 		
 		

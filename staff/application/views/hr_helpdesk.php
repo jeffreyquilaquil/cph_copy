@@ -84,21 +84,21 @@ if($this->user->access == "exec"){
 	  	// Title & access in new tab
 	  	
 		
-		if($this->access->accessHR == true ){
+		if($this->access->accessMainHR == "hr" ){
 	  		$NewIncident = $NewIncidentHR;
 	  		$ActiveIncident = $ActiveIncidentHR;
 	  		$ResolveIncident = $ResolveIncidentHR;
 	  		$CancelIncident = $CancelIncidentHR;
 	  		$title = "HR HelpDesk";
 	  	} 
-	  	if($this->access->accessFinance == true ){
+	  	if($this->access->accessMainFinance == "finance" ){
 	  		$NewIncident = $NewIncidentAcc;
 	  		$ActiveIncident = $ActiveIncidentAcc;
 	  		$ResolveIncident = $ResolveIncidentAcc;
 	  		$CancelIncident = $CancelIncidentAcc;
 	  		$title = "Accounting HelpDesk";
 	  	}
-	  	if($this->access->accessFull == true){
+	  	if($this->access->accessFull == "full"){
 			$NewIncident = $NewIncidentFull;
 			$ActiveIncident = $ActiveIncidentFull;
 			$ResolveIncident = $ResolveIncidentFull;
@@ -140,7 +140,7 @@ if($this->user->access == "exec"){
 				<th>Due Date</th>
 				<th>Status</th>
 				<th>Mark</th>
-				<th>Owner</th>
+				
 				<th>Extend Due Date</th>
 				<th>Reassign</th>
 			</tr>
@@ -148,17 +148,28 @@ if($this->user->access == "exec"){
 
 			<?php 
 
-
 			foreach ($MyTicket as $myticket_key => $myticket) { ?>
 
-			<tr>
+			<tr <?php echo ($myticket->notifStatus == 1 AND $myticket->cs_post_status < 3) ? 'style="font-weight:bold;"':''; ?> >
 				<td class="td_hover">
-				<?php if (date('Y-m-d') >= $myticket->due_date) {
-					echo "<span style='color:red;'>&#9873;</span>";
-				}?>
 
-      			<a href="<?php echo $this->config->base_url(); ?>hr_cs/HrIncident/<?php echo $myticket->cs_post_id; ?>/active/<?php echo $myticket->cs_post_empID_fk; ?>" class="iframe"><?php echo $myticket->cs_post_id;?></a>
+				<?php
+
+				if(date('Y-m-d') >= $myticket->due_date AND $myticket->cs_post_status < 3 ){
+					echo "<span style='color:red;'>&#9873;</span>";
+
+				}
+
+				if($myticket->notifStatus == 1 AND $myticket->cs_post_status < 3){
+					echo '<span style = "color:red">! </span>';
+				} 
+
+				echo ' <a href=" '.$this->config->base_url().'hr_cs/HrIncident/'.$myticket->cs_post_id.'/active/'.$myticket->cs_post_empID_fk.'" class = "iframe update-notifStatus" data-id = " '.$myticket->cs_post_id.' ">'.$myticket->cs_post_id.'</a> ';
+
+				?>			
+      			
       			</td>
+
 				<td><?php echo $myticket->cs_post_subject; ?></td>
 				<td><?php echo $myticket->fname." ".$myticket->lname; ?></td>
 				<td>
@@ -170,9 +181,10 @@ if($this->user->access == "exec"){
 								echo "<div class='not_urgent'>$myticket->cs_post_urgency</div>";
 							}
 					?>
+
 				</td>
 				<td><?php echo date_format(date_create($myticket->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo date_format(date_create($myticket->due_date),'F d, Y'); ?></td>
+				<td><?php echo ($myticket->due_date == '0000-00-00 00:00:00') ? '--' : date('F d, Y G:ia', strtotime($myticket->due_date)); ?></td>
 				
 				<?php 
 					$status = ['Open', 'Active', 'Hold', 'Resolved','Closed','Closed'];
@@ -180,14 +192,14 @@ if($this->user->access == "exec"){
 				?>	
 
 				<?php 
-				if($myticket->remark != ''){
+				if( isset($myticket->remark) AND !empty($myticket->remark) ){
 					echo "<td>". $myticket->remark."</td>";
 				}else{
 					echo "<td>Unrated</td>";
 				}
 				?>
 				
-				<td><?php echo $myticket->hr_own_empUSER; ?></td>
+				
 				<td>
 				<?php if($myticket->cs_post_status == 0 || $myticket->cs_post_status == 1){ ?>
 					<a style="cursor: pointer;" id="extend_date<?php echo $myticket->cs_post_id; ?>">Extend Date</a>
@@ -197,10 +209,12 @@ if($this->user->access == "exec"){
 					<span id="extend_date_form<?php echo $myticket->cs_post_id; ?>">
 						<br>
 						<small>Plase select number of additional days:</small>
-						<input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
+						<input type="number" id="add_days_<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
+						<input type="submit" id="btn_add_days_<?php echo $myticket->cs_post_id; ?>" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<!-- <input type="number" id="add_days<?php echo $myticket->cs_post_id; ?>" min="1" max="5">
 						<input type="hidden" id="inci_id<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->cs_post_id; ?>">
 						<input type="hidden" id="due_D<?php echo $myticket->cs_post_id; ?>" value="<?php echo $myticket->due_date; ?>">
-						<input type="submit" class="btngreen" id="add_days_btn<?php echo $myticket->cs_post_id; ?>" value="Submit">
+						<input type="submit" class="add_days_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit"> -->
 					</span>
 				</td>
 				<td>
@@ -215,34 +229,44 @@ if($this->user->access == "exec"){
 							<li>
 								<small>Please select who:</small>
 								<select name="" id="redirect_select<?php echo $myticket->cs_post_id; ?>" style="width: 200px;">
-									<?php if ($this->access->myaccess[0] == "hr") { ?>
+									<?php if($this->access->accessFull == true) { ?>
 											<option value=""></option>
 										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
 										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
-										
-									<?php }else if($this->access->myaccess[0] == "finance"){?>
-											<option value=""></option>
 										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
 											<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
 										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										
-									<?php }else if($this->access->myaccess[0] == "full") { ?>
+									<?php } else if ($this->access->accessHR == true) { ?>
 											<option value=""></option>
-										<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
-											<option value="<?php echo $myticket->cs_post_id.','.$value_full->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.','.$value_full->fname." ".$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ 
+											  
+											  if($this->user->username == $value_hr->username){?>
+											  <?php }else{?>
+							        			<option value="<?php echo $myticket->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
+											  <?php }?>
+											  
 										<?php } ?>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
-										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_full->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$myticket->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+										
+									<?php }else if($this->access->accessFinance == true){?>
+											<option value=""></option>
+										<?php foreach ($getACClist as $key_acc => $value_acc){
+
+											 if($this->user->username == $value_acc->username){?>
+											  <?php }else{?>
+							        			<option value="<?php echo $myticket->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+											  <?php }?>
+											
+										<?php } ?>
+										<option value="<?php echo $myticket->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$myticket->hr_own_empUSER.',HR'; ?>">HR</option>
 										
 									<?php } ?>
 								</select>
 							</li>
 							
-
-							<li><input type="submit" class="btngreen" id="redirect_btn<?php echo $myticket->cs_post_id ?>" name="" value="Submit" style="float:right;"></li>
+							<li><input type="submit" class="redirect_btn btngreen" data-btn="<?php echo $myticket->cs_post_id; ?>" value="Submit" style="float:right;"></li>
 						</ul>	
 					</div>
 				</td>		
@@ -264,7 +288,7 @@ if($this->user->access == "exec"){
 		  		<th>Customer</th>
 		  		<th>Priority</th>	
 		  		<th>Date Submitted</th>
-		  		<th>Reassign</th>
+		  		<th>Assign</th>
 		  	</tr>
 	  	</thead>
 
@@ -290,18 +314,27 @@ if($this->user->access == "exec"){
 					<ul style="list-style: none; margin: 0px; padding: 0px;">
 						<li>
 							<small>Please select who:</small>
-							<select name="" id="new_redirect_select<?php echo $value->cs_post_id; ?>" style="width: 100px;">
-								<option></option>
+							<select name="" id="new_redirect_select<?php echo $value->cs_post_id; ?>">
+								<option value = '--'>--</option>
 								<?php if($this->access->myaccess[0] == "full"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
-								<?php }else if($this->access->myaccess[0] == "hr"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
-								<?php }else if($this->access->myaccess[0] == "finance"){ ?>
-								<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+								
+								<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
+											<option value="<?php echo $value_full->username.','.$value_full->empID.','.$this->user->username.',Full,'.$value_full->fname.' '.$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
+								<?php } ?>
+											
+								<?php }
+
+								else if($this->access->myaccess[0] == "hr"){ ?>
+									<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
+								
+								<?php }
+
+								else if($this->access->myaccess[0] == "finance"){ ?>
+									<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
+
 								<?php } ?>
 							</select><br>
-							<input type="button" class="btngreen" id="new_redirect_btn<?php echo $value->cs_post_id ?>" name="" value="Submit" style="float:right;">
+							<input type="button" class="btn_new_redirect btngreen" data-btn="<?php echo $value->cs_post_id; ?>" value="Submit" style="float:right;">
 						</li>
 					
 					</ul>
@@ -343,7 +376,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $active_val->fname." ".$active_val->lname; ?></td>
 				<td><?php echo $active_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($active_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $all_staff[$active_val->hr_own_empUSER]->name; ?></td>				
+				<td><?php echo $all_staff_empID[$active_val->cs_post_agent]->name; ?></td>				
 			</tr>
 		<?php } ?>    	 
 	</table>
@@ -377,7 +410,7 @@ if($this->user->access == "exec"){
 					<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 					<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 					<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-					<td><?php echo $resolve_val->hr_own_empUSER; ?></td>				
+					<td><?php echo $all_staff_empID[$resolve_val->cs_post_agent]->name; ?></td>						
 				</tr>
 			<?php } ?>     
 	</table>
@@ -411,7 +444,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $resolve_val->fname." ".$resolve_val->lname; ?></td>
 				<td><?php echo $resolve_val->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($resolve_val->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php if($resolve_val->hr_own_empUSER==''){ echo 'No Owner';}else{ echo $resolve_val->hr_own_empUSER;} ?></td>
+				<td><?php echo $all_staff_empID[$resolve_val->cs_post_agent]->name; ?></td>		
 			<?php if($resolve_val->cs_post_status == 5){ ?>
 				<td>Closed Cancel</td>	
 			<?php } ?>
@@ -427,7 +460,7 @@ if($this->user->access == "exec"){
 				<td><?php echo $c_transfer->fname." ".$c_transfer->lname; ?></td>
 				<td><?php echo $c_transfer->cs_post_urgency; ?></td>
 				<td><?php echo date_format(date_create($c_transfer->last_update), 'F d, Y G:ia'); ?></td>
-				<td><?php echo $c_transfer->hr_own_empUSER; ?></td>
+				<td><?php echo $all_staff[$c_transfer->hr_own_empUSER]->name; ?></td>
 				<td>Closed Transfer</td>	
 
 			</tr>
@@ -449,9 +482,17 @@ if($this->user->access == "exec"){
 
 	<!-- add categories tab -->
 	<div id="tb-1" class="tab-cont">
+
 	    <label for="lbl_category_name">Enter category name: </label>
 	    <input id="category_name_txt" type="text" name="" value="" placeholder="">
     	<input class="btngreen" type="submit" id="add_categ_btn" name="" value="Submit">
+
+    	<h3>Current Categories</h3>
+    	<ul>
+    		<?php foreach ($categories as $category) {
+    			echo '<li>'.$category.'</li>';
+    		} ?>
+    	</ul>
     </div>
 
     <!-- edit hr permission tab --> 
@@ -461,7 +502,13 @@ if($this->user->access == "exec"){
 
     <!-- edit message template tab -->
     <div id="tb-3" class="tab-cont">
-     
+
+    <h3>Message Templates</h3>
+    	<ul>
+    		<?php foreach ($messageTemplates as $k_messageTemplate => $v_messageTemplate){
+    			echo '<li><a href="' .$this->config->base_url(). 'hr_cs/editMessageTemplate/' .$v_messageTemplate->id. '" class="iframe">'.$v_messageTemplate->messageType.'</a></li>';
+    			} ?>    		
+    	</ul>     
     </div>
 
     <!-- add redirection department tab -->
@@ -541,31 +588,32 @@ $(document).ready(function(){
 				$(this).text('Hide See All Redirection Departments');
 			}
 	});
-<?php foreach ($department_email as $id_d) { ?>
-	// Delete Department
-	$("#delete_department_btn<?php echo $id_d->dept_emil_id; ?>").click(function() {
 
-		var id_dep = $("#id_delete_department<?php echo $id_d->dept_emil_id; ?>").val();
-		var datacategorys = 'id_delete='+ id_dep;
-		
-		if (id_dep == '') {
-			alert("No ID Selected!");
-		} else {
-				
-				$.ajax({
-				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/DeleteDeparment",
-				data: datacategorys,
-				cache: false,
-					success: function(result){
-					alert("Success!");
-					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
-                     close();
-					}
-				});
-			}
-	});
-<?php } ?>
+	<?php foreach ($department_email as $id_d) { ?>
+		// Delete Department
+		$("#delete_department_btn<?php echo $id_d->dept_emil_id; ?>").click(function() {
+
+			var id_dep = $("#id_delete_department<?php echo $id_d->dept_emil_id; ?>").val();
+			var datacategorys = 'id_delete='+ id_dep;
+			
+			if (id_dep == '') {
+				alert("No ID Selected!");
+			} else {
+					
+					$.ajax({
+					type: "POST",
+					url: "<?php echo $this->config->base_url(); ?>hr_cs/DeleteDeparment",
+					data: datacategorys,
+					cache: false,
+						success: function(result){
+						alert("Success!");
+						 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
+	                     close();
+						}
+					});
+				}
+		});
+	<?php } ?>
 
 	// insert new category
 	$("#add_categ_btn").click(function() {
@@ -591,7 +639,7 @@ $(document).ready(function(){
 			}
 	});
 
-	// insert new Department Information
+	// Insert new department
 	$("#add_dep_btn").click(function() {
 
 		var new_name = $("#new_dept_name").val();
@@ -617,13 +665,16 @@ $(document).ready(function(){
 			}
 	});
 
-	<?php foreach ($MyTicket as $k => $v): ?>
+	
 		
-		// Redirection of owner
-	$("#redirect_btn<?php echo $v->cs_post_id?>").click(function() {
+	// Redirect my ticket
+	$(".redirect_btn").click(function() {
 		
-		var redirect_b = $("#redirect_select<?php echo $v->cs_post_id?> option:selected").val();
+		var btn_unique_id = $(this).data("btn");
+		var redirect_b = $('#redirect_select' +btn_unique_id+ ' option:selected').val();
 		var dataredirect_a = 'redirect_to='+ redirect_b;
+
+		console.log(dataredirect_a);
 
 		if (redirect_b == '') {
 			alert("Please Select!");
@@ -643,23 +694,26 @@ $(document).ready(function(){
 			}
 	});
 
-	<?php endforeach ?>
 
-	<?php foreach ($NewIncident as $new_k => $new_v): ?>
-	// Redirection of owner department
-	$("#new_redirect_btn<?php echo $new_v->cs_post_id?>").click(function() {
 
-		var redirect = $("#new_redirect_select<?php echo $new_v->cs_post_id?> option:selected").val();
-		var dataredirect = 'new_redirect_dep='+ redirect;
+	// Redirect new ticket 
+	$('.btn_new_redirect').click(function() {
+		
+		var btn_unique_id = $(this).data("btn");
+		var redirect_b = $('#new_redirect_select' +btn_unique_id+ ' option:selected').val();
+		
+		var dataredirect_a = 'redirect_to=' + btn_unique_id + "," + redirect_b;
 
-		if (redirect == '') {
+		console.log(dataredirect_a);
+
+		if (redirect_b == '--') {
 			alert("Please Select!");
 		} else {
 				
 				$.ajax({
 				type: "POST",
-				url: "<?php echo $this->config->base_url(); ?>hr_cs/Redirect_new",
-				data: dataredirect,
+				url: "<?php echo $this->config->base_url(); ?>hr_cs/Redirect",
+				data: dataredirect_a,
 				cache: false,
 					success: function(result){
 					alert("Success!");
@@ -667,40 +721,45 @@ $(document).ready(function(){
                      close();
 					}
 				});
+
+				
 			}
+
 	});
 
-	<?php endforeach ?>
-
-	// Additional days of owner incident
-	<?php foreach ($MyTicket as $k => $t): ?>
+	// Extend due date
 	
-	$("#add_days_btn<?php echo $t->cs_post_id; ?>").click(function() {
+	
+	$(".add_days_btn").click(function() {
 
-		var due = $('#due_D<?php echo $t->cs_post_id; ?>').val();
-		var i_id = $('#inci_id<?php echo $t->cs_post_id; ?>').val();
-		var addDay = $("#add_days<?php echo $t->cs_post_id; ?>").val();
-
-		var dataredirect = 'add_days='+ addDay + '&inci_id=' + i_id + '&due_date=' + due;
-
+		var that = $(this);
+		
+		var id = that.data('btn');
+		var addDay = $('#add_days_'+id).val();	
+		$('#btn_add_days_'+id).attr('disabled', 'disabled');
 		if (addDay == '') {
 			alert("Please Select number of days!");
+			$('#btn_add_days_'+id).removeAttr('disabled');
+		} else if( addDay > 5 ){
+			alert('You can only extend the due date up to 5 days.');		
+			$('#btn_add_days_'+id).removeAttr('disabled');
 		} else {
 				
 				$.ajax({
 				type: "POST",
 				url: "<?php echo $this->config->base_url(); ?>hr_cs/AdditionalDays",
-				data: dataredirect,
+				data: { add_days: addDay, inci_id : id },
 				cache: false,
-					success: function(result){
-					alert("Success! Due: "+ due + " ID : " + i_id + " NumDays: " + addDay);
+
+				success: function(result){
+					console.log(result);
+					alert("Done extending date!");
 					 window.parent.location.href = "<?php echo $this->config->base_url(); ?>hr_cs/HrHelpDesk";
                      close();
 					}
 				});
 			}
 	});
-	<?php endforeach ?>
 
 
 
@@ -730,7 +789,6 @@ $(document).ready(function(){
 	
 
 });
-
 
 
 
