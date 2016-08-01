@@ -1652,7 +1652,7 @@ class Timecard extends MY_Controller {
 						$data = array();
 						//check which to pull from
 						switch( $_POST['which_from'] ){
-							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk'); break;
+							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
 							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '/*alphalist*/ *', 'active = 1 AND office = "PH-Cebu"');
 								$endDate = $to_;
 								$is_active = TRUE;

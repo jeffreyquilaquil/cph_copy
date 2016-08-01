@@ -1,4 +1,5 @@
 <?php
+	$dateToday = date('Y-m-d');
 	if($pageType=='showpay'){
 		echo '<h3>Last Pay Details</h3>';
 		
@@ -103,7 +104,7 @@
 					
 					echo '<td>Gross Income</td>';
 					echo '<td>Basic Salary</td>';
-					echo '<td>Attendance Deduction</td>';
+					echo '<td>Attendance Adjustments</td>';
 					echo '<td>Taxable Income</td>';
 					echo '<td>Tax Withheld</td>';
 					echo '<td>13th Month Pay</td>';
@@ -112,11 +113,18 @@
 				echo '</tr>';
 				
 			$month13 = 0;
+			// echo "<pre>";
+			// var_dump($dataMonthItems);
 			foreach($dateArr AS $date){
 				echo '<tr class="trtaxIncome">';
 					echo '<td>'.date('d-M-Y', strtotime($date)).'</td>';
 					if(isset($payArr[$date])){
 						$regTaken = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regularTaken']))?$dataMonthItems[$payArr[$date]->payslipID]['regularTaken']:'0.00');
+
+						$regHoursDeducted = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursDeducted']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursDeducted']:'0.00');
+
+						$regHoursAdded = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:'0.00');
+
 						$incomeTax = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
 						
 						if($pageType=='showpay'){
@@ -133,6 +141,10 @@
 							$totalPagIbig += $pag1;		
 						}
 						
+						//This formula applies only to future computations
+						if($dateToday > '2016-07-15'){
+							$regTaken = $regTaken - $regHoursAdded + $regHoursDeducted;
+						}
 						
 						
 						echo '<td>'.$this->textM->convertNumFormat($payArr[$date]->earning).'</td>';
