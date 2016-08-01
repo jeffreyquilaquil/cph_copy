@@ -2,7 +2,6 @@
 	<p>Post has submitted.</p>
 	
 <?php exit();} ?>
-
 <style type="text/css">
 	ul.canned_msg{
 		list-style-type: none; display: inline;	
