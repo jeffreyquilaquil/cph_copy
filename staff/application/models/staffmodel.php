@@ -246,10 +246,22 @@ class Staffmodel extends CI_Model {
 	function createCISpdf($cis, $isupname, $nsupname, $t){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
+
+		$changes = json_decode($cis->changes);
 				
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'CIS_Form.pdf');
+
+		$isChangeSup = FALSE;
+		$yy = 0;
+
+		if(isset($changes->supervisor)){
+			$isChangeSup = TRUE;
+			$yy = -20;
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'CIS_IS_Form.pdf');
+		}
+		else
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'CIS_Form.pdf');
 			
 		$tplIdx = $pdf->importPage(1);
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
@@ -264,8 +276,6 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->setXY(142, 59);
 		$pdf->Write(0, date('F d, Y', strtotime($cis->effectivedate)));	
-		
-		$changes = json_decode($cis->changes);	
 
 		$pdf->SetFont('Arial','I',10);	
 		
@@ -325,7 +335,7 @@ class Staffmodel extends CI_Model {
 			if($nextY<$pdf->getY()) $nextY = $pdf->getY();
 		}
 				
-		if(isset($changes->supervisor)){
+		if($isChangeSup){
 			$y = $nextY;
 			$pdf->setXY(18, $y);
 			$pdf->MultiCell(55, 4, "Change in Immediate Supervisor",0,'L',false); $pdf->Ln();
@@ -413,17 +423,21 @@ class Staffmodel extends CI_Model {
 		
 		
 		$pdf->SetFont('Arial','B',11);
-		$pdf->setXY(20, 225);
+		$pdf->setXY(20, 225+$yy);
 		$pdf->MultiCell(50, 4, strtoupper($isupname),0,'C',false); //immediate supervisor
 		
-		$pdf->setXY(80, 225);
+		$pdf->setXY(80, 225+$yy);
 		$pdf->MultiCell(50, 4, strtoupper($nsupname),0,'C',false); //second level manager
 			
-		$pdf->setXY(128, 225);
+		$pdf->setXY(128, 225+$yy);
 		$pdf->MultiCell(70, 4, strtoupper($this->user->name),0,'C',false); //Reviewed by
 	
-		$pdf->setXY(45, 258);	
+		$pdf->setXY(45, 258+$yy);	
 		$pdf->MultiCell(120, 4, strtoupper($cis->name) ,0,'C',false); //name of employee
+		if( $isChangeSup ){
+			$pdf->setXY(45, 266);	
+			$pdf->MultiCell(120, 4, strtoupper($changes->supervisor->n) ,0,'C',false); //name of new immediate supervisor
+		}
 			
 		
 		$pdf->Output('CIS_'.str_replace(' ','_',$cis->name).'.pdf', $t);
