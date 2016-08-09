@@ -4639,7 +4639,11 @@ class Staff extends MY_Controller {
 				if( isset($insID) AND !empty($insID) ){
 					$ntexts = 'Salary deduction for Pag-IBIG loan has updated';
 					$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);
-				}				
+				}
+
+				$data['content'] = 'v_timecard/v_mypayrollsetting';
+				$data['dataAddItems'] = $this->dbmodel->getQueryResults('tcPayslipItems', '*', 'mainItem=0', '', 'payName'); //additional items
+				$data['dataMyItems'] = $this->payrollM->getPaymentItems($payslip_array['empID_fk']);				
 			}
 		}
 
@@ -4779,7 +4783,7 @@ class Staff extends MY_Controller {
 			$info['loan type'] = $val->hdmf_loan_type;
 			$info['date submitted'] = date('F d, Y', strtotime($val->hdmf_loan_date_submitted) );
 			$info['status'] = $this->textM->formfield('selectoption', 'hdmf_loan_status', $val->hdmf_loan_status, 'stat_select', '', 'data-id="'.$val->hdmf_loan_id.'" data-empid="'.$val->empID_fk.'"', $data['hdmf_loan_status']);
-
+			//approved loans
 			if( $val->hdmf_loan_status == 3 ){
 				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
 				if( !empty($val->hdmf_loan_voucher_url) ){
@@ -4789,6 +4793,7 @@ class Staff extends MY_Controller {
 					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=upload">Upload voucher</a>';
 				}				
 			}
+			//salary deductions
 			if( $val->hdmf_loan_status == 4 ){
 				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
 				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'action');
@@ -4800,6 +4805,18 @@ class Staff extends MY_Controller {
 					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
 				}					
 				$info['action'] = ' <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=accounting">Payroll Setting</a>';
+			}
+
+			//done
+			if( $val->hdmf_loan_status == 5 ){
+				array_push($data['data_query_'.$val->hdmf_loan_status]['headers'], 'voucher');
+				if( !empty($val->hdmf_loan_voucher_url) ){
+					
+					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+				} else {
+					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
+				}
 			}
 
 			if( $val->hdmf_loan_status < 3 AND ($key = array_search( array('voucher', 'action'), $data['data_query_'.$val->hdmf_loan_status]['headers'] ) !== false ) ){
