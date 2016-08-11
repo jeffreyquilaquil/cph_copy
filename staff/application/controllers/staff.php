@@ -4448,42 +4448,44 @@ class Staff extends MY_Controller {
 	}
 
 	public function kudosrequestM(){
-		$data['content'] = 'kudosrequestM';
-	
-		$condition = '';
-
-		$all = '';
-		$and = '';
-
-		if(!$this->access->accessFull && !$this->access->accessFinance){
-			$condition = 'kudosReceiverSupID = '.$this->user->empID;
-			$all = $condition;
-		}
-
-		if( $all != '')
-			$and = " AND ";
-
-		$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
-		$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
-		$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
-
-
-		$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
-		$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
-		$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
-
-		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+		if( $this->user ){
+			$data['content'] = 'kudosrequestM';
 		
-		//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
-		$newData = array();
+			$condition = '';
 
-		//Rearrange data base on statuses
-		foreach ($p as $key => $value) {
-			$newData[$value->kudosRequestStatus][] = $value;
+			$all = '';
+			$and = '';
+
+			if(!$this->access->accessFull && !$this->access->accessFinance){
+				$condition = 'kudosReceiverSupID = '.$this->user->empID;
+				$all = $condition;
+			}
+
+			if( $all != '')
+				$and = " AND ";
+
+			$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
+			$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
+			$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
+
+
+			$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
+			$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
+			$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
+
+			$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+			
+			//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
+			$newData = array();
+
+			//Rearrange data base on statuses
+			foreach ($p as $key => $value) {
+				$newData[$value->kudosRequestStatus][] = $value;
+			}
+			$data['results'] = $newData;
+
+			$this->load->view('includes/template', $data);	
 		}
-		$data['results'] = $newData;
-
-		$this->load->view('includes/template', $data);	
 	}
 	
 	function test(){
