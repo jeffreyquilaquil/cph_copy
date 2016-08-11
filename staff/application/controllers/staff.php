@@ -4831,6 +4831,93 @@ class Staff extends MY_Controller {
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
+
+	//survey
+	public function surveys(){
+		$data['content'] = 'misc/benefits_survey';
+
+
+		if( $this->input->post('submit') ){
+
+			$insert_array['empID_fk'] = $this->user->empID;
+			$insert_array['answers'] = json_encode($_POST);
+			$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+			$this->dbmodel->insertQuery( 'staffSurveyResults', $insert_array );
+			$data['success'] = true;
+
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	//end survey
+
+	public function survey_result(){
+
+		$data['content'] = 'misc/benefits_survey_result';
+
+		$data['survey_results'] = $this->dbmodel->getSQLQueryResults('SELECT * FROM staffSurveyResults');
+
+		$frequencies = $this->config->item('frequencies');
+		$questions = $this->config->item('questions');
+		$maxicare_rating = $this->config->item('maxicare_rating');
+		$ratings = $this->config->item('ratings');
+		$second_questions = $this->config->item('second_questions');
+
+		$frequency_result = [];
+		$maxicare_rating_result = [];
+		$all_comments = [];
+		$satisfaction_result = [];
+		$suggestions = [];
+		foreach( $data['survey_results'] as $results ){
+			$result = json_decode( $results->answers );
+			
+			foreach( $questions as $qKey => $question ){
+				foreach( $frequencies as $key => $frequency ){
+					$key_name = $question['name'].'_frequency';
+					if( isset($result->$key_name) AND $result->$key_name == $key ){
+						$frequency_result[ $qKey ][ $key ] ++;	
+					}					
+				}				
+			}
+
+			foreach( $maxicare_rating as $mkey => $mrating ){
+				if( $result->maxicare_rating == $mkey ){
+					$maxicare_rating_result[ $mkey ] ++;
+				}
+			}
+
+			foreach( $second_questions as $sKey => $second_question ){
+				foreach( $ratings as $rating ){
+
+					$qname = 'satisfaction_'.$second_question['name'];
+					if( isset($result->$qname) AND $result->$qname === $rating ){
+						
+						$satisfaction_result[ $sKey ][ $rating ] ++;
+					}
+				}
+				$cname = 'comments_'.$question['name'];
+				if( !empty($result->$cname) ){
+					$all_comments[ $sKey ][] = $result->$cname;	
+				}
+				
+			}
+
+			$suggestions[] = $result->suggestions;
+		}
+		$data['frequency_result'] = $frequency_result;
+		$data['maxicare_rating_result'] = $maxicare_rating_result;
+		$data['all_comments'] = $all_comments;
+		$data['satisfaction_result'] = $satisfaction_result;
+		$data['label_frequencies'] = $this->config->item('frequencies');
+		$data['label_questions'] = $this->config->item('questions');
+		$data['label_maxicare_rating'] = $this->config->item('maxicare_rating');
+		$data['label_ratings'] = $this->config->item('ratings');
+		$data['label_second_questions'] = $this->config->item('second_questions');
+		$data['suggestions'] = $suggestions;
+		
+		$this->load->view('includes/template', $data);
+		
+	}
 	
 } //end class
 
