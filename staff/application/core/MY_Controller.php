@@ -12,7 +12,7 @@ class MY_Controller extends CI_Controller {
 		else
 			$this->db = $this->load->database('default', TRUE);
 		
-		$this->ptDB = $this->load->database('projectTracker', TRUE);
+		//$this->ptDB = $this->load->database('projectTracker', TRUE);
 		
 		session_start();
 		$this->load->model('Databasemodel', 'dbmodel');
