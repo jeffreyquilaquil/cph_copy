@@ -97,8 +97,10 @@
 		<?php foreach( $all_comments as $cat => $comments ): 
 			foreach( $comments as $comment ):
 				if( !empty( $comment ) ){
-					echo '<td>'. $label_ratings[ $cat ]['label'] .'<td>';
+					echo '<tr>';
+					echo '<td>'. $label_second_questions[ $cat ]['label'] .'</td>';
 					echo '<td>'. $comment . '</td>';	
+					echo '</tr>';
 				}
 				
 			endforeach;
