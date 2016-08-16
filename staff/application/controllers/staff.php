@@ -4870,8 +4870,10 @@ class Staff extends MY_Controller {
 		$all_comments = [];
 		$satisfaction_result = [];
 		$suggestions = [];
+		$counter = 0;
 		foreach( $data['survey_results'] as $results ){
 			$result = json_decode( $results->answers );
+			
 			
 			foreach( $questions as $qKey => $question ){
 				foreach( $frequencies as $key => $frequency ){
@@ -4897,19 +4899,26 @@ class Staff extends MY_Controller {
 						$satisfaction_result[ $sKey ][ $rating ] ++;
 					}
 				}
-				$cname = 'comments_'.$question['name'];
+				$cname = 'comments_'.$second_question['name'];
+				
 				if( !empty($result->$cname) ){
 					$all_comments[ $sKey ][] = $result->$cname;	
+					//array_push($all_comments[$sKey], $result->$cname);
 				}
 				
 			}
 
-			$suggestions[] = $result->suggestions;
+			$suggestions[$counter] = $result->suggestion;
+			
+			$counter++;
+
 		}
+		//dd($all_comments,false);
 		$data['frequency_result'] = $frequency_result;
 		$data['maxicare_rating_result'] = $maxicare_rating_result;
 		$data['all_comments'] = $all_comments;
 		$data['satisfaction_result'] = $satisfaction_result;
+		$data['suggestions'] = $suggestions;
 		$data['label_frequencies'] = $this->config->item('frequencies');
 		$data['label_questions'] = $this->config->item('questions');
 		$data['label_maxicare_rating'] = $this->config->item('maxicare_rating');

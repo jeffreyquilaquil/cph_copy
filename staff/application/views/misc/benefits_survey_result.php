@@ -95,8 +95,9 @@
 	</thead>
 	<tbody>
 		<?php foreach( $all_comments as $cat => $comments ): 
+		//dd($comments, false);
 			foreach( $comments as $comment ):
-				if( !empty( $comment ) ){
+				if( !empty( $comments ) ){
 					echo '<tr>';
 					echo '<td>'. $label_second_questions[ $cat ]['label'] .'</td>';
 					echo '<td>'. $comment . '</td>';	

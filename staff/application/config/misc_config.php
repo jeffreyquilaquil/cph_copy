@@ -15,10 +15,11 @@ $config['maxicare_rating'] = ['Much Better', 'Slightly Better', 'About the same'
 
 $config['ratings'] = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied'];
 $config['second_questions'] = [
-	['name' => 'reimbursement', 'label' => '3K Medicine Reimbursement per year.'],
-	['name' => 'leave', 'label' => '10 days Paid Time-off' ],
-	['name' => 'incremental_leave', 'label' => 'Incremental Leave ( additional 1 leave credit in every year of service)' ],
-	['name' => 'deminimis', 'label' => 'Are you satisfied with our De Miminis or 2.5K allowance every month?' ],
-	['name' => 'offset', 'label' => 'Offset Work Hours' ],
+	'reimbursement' => ['name' => 'reimbursement', 'label' => '3K Medicine Reimbursement per year.'],
+	'leave' => ['name' => 'leave', 'label' => '10 days Paid Time-off' ],
+	'incremental_leave' => ['name' => 'incremental_leave', 'label' => 'Incremental Leave ( additional 1 leave credit in every year of service)' ],
+	'deminimis' => ['name' => 'deminimis', 'label' => 'Are you satisfied with our De Miminis or 2.5K allowance every month?' ],
+	'offset' => ['name' => 'offset', 'label' => 'Offset Work Hours' ],
 
 ];
+
