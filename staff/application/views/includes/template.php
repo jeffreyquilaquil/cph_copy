@@ -93,6 +93,18 @@
 		}
 		$this->session->unset_userdata('popupnotification');
 	}
+
+	//survey
+	if( $this->hasTakenSurvey === FALSE ){
+		echo '<script>';
+		echo '$(function(){
+			window.parent.jQuery.colorbox({href:"'.$this->config->base_url().'surveys", iframe: true, width:"990px", height:"600px"});
+			$.fn.colorbox.close = function(){};
+		});';
+		echo '</script>';	
+	}
+	
+	//survey
 	
 	if($_SERVER['HTTP_HOST']=='129.3.252.99')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
@@ -103,12 +115,19 @@
 echo '<script src="'.$this->config->base_url().'js/jquery.dataTables.min.js" type="text/javascript"></script>';
 echo '<script src="'.$this->config->base_url().'js/jquery.datetimepicker.js" type="text/javascript"></script>';
 echo '<script src="'.$this->config->base_url().'js/jquery.colorbox.js" type="text/javascript"></script>';
+if( $tpage == 'evaluations' ){
+	echo '<script src="'. $this->config->base_url().'js/jquery.autocomplete.js" type="text/javascript"></script>';
+}
 ?>
 <script type="text/javascript">
 	$(function(){
 		$(".iframe").colorbox({iframe:true, width:"990px", height:"600px"});
 		$(".iframesmall").colorbox({iframe:true, width:"40%", height:"60%"});
 		$(".inline").colorbox({inline:true, width:"40%", height:"60%"});
+		$('.survey_table').dataTable({
+			'bPaginate':false,
+			'bFilter':false
+		});
 		$('.datatable').dataTable(<?php echo (isset($dataTableProperties) ? $dataTableProperties:''); ?>);
 		
 		/* Create an array with the values of all the input boxes in a column */

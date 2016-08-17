@@ -194,6 +194,9 @@
 					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';
 					echo '<li><a href="'.$this->config->base_url().'addnewposition/" class="iframe">Add New Position</a></li>';
 				}
+				if( $this->access->accessHR == true OR $this->access->accessFull ){
+					echo '<li><a href="'.$this->config->base_url().'survey_result/">Benefits Survey Result</a>';
+				}
 			?>
 				</ul>
 			</li>

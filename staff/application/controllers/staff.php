@@ -4448,42 +4448,44 @@ class Staff extends MY_Controller {
 	}
 
 	public function kudosrequestM(){
-		$data['content'] = 'kudosrequestM';
-	
-		$condition = '';
-
-		$all = '';
-		$and = '';
-
-		if(!$this->access->accessFull && !$this->access->accessFinance){
-			$condition = 'kudosReceiverSupID = '.$this->user->empID;
-			$all = $condition;
-		}
-
-		if( $all != '')
-			$and = " AND ";
-
-		$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
-		$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
-		$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
-
-
-		$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
-		$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
-		$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
-
-		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+		if( $this->user ){
+			$data['content'] = 'kudosrequestM';
 		
-		//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
-		$newData = array();
+			$condition = '';
 
-		//Rearrange data base on statuses
-		foreach ($p as $key => $value) {
-			$newData[$value->kudosRequestStatus][] = $value;
+			$all = '';
+			$and = '';
+
+			if(!$this->access->accessFull && !$this->access->accessFinance){
+				$condition = 'kudosReceiverSupID = '.$this->user->empID;
+				$all = $condition;
+			}
+
+			if( $all != '')
+				$and = " AND ";
+
+			$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
+			$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
+			$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
+
+
+			$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
+			$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
+			$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
+
+			$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+			
+			//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
+			$newData = array();
+
+			//Rearrange data base on statuses
+			foreach ($p as $key => $value) {
+				$newData[$value->kudosRequestStatus][] = $value;
+			}
+			$data['results'] = $newData;
+
+			$this->load->view('includes/template', $data);	
 		}
-		$data['results'] = $newData;
-
-		$this->load->view('includes/template', $data);	
 	}
 	
 	function test(){
@@ -4830,6 +4832,102 @@ class Staff extends MY_Controller {
 		
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
+	}
+
+	//survey
+	public function surveys(){
+		$data['content'] = 'misc/benefits_survey';
+
+
+		if( $this->input->post('submit') ){
+
+			$insert_array['empID_fk'] = $this->user->empID;
+			$insert_array['answers'] = json_encode($_POST);
+			$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+			$this->dbmodel->insertQuery( 'staffSurveyResults', $insert_array );
+			$data['success'] = true;
+
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	//end survey
+
+	public function survey_result(){
+
+		$data['content'] = 'misc/benefits_survey_result';
+
+		$data['survey_results'] = $this->dbmodel->getSQLQueryResults('SELECT * FROM staffSurveyResults');
+
+		$frequencies = $this->config->item('frequencies');
+		$questions = $this->config->item('questions');
+		$maxicare_rating = $this->config->item('maxicare_rating');
+		$ratings = $this->config->item('ratings');
+		$second_questions = $this->config->item('second_questions');
+
+		$frequency_result = [];
+		$maxicare_rating_result = [];
+		$all_comments = [];
+		$satisfaction_result = [];
+		$suggestions = [];
+		$counter = 0;
+		foreach( $data['survey_results'] as $results ){
+			$result = json_decode( $results->answers );
+			
+			
+			foreach( $questions as $qKey => $question ){
+				foreach( $frequencies as $key => $frequency ){
+					$key_name = $question['name'].'_frequency';
+					if( isset($result->$key_name) AND $result->$key_name == $key ){
+						$frequency_result[ $qKey ][ $key ] ++;	
+					}					
+				}				
+			}
+
+			foreach( $maxicare_rating as $mkey => $mrating ){
+				if( $result->maxicare_rating == $mkey ){
+					$maxicare_rating_result[ $mkey ] ++;
+				}
+			}
+
+			foreach( $second_questions as $sKey => $second_question ){
+				foreach( $ratings as $rating ){
+
+					$qname = 'satisfaction_'.$second_question['name'];
+					if( isset($result->$qname) AND $result->$qname === $rating ){
+						
+						$satisfaction_result[ $sKey ][ $rating ] ++;
+					}
+				}
+				$cname = 'comments_'.$second_question['name'];
+				
+				if( !empty($result->$cname) ){
+					$all_comments[ $sKey ][] = $result->$cname;	
+					//array_push($all_comments[$sKey], $result->$cname);
+				}
+				
+			}
+
+			$suggestions[$counter] = $result->suggestion;
+			
+			$counter++;
+
+		}
+		//dd($all_comments,false);
+		$data['frequency_result'] = $frequency_result;
+		$data['maxicare_rating_result'] = $maxicare_rating_result;
+		$data['all_comments'] = $all_comments;
+		$data['satisfaction_result'] = $satisfaction_result;
+		$data['suggestions'] = $suggestions;
+		$data['label_frequencies'] = $this->config->item('frequencies');
+		$data['label_questions'] = $this->config->item('questions');
+		$data['label_maxicare_rating'] = $this->config->item('maxicare_rating');
+		$data['label_ratings'] = $this->config->item('ratings');
+		$data['label_second_questions'] = $this->config->item('second_questions');
+		$data['suggestions'] = $suggestions;
+		
+		$this->load->view('includes/template', $data);
+		
 	}
 	
 } //end class

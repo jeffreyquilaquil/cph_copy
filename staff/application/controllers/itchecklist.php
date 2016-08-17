@@ -6,6 +6,8 @@ class Itchecklist extends MY_Controller {
 		parent::__construct();		
 		$this->load->model('timecardmodel', 'timeM');
 		$this->load->model('staffmodel', 'staffM');
+
+		$this->ptDB = $this->load->database('projectTracker', TRUE);
 	}
 		
 	public function index(){

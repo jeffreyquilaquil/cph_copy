@@ -177,7 +177,7 @@
 				echo $this->staffM->displayInfo('jdetails', 'coachedOf', $cul, false);
 			}
 			
-			//echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
+			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			if($row->agencyID_fk!=0){
 				$agencyName = $this->dbmodel->getSingleField('agencies', 'agencyName', 'agencyID="'.$row->agencyID_fk.'"');
 				echo $this->staffM->displayInfo('jdetails', 'agencyID_fk', $agencyName, false);
