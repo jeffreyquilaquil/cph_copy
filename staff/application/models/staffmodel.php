@@ -1281,7 +1281,7 @@ class Staffmodel extends CI_Model {
 		$pdf->SetFont('Arial','B',10);
 		$pdf->setXY(25, 196); $pdf->Write(0, '(Complainant) '.strtoupper(((!empty($row->alias))?$row->alias:$row->name)).' (ID#: '.$row->idNum.'), '.date('F d, Y', strtotime($row->dateSubmitted)));
 		
-		$pdf->setXY(25, 220.5); $pdf->Write(0, 'MARIANNE CELESTE VELASCO, '.date('F d, Y', strtotime($row->dateSubmitted)));
+		$pdf->setXY(25, 220.5); $pdf->Write(0, strtoupper($this->user->name).', '.date('F d, Y', strtotime($row->dateSubmitted)));
 		$pdf->setXY(25, 254); $pdf->Write(0, strtoupper($row->supervisorName).', '.date('F d, Y', strtotime($row->dateSubmitted)));
 			
 								
