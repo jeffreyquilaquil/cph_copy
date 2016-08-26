@@ -10,6 +10,7 @@
 		}else{
 			echo '<b>'.$schedToday['sched'].'</b>';
 		}
+		echo (($schedToday['workhome'] == true)?' <span style="font-weight:bold;color:#f00;font-style:italic">Work Home</span>':'');
 	?>
 	</p>
 <?php
@@ -42,8 +43,9 @@
 		<tr>
 			<td>Work from home</td>
 			<td><?php
-				$selOp = '<option value="0">No</option>';
-				$selOp .= '<option value="1">Yes</option>';
+				$selOp = '<option value="0"'.(($schedToday['workhome'] == false)?' selected ':'').'>No</option>';
+				$selOp .= '<option value="1"'.(($schedToday['workhome'] == true)?' selected ':'').'>Yes</option>';
+
 				echo $this->textM->formfield('select', 'workhome', $selOp, 'forminput');
 			?></td>
 		</tr>

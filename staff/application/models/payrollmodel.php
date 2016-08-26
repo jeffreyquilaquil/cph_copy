@@ -1400,6 +1400,7 @@ class Payrollmodel extends CI_Model {
 		$leaveAmount = $payInfo->addLeave * $dailyRate;		
 		$addOnBonus = 0;
 		$unusedLeave = 0;
+		$sppDeduction = 0;
 		
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
@@ -1407,6 +1408,9 @@ class Payrollmodel extends CI_Model {
 				if(isset($add[0]) && isset($add[1]) ) {
 					if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
 						$addOnBonus += $add[1];
+					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+						$sppDeduction += $add[1];
+					}
 				}
 			}
 		}
@@ -1443,7 +1447,7 @@ class Payrollmodel extends CI_Model {
 		// else $personalExemption += ($dependents*25000);
 		
 		//MISC COMPUTATIONS
-		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
+		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig - $sppDeduction;
 		$tsal = $totalSalary - $totalDeduction - $spp;
 
 		$n55 = $tsal+$totalAdjustment;
@@ -1875,6 +1879,8 @@ class Payrollmodel extends CI_Model {
 
 				$data['refundCostofVaccines'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']))?$dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']:'0.00');
 
+				$data['idReplacement'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['idReplacement']))?$dataMonthItems[$payArr[$date]->payslipID]['idReplacement']:'0.00');
+
 				$data['payslipAdjustment'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']))?$dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']:'0.00');
 
 				$data['incomeTax'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['incomeTax']))?'-'.$dataMonthItems[$payArr[$date]->payslipID]['incomeTax']:'0.00');
@@ -1903,13 +1909,18 @@ class Payrollmodel extends CI_Model {
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
-				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
-
+				
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
+				
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
 
+				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
+
 				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']))?$dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']:0;
+				
+
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['idReplacement']))?$dataMonthItems[$payArr[$date]->payslipID]['idReplacement']:0;
 
 				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']))?$dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']:0;
 
@@ -1949,7 +1960,7 @@ class Payrollmodel extends CI_Model {
 
 				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									
-				$data['totalIncome'] += ($payArr[$date]->earning + $data['month13c']) - $data['refundCostofVaccines'] - $data['payslipAdjustment'] - $data['regHoursDeducted'];
+				$data['totalIncome'] += ($payArr[$date]->earning + $data['month13c']) - $data['refundCostofVaccines'] - $data['payslipAdjustment'] - $data['regHoursDeducted'] + $data['idReplacement'];
 				//echo $payArr[$date]->earning.'-'.$data['totalIncome'].'<br/>';
 				$data['totalSalary'] += $payArr[$date]->basePay;
 				$data['totalDeduction'] += $data['regTaken'];

@@ -134,7 +134,7 @@
 					$hdmf_loans = $this->commonM->countResults('hdmf_loans');
 					$kudosrequestM = $this->commonM->countResults('kudos');
 					
-					if($this->access->accessFullHR==true){
+					if($this->access->accessFullHR==true && $this->user->empID != 524 ){
 						$cntincidentreport = $this->commonM->countResults('incidentreport');
 						echo '<li '.(($content=='incidentreports')?'class="current"':'').'><a href="'.$this->config->base_url().'incidentreports/">HR Incident Reports '.(($cntincidentreport>0)?'['.$cntincidentreport.']':'').'</a></li>';
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Manage Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
