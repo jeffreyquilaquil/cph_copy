@@ -1438,6 +1438,8 @@ class Timecard extends MY_Controller {
 	public function computelastpay(){
 
 		$data['content'] = 'v_timecard/v_computelastpay';
+
+		
 		
 		if($this->user!=false){			
 			if(!empty($_POST['submitType'])){
@@ -1534,7 +1536,7 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
 				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
-				//dd($datum, false);
+				
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
@@ -1781,9 +1783,11 @@ class Timecard extends MY_Controller {
 						$which_update = 'Check No';
 						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 3 );
 
-						if( $last_pay_info->status >= 3 ){
+						//unset status if backtracked but 5 is greater than 3
+						if( $last_pay_info->status == 4 ){
 							unset($update_array['status']);
 						}
+
 
 						$note = 'Check number for the last pay has updated. <br/>Check number: '. $this->input->post('checkno');
 					} else {
