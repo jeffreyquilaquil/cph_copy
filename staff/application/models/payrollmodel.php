@@ -1591,13 +1591,14 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 297);
 		$pdf->Cell(48, 5, $this->formatNum($n55), 0,2,'R');
 
+		$utf8Name = $staffInfo->fname."  ".$staffInfo->lname;
 		//FOR 56
 		$pdf->setXY(65, 309);
 		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
 
 		//FOR 56
 		$pdf->setXY(55, 317);
-		$pdf->Cell(75, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		$pdf->Cell(75, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//FOR 56
 		$pdf->setXY(55, 342);
@@ -1606,7 +1607,8 @@ class Payrollmodel extends CI_Model {
 		//FOR 59
 		$pdf->setXY(157, 352);
 		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
-		$pdf->Cell(68, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		
+		$pdf->Cell(68, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');
@@ -1686,6 +1688,7 @@ class Payrollmodel extends CI_Model {
 			$leaveAmount = 0;	
 			$addOnBonus = 0;
 			$unusedLeave = 0;
+			$sppDeduction = 0;
 
 			//for separated employee
 			if(!$is_active){
@@ -1702,6 +1705,9 @@ class Payrollmodel extends CI_Model {
 						if(isset($add[0]) && isset($add[1])){
 							if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus')
 								$addOnBonus += $add[1];
+							if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+								$sppDeduction += $add[1];
+							}
 						}
 					}
 				}
