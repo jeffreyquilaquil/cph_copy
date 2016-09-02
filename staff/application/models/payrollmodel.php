@@ -2018,7 +2018,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(20, 46);
 		$pdf->Write(0, $staffInfo->idNum); //employee id number
 		$pdf->setXY(38, 44);
-		$pdf->MultiCell(80, 4, $staffInfo->lname.', '.$staffInfo->fname,0,'C',false);  //employee name
+		$pdf->MultiCell(80, 4, utf8_decode($staffInfo->lname.', '.$staffInfo->fname),0,'C',false);  //employee name
 		$pdf->setXY(117.5, 44);
 		$pdf->MultiCell(44, 4, date('F d, Y', strtotime($staffInfo->startDate)),0,'C',false);  //start date
 		$pdf->setXY(162, 44);
@@ -2256,7 +2256,7 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',11);
 		$pdf->setXY(61, 216.2); $pdf->MultiCell(34, 5, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay),0,'C',false); //received amount of
-		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
+		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, utf8_decode(strtoupper($staffInfo->fname.' '.$staffInfo->lname)),0,'C',false); //name 
 		
 		$pdf->Output('lastpay.pdf', 'I');		
 	}	
