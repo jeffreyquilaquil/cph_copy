@@ -476,7 +476,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',14);
 		$pdf->setXY(85, 92);
-		$pdf->Write(0, $row->name);
+		$pdf->Write(0, utf8_decode($row->name));
 		$pdf->setXY(85, 101);
 		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
 		$pdf->setXY(85, 110);
