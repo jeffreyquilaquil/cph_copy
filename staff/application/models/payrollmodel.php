@@ -192,10 +192,10 @@ class Payrollmodel extends CI_Model {
 						//check if on weekends, don't subtract since $hr has already weekends subtracted
 						$endDateDay = date('l', strtotime($endDate) );
 						if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
-							$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
-							if( isset($hasPublish) AND empty($hasPublish) ){
+							//$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
+							//if( isset($hasPublish) AND empty($hasPublish) ){
 								$hr--;
-							}
+							//}
 						}
 						//decrement
 						$endDateObj = new DateTime($endDate);
