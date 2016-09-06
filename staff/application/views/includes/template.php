@@ -94,19 +94,19 @@
 		$this->session->unset_userdata('popupnotification');
 	}
 
-	//survey
-	if( $this->hasTakenSurvey === FALSE ){
-		echo '<script>';
-		echo '$(function(){
-			window.parent.jQuery.colorbox({href:"'.$this->config->base_url().'surveys", iframe: true, width:"990px", height:"600px"});
-			$.fn.colorbox.close = function(){};
-		});';
-		echo '</script>';	
-	}
+	// //survey
+	// if( $this->hasTakenSurvey === FALSE ){
+	// 	echo '<script>';
+	// 	echo '$(function(){
+	// 		window.parent.jQuery.colorbox({href:"'.$this->config->base_url().'surveys", iframe: true, width:"990px", height:"600px"});
+	// 		$.fn.colorbox.close = function(){};
+	// 	});';
+	// 	echo '</script>';	
+	// }
 	
 	//survey
-	
-	if($_SERVER['HTTP_HOST']=='129.3.252.99')
+	dd($_SERVER['HTTP_HOST'], false);
+	if($_SERVER['HTTP_HOST']=='10.100.0.1')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
 
 
