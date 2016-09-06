@@ -192,10 +192,10 @@ class Payrollmodel extends CI_Model {
 						//check if on weekends, don't subtract since $hr has already weekends subtracted
 						$endDateDay = date('l', strtotime($endDate) );
 						if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
-							$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
-							if( isset($hasPublish) AND empty($hasPublish) ){
+							//$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
+							//if( isset($hasPublish) AND empty($hasPublish) ){
 								$hr--;
-							}
+							//}
 						}
 						//decrement
 						$endDateObj = new DateTime($endDate);
@@ -1215,7 +1215,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->SetFont('Arial','',9);
 		$pdf->MultiCell(0, 4, 'KNOW ALL MEN BY THESE PRESENTS:', 0, 'L', false); 
 		$pdf->Ln(4);
-		$pdf->MultiCell(0, 5, 'That I, '.$data->full_name.', Filipino, of legal age, a resident of ________________ ________________________________________________, and formerly employed with Tate Publishing and Enterprises (Philippines), Inc., do by these presents acknowledge receipt of the sum of '.$data->amount_in_words.' ('.$data->amount_in_figure.'), Philippine Currency, from Tate Publishing and Enterprises (Philippines), Inc. in full payment and final settlement of my separation pay, 13th month pay, terminal benefits and accrued employment benefits due to me or which may be due to me from Tate Publishing and Enterprises (Philippines), Inc. under the law or under any existing agreement with respect thereto, as well as any and all claims of whatever kind and nature which I have or may have against Tate Publishing and Enterprises (Philippines), Inc., arising from my employment with and the termination of my employment with Tate Publishing and Enterprises (Philippines), Inc.', 0, 'J', false, $indent); 
+		$pdf->MultiCell(0, 5, 'That I, '.utf8_decode($data->full_name).', Filipino, of legal age, a resident of ________________ ________________________________________________, and formerly employed with Tate Publishing and Enterprises (Philippines), Inc., do by these presents acknowledge receipt of the sum of '.$data->amount_in_words.' ('.$data->amount_in_figure.'), Philippine Currency, from Tate Publishing and Enterprises (Philippines), Inc. in full payment and final settlement of my separation pay, 13th month pay, terminal benefits and accrued employment benefits due to me or which may be due to me from Tate Publishing and Enterprises (Philippines), Inc. under the law or under any existing agreement with respect thereto, as well as any and all claims of whatever kind and nature which I have or may have against Tate Publishing and Enterprises (Philippines), Inc., arising from my employment with and the termination of my employment with Tate Publishing and Enterprises (Philippines), Inc.', 0, 'J', false, $indent); 
 		$pdf->Ln(4);
 		$pdf->MultiCell(0, 5, 'In consideration of said payment, I do hereby quitclaim, release, discharge and waive any and all actions of whatever nature, expected, real or apparent, which I may have against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients by reason of or arising from my employment with the company. I will institute no action, whether civil, criminal, labor or administrative against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients. Any and all actions which I may have commenced either solely in my name or jointly with others before any office, board, bureau, court, or tribunal against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients are hereby deemed and considered voluntary withdrawn by me and I will no longer testify or continue to prosecute said action(s).', 0, 'J', false, $indent);
 		$pdf->Ln(4);
@@ -1591,13 +1591,14 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 297);
 		$pdf->Cell(48, 5, $this->formatNum($n55), 0,2,'R');
 
+		$utf8Name = $staffInfo->fname."  ".$staffInfo->lname;
 		//FOR 56
 		$pdf->setXY(65, 309);
 		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
 
 		//FOR 56
 		$pdf->setXY(55, 317);
-		$pdf->Cell(75, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		$pdf->Cell(75, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//FOR 56
 		$pdf->setXY(55, 342);
@@ -1606,7 +1607,8 @@ class Payrollmodel extends CI_Model {
 		//FOR 59
 		$pdf->setXY(157, 352);
 		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
-		$pdf->Cell(68, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		
+		$pdf->Cell(68, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');
@@ -1686,6 +1688,7 @@ class Payrollmodel extends CI_Model {
 			$leaveAmount = 0;	
 			$addOnBonus = 0;
 			$unusedLeave = 0;
+			$sppDeduction = 0;
 
 			//for separated employee
 			if(!$is_active){
@@ -1702,6 +1705,9 @@ class Payrollmodel extends CI_Model {
 						if(isset($add[0]) && isset($add[1])){
 							if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus')
 								$addOnBonus += $add[1];
+							if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+								$sppDeduction += $add[1];
+							}
 						}
 					}
 				}
@@ -2012,7 +2018,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(20, 46);
 		$pdf->Write(0, $staffInfo->idNum); //employee id number
 		$pdf->setXY(38, 44);
-		$pdf->MultiCell(80, 4, $staffInfo->lname.', '.$staffInfo->fname,0,'C',false);  //employee name
+		$pdf->MultiCell(80, 4, utf8_decode($staffInfo->lname.', '.$staffInfo->fname),0,'C',false);  //employee name
 		$pdf->setXY(117.5, 44);
 		$pdf->MultiCell(44, 4, date('F d, Y', strtotime($staffInfo->startDate)),0,'C',false);  //start date
 		$pdf->setXY(162, 44);
@@ -2250,7 +2256,7 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',11);
 		$pdf->setXY(61, 216.2); $pdf->MultiCell(34, 5, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay),0,'C',false); //received amount of
-		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
+		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, utf8_decode(strtoupper($staffInfo->fname.' '.$staffInfo->lname)),0,'C',false); //name 
 		
 		$pdf->Output('lastpay.pdf', 'I');		
 	}	

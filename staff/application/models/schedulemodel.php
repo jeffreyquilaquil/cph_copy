@@ -78,8 +78,13 @@ class Schedulemodel extends CI_Model {
 		$this->dbmodel->updateQueryText('tcStaffSchedules', 'effectiveend="'.$endDate.'"', 'empID_fk="'.$empID.'" AND effectivestart<="'.$endDate.'" AND effectiveend="0000-00-00"'); //update staff schedules
 		$this->dbmodel->updateQueryText('tcStaffScheduleByDates', 'status=0', 'empID_fk="'.$empID.'" AND dateToday>"'.$endDate.'"'); //update custom schedules
 
+		//check if has already record
+		$result = $this->dbmodel->getSingleField('tcLastPay', 'empID_fk', 'empID_fk = '.$empID);
 		//insert into tcLastPay
-		$this->dbmodel->insertQuery('tcLastPay', ['empID_fk' => $empID, 'generatedBy' => 'system', 'dateGenerated' => date('Y-m-d H:i:s')]);
+		if (!$result) {
+			$this->dbmodel->insertQuery('tcLastPay', ['empID_fk' => $empID, 'generatedBy' => 'system', 'dateGenerated' => date('Y-m-d H:i:s')]);
+		}
+		
 	}
 	
 }
