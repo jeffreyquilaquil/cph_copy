@@ -35,6 +35,15 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pagepayroll=='manage13thmonth')?'current':'').'">Generate Alphalist</a></li>';
 		}			
 	echo '</ul>';
+} //for evaluations
+else if( isset($tpage) AND $tpage == 'evaluations' ){
+	$sidepage = $this->uri->segment(2);
+	echo '<ul id="leftMenu" style="margin:0px;">';
+	echo '<li><a href="'. $this->config->base_url().'evaluations/" class="'.(empty($sidepage)?'current':'').'">Management</a></li>';
+	echo '<li><a href="'. $this->config->base_url().'evaluations/questionnaires" class="'.(($sidepage=='questionnaires')?'current':'').'">Questionnaires</a></li>';
+	echo '</ul>';
+
+
 }else if($this->user!=false && isset($row) && count($row)>0){
 	$fname = '';
 
