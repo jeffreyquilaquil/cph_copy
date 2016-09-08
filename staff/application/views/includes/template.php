@@ -105,7 +105,7 @@
 	// }
 	
 	//survey
-	dd($_SERVER['HTTP_HOST'], false);
+	//dd($_SERVER['HTTP_HOST'], false);
 	if($_SERVER['HTTP_HOST']=='10.100.0.1')
 		$this->output->enable_profiler($this->config->item('showProfiler'));
 
