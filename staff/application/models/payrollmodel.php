@@ -622,6 +622,8 @@ class Payrollmodel extends CI_Model {
 	
 	public function isHoliday($date){
 		$holiday = false;
+		//$holiday['phWork'] = 0;
+		//$holiday['usWork'] = 0;
 		
 		$holidayType = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
 		if(!empty($holidayType) && $holidayType>0){
@@ -634,7 +636,15 @@ class Payrollmodel extends CI_Model {
 				$holiday['date'] = $date;
 				$holiday['type'] = $holidayType2;
 			}
-		}		
+		}
+
+		//check who has work on this day
+		$whoHasWork = $this->dbmodel->getSingleInfo('staffHolidays', 'phWork, usWork', 'holidayDate = "'.$date.'"');
+		if( $whoHasWork ){
+			$holiday['phWork'] = $whoHasWork->phWork;
+			$holiday['usWork'] = $whoHasWork->usWork;
+		}
+		
 		
 		return $holiday;
 	}
