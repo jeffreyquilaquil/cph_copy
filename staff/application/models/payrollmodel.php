@@ -1418,10 +1418,17 @@ class Payrollmodel extends CI_Model {
 			$addArr = unserialize(stripslashes($payInfo->addOns));
 			foreach($addArr AS $add){
 				if(isset($add[0]) && isset($add[1]) ) {
-					if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
-						$addOnBonus += $add[1];
-					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
-						$sppDeduction += $add[1];
+					// if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
+					// 	$addOnBonus += $add[1];
+					// if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+					// 	$sppDeduction += $add[1];
+					// }
+					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name, tcPayslipAddons_Type, tcPayslipAddons_itemType', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+						if($rrr->tcPayslipAddons_itemType == 'bonus')
+							$addOnBonus += $add[1];
+
+						if($rrr->tcPayslipAddons_itemType == 'sppDeduction')
+							$sppDeduction += $add[1];
 					}
 				}
 			}
