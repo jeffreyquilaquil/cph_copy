@@ -291,8 +291,9 @@ class Payrollmodel extends CI_Model {
 	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct', $publishType=''){
 		if(is_numeric($type)){ //this is for the holiday
 			$cond = ' AND (holidayType='.$type.' OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))='.$type.'))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHO) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" AND showStatus=1 '.$cond);
@@ -301,8 +302,9 @@ class Payrollmodel extends CI_Model {
 			else $holidayType = '1,3,4';
 			
 			$cond = ' AND (holidayType IN ('.$holidayType.') OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN ('.$holidayType.')))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHOND) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHOND!=""  AND showStatus=1 '.$cond);
