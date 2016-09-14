@@ -1291,10 +1291,17 @@ class Payrollmodel extends CI_Model {
 
 		//FOR THE PERIOD
 		//FROM
+
+		$z = date('Y', strtotime($staffInfo->startDate) );
+		$x = date('Y');
+
+		$birStartDate = ( $z < $x )? '01-01' : date('m-d', strtotime($staffInfo->startDate)) ;
+		$birStartDate = explode('-', $birStartDate);
+
 		$pdf->setXY(183, 35);
-		$pdf->Write(0, '01');
+		$pdf->Write(0, $birStartDate[0]);
 		$pdf->setXY(191, 35);
-		$pdf->Write(0, '01'); 
+		$pdf->Write(0, $birStartDate[1]); 
 		//TO
 		$pdf->setXY(227, 35);
 		$pdf->Write(0, date('m', strtotime($staffInfo->endDate)));
