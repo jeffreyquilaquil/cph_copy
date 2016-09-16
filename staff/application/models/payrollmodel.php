@@ -291,8 +291,9 @@ class Payrollmodel extends CI_Model {
 	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct', $publishType=''){
 		if(is_numeric($type)){ //this is for the holiday
 			$cond = ' AND (holidayType='.$type.' OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))='.$type.'))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHO) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" AND showStatus=1 '.$cond);
@@ -301,8 +302,9 @@ class Payrollmodel extends CI_Model {
 			else $holidayType = '1,3,4';
 			
 			$cond = ' AND (holidayType IN ('.$holidayType.') OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN ('.$holidayType.')))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHOND) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHOND!=""  AND showStatus=1 '.$cond);
@@ -622,6 +624,8 @@ class Payrollmodel extends CI_Model {
 	
 	public function isHoliday($date){
 		$holiday = false;
+		//$holiday['phWork'] = 0;
+		//$holiday['usWork'] = 0;
 		
 		$holidayType = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
 		if(!empty($holidayType) && $holidayType>0){
@@ -634,7 +638,15 @@ class Payrollmodel extends CI_Model {
 				$holiday['date'] = $date;
 				$holiday['type'] = $holidayType2;
 			}
-		}		
+		}
+
+		//check who has work on this day
+		$whoHasWork = $this->dbmodel->getSingleInfo('staffHolidays', 'phWork, usWork', 'holidayDate = "'.$date.'"');
+		if( $whoHasWork ){
+			$holiday['phWork'] = $whoHasWork->phWork;
+			$holiday['usWork'] = $whoHasWork->usWork;
+		}
+		
 		
 		return $holiday;
 	}
@@ -1279,10 +1291,17 @@ class Payrollmodel extends CI_Model {
 
 		//FOR THE PERIOD
 		//FROM
+
+		$z = date('Y', strtotime($staffInfo->startDate) );
+		$x = date('Y');
+
+		$birStartDate = ( $z < $x )? '01-01' : date('m-d', strtotime($staffInfo->startDate)) ;
+		$birStartDate = explode('-', $birStartDate);
+
 		$pdf->setXY(183, 35);
-		$pdf->Write(0, '01');
+		$pdf->Write(0, $birStartDate[0]);
 		$pdf->setXY(191, 35);
-		$pdf->Write(0, '01'); 
+		$pdf->Write(0, $birStartDate[1]); 
 		//TO
 		$pdf->setXY(227, 35);
 		$pdf->Write(0, date('m', strtotime($staffInfo->endDate)));
@@ -1406,10 +1425,17 @@ class Payrollmodel extends CI_Model {
 			$addArr = unserialize(stripslashes($payInfo->addOns));
 			foreach($addArr AS $add){
 				if(isset($add[0]) && isset($add[1]) ) {
-					if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
-						$addOnBonus += $add[1];
-					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
-						$sppDeduction += $add[1];
+					// if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
+					// 	$addOnBonus += $add[1];
+					// if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+					// 	$sppDeduction += $add[1];
+					// }
+					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name, tcPayslipAddons_Type, tcPayslipAddons_itemType', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+						if($rrr->tcPayslipAddons_itemType == 'bonus')
+							$addOnBonus += $add[1];
+
+						if($rrr->tcPayslipAddons_itemType == 'sppDeduction')
+							$sppDeduction += $add[1];
 					}
 				}
 			}

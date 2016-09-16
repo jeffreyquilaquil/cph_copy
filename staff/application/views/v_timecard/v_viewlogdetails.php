@@ -385,6 +385,10 @@
 				if($holidayType!=4 && $holidayType!=0){
 					if($staffHoliday==1 && $holidayType!=3) $showHoliday = false;
 					else if($staffHoliday==0 && $holidayType==3) $showHoliday = false;
+					//if( $staffHoliday == 1 && $holiday['usWork'] == 0 ) $showHoliday = true;
+					//else if( $staffHoliday == 0 && $holiday['phWork'] == 0 ) $showHoliday = true;
+
+					if( $holiday['usWork'] == true ) $showHoliday = true;
 				}
 				if($showHoliday==true){
 					echo '<tr><td>Holiday Hours</td><td>'.$this->textM->formfield('number', 'publishHO', $this->payrollM->getHolidayHours($holidayDate, $dataLog), 'forminput', '', 'required').'</td></tr>';

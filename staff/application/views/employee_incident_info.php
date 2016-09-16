@@ -54,16 +54,16 @@ foreach ($reamark_status as $key_n_mark => $num_mark){} ?>
 	  	</thead>
 	  	<!-- array show incident #, date submitted, subject and status -->
 	  	<?php foreach ($EmployeeDashboard as $key => $rep): ?>
-	  		<tr <?php echo ($rep->notifStatus == 0) ? 'style="font-weight:bold;"':''; ?> >
+	  		<tr <?php echo ($rep->notifStatus == 0 && $rep->cs_post_status < 3) ? 'style="font-weight:bold;"':''; ?> >
 				<td>
 
 				<?php 
 
-				if($rep->notifStatus == 0){
+				if($rep->notifStatus == 0 && $rep->cs_post_status < 3){
 					
 					echo '<span style = "color:red">! </span>';
 			
-						if($rep->cs_post_status == 0 || $rep->cs_post_status == 1){ 
+						if($rep->cs_post_status == 0 || $rep->cs_post_status == 1 || $rep->cs_post_status == 2){ 
 							
 							echo '<a href='.$this->config->base_url().'hr_cs/HrIncident/'.$rep->cs_post_id.'/emp/open/'.$rep->cs_post_empID_fk.' class="iframe update-notifStatus" data-id=" '.$rep->cs_post_id.' "> '.$rep->cs_post_id.'</a>';						
 						 } 
