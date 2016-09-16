@@ -188,25 +188,27 @@
 			//TODO check who is currently viewing the ticket
 				//if poster display only Reply tab
 				//if HR or Accouning display both Note tab and Reply tab
-			if ($this->user->empID == $ticket->cs_post_empID_fk ) {
+			if( $ticket->cs_post_status < 3){
+				if ($this->user->empID == $ticket->cs_post_empID_fk ) {
 
-				//display Reply tab only
-				echo '<ul class="tabs">
-					<li class="dbold tab-link current" data-tab="tab-1">Reply</li>
-				</ul>';
-			} else {
-				//display both NOte and Reply Tab
-				echo '<ul class="tabs">
-					<li class="dbold tab-link current" data-tab="tab-1">Reply</li>
-					<li class="dbold tab-link" data-tab="tab-2">Note</li>
-				</ul>';
+					//display Reply tab only
+					echo '<ul class="tabs">
+						<li class="dbold tab-link current" data-tab="tab-1">Reply</li>
+					</ul>';
+				} else {
+					//display both NOte and Reply Tab
+					echo '<ul class="tabs">
+						<li class="dbold tab-link current" data-tab="tab-1">Reply</li>
+						<li class="dbold tab-link" data-tab="tab-2">Note</li>
+					</ul>';
+				}
 			}
 		}
 
 
 	 ?>	
 	 <hr/>
-	 <?php if( $ticket->cs_post_status != 3 ){ ?>
+	 <?php if( $ticket->cs_post_status < 3 ){ ?>
 	 	<div id="tab-1" class="tab-content current">
 	 	<h2>Post a reply</h2>
 
