@@ -110,7 +110,7 @@ class Timecardmodel extends CI_Model {
 				}
 			}
 		}
-				
+		
 		//$this->textM->aaa($dayArr);
 		
 		//CHECK FOR LEAVES
@@ -130,10 +130,11 @@ class Timecardmodel extends CI_Model {
 			$conditionLeave .= ')';
 		}
 		
-		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
+		$queryLeaves = $this->dbmodel->getQueryResults('staffLeaves', '/*leave calendar*/ leaveID, leaveType, leaveStart, leaveEnd, offsetdates, status, iscancelled, isrefiled, totalHours', 'empID_fk="'.$empID.'" AND iscancelled!=1 AND status NOT IN (3, 5) '.$conditionLeave);
 	
 		$leavestrend = strtotime($dateEnd.' +1 day');		
 		foreach($queryLeaves AS $leave){
+			
 			$start = date('Y-m-d H:i:s', strtotime($leave->leaveStart));
 			$end = date('Y-m-d H:i:s', strtotime($leave->leaveEnd));								
 			$leaveEnd = date('Y-m-d H:i:s', strtotime($start.' +9 hours'));			
@@ -142,6 +143,8 @@ class Timecardmodel extends CI_Model {
 				$dayj = date('j', strtotime($start)); 
 							 
 				if(isset($dayArr[$dayj]['sched']) && strtotime($start)>=$strdateStart && (strtotime($leaveEnd)<=$leavestrend || strtotime($start)<=$leavestrend)){
+
+				
 					if(!isset($dayArr[$dayj]['schedDate'])) $dayArr[$dayj]['schedDate'] = date('Y-m-d', strtotime($start));	
 					$dayArr[$dayj]['leaveID'][] = $leave->leaveID;
 					$dayArr[$dayj]['leaveStatus'] = $leave->status;
@@ -162,6 +165,17 @@ class Timecardmodel extends CI_Model {
 						$dayArr[$dayj]['pendingleave'] = $leaveSched;
 						unset($dayArr[$dayj]['leave']);
 					}
+
+					if( $leave->leaveType == 4 ){
+
+						if( $dayArr[$dayj]['schedHour'] > $leave->totalHours ){
+							//get difference
+							$schedEnd = explode(' - ', $dayArr[$dayj]['sched'])[1];
+							$offsetEnd = date('h:i a', strtotime($leave->leaveEnd) );
+							$dayArr[$dayj]['sched'] = $offsetEnd .' - '. $schedEnd;
+							$dayArr[$dayj]['schedHour'] = $dayArr[$dayj]['schedHour'] - $leave->totalHours;
+						}
+					}
 				}
 				
 				$start = date('Y-m-d H:i:s', strtotime($start.' +1 day'));
@@ -170,6 +184,7 @@ class Timecardmodel extends CI_Model {
 			
 			if($leave->leaveType==4){
 				$offset = explode('|', $leave->offsetdates);
+
 				//if no `sched` use the offset start
 				/*list($start_offset, $end_offset) = explode(',', $offset[0]);
 				$dayo = date('d', strtotime($start_offset));
@@ -179,15 +194,17 @@ class Timecardmodel extends CI_Model {
 					$dayArr[$dayo]['schedHour'] = $this->commonM->dateDifference(date('h:i a', strtotime($start_offset)), date('h:i a', strtotime($end_offset)), '%h');
 					$dayArr[$dayo]['schedDate'] = date('Y-m-d', strtotime($start_offset));				
 				}*/
-
+				
 
 				foreach($offset AS $o){
 					if(!empty($o)){
 						list($s, $e) = explode(',', $o);
+						
 						if(date('Y-m-d', strtotime($s))>=$dateStart && date('Y-m-d', strtotime($e))<=$dateEnd){
-							$karon = date('j', strtotime($s));
-							
+							$karon = date('j', strtotime($s));							
 							$dayArr[$karon]['leaveID'][] = $leave->leaveID;
+							
+
 							if($leave->status==1 || $leave->status==2) $dayArr[$karon]['offset'][] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							else $dayArr[$karon]['pendingoffset'] = date('h:i a', strtotime($s)).' - '.date('h:i a', strtotime($e));
 							
@@ -196,9 +213,10 @@ class Timecardmodel extends CI_Model {
 						}
 					}
 				}
-			}
+			} //end offset
 		}
-				
+		
+			
 		//CHECK SUSPENSION
 		$querySuspend = $this->dbmodel->getQueryResults('staffNTE', 'nteID, suspensiondates', 'status=0 AND empID_fk="'.$empID.'" AND (suspensiondates LIKE "%'.date('Y-m', strtotime($dateStart)).'%" OR suspensiondates LIKE "%'.date('Y-m', strtotime($dateEnd)).'%")');
 		foreach($querySuspend AS $qs){
