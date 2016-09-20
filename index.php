@@ -5,7 +5,7 @@ if(isset($_POST['submit'])){
 	//Google captcha
 	$resp = $recaptcha->is_valid($_POST['g-recaptcha-response']);
 	if(!$resp){
-		$error[] = "Please check \"I'm not a robot\"";
+	//	$error[] = "Please check \"I'm not a robot\"";
 	}
 	unset($_POST['g-recaptcha-response']);
 	//end Google captcha
@@ -69,8 +69,8 @@ if(isset($_POST['submit'])){
 		$db->insertQuery("applicants", $_POST);
 		$update[] = "<h2>Thank You!</h2><p>You have successfully sent your Application Form to us. Please check your mobile and email inbox regularly for updates on your application.</p><p>For more info, please visit our website at <a href='https://www.tatepublishing.com'>https://www.tatepublishing.com</a></p>";
 		
-		//check if there is an open job requisition send email if none
-		$jobReq = $db->selectSingleQueryArray('jobReqData', 'reqID, supervisor, requestor' , 'positionID="'.$_POST['position'].'" AND status=0 AND appID=0', 'LEFT JOIN newPositions ON positionID = posID'); 
+		//check if there is an open job or pooling requisition send email if none
+		$jobReq = $db->selectSingleQueryArray('jobReqData', 'reqID, supervisor, requestor' , 'positionID="'.$_POST['position'].'" AND status IN (0,3)', 'LEFT JOIN newPositions ON positionID = posID'); 
 	
 		if(empty($jobReq['reqID'])){
 			$posName = $db->selectSingleQuery('newPositions', 'title', 'posID="'.$_POST['position'].'"');
