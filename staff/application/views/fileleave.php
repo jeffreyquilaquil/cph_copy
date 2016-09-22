@@ -22,8 +22,8 @@ if($segment2=='offset'){
 		$num += $n->totalHours;
 	endforeach;
 	
-	if($num>=16){
-		echo '<p><b>Note:</b> <i>You have already requested for '.$num.' hours of offset for the month of '.date('F').', you may not file any more offset request for additional absences in '.date('F').'.</i></p>';
+	if($num>=$allowedOffset->offsetHrs){
+		echo '<p><b>Note:</b> <i>You have already requested for '.$allowedOffset->offsetHrs.' hours of offset for the month of '.date('F').', you may not file any more offset request for additional absences in '.date('F').'.</i></p>';
 	}
 	
 }else{
