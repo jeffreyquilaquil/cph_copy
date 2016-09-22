@@ -1430,7 +1430,7 @@ class Payrollmodel extends CI_Model {
 		$salary = $payInfo->monthlyRate;
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
 		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
-		$leaveAmount = $payInfo->addLeave * $dailyRate;		
+		$leaveAmount = $payInfo->addLeave * $dailyRate;
 		$addOnBonus = 0;
 		$unusedLeave = 0;
 		$sppDeduction = 0;
@@ -1497,19 +1497,18 @@ class Payrollmodel extends CI_Model {
 		if($data['is_active'])
 			$n37 = $total13th;
 
-		$totalDeminimis = 0;
-		foreach ($data['allowances'] as $key => $value) {
-			$allowanceArray = $this->textM->constantArr('allowances');
-			if(in_array($key, $allowanceArray)){
-				$totalDeminimis += $value;
-			}
-		}
+		$otherSalary = 0;
+		list($totalDeminimis, $totalSalariesAndOtherForms) = $this->payrollM->getDeminimis($data['allowances']);
 
-		$totalDeminimis += $leaveAmount;
-		$totalDeminimis += $addOnBonus;
-		$totalDeminimis += $unusedLeave;
+		$totalSalariesAndOtherForms += $leaveAmount;
+		$totalSalariesAndOtherForms += $addOnBonus;
+		$totalSalariesAndOtherForms += $unusedLeave;
+
+		if( ($totalSalariesAndOtherForms + $n37) > 82000 ){
+			$otherSalary = ($totalSalariesAndOtherForms + $n37) - 82000;
+		}
 		
-		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp);
+		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp+$totalSalariesAndOtherForms);
 
 		//FOR 21
 		$pdf->setXY(94, 229);
@@ -1602,6 +1601,10 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 122);
 		$pdf->Cell(48, 5, $this->formatNum($spp), 0,2,'R');		
 
+		//FOR 40
+		$pdf->setXY(194, 136);
+		$pdf->Cell(48, 5, $this->formatNum($totalSalariesAndOtherForms), 0,2,'R');				
+
 		//FOR 41
 
 		$pdf->setXY(194, 147);
@@ -1620,9 +1623,9 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($totalAdjustment), 0,2,'R');	
 
 		//FOR 51
-		$excs = '';
+		$excs = 0.00;
 		if($total13th > 82000)
-			$excs = $this->formatNum($total13th-82000);
+			$excs = $this->formatNum($otherSalary);
 		$pdf->setXY(194, 253);
 		$pdf->Cell(48, 5, $excs, 0,2,'R');
 
@@ -1906,6 +1909,9 @@ class Payrollmodel extends CI_Model {
 	}
 
 	public function getTotalComputationForAllEmployee($info){
+		// echo "<pre>";
+		// var_dump($info);
+
 		$items = array();
 	
 		foreach ($info as $key => $value) {
@@ -1921,6 +1927,8 @@ class Payrollmodel extends CI_Model {
 			$philhealth = 0;
 			$totalSalary = 0;
 			$totalDeduction = 0;
+			$unusedLeave = 0;
+
 			//loop for earning
 			foreach ($value->dataMonth as $eK => $eV) {
 				if( $value->active == 1 ){
@@ -1928,12 +1936,19 @@ class Payrollmodel extends CI_Model {
 					$totalDeduction += $regTaken;
 					$month13 += ( $eV->basePay - $regTaken ) / 12;
 				}
-
 				$earning += $eV->earning + $month13;
 
 				$sss += isset( $value->dataMonthItems[$eV->payslipID]["sss"] )? $value->dataMonthItems[$eV->payslipID]["sss"]:0;
 				$pagIbig += isset( $value->dataMonthItems[$eV->payslipID]["pagIbig"] )? $value->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
 				$philhealth += isset( $value->dataMonthItems[$eV->payslipID]["philhealth"] )? $value->dataMonthItems[$eV->payslipID]["philhealth"]:0;
+				$unusedLeave += isset( $value->dataMonthItems[$eV->payslipID]["unusedLeave"] )? $value->dataMonthItems[$eV->payslipID]["unusedLeave"]:0;
+
+				$leaveAmount = 0;
+
+				if( $value->active == 1 ){
+					$dailyRate = $this->payrollM->getDailyHourlyRate( 2*($value->basePay) , 'daily');
+					$leaveAmount = $value->leaveCredits * $dailyRate;
+				}
 
 				$totalSalary += $eV->basePay;
 			}
@@ -1944,24 +1959,21 @@ class Payrollmodel extends CI_Model {
 			$items[$value->username]['F'] = $this->payrollM->formatNum($earning);
 			$items[$value->username]['G'] = $this->payrollM->formatNum($month13);
 
-			$totalDeminimis = 0;
-			$totalSalariesAndOtherForms = 0;
+			
 			$otherSalary = 0;
 
-			foreach ($value->allowances as $keey => $valuee) {
-				$allowanceArray = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance');
-				if(in_array($keey, $allowanceArray)){
-					$totalDeminimis += $valuee;
-				}
-				else{
-					$totalSalariesAndOtherForms += $valuee;
-				}
-			}
+			
+
+			list($totalDeminimis, $totalSalariesAndOtherForms) = $this->payrollM->getDeminimis($value->allowances);
+
 
 			if ($totalSalariesAndOtherForms > 82000){
 				$otherSalary = $totalSalariesAndOtherForms - 82000;
 				$totalSalariesAndOtherForms = 82000;
 			}
+
+			$totalSalariesAndOtherForms += $leaveAmount;
+			$totalSalariesAndOtherForms += $unusedLeave;
 
 			$items[$value->username]['H'] = $this->payrollM->formatNum($totalDeminimis);
 			$items[$value->username]['L'] = $this->payrollM->formatNum($spp);
@@ -2001,6 +2013,24 @@ class Payrollmodel extends CI_Model {
 	
 	public function formatNum($d){
 		return $this->textM->convertNumFormat($d);
+	}
+
+	public function getDeminimis($allowances){
+
+		$totalDeminimis = 0;
+		$totalSalariesAndOtherForms = 0;
+
+		foreach ($allowances as $key => $value) {
+			$allowanceArray = $this->textM->constantArr('deminimisAllowance');
+			$otherAllowanceArray = $this->textM->constantArr('otherAllowance');
+			if(in_array($key, $allowanceArray)){
+				$totalDeminimis += $value;
+			}
+			else if(in_array($key, $otherAllowanceArray)){
+				$totalSalariesAndOtherForms += $value;
+			}
+		}
+		return array($totalDeminimis, $totalSalariesAndOtherForms);
 	}
 
 	public function _getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems, $dateGenerated = '0000-00-00' ){
