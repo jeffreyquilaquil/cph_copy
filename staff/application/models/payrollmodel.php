@@ -184,10 +184,21 @@ class Payrollmodel extends CI_Model {
 				if($info->startDate>$info->payPeriodStart && $info->startDate<=$info->payPeriodEnd){
 					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd);
 				}else if($info->endDate!="0000-00-00" && $info->endDate>=$info->payPeriodStart && $info->endDate<$info->payPeriodEnd){
+
+					//weekends already subtracted
 					$hr = $this->payrollM->getNumDays($info->payPeriodStart, $info->endDate);
 					//check if the endDate has publish, if not then we can subtract to $hr;
 
 					if( $hr > 1 ){
+						$endDateDay = date('l', strtotime($info->endDate) );
+			
+						//don't pay weekends if endDate ends on Monday
+						if( in_array($endDateDay, array('Monday') ) ){
+							$hr = $hr - 2;
+						}
+						/*
+						//don't include weekends to subtract
+						//weekends are paid
 						$endDate = $info->endDate;
 						while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
 							//check if on weekends, don't subtract since $hr has already weekends subtracted
@@ -203,7 +214,7 @@ class Payrollmodel extends CI_Model {
 							$endDateObj->sub( new DateInterval('P1D') );
 
 							$endDate = $endDateObj->format('Y-m-d');
-						}	
+						}*/	
 					}
 					
 				}	
