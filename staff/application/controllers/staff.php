@@ -3491,6 +3491,23 @@ class Staff extends MY_Controller {
 					$insArr['perType'] = 1; //1 for action
 					$insArr['perValue'] = $_POST['perName'].' validated.';
 					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
+
+					if( $_POST['perID'] == 6){
+						$insertBIR = array(
+											'empID_fk' => $id,
+											'for21' => $_POST['bir21'],
+											'for30B' => $_POST['bir30b'],
+											'for31' => $_POST['bir31'],
+											'for37' => $_POST['bir37'],
+											'for38' => $_POST['bir38'],
+											'for39' => $_POST['bir39'],
+											'for41' => $_POST['bir41'],
+											'for42' => $_POST['bir42'],
+											'for47A' => $_POST['bir47a'],
+											'for55' => $_POST['bir55'],
+										);
+						$this->dbmodel->insertQuery('tcPrevious2316', $insertBIR);
+					}
 										
 					if(!empty($_FILES['fileupload']['name'])){
 						$fextn = $this->textM->getFileExtn($_FILES['fileupload']['name']);

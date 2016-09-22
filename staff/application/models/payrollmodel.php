@@ -1858,6 +1858,132 @@ class Payrollmodel extends CI_Model {
 		header('Content-Disposition: attachment; filename="'.$filename.'".xls"');
 		$objWriter->save('php://output');
 	}
+
+	public function getAlphaListForAllEmployee($data, $outputFile){
+		// echo "<pre>";
+		// var_dump($data);
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/alphalist_template.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$sequence = 1;
+		$cell_counter = 10;
+		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
+
+		foreach ($data_items as $key => $value) {
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
+			foreach ($value as $k => $v) {
+				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
+			}
+			$sequence++;
+			$cell_counter++;
+		}
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$ouputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
+	public function getTotalComputationForAllEmployee($info){
+		$items = array();
+	
+		foreach ($info as $key => $value) {
+			$items[$value->username]['B'] = $this->textM->decryptText( $value->tin );
+			$items[$value->username]['C'] = $value->lname;
+			$items[$value->username]['D'] = $value->fname;
+			$items[$value->username]['E'] = $value->mname;
+			
+			$earning = 0;
+			$month13 = 0;
+			$sss = 0;
+			$pagIbig = 0;
+			$philhealth = 0;
+			$totalSalary = 0;
+			$totalDeduction = 0;
+			//loop for earning
+			foreach ($value->dataMonth as $eK => $eV) {
+				if( $value->active == 1 ){
+					$regTaken = isset( $value->dataMonthItems[$eV->payslipID]["regularTaken"] )? $value->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
+					$totalDeduction += $regTaken;
+					$month13 += ( $eV->basePay - $regTaken ) / 12;
+				}
+
+				$earning += $eV->earning + $month13;
+
+				$sss += isset( $value->dataMonthItems[$eV->payslipID]["sss"] )? $value->dataMonthItems[$eV->payslipID]["sss"]:0;
+				$pagIbig += isset( $value->dataMonthItems[$eV->payslipID]["pagIbig"] )? $value->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
+				$philhealth += isset( $value->dataMonthItems[$eV->payslipID]["philhealth"] )? $value->dataMonthItems[$eV->payslipID]["philhealth"]:0;
+
+				$totalSalary += $eV->basePay;
+			}
+
+			//sss + pagibig + philhealth
+			$spp = $sss + $pagIbig + $philhealth;
+
+			$items[$value->username]['F'] = $this->payrollM->formatNum($earning);
+			$items[$value->username]['G'] = $this->payrollM->formatNum($month13);
+
+			$totalDeminimis = 0;
+			$totalSalariesAndOtherForms = 0;
+			$otherSalary = 0;
+
+			foreach ($value->allowances as $keey => $valuee) {
+				$allowanceArray = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance');
+				if(in_array($keey, $allowanceArray)){
+					$totalDeminimis += $valuee;
+				}
+				else{
+					$totalSalariesAndOtherForms += $valuee;
+				}
+			}
+
+			if ($totalSalariesAndOtherForms > 82000){
+				$otherSalary = $totalSalariesAndOtherForms - 82000;
+				$totalSalariesAndOtherForms = 82000;
+			}
+
+			$items[$value->username]['H'] = $this->payrollM->formatNum($totalDeminimis);
+			$items[$value->username]['L'] = $this->payrollM->formatNum($spp);
+			$items[$value->username]['M'] = $this->payrollM->formatNum($totalSalariesAndOtherForms);
+
+			$totalNonTax = $month13 + $totalDeminimis + $spp + $totalSalariesAndOtherForms;
+
+			$items[$value->username]['N'] = $this->payrollM->formatNum($totalNonTax);
+
+			//basicPay = totalSalary - totaldeduction - spp
+			$basicPay = $totalSalary - $totaldeduction - $spp;
+			$items[$value->username]['R'] = $this->payrollM->formatNum($basicPay);
+			$items[$value->username]['S'] = $this->payrollM->formatNum(0);
+			$items[$value->username]['T'] = $this->payrollM->formatNum($otherSalary);
+
+			$totalTaxableIncome = $basicPay + $otherSalary;
+			$items[$value->username]['U'] = $this->payrollM->formatNum($totalTaxableIncome);	
+
+			$taxstatus = $this->textM->constantArr('taxstatus')[$value->taxstatus];
+			preg_match('#\((.*?)\)#', $taxstatus, $match);
+			
+			$items[$value->username]['V'] = $match[1];
+			$items[$value->username]['W'] = $this->payrollM->formatNum($value->taxExemption);
+
+			$netTaxable = $totalTaxableIncome-$value->taxExemption;
+			if( $netTaxable < 0 )
+				$netTaxable = 0;
+
+			$items[$value->username]['AA'] = $this->payrollM->formatNum($netTaxable);
+
+
+		}
+		return $items;
+	}
+
+
 	
 	public function formatNum($d){
 		return $this->textM->convertNumFormat($d);
