@@ -1,9 +1,9 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteBase /~shem/staff/
+	RewriteBase /staff/
 	# RewriteCond %{REQUEST_FILENAME} !-f
 	# RewriteCond %{REQUEST_FILENAME} !-di
-	RewriteCond $1 !^(index\.php|css|images|js|uploads|includes)
+	RewriteCond $1 !^(index\.php|css|images|js|includes|attachment.php)
 	RewriteRule ^(.*)$ index.php?/$1 [L]
 </IfModule>
 
