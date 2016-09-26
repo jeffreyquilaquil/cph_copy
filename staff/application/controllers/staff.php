@@ -4958,6 +4958,49 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/template', $data);
 		
 	}
+
+	public function attachments(){
+		$username = $this->uri->segment(2);
+		$file_name = $this->uri->segment(3);
+		$timestamp = $this->input->get('t');
+		
+		check if data are empty
+		if( !$username ){
+			show_404();
+			exit();
+		}
+
+		if( !$file_name ){
+			show_404();
+			exit();
+		}
+		// //if timestamp is more than 1 week
+		// if( $timestamp <= strtotime("-1 week") ){
+		// 	show_404();
+		// 	exit();
+		// }
+		
+		$filelocation = UPLOAD_DIR . $username .'/'. $file_name;
+		dd($filelocation);
+		if( !file_exists($filelocation) ){
+			show_404();
+			exit();
+		}
+		include(APPPATH.'config/mimes.php');
+		
+		//get file extension
+		$file_extension = pathinfo( strtolower($filename), PATHINFO_EXTENSION );
+		//get mime equivalent of file extension
+		$mime = $mimes[ $file_extension ];
+		if( is_array($mime) ){
+			$mime = $mimes[ $file_extension ][0];
+		}
+
+		header('content-type: '. $mime );
+		header('content-disposition: inline; filename="'. $file_name .'"; ');
+		readfile($filelocation);
+
+	}
 	
 } //end class
 
