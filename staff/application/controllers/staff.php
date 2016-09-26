@@ -1625,11 +1625,17 @@ class Staff extends MY_Controller {
 				exit;
 			} 
 			
+
+			
 			if($data['segment2']=='offset'){
+				$data['allowedOffset'] = $this->dbmodel->getSingleInfo('staffs', 'offsetHrs', 'empID="'.$this->user->empID.'"');
+
 				$data['numOffset'] = $this->dbmodel->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
+
 			}else{
 				$data['numLeaves'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3');
 			}
+			
 									
 			if(!empty($_POST)){			
 				if($_POST['submitType']=='chooseFromUploaded'){
@@ -1692,7 +1698,7 @@ class Staff extends MY_Controller {
 						$tambal += $noffset->totalHours;
 					endforeach;
 					
-					if(($tambal+$_POST['totalHours'])>16) $data['errortxt'] .= 'You cannot file offset leave more than 16 hours in a month.<br/>';
+					if(($tambal+$_POST['totalHours']) > $data['allowedOffset']->offsetHrs ) $data['errortxt'] .= 'You cannot file offset leave more than '.$data['allowedOffset']->offsetHrs.' hours in a month.<br/>';
 					
 					if($offdatecheck==false) $data['errortxt'] .= 'Check your schedule of work to compensate<br/>';
 					if(empty($offdates)) $data['errortxt'] .= 'Schedule of work to compensate absence is empty<br/>';
@@ -3491,6 +3497,23 @@ class Staff extends MY_Controller {
 					$insArr['perType'] = 1; //1 for action
 					$insArr['perValue'] = $_POST['perName'].' validated.';
 					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
+
+					if( $_POST['perID'] == 6){
+						$insertBIR = array(
+											'empID_fk' => $id,
+											'for21' => $_POST['bir21'],
+											'for30B' => $_POST['bir30b'],
+											'for31' => $_POST['bir31'],
+											'for37' => $_POST['bir37'],
+											'for38' => $_POST['bir38'],
+											'for39' => $_POST['bir39'],
+											'for41' => $_POST['bir41'],
+											'for42' => $_POST['bir42'],
+											'for47A' => $_POST['bir47a'],
+											'for55' => $_POST['bir55'],
+										);
+						$this->dbmodel->insertQuery('tcPrevious2316', $insertBIR);
+					}
 										
 					if(!empty($_FILES['fileupload']['name'])){
 						$fextn = $this->textM->getFileExtn($_FILES['fileupload']['name']);
@@ -4500,26 +4523,32 @@ class Staff extends MY_Controller {
 		// $info->endDate = '2016-06-15';
 		// $info->supEmail = 'marjune.abellana@tatepublishing.net';
 		// $this->emailM->emailSeparationDateAdvanceNotice( $info );
-		$date13 = date('Y-m-d');
-		$endDateObj = new DateTime( $date13 );
-		$endDateObj->add( new DateInterval( 'P90D') );
+		// $date13 = date('Y-m-d');
+		// $endDateObj = new DateTime( $date13 );
+		// $endDateObj->add( new DateInterval( 'P90D') );
 
-		//check if endDate is Tuesday
-		$endDate = $endDateObj->format('l');
-		dd($endDateObj->format('Y-m-d'), false);
-		//dd($endDate);
-		while( $endDate != 'Tuesday' ){
+		// //check if endDate is Tuesday
+		// $endDate = $endDateObj->format('l');
+		// dd($endDateObj->format('Y-m-d'), false);
+		// //dd($endDate);
+		// while( $endDate != 'Tuesday' ){
 
 			
-			$endDateObj->add( new DateInterval('P1D') );
-			$endDate = $endDateObj->format('l');
+		// 	$endDateObj->add( new DateInterval('P1D') );
+		// 	$endDate = $endDateObj->format('l');
 
-			dd($endDate, false);
-		}
-		$releaseDate = $endDateObj->format('Y-m-d');
-		dd($releaseDate);
+		// 	dd($endDate, false);
+		// }
+		// $releaseDate = $endDateObj->format('Y-m-d');
+		// dd($releaseDate);
 		//$arrayOfDataThatIsNew['releaseDate'] = $releaseDate;
-}
+// 		$today = date_create( date('Y-m-d') );
+// 		$start = date_create('2014-01-01');
+// 		$diff = date_diff($today,$start);
+// 		dd($diff);
+		$result = $this->dbmodel->getSingleField('tcLastPay', 'empID_fk', 'empID_fk = 1');
+		dd($result);
+	}
 	public function reports(){
 		$data['content'] = 'reports';
 		$which_report = $this->uri->segment(2);

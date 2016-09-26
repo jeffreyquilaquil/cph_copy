@@ -711,7 +711,7 @@ class Textmodel extends CI_Model {
 					3 => 'Single with 2 Qualified Dependents (S2)',
 					4 => 'Single with 3 Qualified Dependents (S3)',
 					5 => 'Single with 4 Qualified Dependents (S4)',
-					6 => 'Married',
+					6 => 'Married (M)',
 					7 => 'Married with 1 Qualified Dependent (M1)',
 					8 => 'Married with 2 Qualified Dependents (M2)',
 					9 => 'Married with 3 Qualified Dependents (M3)',
@@ -927,8 +927,10 @@ class Textmodel extends CI_Model {
 		} else if( $a == 'hdmf_loan_status' ){
 			$arr = array('for printing', 'printed', 'endorsed to employee', 'approved loans', 'for salary deductions', 'done', 'cancelled');
 
-		} else if($a == 'allowances'){
-			$arr = array('Medicine Reimbursement','Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance', 'Pro-Rated Allowance','Rice Allowance','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if($a == 'deminimisAllowance'){
+			$arr = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-Rated Allowance');
+		} else if($a == 'otherAllowance'){
+			$arr = array('Medicine Reimbursement','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
 		} else if( $a == 'last_pay_status' ){
 			$arr_ = array(
 				0 => 'Pending requirements', 
