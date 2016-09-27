@@ -162,8 +162,9 @@
 				
 				echo '<td align="center">';
 				$fileloc = UPLOADS.'coaching/coachingform_'.$d->coachID.'.pdf';
+				$fileloc_url = 'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText('coachingform_'.$d->coachID.'.pdf'));
 				if($d->HRoptionStatus>=2 && file_exists($fileloc)){
-					echo '<a class="iframe" href="'.$this->config->base_url().$fileloc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
+					echo '<a class="iframe" href="'.$this->config->base_url().$fileloc_url.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
 				}else{
 					echo '<a href="'.$this->config->base_url().'coachingform/expectation/'.$d->coachID.'/" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"> </a>';
 				}
@@ -171,8 +172,9 @@
 				
 				echo '<td align="center">';
 				$evalFileLoc = UPLOADS.'coaching/coachingevaluation_'.$d->coachID.'.pdf';
+				$evalFileLoc_url = 'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText('coachingevaluation_'.$d->coachID.'.pdf'));
 				if($d->HRoptionStatus>=2 && file_exists($evalFileLoc)){
-					echo '<a class="iframe" href="'.$this->config->base_url().$evalFileLoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
+					echo '<a class="iframe" href="'.$this->config->base_url().$evalFileLoc_url.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a>';
 				}else{
 					echo '<a class="iframe" href="'.$this->config->base_url().'coachingform/evaluation/'.$d->coachID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"> </a>';
 				}
