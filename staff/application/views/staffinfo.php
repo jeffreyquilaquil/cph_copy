@@ -647,6 +647,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<td>Level of Offense</td>
 			<td>Date Issued</td>
 			<td>Issued By</td>
+			<td>NTE</td>
 			<td>CAR</td>
 			<td>Edit</td>
 		</tr>
@@ -660,6 +661,15 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
 				echo '<td>';
+					if( !empty($dis->nteuploaded) ){
+						$nte_file = explode('|', $dis->nteuploaded);
+						if( isset($nte_file[2]) AND file_exists(UPLOADS.'NTE/'.$nte_file[2]) ){
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($nte_file[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+						}
+					}
+				echo '</td>';
+
+				echo '<td>';
 					if($dis->status==1) echo 'Not yet generated.';
 					else if(!empty($dis->caruploaded)){
 						$xc = explode('|', $dis->caruploaded);
@@ -668,6 +678,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 						}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 					}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 				echo '</td>';
+
 			
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>';
 			echo '</tr>';
@@ -770,7 +781,8 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			foreach($dataPayslips AS $slip){
 				echo '<tr>';
 					echo '<td>'.$slip.'</td>';
-					echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					//echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					echo '<td align="right"><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText(str_replace('uploads/', '', $payslipDIR) ) ).'&f='.urlencode($this->textM->encryptText($slip)).'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
 				echo '</tr>';
 			}
 		}
