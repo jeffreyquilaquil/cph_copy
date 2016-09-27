@@ -340,7 +340,7 @@ echo '<table class="tableInfo">';
 	}
 	if( $row->preparedby != $this->user->empID ){
 		if($row->signedDoc!='' && file_exists(UPLOADS.'CIS/'.$row->signedDoc)){
-		echo '<tr><td>Signed Document</td><td><a href="'.$this->config->base_url().UPLOADS.'CIS/'.$row->signedDoc.'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a><input type="hidden" value="1" id="signed"/></td></tr>';		
+		echo '<tr><td>Signed Document</td><td><a href="'.$this->config->base_url().urlencode($this->textM->encryptText('CIS')).'&f='.urlencode($this->textM->encryptText($row->signedDoc)).'" class="iframe"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a><input type="hidden" value="1" id="signed"/></td></tr>';		
 		}else{
 			echo '<tr><td>Upload signed document</td>
 				<td><input type="hidden" value="0" id="signed"/>
