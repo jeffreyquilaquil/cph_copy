@@ -389,7 +389,7 @@
 		if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
 			echo '<tr>
 				<td>CAR File Uploaded</td>
-				<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
+				<td><a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($xc[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>
 			</tr>';
 		}
 		
