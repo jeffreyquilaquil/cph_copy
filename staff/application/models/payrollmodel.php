@@ -1459,8 +1459,6 @@ class Payrollmodel extends CI_Model {
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
-		//echo '<pre>';
-		//var_dump($dateArr);
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems, $payInfo->dateGenerated );
@@ -1904,15 +1902,18 @@ class Payrollmodel extends CI_Model {
 		ob_end_clean();
 		// We'll be outputting an excel file
 		header('Content-type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment; filename="'.$ouputFile.'".xls"');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
 		$objWriter->save('php://output');
 	}
 
 	public function getTotalComputationForAllEmployee($info){
 		// echo "<pre>";
 		// var_dump($info);
+		// exit();
 
 		$items = array();
+		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
+		$payslipDeductAdjustments = $this->textM->constantArr('payslipDeductAdjustments');
 	
 		foreach ($info as $key => $value) {
 			$items[$value->username]['B'] = $this->textM->decryptText( $value->tin );
@@ -1928,52 +1929,90 @@ class Payrollmodel extends CI_Model {
 			$totalSalary = 0;
 			$totalDeduction = 0;
 			$unusedLeave = 0;
+			$leaveAmount = 0;
+			$regHoursAdded = 0;
+			$addOnBonus = 0;
+			$regHoursDeducted = 0;
+			$sppDeduction = 0;
+			$totalAdjustment = 0;
+			$totalIncomeTax = 0;
 
 			//loop for earning
 			foreach ($value->dataMonth as $eK => $eV) {
-				if( $value->active == 1 ){
-					$regTaken = isset( $value->dataMonthItems[$eV->payslipID]["regularTaken"] )? $value->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
-					$totalDeduction += $regTaken;
-					$month13 += ( $eV->basePay - $regTaken ) / 12;
-				}
-				$earning += $eV->earning + $month13;
+				$regTaken = isset( $value->dataMonthItems[$eV->payslipID]["regularTaken"] )? $value->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
+				$regHoursAdded = isset( $value->dataMonthItems[$eV->payslipID]["regHoursAdded"] )? $value->dataMonthItems[$eV->payslipID]["regHoursAdded"]:0;
+				$regHoursDeducted = isset( $value->dataMonthItems[$eV->payslipID]["regHoursDeducted"] )? $value->dataMonthItems[$eV->payslipID]["regHoursDeducted"]:0;
+				$totalDeduction += ($regTaken - $regHoursAdded + $regHoursDeducted);
+
+				$month13 += ( ( $eV->basePay + $regHoursAdded )- $regTaken - $regHoursDeducted ) / 12;
+				
+				$earning += $eV->earning;
 
 				$sss += isset( $value->dataMonthItems[$eV->payslipID]["sss"] )? $value->dataMonthItems[$eV->payslipID]["sss"]:0;
 				$pagIbig += isset( $value->dataMonthItems[$eV->payslipID]["pagIbig"] )? $value->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
 				$philhealth += isset( $value->dataMonthItems[$eV->payslipID]["philhealth"] )? $value->dataMonthItems[$eV->payslipID]["philhealth"]:0;
 				$unusedLeave += isset( $value->dataMonthItems[$eV->payslipID]["unusedLeave"] )? $value->dataMonthItems[$eV->payslipID]["unusedLeave"]:0;
-
-				$leaveAmount = 0;
-
-				if( $value->active == 1 ){
-					$dailyRate = $this->payrollM->getDailyHourlyRate( 2*($value->basePay) , 'daily');
-					$leaveAmount = $value->leaveCredits * $dailyRate;
-				}
+				$totalIncomeTax += isset( $value->dataMonthItems[$eV->payslipID]["incomeTax"] )? $value->dataMonthItems[$eV->payslipID]["incomeTax"]:0;
 
 				$totalSalary += $eV->basePay;
 			}
 
-			//sss + pagibig + philhealth
-			$spp = $sss + $pagIbig + $philhealth;
+			foreach ($value->dataMonthItems as $mK => $mV) {
+				foreach ($mV as $mmK => $mmV) {
+					if(in_array($mmK, $payslipAddAdjustments)){
+						$totalAdjustment += $mmV;
+					}
+					elseif(in_array($mmK, $payslipDeductAdjustments)){
+						$totalAdjustment -= $mmV;
+					}
+				}
+			}
+
+
+			$earning += $month13;
 
 			$items[$value->username]['F'] = $this->payrollM->formatNum($earning);
 			$items[$value->username]['G'] = $this->payrollM->formatNum($month13);
 
 			
 			$otherSalary = 0;
-
-			
-
 			list($totalDeminimis, $totalSalariesAndOtherForms) = $this->payrollM->getDeminimis($value->allowances);
-
-
-			if ($totalSalariesAndOtherForms > 82000){
-				$otherSalary = $totalSalariesAndOtherForms - 82000;
-				$totalSalariesAndOtherForms = 82000;
-			}
-
 			$totalSalariesAndOtherForms += $leaveAmount;
 			$totalSalariesAndOtherForms += $unusedLeave;
+
+			if( $value->active == 0 ){
+				$r = $this->dbmodel->getSingleInfo('tcLastPay', 'addOns, addLeave, monthlyRate', 'empID_fk ='.$value->empID);
+				$leaveCreditsLeft = $r->addLeave;
+				$salary = $r->monthlyRate;
+				$addOns = $r->addOns;
+				
+				$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
+				$leaveAmount = $dailyRate*$leaveCreditsLeft;
+
+				if(!empty($addOns)){
+					$addArr = unserialize(stripslashes($addOns));
+					foreach($addArr AS $add){
+						if(isset($add[0]) && isset($add[1]) ) {
+							if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name, tcPayslipAddons_Type, tcPayslipAddons_itemType', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+								if($rrr->tcPayslipAddons_itemType == 'bonus')
+									$addOnBonus += $add[1];
+
+								if($rrr->tcPayslipAddons_itemType == 'sppDeduction')
+									$sppDeduction += $add[1];
+							}
+						}
+					}
+				}
+			}
+
+			$spp = $sss + $pagIbig + $philhealth - ($sppDeduction);
+
+			if ( ($month13 + $totalSalariesAndOtherForms) > 82000){
+				$otherSalary = ($month13 + $totalSalariesAndOtherForms) - 82000;
+				$totalSalariesAndOtherForms = $totalSalariesAndOtherForms - $otherSalary;
+			}
+
+
 
 			$items[$value->username]['H'] = $this->payrollM->formatNum($totalDeminimis);
 			$items[$value->username]['L'] = $this->payrollM->formatNum($spp);
@@ -1984,12 +2023,12 @@ class Payrollmodel extends CI_Model {
 			$items[$value->username]['N'] = $this->payrollM->formatNum($totalNonTax);
 
 			//basicPay = totalSalary - totaldeduction - spp
-			$basicPay = $totalSalary - $totaldeduction - $spp;
+			$basicPay = $totalSalary-$totalDeduction-$spp;
 			$items[$value->username]['R'] = $this->payrollM->formatNum($basicPay);
-			$items[$value->username]['S'] = $this->payrollM->formatNum(0);
-			$items[$value->username]['T'] = $this->payrollM->formatNum($otherSalary);
+			$items[$value->username]['S'] = $this->payrollM->formatNum($otherSalary);
+			$items[$value->username]['T'] = $this->payrollM->formatNum($totalAdjustment);
 
-			$totalTaxableIncome = $basicPay + $otherSalary;
+			$totalTaxableIncome = $basicPay + $totalAdjustment + $otherSalary;
 			$items[$value->username]['U'] = $this->payrollM->formatNum($totalTaxableIncome);	
 
 			$taxstatus = $this->textM->constantArr('taxstatus')[$value->taxstatus];
@@ -2004,7 +2043,25 @@ class Payrollmodel extends CI_Model {
 
 			$items[$value->username]['AA'] = $this->payrollM->formatNum($netTaxable);
 
+			$taxDue = 0;
+			if($totalTaxableIncome > $value->taxExemption){
+				$deductedTax = $totalTaxableIncome - $value->taxExemption;//number 55 and 26 in BIR2316
+				$taxDue = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+			
+			$items[$value->username]['AB'] = $this->payrollM->formatNum($taxDue);
+			$items[$value->username]['AC'] = $this->payrollM->formatNum($totalIncomeTax);
 
+			//if AB < AC = AB - AC else the other way around
+			$yearEndAdjustment = $taxDue - $totalIncomeTax;
+			$yColumn = 'AD';
+			if( $yearEndAdjustment < 0){
+				$yearEndAdjustment *= -1;
+				$yColumn = 'AE';
+			}
+
+			$items[$value->username][$yColumn] = $this->payrollM->formatNum($yearEndAdjustment);
+			$items[$value->username]['AF'] = $this->payrollM->formatNum($taxDue);
 		}
 		return $items;
 	}
@@ -2066,8 +2123,6 @@ class Payrollmodel extends CI_Model {
 		$data['unusedLeave'] = 0;
 
 		$flag = 0;
-		// echo "<pre>";
-		// var_dump($payArr);
 
 		foreach($dateArr AS $date){
 			$data['payDate'] .= date('d-M-Y', strtotime($date))."\n";

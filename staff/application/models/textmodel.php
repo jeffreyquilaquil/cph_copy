@@ -931,6 +931,10 @@ class Textmodel extends CI_Model {
 			$arr = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-Rated Allowance');
 		} else if($a == 'otherAllowance'){
 			$arr = array('Medicine Reimbursement','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if($a == 'payslipAddAdjustments'){
+			$arr = array('nightDiff','overTime','perfIncentive','specialPHLHoliday','regPHLHoliday','regUSHoliday','regHoliday','nightDiffAdded','nightDiffSpecialHoliday','nightDiffRegHoliday','idReplacement');
+		} else if($a == 'payslipDeductAdjustments'){
+			$arr = array('regHoursAdded','refundCostofVaccines','payslipAdjustment');
 		} else if( $a == 'last_pay_status' ){
 			$arr_ = array(
 				0 => 'Pending requirements', 
