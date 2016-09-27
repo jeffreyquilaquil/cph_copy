@@ -3520,7 +3520,8 @@ class Staff extends MY_Controller {
 						$filename = str_replace(' ', '_', $_POST['perName']).'_'.date('YmdHis').'.'.$fextn;
 						
 						move_uploaded_file($_FILES['fileupload']['tmp_name'], UPLOAD_DIR.$data['row']->username.'/'.$filename);							
-						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';	
+						//$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';
+						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$data['row']->username)).'&f='.urlencode($this->textM->encryptText($filename)).'">'.$_POST['perName'].'</a>';	
 
 						//add data to staffUploads table
 						$upArr['empID_fk'] = $id;
