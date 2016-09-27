@@ -19,9 +19,9 @@ if(count($docs)==0){
 			echo '<td>'.$d->fileName.'</td>';
 			
 			if(strpos($d->fileName,'.jpg') !== false || strpos($d->fileName,'.gif') !== false || strpos($d->fileName,'.png') !== false || strpos($d->fileName,'.pdf') !== false)
-				echo '<td align="center"><a href="'.$this->config->base_url().UPLOAD_DIR.$d->username.'/'.$d->fileName.'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a></td>';
+				echo '<td align="center"><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$d->username)).'&f='.urlencode($this->textM->encryptText($d->fileName)).'"><img src="'.$this->config->base_url().'css/images/view-icon2.png"/></a></td>';
 			else
-				echo '<td align="center"><a href="'.$this->config->base_url().UPLOAD_DIR.$d->username.'/'.$d->fileName.'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a></td>';
+				echo '<td align="center"><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$d->username)).'&f='.urlencode($this->textM->encryptText($d->fileName)).'"><img src="'.$this->config->base_url().'css/images/download-icon.gif"/></a></td>';
 			
 			
 			echo '</tr>';

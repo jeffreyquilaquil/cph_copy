@@ -300,11 +300,14 @@ if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->ac
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -413,11 +416,14 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'. $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -541,11 +547,14 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -638,6 +647,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<td>Level of Offense</td>
 			<td>Date Issued</td>
 			<td>Issued By</td>
+			<td>NTE</td>
 			<td>CAR</td>
 			<td>Edit</td>
 		</tr>
@@ -651,14 +661,24 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
 				echo '<td>';
+					if( !empty($dis->nteuploaded) ){
+						$nte_file = explode('|', $dis->nteuploaded);
+						if( isset($nte_file[2]) AND file_exists(UPLOADS.'NTE/'.$nte_file[2]) ){
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($nte_file[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+						}
+					}
+				echo '</td>';
+
+				echo '<td>';
 					if($dis->status==1) echo 'Not yet generated.';
 					else if(!empty($dis->caruploaded)){
 						$xc = explode('|', $dis->caruploaded);
 						if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
-							echo '<a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($xc[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 						}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 					}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 				echo '</td>';
+
 			
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>';
 			echo '</tr>';
@@ -761,7 +781,8 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			foreach($dataPayslips AS $slip){
 				echo '<tr>';
 					echo '<td>'.$slip.'</td>';
-					echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					//echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					echo '<td align="right"><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText(str_replace('uploads/', '', $payslipDIR) ) ).'&f='.urlencode($this->textM->encryptText($slip)).'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
 				echo '</tr>';
 			}
 		}

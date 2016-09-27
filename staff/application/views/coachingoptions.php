@@ -83,10 +83,11 @@ if(count($row)==0){
 			}
 		}
 		$fileloc = UPLOADS.'coaching/coachingform_'.$row->coachID.'.pdf';
+		$fileloc_url = 'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText('coachingform_'.$row->coachID.'.pdf'));
 		if($row->HRoptionStatus>=2 && file_exists($fileloc)){
 			echo '<tr>';
 			echo '<td>Signed Coaching Form</td>';
-			echo '<td><a href="'.$this->config->base_url().$fileloc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+			echo '<td><a href="'.$this->config->base_url().$fileloc_url.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
 			echo '</tr>';
 		}
 	?>
@@ -98,10 +99,11 @@ if(count($row)==0){
 	<?php } ?>
 	<?php
 		$fileloc = UPLOADS.'coaching/coachingevaluation_'.$row->coachID.'.pdf';
+		$fileloc_url = 'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText('coachingevaluation_'.$row->coachID.'.pdf'));
 		if($row->HRoptionStatus>=2 && file_exists($fileloc)){
 			echo '<tr>';
 			echo '<td>Signed Evaluation Form</td>';
-			echo '<td><a href="'.$this->config->base_url().$fileloc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
+			echo '<td><a href="'.$this->config->base_url().$fileloc_url.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"></a></td>';
 			echo '</tr>';
 		}
 	?>
