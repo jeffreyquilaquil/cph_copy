@@ -182,7 +182,9 @@ class Payrollmodel extends CI_Model {
 				$hr = 0;
 				
 				if($info->startDate>$info->payPeriodStart && $info->startDate<=$info->payPeriodEnd){
-					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd);
+
+					//update 09-27-2016 weekends should be included for new hire
+					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd, false);
 				}else if($info->endDate!="0000-00-00" && $info->endDate>=$info->payPeriodStart && $info->endDate<$info->payPeriodEnd){
 
 					//weekends already subtracted
