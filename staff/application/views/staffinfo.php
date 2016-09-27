@@ -300,12 +300,14 @@ if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->ac
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else
 						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
-						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText( $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -414,11 +416,13 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText( $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'. $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
 						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
@@ -543,11 +547,13 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText( $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
 						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
