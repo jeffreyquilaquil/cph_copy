@@ -664,7 +664,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					else if(!empty($dis->caruploaded)){
 						$xc = explode('|', $dis->caruploaded);
 						if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
-							echo '<a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encrypText('NTE')).'&f='.urlencode($this->textM->encryptText($xc[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 						}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 					}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 				echo '</td>';
