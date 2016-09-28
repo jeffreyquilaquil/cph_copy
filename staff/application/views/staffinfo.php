@@ -698,7 +698,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 	<table class="tableInfo" id="disciplinarytbl">
 		<tr class="trlabel">
 			<td>
-				Uploaded Signed Disciplinary Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disciplinarytbl', this)" class="droptext">Show</a>]
+				Uploaded Disciplinary Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disciplinarytbl', this)" class="droptext">Show</a>]
 					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('disciplinary')">+ Add File</a><? } ?>
 				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
 					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('disciplinary')"/>
