@@ -2213,17 +2213,21 @@ class Payrollmodel extends CI_Model {
 				$totalSalary += $eV->basePay;
 			}
 
+			// echo "<pre>";
+			// var_dump($value->dataMonthItems);
+			
+
 			foreach ($value->dataMonthItems as $mK => $mV) {
 				foreach ($mV as $mmK => $mmV) {
 					if(in_array($mmK, $payslipAddAdjustments)){
 						$totalAdjustment += $mmV;
 					}
-					elseif(in_array($mmK, $payslipDeductAdjustments)){
-						$totalAdjustment -= $mmV;
-					}
+					// elseif(in_array($mmK, $payslipDeductAdjustments)){
+					// 	echo '<strong>'.$mmK.':</strong> '.$mmV.' -  Deduct <br/>';
+					// 	$totalAdjustment -= $mmV;
+					// }
 				}
 			}
-
 
 			$earning += $month13;
 
