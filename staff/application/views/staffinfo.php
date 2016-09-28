@@ -323,7 +323,7 @@ if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->ac
 	echo '<table>';
 }
 
-if($current=='myinfo' || $this->access->accessFullHR==true){
+if($current=='myinfo' || $this->access->accessFullHR==true){ /*
 ?>	
 <!----------------------- DISCIPLINARY MEASURES ----------------------->	
 	<table class="tableInfo" id="disciplinarytbl">
@@ -436,7 +436,7 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 				echo '</tr>';
 			}
 		}
-	echo '<table>';
+	echo '<table>'; */
 }
 
 
@@ -666,6 +666,8 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 						if( isset($nte_file[2]) AND file_exists(UPLOADS.'NTE/'.$nte_file[2]) ){
 							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($nte_file[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 						}
+					} else {
+						echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 					}
 				echo '</td>';
 
@@ -755,7 +757,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 	if($current=='myinfo' || $this->access->accessFullHR==true){
 		$cntpayslips = count($dataPayslips);
 ?>	
-<!----------------------- DISCIPLINARY MEASURES ----------------------->	
+<!----------------------- Previous payslips ----------------------->	
 	<table class="tableInfo" id="prevpaytbl">
 		<tr class="trlabel">
 			<td>
