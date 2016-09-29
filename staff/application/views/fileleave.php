@@ -42,6 +42,7 @@ if($segment2=='offset'){
 			echo '<table class="tableInfo">';
 			
 			$signature = UPLOAD_DIR.$this->user->username.'/signature.png';
+			$signature_url = 'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$this->user->username)).'&f='.urlencode($this->textM->encryptText('signature.png'));
 			if(!file_exists($signature)){
 				echo '<form id="formUpload" action="'.$this->config->base_url().'upsignature/" method="POST" enctype="multipart/form-data">';
 				echo '<tr>
@@ -57,7 +58,7 @@ if($segment2=='offset'){
 					clearstatcache();
 					echo '<tr>';
 					echo '<td>Signature</td>';
-					echo '<td><img src="'.$this->config->base_url().$signature.'"/><br/><a href="'.$this->config->base_url().'upsignature/'.str_replace('/','-',$_SERVER['REQUEST_URI']).'/'.'">Click Here to Change your Signature</a></td>';					
+					echo '<td><img src="'.$this->config->base_url().$signature_url.'"/><br/><a href="'.$this->config->base_url().'upsignature/'.str_replace('/','-',$_SERVER['REQUEST_URI']).'/'.'">Click Here to Change your Signature</a></td>';					
 					echo '</tr>';
 					
 					echo '<tr>
