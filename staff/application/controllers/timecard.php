@@ -1523,7 +1523,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk)');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1596,8 +1596,9 @@ class Timecard extends MY_Controller {
 										// if( $sDate < '2016-01-01' )
 										// 	$sDate = '2016-01-01';
 										$activeQuery = array();
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31'),TRUE );
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-08-31'),TRUE );
 
+										$data['staffInfo']->endDate = date('Y-12-31');
 										$activeQuery['dataQuery'][0] = $data['staffInfo'];
 										$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
 										$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
