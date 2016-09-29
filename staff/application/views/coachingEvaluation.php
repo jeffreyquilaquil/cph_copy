@@ -197,7 +197,7 @@
 	
 	function coachingScore(score){
 		scoretext = '';
-		if(score>=8.00 && score<=10.00)
+		/*if(score>=8.00 && score<=10.00)
 			scoretext = 'Excellent (Exceeds expectations)';
 		else if(score>=5.00 && score<=7.99)
 			scoretext = 'Good (Meets expectations)';
@@ -205,7 +205,14 @@
 			scoretext = 'Fair (Improvement needed)';
 		else if(score<=2.99)
 			scoretext = 'Poor (Unsatisfactory)';
-		
+		*/
+		if( score >= 1.5 ){
+			scoretext = 'Exceeds Expectations';
+		} else if( score >= 1.00 ){
+			scoretext = 'Met Expectations';
+		} else if( score < 1.00 ){
+			scoretext = 'Did Not Meet Expectations';
+		}
 		return scoretext;
 	}
 	

@@ -173,12 +173,12 @@ if(count($row)==0){
 			echo '<tr><td colspan2 class="errortext">Please acknowledge before evaluating.</td></tr>';
 		}else{
 	?>
-		<tr style="background-color:#ddd;"><td colspan=4 class="trhead"><b>Instructions:</b> Both employee and immediate supervisor will rate employee’s performance on achieving the target job performance or behaviours that were identified during the coaching period. Immediate supervisor shall send this file first to employee for self-rating, and employee shall forward his filled up form to immediate supervisor for supervisor’s rating. Use the rating system below to rate your performance. Rate one (1) if the employee totally failed to meet the expected job performance/behaviour and 10 if the employee surpassed expectations. Rate 5 if the performance is just meeting expectation.</td></tr>
+		<tr style="background-color:#ddd;"><td colspan=4 class="trhead"><b>Instructions:</b> Both employee and immediate supervisor will rate employee’s performance on achieving the target job performance or behaviours that were identified during the coaching period. Immediate supervisor shall send this file first to employee for self-rating, and employee shall forward his filled up form to immediate supervisor for supervisor’s rating. Use the rating system below to rate your performance. Rate zero (0) if the employee totally failed to meet the expected job performance/behaviour, rate one (1) if the employee met the expected job performance/behavior and rate two (2) if the employee surpassed expectations.</td></tr>
 		<tr>
 		<tr>
 			<td colspan=4 align="center">
-				<b>1</b> ------------------------------------------------------------------ <b>5</b> ------------------------------------------------------------------ <b>10</b><Br/>
-				<i>Failed Expectations&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<b>0</b> ------------------------------------------------------------------ <b>1</b> ------------------------------------------------------------------ <b>2</b><Br/>
+				<i>Did Not Meet Expectations&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				Meet expectations (minimum acceptable performance)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				Very Much Exceeded Expectations</i>
 			</td>
