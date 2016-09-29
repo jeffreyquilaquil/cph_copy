@@ -50,10 +50,10 @@
 		<tr>
 			<td colspan="3"></td>
 			<td align="center">
-				<input type="button" class="btnclass" id='btnAddExpectation' value="Add Expectation" onclick="addExpectation(true)" style="width:50%"> | 
-				<input type="button" class="btnclass" id='btnAddEvaluator' value="Add Evaluator" onclick="addEvaluators(true)"> <br>
-				<input type="button" class="btnclass" id="btnSubmit" value="Submit" onclick="submitForm('addQuestions')" >
-				<input type="button" class="btnclass" id='btnUpdate' value="Update" onclick="submitForm('updateQuestions')">
+				<button type="button" class="btnclass" id='btnAddExpectation' onclick="addExpectation(true)" style="width:50%">Add Expectation</button>| 
+				<button type="button" class="btnclass" id='btnAddEvaluator' onclick="addEvaluators(true)">Add Evaluator</button> <br>
+				<button type="button" class="btnclass" id="btnSubmit" style="width:85%" onclick="submitForm('addQuestions')" >Submit</button>
+				<button type="button" class="btnclass" id='btnUpdate' style="width:85%" onclick="submitForm('updateQuestions')">Update</button>
 			</td>
 		</tr>
 	</tbody>
@@ -184,7 +184,7 @@ var haha = 1;
 
 	function addQuestion(){
 		
-		var firstRow = '<tr> <td><label>Objective Goals</label></td> <td colspan="3"><textarea cols="106" id="txtObjective"></textarea></td> </tr> <tr> <td><label>Evaluation Question</label></td> <td colspan="3"><textarea cols="106" id="txtEvaluation"></textarea></td> </tr><tr> <td>Expectation</td> <td colspan="3"><textarea cols="106" class="txtExpectation forSave Expectation row0"></textarea></td> </tr> <tr class="bottRow"> <td><label>Evaluator</label></td> <td> <select name="slbEvaluator" class="slbEvaluator row0"> <option value="0">Team Leader</option> <option value="1">Leaders and Clients</option> <option value="2">Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type="number" class="wt row0"> </td> <td> <label>Weighted Score</label> <input type="number" class="wtScore row0"> <input type="hidden" id="txtDetailsID"> </td> </tr>';
+		var firstRow = '<tr> <td><label>Objective Goals</label></td> <td colspan="3"><textarea cols="106" id="txtObjective"></textarea></td> </tr> <tr> <td><label>Evaluation Question</label></td> <td colspan="3"><textarea cols="106" id="txtEvaluation"></textarea></td> </tr><tr> <td>Expectation</td> <td colspan="3"><textarea cols="106" class="txtExpectation forSave Expectation row0"></textarea></td> </tr> <tr class="bottRow"> <td><label>Evaluator</label></td> <td> <select name="slbEvaluator" class="slbEvaluator row0"> <option value="0">Team Leader</option> <option value="1">Leaders and Clients</option> <option value="2">Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type="number" class="wt row0"> </td> <td> <label>Weighted Score</label> <input type="number" class="wtScore row0"> </td> </tr>';
 		
 		$('#tblAddQuestion').css('display','table');
 		$(firstRow).appendTo("#addQuestionTbl");
@@ -208,7 +208,9 @@ var haha = 1;
 
 	function submitForm(submitType){
 		var check = true;
+		$i = 1;
 		$("#tblAddQuestion textarea, #tblAddQuestion input").each(function(){
+			
 			if($(this).val() == ""){
 				check = false;
 				alert("All fields must not be empty");
