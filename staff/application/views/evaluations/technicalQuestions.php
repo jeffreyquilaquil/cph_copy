@@ -14,30 +14,115 @@
 	.question_row:hover{
 		background:rgb(93,197,240);
 	}
+	#tblAddQuestion td{
+		height: 40px;
+	}
+	textarea{
+		width:95%;
+		height: 95%;
+	}
 </style>
 
 <?php
-	$careerList = [
-		'Application Developer', 'IT Specialist'
-	]
 ?>
+
+<p>
+	<?php
+
+	?>
+</p>
 
 <div style="float:right">
 	<select id="slbCareer">
 		<?php
-			foreach ($careerList as $key => $value) {
-				echo "<option value='".$key."'>".$value."</option>";
+
+			foreach ($positions as $value) {
+				$selected = ($value->posID == $this->uri->segment(4) ? 'selected' : '');
+				echo "<option value='".$value->posID."' {$selected}>".$value->title."</option>";
 			}
 		?>
 	</select>
 
 	<button class='btnclass' onclick="getQuestions()">Go</button>
+	<input type="button" value="Add Question" class='btnclass pull-right' id='btnAddQuestion' onclick='addQuestion()'>
 </div>
 
-<form method="POST" action="" onsubmit="submitValues()">
-<input type="hidden" id="jobType" value="<?php echo $this->uri->segment(4) ?>">
-<input type="hidden" id="questionId">
-<input type="hidden" id="detailId">
+
+<?php
+	$csrf = array(
+		'name' => $this->security->get_csrf_token_name(),
+		'hash' => $this->security->get_csrf_hash()
+		);
+
+echo form_open("evaluations/addQuestions", array('name'=> 'frmQuestion', 'id'=>'frmQuestion', 'onsubmit'=> ''));
+$hiddenArray = array(
+	$csrf['name']=>$csrf['hash'],
+	'posID'=>$this->uri->segment(4),
+	'questionId'=>'',
+	'detailId'=>'',
+	'questionType'=>'technical',
+
+	);
+echo form_hidden($hiddenArray);
+
+echo validation_errors("<span class='error'","</span>");
+?>
+<table id="tblAddQuestion" style="display:none;border-collapse:collapse">
+	<tr>
+		<td>
+			<label>Objective Goals</label>
+		</td>
+		<td colspan='5'>
+			<?php echo form_textarea(array('id'=>'txtObjective', 'name'=>'txtObjective', 'required'=> 'required')) ?>
+		</td>
+	</tr>
+	<tr>
+		<td> 
+			<label> Expectation </label>
+		</td> 
+		<td colspan='5' style='padding: 0px'> 
+			<?php echo form_textarea(array('id'=>'txtExpectation', 'name'=>'txtExpectation', 'required'=> 'required')) ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label>Evaluation Question</label>
+		</td>
+		<td colspan='5'>
+			<?php echo form_textarea(array('id'=>'txtEvaluation', 'name'=>'txtEvaluation', 'required'=> 'required')) ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label>Output Format</label>
+		</td>
+		<td colspan='5'>
+		<?php echo form_textarea(array('id'=>'txtFormat', 'name'=>'txtEvaluation', 'required'=> 'required')); ?>
+		</td>
+	</tr>
+	<tr>
+
+		<td>
+			
+		</td> 
+		<td>
+			<label>Weight</label>
+		</td>
+		<td>
+			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeight', 'name'=>'txtWeight', 'required'=> 'required')) ?>
+		</td>
+		<td>
+			<label>Weight Score</label>
+		</td>
+		<td>
+			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeightScore', 'name'=>'txtWeightScore', 'required'=> 'required'))?>
+		</td>
+	</tr>
+</table>
+<button type="button" class='btnclass' id='btnSubmit' style='float:right;display:none;' onclick='submitForm("addQuestions")'">Submit</button>
+<?php echo form_close(); ?>
+<br><br>
+
 <table id='tblTechnicalQuestions' style="border-collapse: collapse;">
 	<thead>
 		<tr><th colspan='8'>TECHNICAL GOALS AND OBJECTIVES</th></tr>
@@ -75,64 +160,13 @@
 			<td></td>
 			<td></td>
 			<td colspan='3' align='right'>
-			<input type="button" value="Add Question" class='btnclass pull-right' id='btnAddQuestion' onclick='addQuestion()'>
+			
 			</td>
 		</tr>
 	</tbody>
 </table>
 
 <br><br>
-
-<table id="tblAddQuestion" style="display:none;border-collapse:collapse">
-	<tr>
-		<td>
-			<label>Objective Goals</label>
-		</td>
-		<td colspan='5'>
-			<textarea cols='106' id='txtObjective'></textarea>
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			<label> Expectation </label>
-		</td> 
-		<td colspan='5'> 
-			<textarea cols='106' id='txtExpectation'></textarea> 
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<label>Evaluation Question</label>
-		</td>
-		<td colspan='5'>
-			<textarea cols='106' id='txtEvaluation'></textarea>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<label>Output Format</label>
-		</td>
-		<td>
-			<textarea id='txtFormat'></textarea>
-		</td> 
-		<td>
-			<label>Weight</label>
-		</td>
-		<td>
-			<input type='number' id='txtWeight'>
-		</td>
-		<td>
-			<label>Weight Score</label>
-		</td>
-		<td>
-			<input type='number' id='txtWeightScore'>
-		</td>
-	</tr>
-</table>
-<button type="button" class='btnclass' id='btnAdd' style='float:right;display:none;' onclick="submitForm('addQuestions')">Submit</button>
-<button type="button" class='btnclass' id='btnUpdate' style='float:right;display:none;' onclick="submitForm('updateQuestions')">Update</button>
-</form>
-
 <script type="text/javascript">
 	function getQuestions(){
 		$career = $("#slbCareer").val();
@@ -141,35 +175,64 @@
 	}
 
 	function addQuestion(){
-		$('#tblAddQuestion, #btnAdd').css('display','table');
+		$('#tblAddQuestion, #btnSubmit').css('display','table');
 		$('#btnAddQuestion').css('display', 'none');
+
+		//$('#frmQuestion').attr('action','../../addQuestions');
 	}
 
 	function submitForm(submitAction){
-		var data = $('#txtObjective').val()+"/"+$("#txtEvaluation").val()+"/"+$("#txtExpectation").val()+"/"+$("#txtFormat").val()+"/"+$("#txtWeight").val()+"/"+$("#txtWeightScore").val()+"/"+$("#jobType").val();
-
-		if(submitAction == 'updateQuestions'){
-			data += "/"+$('#detailId').val()+"/"+$('#questionId').val()
-		}
-
-		$.ajax({
-			url:'../../'+submitAction+"/technical/"+data
-		}).done(function(r){
-
+		check = true;
+		$("#tblAddQuestion textarea, #tblAddQuestion input").each(function(){
+			if($(this).val() == ""){
+				check = false;
+				alert("All fields must not be empty");
+				return false;
+			}
 		});
-	}
 
+		
+
+		if(check){
+			var data = "txtObjective="+$('#txtObjective').val()+
+			"&txtEvaluation="+$("#txtEvaluation").val()+
+			"&txtExpectation="+$("#txtExpectation").val()+
+			"&txtFormat="+$("#txtFormat").val()+
+			"&txtWeight="+$("#txtWeight").val()+
+			"&txtWeightScore="+$("#txtWeightScore").val()+
+			"&posID="+$("input[name='posID']").val()+
+			'&questionType=technical';
+
+			if(submitAction == 'updateQuestions'){
+				data += "&detailsId="+$("input[name='detailId']").val()+"&question_id="+$('input[name="questionId"]').val()
+			}
+
+			$.ajax({
+				type:'POST',
+				data:data,
+				url:'../../'+submitAction
+			}).done(function(r){
+			//	$('p').html(r);
+				alert("Question list has been updated.");
+				location.reload();
+			});
+		 }						
+	}
+	
 	$(document).on('dblclick', '.question_row', function(){
+		$('#btnSubmit').attr('onclick','submitForm("updateQuestions")');
+		$('#btnSubmit').text('Update');
+
 		$('#txtObjective').val($(this).find('.goals').text());
 		$('#txtExpectation').val($(this).find('.expectation').text());
 		$('#txtEvaluation').val($(this).find('.question').text());
 		$('#txtFormat').val($(this).find('.evaluator').text());
 		$('#txtWeight').val($(this).find('.weight').text().slice(0,-1));
 		$('#txtWeightScore').val($(this).find('.weight_score').text().slice(0,-1));
-		$("#detailId").val($(this).data('detail_id'));
-		$("#questionId").val($(this).data('question_id'));
+		$("input[name='detailId']").val($(this).data('detail_id'));
+		$('input[name="questionId"]').val($(this).data('question_id'));
 
-		$('#tblAddQuestion, #btnUpdate').css('display','table');
+		$('#tblAddQuestion, #btnSubmit').css('display','table');
 		$('#btnAddQuestion').css('display', 'none');
 	});
 </script>

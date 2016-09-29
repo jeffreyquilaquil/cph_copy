@@ -11,6 +11,7 @@ class Evaluations extends MY_Controller
 	{
 		parent::__construct();
 		$this->load->model('evaluationsmodel');
+		$this->load->helper('form');
 	}
 
 	public function index(){
@@ -19,8 +20,6 @@ class Evaluations extends MY_Controller
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
 
-		
-		
 		$this->load->view('includes/template', $data);
 	}
 
@@ -30,35 +29,40 @@ class Evaluations extends MY_Controller
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
 		$data['questions'] = $this->evaluationsmodel->getQuestions($type, $careerType);
+		$data['positions'] = $this->evaluationsmodel->getPositions();
 		
 		$this->load->view('includes/template', $data);
 	}
 
-	public function addQuestions($type){
+	public function addQuestions(){
+
+		$type = $this->input->post('questionType');
 
 		$data[1]= array();
 
 		if($type == 'technical'){
 			$question_type = 1;
-			$job_type = $this->uri->segment(10);
+			$job_type = $this->input->post('posID');
 			$details_array = array(
-				'expectation' => urldecode($this->uri->segment(6)),
-				'evaluator' => urldecode($this->uri->segment(7)),
-				'weight' => $this->uri->segment(8),
-				'weight_score' => $this->uri->segment(9),
+				'expectation' => $this->input->post('txtExpectation'),
+				'evaluator' => $this->input->post('txtFormat'),
+				'weight' => $this->input->post('txtWeight'),
+				'weight_score' => $this->input->post('txtWeightScore'),
 				);
 
 			array_push($data[1], $details_array);
+		//	$redirect = 'questionnaires/technicalQuestions/'.$job_type;
 		}
 
 		if($type == 'behavioral'){
+
 			$question_type = 2;
 			$job_type = 0;
 
-			$expectation = explode('__', urldecode($this->uri->segment(6)));
-			$evaluator = explode('__', $this->uri->segment(7));
-			$weight = explode('__', $this->uri->segment(8));
-			$weight_score = explode('__', $this->uri->segment(9));
+			$expectation = explode('__', $this->input->post('txtExpectation'));
+			$evaluator = explode(',', $this->input->post('txtEvaluator'));
+			$weight = explode(',', $this->input->post('txtWeight'));
+			$weight_score = explode(',', $this->input->post('txtWeightScore'));
 
 			$expectation_count = count($expectation);
 			$evaluator_count = count($evaluator);
@@ -79,39 +83,43 @@ class Evaluations extends MY_Controller
 		$data[0] = array(
 			'question_type' => $question_type,
 			'job_type' => $job_type,
-			'goals' => urldecode($this->uri->segment(4)),
-			'question' => urldecode($this->uri->segment(5))
+			'goals' => $this->input->post('txtObjective'),
+			'question' => $this->input->post('txtEvaluation'),
+			'created' => date('Y-m-d'),
 			);
+
 
 		$this->evaluationsmodel->saveQuestion($data);
 	}
 
-	public function updateQuestions($type){
+	public function updateQuestions(){
+		$type = $this->input->post('questionType');
 		$data[0] = array(
-				'goals' => urldecode($this->uri->segment(4)),
-				'question' => urldecode($this->uri->segment(5)),
-				'question_id' =>  $this->uri->segment(12)
+				'goals' => $this->input->post('txtObjective'),
+				'question' => $this->input->post('txtEvaluation'),
+				'question_id' =>  $this->input->post('question_id'),
+				'updated' => date('Y-m-d')
 			);
 
 		$data[1] = array();
 		if($type == 'technical'){
 			$details_array = array(
-				'expectation' => urldecode($this->uri->segment(6)),
-				'evaluator' => urldecode($this->uri->segment(7)),
-				'weight' => $this->uri->segment(8),
-				'weight_score' => $this->uri->segment(9),
-				'detail_id' => $this->uri->segment(11)
+				'expectation' => $this->input->post('txtExpectation'),
+				'evaluator' => $this->input->post('txtFormat'),
+				'weight' => $this->input->post('txtWeight'),
+				'weight_score' => $this->input->post('txtWeightScore'),
+				'detail_id' => $this->input->post('detailsId')
 				);
 			array_push($data[1], $details_array);
 		}
 
 		if($type == 'behavioral'){
 
-			$expectation = explode('__', urldecode($this->uri->segment(6)));
-			$evaluator = explode('__', $this->uri->segment(7));
-			$weight = explode('__', $this->uri->segment(8));
-			$weight_score = explode('__', $this->uri->segment(9));
-			$details_id = explode('__', $this->uri->segment(11));
+			$expectation = explode('__', $this->input->post('txtExpectation'));
+			$evaluator = explode(',', $this->input->post('txtEvaluator'));
+			$weight = explode(',', $this->input->post('txtWeight'));
+			$weight_score = explode(',', $this->input->post('txtWeightScore'));
+			$details_id = explode(',', $this->input->post('detailsId'));
 
 			$evaluator_count = count($evaluator);
 			$expectation_count = count($expectation);
@@ -129,9 +137,6 @@ class Evaluations extends MY_Controller
 				array_push($data[1], $details_array);
 			}
 		}
-
-		dd($data, false);
-
 		$this->evaluationsmodel->updateQuestion($data);
 	}
 }

@@ -34,8 +34,34 @@
 	}
 
 </style>
-<p></p>
+<table id='tblAddQuestion' style="display:none;border-collapse:collapse">
+	<tbody id="addQuestionTbl">
+
+	</tbody>
+
+	<tbody id='addEvaluatorTbl'>
+
+	</tbody>
+
+	<tbody id='addExpectationTbl'>
+		
+	</tbody>
+	<tbody>
+		<tr>
+			<td colspan="3"></td>
+			<td align="center">
+				<input type="button" class="btnclass" id='btnAddExpectation' value="Add Expectation" onclick="addExpectation(true)" style="width:50%"> | 
+				<input type="button" class="btnclass" id='btnAddEvaluator' value="Add Evaluator" onclick="addEvaluators(true)"> <br>
+				<input type="button" class="btnclass" id="btnSubmit" value="Submit" onclick="submitForm('addQuestions')" >
+				<input type="button" class="btnclass" id='btnUpdate' value="Update" onclick="submitForm('updateQuestions')">
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br>
 <form method="POST" action="" onsubmit="submitValues()">
+	<input type="button" value='Add Question' id='btnAddQuestion' class='btnclass' onclick='addQuestion()'" style="float:right">
+	<br>
 <table id='tblBehavioralQuestions' style='border-collapse: collapse;'>
 	<thead>
 		<tr><th colspan='8'>BEHAVIORAL GOALS AND OBJECTIVES</th></tr>
@@ -131,37 +157,14 @@
 			<td>
 			</td>
 			<td colspan="3" align='right'>
-				<input type="button" value='Add Question' id='btnAddQuestion' class='btnclass pull-right' onclick='addQuestion()'">
+
 			</td>
 		</tr>
 	</tbody>
 </table>
 </form>
 <br><br>
-<table id='tblAddQuestion' style="display:none;border-collapse:collapse">
-	<tbody id="addQuestionTbl">
 
-	</tbody>
-
-	<tbody id='addEvaluatorTbl'>
-
-	</tbody>
-
-	<tbody id='addExpectationTbl'>
-		
-	</tbody>
-	<tbody>
-		<tr>
-			<td colspan="3"></td>
-			<td align="center">
-				<input type="button" class="btnclass" id='btnAddExpectation' value="Add Expectation" onclick="addExpectation(true)" style="width:50%"> | 
-				<input type="button" class="btnclass" id='btnAddEvaluator' value="Add Evaluator" onclick="addEvaluators(true)"> <br>
-				<input type="button" class="btnclass" id="btnSubmit" value="Submit" onclick="submitForm('addQuestions')" >
-				<input type="button" class="btnclass" id='btnUpdate' value="Update" onclick="submitForm('updateQuestions')">
-			</td>
-		</tr>
-	</tbody>
-</table>
 
 <script type="text/javascript">
 var i = 1;
@@ -204,46 +207,60 @@ var haha = 1;
 	}
 
 	function submitForm(submitType){
-		var expectation = [];
-		$('.forSave').each(function(){
-			expectation.push($(this).val());
+		var check = true;
+		$("#tblAddQuestion textarea, #tblAddQuestion input").each(function(){
+			if($(this).val() == ""){
+				check = false;
+				alert("All fields must not be empty");
+				return false;
+			}
 		});
-		expectation = expectation.join('__');
 
-		var evaluator = [];
-		$('.slbEvaluator').each(function(){
-			evaluator.push($(this).val());
-		});
-		evaluator = evaluator.join('__');
+		if(check){
+			var expectation = [];
+			$('.forSave').each(function(){
+				expectation.push($(this).val());
+			});
+			expectation = expectation.join('__');
 
-		var weight = [];
-		$('.wt').each(function(){
-			weight.push($(this).val()); 
-		});
-		weight = weight.join('__');
+			var evaluator = [];
+			$('.slbEvaluator').each(function(){
+				evaluator.push($(this).val());
+			});
 
-		var weightScore = [];
-		$('.wtScore').each(function(){
-			weightScore.push($(this).val());
-		});
-		weightScore = weightScore.join('__');
+			var weight = [];
+			$('.wt').each(function(){
+				weight.push($(this).val()); 
+			});
 
-		var data = $('#txtObjective').val()+"/"+$('#txtEvaluation').val()+"/"+expectation+"/"+evaluator+"/"+weight+"/"+weightScore+"/0";
+			var weightScore = [];
+			$('.wtScore').each(function(){
+				weightScore.push($(this).val());
+			});
 
-		if(submitType == 'updateQuestions'){
-			detailsIdArr = detailsIdArr.join('__');
-			data += "/"+detailsIdArr+"/"+questionId;
+			var data = "txtObjective="+$('#txtObjective').val()+
+			"&txtEvaluation="+$('#txtEvaluation').val()+
+			"&txtExpectation="+expectation+
+			"&txtEvaluator="+evaluator+
+			"&txtWeight="+weight+
+			"&txtWeightScore="+weightScore+
+			'&questionType=behavioral';
+
+			if(submitType == 'updateQuestions'){
+				data += "&detailsId="+detailsIdArr+"&questionId="+questionId;
+			}
+
+			$.ajax({
+				data:data,
+				type:'POST',
+				url:'../'+submitType,
+				cache:false
+			}).done(function(response){
+				alert("The question list has been updated.");
+				location.reload();
+			//	$('p').html(response);
+			});
 		}
-
-		$.ajax({
-			type:'POST',
-			url:'../'+submitType+'/behavioral/'+data,
-			cache:false
-		}).done(function(response){
-			location.reload();
-		});
-
-
 	}
 
 	function passDataToInput(x, row, addExpectation){
