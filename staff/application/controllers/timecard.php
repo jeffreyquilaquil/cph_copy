@@ -1596,7 +1596,7 @@ class Timecard extends MY_Controller {
 										// if( $sDate < '2016-01-01' )
 										// 	$sDate = '2016-01-01';
 										$activeQuery = array();
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-08-31'),TRUE );
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31'),TRUE );
 
 										$data['staffInfo']->endDate = date('Y-12-31');
 										$activeQuery['dataQuery'][0] = $data['staffInfo'];
