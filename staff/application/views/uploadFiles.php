@@ -14,7 +14,7 @@ if (is_dir($dir)) {
 	$cc = 0;
 	foreach ($objects as $object) { 
 		if ($object != "." && $object != "..") { 
-			$xx = $this->config->base_url().$dir.$object;
+			$xx = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('others')).'&f='.urlencode($this->textM->encryptText($object));
 			echo '<tr id="tr_'.$cc.'">
 				<td><img src="'.$xx.'" width="100px"/></td>
 				<td>'.$xx.'</td>

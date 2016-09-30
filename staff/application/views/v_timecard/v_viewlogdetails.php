@@ -454,7 +454,7 @@
 						$dd = explode('|', $u->docs);
 						foreach($dd AS $d){
 							if(!empty($d))
-								$message .= '<li><a href="'.$this->config->base_url().$dir.$d.'">'.$d.'</a></li>';
+								$message .= '<li><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('timecard/timeloguploaddocs')).'&f='.urlencode($this->textM->encryptText($d)).'">'.$d.'</a></li>';
 						}
 						$message .= '</ul>';
 					}

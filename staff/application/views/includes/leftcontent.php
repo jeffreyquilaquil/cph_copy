@@ -51,9 +51,10 @@ else if( isset($tpage) AND $tpage == 'evaluations' ){
 		echo 'Welcome, '.$row->name.'!<br/>';
 	}
 	$fname = UPLOAD_DIR . $row->username.'/'.$row->username.'.jpg';
+	$fname_url = 'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText($row->username.'.jpg'));
 	
 	if(file_exists($fname)){
-		echo '<img src="'.$this->config->base_url().$fname.'" width="200px"/>';
+		echo '<img src="'.$this->config->base_url().$fname_url.'" width="200px"/>';
 		if($this->user->username == $row->username)
 			echo '<div style="width:78%; background-color:#000; opacity:0.6; padding:5px; color:#fff; margin-top:-24px; cursor:pointer;" id="upImage">Change Profile</div>';
 	}else{

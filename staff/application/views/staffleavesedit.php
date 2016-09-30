@@ -250,9 +250,9 @@
 		foreach($ama AS $a):
 			if(strpos($a, 'upDocDV++')!==false){
 				$a = str_replace('upDocDV++','', $a);
-				echo '<div><a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$a.'"><button>View file</button></a>';
+				echo '<div><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText($a)).'"><button>View file</button></a>';
 			}else if($a!='' && file_exists(UPLOADS.'leaves/'.$a)){
-				echo '<div><a href="'.$this->config->base_url().UPLOADS.'leaves/'.$a.'"><button>View file</button></a>';
+				echo '<div><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('leaves')).'&f='.urlencode($this->textM->encryptText($a)).'"><button>View file</button></a>';
 				
 				$belongto = explode('_',$a);
 				if($belongto[1]==$this->user->empID)

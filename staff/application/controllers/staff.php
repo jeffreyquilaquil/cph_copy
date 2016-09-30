@@ -3520,7 +3520,8 @@ class Staff extends MY_Controller {
 						$filename = str_replace(' ', '_', $_POST['perName']).'_'.date('YmdHis').'.'.$fextn;
 						
 						move_uploaded_file($_FILES['fileupload']['tmp_name'], UPLOAD_DIR.$data['row']->username.'/'.$filename);							
-						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';	
+						//$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';
+						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$data['row']->username)).'&f='.urlencode($this->textM->encryptText($filename)).'">'.$_POST['perName'].'</a>';	
 
 						//add data to staffUploads table
 						$upArr['empID_fk'] = $id;
@@ -4819,7 +4820,7 @@ class Staff extends MY_Controller {
 				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=upload">Upload voucher</a>';
 				}				
@@ -4831,7 +4832,8 @@ class Staff extends MY_Controller {
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+					//$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
 				}					
@@ -4844,7 +4846,8 @@ class Staff extends MY_Controller {
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+					//$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
 				}

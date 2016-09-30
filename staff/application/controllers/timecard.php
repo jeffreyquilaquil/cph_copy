@@ -1365,8 +1365,11 @@ class Timecard extends MY_Controller {
 				$info['empIDs'] = $query->empID_fk;
 				$this->payrollM->generatepayroll($info);
 				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
-				if($query->status==1)
-					$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+				if($query->status==1){
+					//disable temp 09-29-16
+					$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
+					//$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+				}
 			}			
 		}
 	}
@@ -1520,7 +1523,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1592,17 +1595,30 @@ class Timecard extends MY_Controller {
 										$sDate = $data['staffInfo']->startDate;
 										// if( $sDate < '2016-01-01' )
 										// 	$sDate = '2016-01-01';
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31') );
-										$data['dateArr'] = $datum['dateArr'];
-										$data['dataMonth'] = $datum['dataMonth'];
-										$data['dataMonthItems'] = $datum['dataMonthItems'];
+										$activeQuery = array();
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31'),TRUE );
+
 										$data['staffInfo']->endDate = date('Y-12-31');
-										$data['is_active'] = TRUE;
+										$activeQuery['dataQuery'][0] = $data['staffInfo'];
+										$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+										$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+										$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+										$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+
+										// $data['dateArr'] = $datum['dateArr'];
+										// $data['dataMonth'] = $datum['dataMonth'];
+										// $data['dataMonthItems'] = $datum['dataMonthItems'];
+										// $data['staffInfo']->endDate = date('Y-12-31');
+										// $data['is_active'] = TRUE;
+
+										$this->payrollM->pdfActiveBIR($activeQuery['dataQuery']);
 									}
 									// echo "<pre>";
 									// var_dump($data);
 									// echo "</pre>";
-							 		$this->payrollM->pdfBIR($data);
+									else{
+							 			$this->payrollM->pdfBIR($data);
+							 		}
 							break;
 							case 'coe': //coe
 								//call staff details and use staffmodel->genCOEpdf()								
@@ -1655,7 +1671,7 @@ class Timecard extends MY_Controller {
 						//check which to pull from
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
-							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '/*alphalist*/ *', 'active = 1 AND office = "PH-Cebu"');
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'active = 1 AND office = "PH-Cebu"', 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk' , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;
 							break;
@@ -1671,7 +1687,12 @@ class Timecard extends MY_Controller {
 
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
-						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
+
+						if( !$is_active ){
+							$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
+						}else{
+							$this->payrollM->getAlphaListForAllEmployee( $data['dataQuery'], $filename);
+						}
 					}
 				}
 			}

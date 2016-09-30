@@ -276,7 +276,8 @@ class Textmodel extends CI_Model {
 				$disp .= '<td>'.$a->updatedby.'</td>';
 				
 			if($status==3 || $status==1 && $a->effectivedate>=date('Y-m-d')){
-				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/'.$a->signedDoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
+				//$disp .= '<td><a class="iframe" href="'.$this->config->base_url().UPLOADS.'CIS/'.$a->signedDoc.'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
+				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('CIS')).'&f='.urlencode($this->textM->encryptText($a->signedDoc)).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
 				$disp .= '<td><br/></td>';
 			}else{
 				$disp .= '<td><a class="iframe" href="'.$this->config->base_url().'cispdf/'.$a->cisID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a></td>';
@@ -931,6 +932,22 @@ class Textmodel extends CI_Model {
 			$arr = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-Rated Allowance');
 		} else if($a == 'otherAllowance'){
 			$arr = array('Medicine Reimbursement','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} else if($a == 'payslipAddAdjustments'){
+			$arr = array('nightDiff',
+				'overTime',
+				'perfIncentive',
+				'specialPHLHoliday',
+				'regPHLHoliday',
+				'regUSHoliday',
+				'regHoliday',
+				'nightDiffAdded',
+				'nightDiffSpecialHoliday',
+				'nightDiffRegHoliday',
+				'jpAdjustment',
+				'OTHoursAdded');
+		} else if($a == 'payslipDeductAdjustments'){
+			$arr = array('regHoursAdded',
+				'payslipAdjustment');
 		} else if( $a == 'last_pay_status' ){
 			$arr_ = array(
 				0 => 'Pending requirements', 
