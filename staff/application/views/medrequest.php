@@ -64,7 +64,7 @@
 					foreach( $docs_url as $key => $url ){
 						$_url = str_replace(FCPATH.'/uploads/', '', $url);
 						$filename = pathinfo($_url);
-						$_url_ = 'attachment.php?u='.urlencode($this->textM->encryptText('medreqeusts')).'&f='.urlencode($this->textM->encryptText($filename['filename'].'.'.$filename['extension']));
+						$_url_ = 'attachment.php?u='.urlencode($this->textM->encryptText('medrequest')).'&f='.urlencode($this->textM->encryptText($filename['filename'].'.'.$filename['extension']));
 						echo '<a href="'. $this->config->base_url() . $_url_ .'" target="_blank" style="margin-right: 5px;"><img src="'. $this->config->base_url() .'css/images/pdf-icon.png" /></a>';
 					}
 				?>
