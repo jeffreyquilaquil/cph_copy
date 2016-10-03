@@ -1366,9 +1366,8 @@ class Timecard extends MY_Controller {
 				$this->payrollM->generatepayroll($info);
 				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
 				if($query->status==1){
-					//disable temp 09-29-16
-					$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
-					//$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+					//$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1); //disable regenerate payslip
+					$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
 				}
 			}			
 		}
