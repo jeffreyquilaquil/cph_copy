@@ -21,16 +21,12 @@
 		width:95%;
 		height: 95%;
 	}
+	input[type='number']{
+		width: 90%;
+	}
 </style>
 
-<?php
-?>
-
-<p>
-	<?php
-
-	?>
-</p>
+<p></p>
 
 <div style="float:right">
 	<select id="slbCareer">
@@ -64,12 +60,11 @@ $hiddenArray = array(
 
 	);
 echo form_hidden($hiddenArray);
-
 echo validation_errors("<span class='error'","</span>");
 ?>
 <table id="tblAddQuestion" style="display:none;border-collapse:collapse">
 	<tr>
-		<td>
+		<td width="20%">
 			<label>Objective Goals</label>
 		</td>
 		<td colspan='5'>
@@ -97,7 +92,7 @@ echo validation_errors("<span class='error'","</span>");
 			<label>Output Format</label>
 		</td>
 		<td colspan='5'>
-		<?php echo form_textarea(array('id'=>'txtFormat', 'name'=>'txtEvaluation', 'required'=> 'required')); ?>
+		<?php echo form_textarea(array('id'=>'txtFormat', 'name'=>'txtFormat', 'required'=> 'required')); ?>
 		</td>
 	</tr>
 	<tr>
@@ -109,13 +104,13 @@ echo validation_errors("<span class='error'","</span>");
 			<label>Weight</label>
 		</td>
 		<td>
-			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeight', 'name'=>'txtWeight', 'required'=> 'required')) ?>
+			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeight', 'name'=>'txtWeight', 'required'=> 'required', 'maxlength'=>2, 'min'=> 1, 'max'=>99)) ?>
 		</td>
-		<td>
+		<td width="10%">
 			<label>Weight Score</label>
 		</td>
 		<td>
-			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeightScore', 'name'=>'txtWeightScore', 'required'=> 'required'))?>
+			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeightScore', 'name'=>'txtWeightScore', 'required'=> 'required', 'maxlength'=>2, 'min'=> 1, 'max'=>99))?>
 		</td>
 	</tr>
 </table>
@@ -138,7 +133,6 @@ echo validation_errors("<span class='error'","</span>");
 
 	<tbody id="tblQuestions">
 		<?php
-#			dd($questions, false);
 			$i = 0;
 			foreach ($questions as $row) {
 				$detail = $row->details;
@@ -155,14 +149,6 @@ echo validation_errors("<span class='error'","</span>");
 		<?php
 			}
 		?>
-		<tr>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td colspan='3' align='right'>
-			
-			</td>
-		</tr>
 	</tbody>
 </table>
 
@@ -177,11 +163,10 @@ echo validation_errors("<span class='error'","</span>");
 	function addQuestion(){
 		$('#tblAddQuestion, #btnSubmit').css('display','table');
 		$('#btnAddQuestion').css('display', 'none');
-
-		//$('#frmQuestion').attr('action','../../addQuestions');
 	}
 
 	function submitForm(submitAction){
+		// Alert if form fields are empty
 		check = true;
 		$("#tblAddQuestion textarea, #tblAddQuestion input").each(function(){
 			if($(this).val() == ""){
@@ -190,9 +175,7 @@ echo validation_errors("<span class='error'","</span>");
 				return false;
 			}
 		});
-
 		
-
 		if(check){
 			var data = "txtObjective="+$('#txtObjective').val()+
 			"&txtEvaluation="+$("#txtEvaluation").val()+
@@ -204,21 +187,35 @@ echo validation_errors("<span class='error'","</span>");
 			'&questionType=technical';
 
 			if(submitAction == 'updateQuestions'){
-				data += "&detailsId="+$("input[name='detailId']").val()+"&question_id="+$('input[name="questionId"]').val()
+				data += "&detailsId="+$("input[name='detailId']").val()+"&questionId="+$('input[name="questionId"]').val()
 			}
+
+			console.log(data);
 
 			$.ajax({
 				type:'POST',
 				data:data,
-				url:'../../'+submitAction
+				url:'../../'+submitAction,
+				dataType:'json'
 			}).done(function(r){
-			//	$('p').html(r);
-				alert("Question list has been updated.");
-				location.reload();
+				alert("The question list has been updated.");
+				if(submitAction == 'addQuestions'){
+					var row = setRow(r);
+					// Add the created data into the questions table
+					$(row).appendTo('#tblQuestions').fadeIn('slow');
+				}
+
+				if(submitAction == 'updateQuestions'){
+					var row = setRow(r);
+					// replace current row with the updated row.
+					$(".question_row[data-question_id='"+r[0].question_id+"']").replaceWith(row).fadeIn('slow');
+				}
+				$("#tblAddQuestion textarea, #tblAddQuestion input").val('');
 			});
-		 }						
+		 }
 	}
 	
+	// Pass data from table row to the form fields.
 	$(document).on('dblclick', '.question_row', function(){
 		$('#btnSubmit').attr('onclick','submitForm("updateQuestions")');
 		$('#btnSubmit').text('Update');
@@ -235,4 +232,27 @@ echo validation_errors("<span class='error'","</span>");
 		$('#tblAddQuestion, #btnSubmit').css('display','table');
 		$('#btnAddQuestion').css('display', 'none');
 	});
+
+	// If input field is greater than 2, remove last character
+	$(document).on('keyup','input[type="number"]',function(){
+		var $field = $(this),
+		val = this.value;
+
+		if(val.length > 2) {
+			val = val.slice(0,2);
+			$field.val(val);
+		}
+	});
+
+	// placeholder for the passed data from the controller.
+	function setRow(r){
+		var row = '<tr class="question_row" data-question_id="'+r[0].question_id+'" data-detail_id="'+r[1][0].detail_id+'" style="background:rgb(93,197,240);">'+
+			'<td class="td goals">'+r[0].goals+'</td>'+
+			'<td class="td expectation">'+r[1][0].expectation+'</td>'+
+			'<td class="td evaluator">'+r[1][0].evaluator+'</td>'+
+			'<td class="td question">'+r[0].question+'</td>'+
+			'<td class="td weight">'+r[1][0].weight+'%</td>'+
+			'<td class="td weight_score">'+r[1][0].weight_score+'%</td></tr>';
+		return row;
+	}
 </script>

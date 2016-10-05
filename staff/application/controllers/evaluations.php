@@ -44,14 +44,13 @@ class Evaluations extends MY_Controller
 			$question_type = 1;
 			$job_type = $this->input->post('posID');
 			$details_array = array(
-				'expectation' => $this->input->post('txtExpectation'),
-				'evaluator' => $this->input->post('txtFormat'),
-				'weight' => $this->input->post('txtWeight'),
-				'weight_score' => $this->input->post('txtWeightScore'),
+				'expectation' => htmlentities($this->input->post('txtExpectation')),
+				'evaluator' => htmlentities($this->input->post('txtFormat')),
+				'weight' => htmlentities($this->input->post('txtWeight')),
+				'weight_score' => htmlentities($this->input->post('txtWeightScore')),
 				);
 
 			array_push($data[1], $details_array);
-		//	$redirect = 'questionnaires/technicalQuestions/'.$job_type;
 		}
 
 		if($type == 'behavioral'){
@@ -68,11 +67,14 @@ class Evaluations extends MY_Controller
 			$evaluator_count = count($evaluator);
 
 			for($i=0;$i<$evaluator_count;$i++){
+				// if index($i) is less than expectation count, then
+				// fetch the indexed value from the expectation array, else
+				// then set the expectation value from the last value of the array to prevent index offset
 				$expectation_val = ($i < $expectation_count ? $expectation[$i] : $expectation[$expectation_count - 1]);
 
 				$details_array = array(
-					'expectation' => $expectation_val,
-					'evaluator' => $evaluator[$i],
+					'expectation' => htmlentities($expectation_val),
+					'evaluator' => htmlentities($evaluator[$i]),
 					'weight' => $weight[$i],
 					'weight_score' => $weight_score[$i]
 				);
@@ -83,29 +85,29 @@ class Evaluations extends MY_Controller
 		$data[0] = array(
 			'question_type' => $question_type,
 			'job_type' => $job_type,
-			'goals' => $this->input->post('txtObjective'),
-			'question' => $this->input->post('txtEvaluation'),
+			'goals' => htmlentities($this->input->post('txtObjective')),
+			'question' => htmlentities($this->input->post('txtEvaluation')),
 			'created' => date('Y-m-d'),
 			);
 
-
-		$this->evaluationsmodel->saveQuestion($data);
+	$result = $this->evaluationsmodel->saveQuestion($data);
+	print json_encode($result);
 	}
 
 	public function updateQuestions(){
 		$type = $this->input->post('questionType');
 		$data[0] = array(
-				'goals' => $this->input->post('txtObjective'),
-				'question' => $this->input->post('txtEvaluation'),
-				'question_id' =>  $this->input->post('question_id'),
+				'goals' => htmlentities($this->input->post('txtObjective')),
+				'question' => htmlentities($this->input->post('txtEvaluation')),
+				'question_id' =>  $this->input->post('questionId'),
 				'updated' => date('Y-m-d')
 			);
 
 		$data[1] = array();
 		if($type == 'technical'){
 			$details_array = array(
-				'expectation' => $this->input->post('txtExpectation'),
-				'evaluator' => $this->input->post('txtFormat'),
+				'expectation' => htmlentities($this->input->post('txtExpectation')),
+				'evaluator' => htmlentities($this->input->post('txtFormat')),
 				'weight' => $this->input->post('txtWeight'),
 				'weight_score' => $this->input->post('txtWeightScore'),
 				'detail_id' => $this->input->post('detailsId')
@@ -123,20 +125,23 @@ class Evaluations extends MY_Controller
 
 			$evaluator_count = count($evaluator);
 			$expectation_count = count($expectation);
+			// Refer the same function from above
 			for($i=0; $i<$evaluator_count;$i++){
 				$expectation_val = ($i < $expectation_count ? $expectation[$i] : $expectation[$expectation_count - 1]);
 
+				// Push by chunks so that evaluations model will just loop and save .
 				$details_array = array(
-					'expectation' => $expectation_val,
-					'evaluator' => $evaluator[$i],
+					'expectation' => htmlentities($expectation_val),
+					'evaluator' => htmlentities($evaluator[$i]),
 					'weight' => $weight[$i],
 					'weight_score' => $weight_score[$i],
 					'detail_id' => $details_id[$i]
 					);
-
 				array_push($data[1], $details_array);
 			}
 		}
-		$this->evaluationsmodel->updateQuestion($data);
+
+		$result = $this->evaluationsmodel->updateQuestion($data);
+		print json_encode($result);
 	}
 }
