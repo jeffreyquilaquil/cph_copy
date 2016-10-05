@@ -139,7 +139,7 @@
 								$file_name = pathinfo($value, PATHINFO_FILENAME);
 								$file_ext = pathinfo($value, PATHINFO_EXTENSION);
 								
-								$href = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('cs_hr_attachments').'&f=';
+								$href = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('cs_hr_attachments')).'&f=';
 								
 									$href .= urlencode($this->textM->encryptText($file_name.'.'.$file_ext));
 									$a = $file_name.'.'.$file_ext;

@@ -639,7 +639,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 <?php /* <!------------------ DISCIPLINARY RECORDS ---------------------> */  ?>
 	<table class="tableInfo" id="disRec">
 		<tr class="trlabel">
-			<td>Disciplinary Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disRec', this)" class="droptext">Show</a>]</td>
+			<td>Attendance Disciplinary Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disRec', this)" class="droptext">Show</a>]</td>
 		</tr>		
 	</table>
 	
