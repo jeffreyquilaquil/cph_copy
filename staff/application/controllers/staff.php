@@ -3843,7 +3843,7 @@ class Staff extends MY_Controller {
 	}
 	
 	public function incidentreports(){
-		$data['content'] = 'incidentreports_';
+		$data['content'] = 'incidentreports';
 		
 		if($this->user!=false){		
 			if($this->access->accessFullHR==false){
@@ -3859,7 +3859,7 @@ class Staff extends MY_Controller {
 	
 	
 	public function incidentreportaction(){
-		$data['content'] = 'incidentreportaction_';
+		$data['content'] = 'incidentreportaction';
 		if($this->user==false){
 			$data['access'] = false;
 		}else{
