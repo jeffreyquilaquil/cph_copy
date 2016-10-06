@@ -12,6 +12,7 @@ class Evaluations extends MY_Controller
 		parent::__construct();
 		$this->load->model('evaluationsmodel');
 		$this->load->helper('form');
+
 	}
 
 	public function index(){
@@ -47,7 +48,6 @@ class Evaluations extends MY_Controller
 				'expectation' => htmlentities($this->input->post('txtExpectation')),
 				'evaluator' => htmlentities($this->input->post('txtFormat')),
 				'weight' => htmlentities($this->input->post('txtWeight')),
-				'weight_score' => htmlentities($this->input->post('txtWeightScore')),
 				);
 
 			array_push($data[1], $details_array);
@@ -61,7 +61,6 @@ class Evaluations extends MY_Controller
 			$expectation = explode('__', $this->input->post('txtExpectation'));
 			$evaluator = explode(',', $this->input->post('txtEvaluator'));
 			$weight = explode(',', $this->input->post('txtWeight'));
-			$weight_score = explode(',', $this->input->post('txtWeightScore'));
 
 			$expectation_count = count($expectation);
 			$evaluator_count = count($evaluator);
@@ -76,7 +75,6 @@ class Evaluations extends MY_Controller
 					'expectation' => htmlentities($expectation_val),
 					'evaluator' => htmlentities($evaluator[$i]),
 					'weight' => $weight[$i],
-					'weight_score' => $weight_score[$i]
 				);
 				array_push($data[1], $details_array);
 			}
@@ -109,7 +107,6 @@ class Evaluations extends MY_Controller
 				'expectation' => htmlentities($this->input->post('txtExpectation')),
 				'evaluator' => htmlentities($this->input->post('txtFormat')),
 				'weight' => $this->input->post('txtWeight'),
-				'weight_score' => $this->input->post('txtWeightScore'),
 				'detail_id' => $this->input->post('detailsId')
 				);
 			array_push($data[1], $details_array);
@@ -120,7 +117,6 @@ class Evaluations extends MY_Controller
 			$expectation = explode('__', $this->input->post('txtExpectation'));
 			$evaluator = explode(',', $this->input->post('txtEvaluator'));
 			$weight = explode(',', $this->input->post('txtWeight'));
-			$weight_score = explode(',', $this->input->post('txtWeightScore'));
 			$details_id = explode(',', $this->input->post('detailsId'));
 
 			$evaluator_count = count($evaluator);
@@ -134,7 +130,6 @@ class Evaluations extends MY_Controller
 					'expectation' => htmlentities($expectation_val),
 					'evaluator' => htmlentities($evaluator[$i]),
 					'weight' => $weight[$i],
-					'weight_score' => $weight_score[$i],
 					'detail_id' => $details_id[$i]
 					);
 				array_push($data[1], $details_array);
@@ -143,5 +138,38 @@ class Evaluations extends MY_Controller
 
 		$result = $this->evaluationsmodel->updateQuestion($data);
 		print json_encode($result);
+	}
+
+	public function saveEvaluation(){
+		$data = $this->input->POST('data');
+		
+		$rows = [];
+		for($i=0;$i < count($data['technical']['detailIdArr']);$i++){
+			$dataArray = [
+				'detail_id'=>$data['technical']['detailIdArr'][$i],
+				'score' => $data['technical']['wtScoreArr'][$i],
+				'remarks' => $data['technical']['remarksArr'][$i],
+				'question_id' => $data['technical']['questionIdArr'][$i],
+				'emp_id' => $data['empId'],
+				'staff_type' => $data['staffType'],
+			];
+			array_push($rows, $dataArray);
+		}
+
+		for($i=0; $i < count($data['behavioral']['detailIdArr']);$i++){
+			$dataArray = [
+				'detail_id'=>$data['behavioral']['detailIdArr'][$i],
+				'score' => $data['behavioral']['wtScoreArr'][$i],
+				'remarks' => $data['behavioral']['remarksArr'][$i],
+				'question_id' => $data['behavioral']['questionIdArr'][$i],
+				'emp_id' => $data['empId'],
+				'staff_type' => $data['staffType'],
+				'timestamp' => date('Y-m-d H:i:s'),
+			];
+			array_push($rows, $dataArray);
+		}
+		// the last parameter determines on what type the user is. 
+		// If TL or rank and file
+		$this->evaluationsmodel->savePerformanceEvaluation($rows, 2);
 	}
 }

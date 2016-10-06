@@ -61,5 +61,20 @@ class Evaluationsmodel extends CI_model{
 		// Fetch the list of positions so that it can be synced with the technical questions
 		return $this->databasemodel->getQueryResults('newPositions', "posID, title",'title != ""','', 'title');
 	}
+
+	public function getStaffEvaluation($staffId){
+		$posID = $this->databasemodel->getSingleField('staffs','position', 'empID='.$staffId);
+		$question['technical'] = $this->getQuestions("technicalQuestions", $posID);
+		$question['behavioral'] = $this->getQuestions('behavioralQuestions', 0);
+
+		return $question;
+	}
+
+	function savePerformanceEvaluation($data){
+		foreach ($data as $row) {
+			$this->databasemodel->insertQuery('staffEvaluationScores', $row);
+		//	print_r($row)."<br>";
+		}
+	}
 }
 ?> 

@@ -1,1 +1,5 @@
-I was here
+<?php
+	
+?>
+
+Management page

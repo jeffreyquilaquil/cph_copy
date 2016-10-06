@@ -30,7 +30,8 @@
 		border-bottom:1px solid black;
 	}
 	.question_row:hover{
-		background:rgb(93,197,240);
+		background:#CCCCCC;
+
 	}
 
 </style>
@@ -72,7 +73,6 @@
 			<th width="30%">Expectation</th>
 			<th width="20%">Evaluator</th>
 			<th>Wt.</th>
-			<th>Wtd. Score</th>
 		</tr>
 	</thead>
 	<tbody id='tbl_tbody'>
@@ -81,7 +81,7 @@
 			foreach ($questions as $row) {
 				$details = $row->details;
 		?>
-			<tr class='question_row' data-id="<?php echo $row->question_id?>">
+			<tr class='question_row td_hover' data-id="<?php echo $row->question_id?>">
 				<td class='td txtGoals'><?php echo $row->goals ?></td>
 				<td class='td txtQuestion'><?php echo $row->question?></td>
 				<td class='td'>
@@ -131,19 +131,7 @@
 							}
 						?>
 					</table>
-				</td>
-				<td class="td">
-					<table>
-						<?php
-							$i = 0;
-							foreach($details as $value){
-								$tdClass = ($i < $row_count ? 'tdBot' : '');
-								echo "<tr><td class='{$tdClass} txtWeightScore row".$i."' data-val='".$value->weight_score."'>".$value->weight_score."%</td></tr>";
-							$i++;
-							}
-						?>
-					</table>
-				</td>			
+				</td>		
 			</tr>
 
 		<?php
@@ -180,7 +168,7 @@ var haha = 1;
 		// and the system will know on what to update and what to insert.
 		detailsIdArr.push("add"); 
 
-		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Leader</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' > </td> <td> <label>Weighted Score</label> <input type='number' class='wtScore row"+i+"' min='1' max='99'> </td> </tr>";
+		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Leader</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' colspan='2'> </td><td></td></tr>";
 	}
 
 	// Set the input field for the text area, also include the evaluator, width, Score width.
@@ -244,17 +232,11 @@ var haha = 1;
 				weight.push($(this).val()); 
 			});
 
-			var weightScore = [];
-			$('.wtScore').each(function(){
-				weightScore.push($(this).val());
-			});
-
 			var data = "txtObjective="+$('#txtObjective').val()+
 			"&txtEvaluation="+$('#txtEvaluation').val()+
 			"&txtExpectation="+expectation+
 			"&txtEvaluator="+evaluator+
 			"&txtWeight="+weight+
-			"&txtWeightScore="+weightScore+
 			'&questionType=behavioral';
 
 			if(submitType == 'updateQuestions'){
@@ -291,7 +273,6 @@ var haha = 1;
 	function passDataToInput(x, row, addExpectation){
 		$('.slbEvaluator.row'+x).val($(row).find('.txtEvaluator.row'+x).data('val'));
 		$('.wt.row'+x).val($(row).find('.txtWeight.row'+x).data('val'));
-		$('.wtScore.row'+x).val($(row).find('.txtWeightScore.row'+x).data('val'));
 		if (addExpectation) {
 
 			$('.txtExpectation.row'+x).val($(row).find('.txtExpectationtxt.row'+x).text());
@@ -358,7 +339,7 @@ var haha = 1;
 
 	function setRow(r){
 		var evaluatorArr = ['Team Leader', 'Leaders and Clients', 'Immediate Supervisor'];
-		var row = '<tr class="question_row" data-id="'+r[0].question_id+'" style="background:rgb(93,197,240);">>'+
+		var row = '<tr class="question_row" data-id="'+r[0].question_id+'" style="background:#a9fb88;">>'+
 		 '<td class="td txtGoals">'+r[0].goals+'</td>'+
 		 '<td class="td txtQuestion">'+r[0].question+'</td>'+
 		 '<td class="td">'+
@@ -402,13 +383,7 @@ var haha = 1;
 			row += "<tr><td class='"+tdClass+" txtWeight row"+i+"' data-val='"+r[1][i].weight+"'>"+r[1][i].weight+"</td></tr>";
 		}
 		row += "</table></td>";
-
-		row += '<td class="td"><table>';
-		for(i = 0; i < r[1].length;i++){
-			tdClass = (i < row_count ? 'tdBot' : '');
-			row += '<tr><td class="'+tdClass+' txtWeightScore row'+i+'" data-val="'+r[1][i].weightScore+'">'+r[1][i].weight_score+'</td></tr>';
-		}
-		row += '</table></td></tr>';
+		row += '</tr>';
 		return row;
 	}
 

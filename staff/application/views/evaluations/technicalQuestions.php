@@ -12,7 +12,7 @@
 		padding: 0px 0px 0px 0px;
 	}
 	.question_row:hover{
-		background:rgb(93,197,240);
+		background:#CCCCCC;
 	}
 	#tblAddQuestion td{
 		height: 40px;
@@ -106,12 +106,6 @@ echo validation_errors("<span class='error'","</span>");
 		<td>
 			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeight', 'name'=>'txtWeight', 'required'=> 'required', 'maxlength'=>2, 'min'=> 1, 'max'=>99)) ?>
 		</td>
-		<td width="10%">
-			<label>Weight Score</label>
-		</td>
-		<td>
-			<?php echo form_input(array('type'=>'number', 'id'=>'txtWeightScore', 'name'=>'txtWeightScore', 'required'=> 'required', 'maxlength'=>2, 'min'=> 1, 'max'=>99))?>
-		</td>
 	</tr>
 </table>
 <button type="button" class='btnclass' id='btnSubmit' style='float:right;display:none;' onclick='submitForm("addQuestions")'">Submit</button>
@@ -127,7 +121,6 @@ echo validation_errors("<span class='error'","</span>");
 			<th>Output Format</th>
 			<th>Evaluation Question</th>
 			<th>Wt.</th>
-			<th>Wtd. Score</th>
 		</tr>
 	</thead>
 
@@ -144,7 +137,6 @@ echo validation_errors("<span class='error'","</span>");
 				<td class='td evaluator'><?php echo $detail[$i]->evaluator?></td>
 				<td class='td question'><?php echo $row->question?></td>
 				<td class='td weight'><?php echo $detail[$i]->weight?>%</td>
-				<td class='td weight_score'><?php echo $detail[$i]->weight_score?>%</td>
 			</tr>
 		<?php
 			}
@@ -182,7 +174,6 @@ echo validation_errors("<span class='error'","</span>");
 			"&txtExpectation="+$("#txtExpectation").val()+
 			"&txtFormat="+$("#txtFormat").val()+
 			"&txtWeight="+$("#txtWeight").val()+
-			"&txtWeightScore="+$("#txtWeightScore").val()+
 			"&posID="+$("input[name='posID']").val()+
 			'&questionType=technical';
 
@@ -225,7 +216,6 @@ echo validation_errors("<span class='error'","</span>");
 		$('#txtEvaluation').val($(this).find('.question').text());
 		$('#txtFormat').val($(this).find('.evaluator').text());
 		$('#txtWeight').val($(this).find('.weight').text().slice(0,-1));
-		$('#txtWeightScore').val($(this).find('.weight_score').text().slice(0,-1));
 		$("input[name='detailId']").val($(this).data('detail_id'));
 		$('input[name="questionId"]').val($(this).data('question_id'));
 
@@ -246,13 +236,12 @@ echo validation_errors("<span class='error'","</span>");
 
 	// placeholder for the passed data from the controller.
 	function setRow(r){
-		var row = '<tr class="question_row" data-question_id="'+r[0].question_id+'" data-detail_id="'+r[1][0].detail_id+'" style="background:rgb(93,197,240);">'+
+		var row = '<tr class="question_row" data-question_id="'+r[0].question_id+'" data-detail_id="'+r[1][0].detail_id+'" style="background:#a9fb88;">'+
 			'<td class="td goals">'+r[0].goals+'</td>'+
 			'<td class="td expectation">'+r[1][0].expectation+'</td>'+
 			'<td class="td evaluator">'+r[1][0].evaluator+'</td>'+
 			'<td class="td question">'+r[0].question+'</td>'+
-			'<td class="td weight">'+r[1][0].weight+'%</td>'+
-			'<td class="td weight_score">'+r[1][0].weight_score+'%</td></tr>';
+			'<td class="td weight">'+r[1][0].weight+'%</td>';
 		return row;
 	}
 </script>
