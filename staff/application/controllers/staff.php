@@ -3507,9 +3507,11 @@ class Staff extends MY_Controller {
 											'for37' => $_POST['bir37'],
 											'for38' => $_POST['bir38'],
 											'for39' => $_POST['bir39'],
+											'for40' => $_POST['bir40'],
 											'for41' => $_POST['bir41'],
 											'for42' => $_POST['bir42'],
 											'for47A' => $_POST['bir47a'],
+											'for51' => $_POST['bir51'],
 											'for55' => $_POST['bir55'],
 										);
 						$this->dbmodel->insertQuery('tcPrevious2316', $insertBIR);
@@ -3841,14 +3843,14 @@ class Staff extends MY_Controller {
 	}
 	
 	public function incidentreports(){
-		$data['content'] = 'incidentreports';
+		$data['content'] = 'incidentreports_';
 		
 		if($this->user!=false){		
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
-				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateSubmitted DESC');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, docs,empID_fk, alias, supervisor,dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk ', 'dateSubmitted DESC');
 			}
 		}
 		
@@ -3857,7 +3859,7 @@ class Staff extends MY_Controller {
 	
 	
 	public function incidentreportaction(){
-		$data['content'] = 'incidentreportaction';
+		$data['content'] = 'incidentreportaction_';
 		if($this->user==false){
 			$data['access'] = false;
 		}else{
@@ -3867,17 +3869,33 @@ class Staff extends MY_Controller {
 			
 			if(!empty($_POST)){
 				if($_POST['submitType']=='changeStatus'){
-					$insArr['status'] = $_POST['status'];
-					$insArr['statusNote'] = $_POST['statusNote'];
-					$insArr['staffReportViolation_fk'] = $id;
-					$insArr['updatedBy'] = $this->user->username;
-					$insArr['dateUpdated'] = date('Y-m-d H:i:s');
-					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
-					
-					if(is_numeric($insArr['status'])){
-						$this->dbmodel->updateQueryText('staffReportViolation', 'status="'.$insArr['status'].'"', 'reportID="'.$id.'"');
+					$continue = TRUE;
+					$isUploaded = '';
+
+					if($_POST['status'] == 3){
+						$isUploaded = $this->commonM->uploadFile($_FILES, 'uploads/staffs/violationreported/', 'IR-'.$id.'-'.date('Y-m-d'));
+						if( $isUploaded ){
+							$isUploaded = ', docs="'.$isUploaded.'"';
+						}
+						else{
+							$continue = FALSE;
+							echo "<script>alert('Please upload a PDF File.');</script>";
+						}
 					}
-					$data['actionsaved'] = true;
+
+					if($continue){
+						$insArr['status'] = $_POST['status'];
+						$insArr['statusNote'] = $_POST['statusNote'];
+						$insArr['staffReportViolation_fk'] = $id;
+						$insArr['updatedBy'] = $this->user->username;
+						$insArr['dateUpdated'] = date('Y-m-d H:i:s');
+						
+						if(is_numeric($insArr['status'])){
+							$this->dbmodel->updateQueryText('staffReportViolation', 'status="'.$insArr['status'].'"'.$isUploaded, 'reportID="'.$id.'"');
+						}
+						$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
+						$data['actionsaved'] = true;
+					}
 				}else if($_POST['submitType']=='editwhere'){
 					$this->dbmodel->updateQueryText('staffReportViolation', '`where`="'.$_POST['where'].'"', 'reportID="'.$id.'"');
 					

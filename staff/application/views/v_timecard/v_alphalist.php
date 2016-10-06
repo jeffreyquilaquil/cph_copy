@@ -23,7 +23,8 @@
 			<li><label from="to_month">to</label></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'to_month', $to_month, '', '', 'id="to_month"', $monthFullArray); ?></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'to_year', $to_year, '', '', 'id="to_year"', $yearFullArray); ?></li>
-			<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Submit</button></li>
+			<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Active Employees</button></li>
+			<li><button name="btnSubmit_withprev" value="SubmitPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
 		</ul>
 	</form>
 	

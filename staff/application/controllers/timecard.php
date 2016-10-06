@@ -1523,7 +1523,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1656,7 +1656,6 @@ class Timecard extends MY_Controller {
 
 				//post
 				if( isset($_POST) AND !empty($_POST) ){
-					
 					if( isset($_POST['which_report']) AND $_POST['which_report'] == 'gen_alphalist' ){
 						$from_ = date('Y-m-d', strtotime( $data['from_year'].'-'.$data['from_month'].'-01'  ) );
 						$to_ = date('Y-m-d', strtotime( $data['to_year'].'-'.$data['to_month'].'-31' ) );
@@ -1669,9 +1668,17 @@ class Timecard extends MY_Controller {
 
 						$data = array();
 						//check which to pull from
+						$fromprevious = ' AND empID NOT IN (SELECT empID_fk FROM tcPrevious2316) ';
+						$frompreviousLeftJoin = '';
+						$withPrev = FALSE;
+						if( isset($_POST['btnSubmit_withprev']) ){
+							$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
+							$frompreviousLeftJoin = ' LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk  ';
+							$withPrev = TRUE;
+						}
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
-							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'active = 1 AND office = "PH-Cebu"', 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk' , 'lname ASC');
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;
 							break;
@@ -1691,7 +1698,11 @@ class Timecard extends MY_Controller {
 						if( !$is_active ){
 							$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
 						}else{
-							$this->payrollM->getAlphaListForAllEmployee( $data['dataQuery'], $filename);
+							if($withPrev){
+								$this->payrollM->getAlphaListForEmployeeWithPrevious( $data['dataQuery'], $filename);
+							}else{
+								$this->payrollM->getAlphaListForAllEmployee( $data['dataQuery'], $filename);
+							}
 						}
 					}
 				}

@@ -1659,8 +1659,7 @@ class Payrollmodel extends CI_Model {
 	}
 
 	//bir alpha list which is tied to pdfBIR
-	public function getAlphaList( $dataQuery, $filename, $startDate, $endDate, $is_active = FALSE ){
-		
+	public function getAlphaList( $dataQuery, $filename, $startDate, $endDate, $is_active = FALSE ){	
 		require_once('includes/excel/PHPExcel/IOFactory.php');
 		$fileType = 'Excel5';
 		$fileName = 'includes/templates/bir_alphalist_.xls';
@@ -1908,13 +1907,103 @@ class Payrollmodel extends CI_Model {
 		$objWriter->save('php://output');
 	}
 
+	public function getAlphaListForEmployeeWithPrevious($data, $outputFile){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/alphalist_with_previous.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$sequence = 1;
+		$cell_counter = 12;
+		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
+
+		foreach ($data_items as $key => $value) {
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
+			$totalGross = 0;
+			$forAA = 0;
+
+			foreach ($value as $l => $v) {
+				$k = $l;
+				switch ($l) {
+					case 'F': $totalGross += str_replace(',', '', $v);
+					case 'G': $k = 'P'; break;
+					case 'H': $k = 'Q'; break;
+					case 'L': $k = 'T'; break;
+					case 'M': $k = 'V'; break;
+					case 'N': $k = 'W'; break;
+					case 'R': $k = 'X'; break;
+					case 'S': $k = 'Y'; break;
+					case 'T': $k = 'Z'; break;
+					case 'U': $k = 'W'; break;
+					case 'V': $k = 'AC'; break;
+					case 'W': $k = 'AD'; break;
+					case 'AC': $k = 'AI'; break;
+					case 'AE' : $k = 'AI'; break;
+				}
+				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
+			}
+			$totalGross += $data[$key]->for21;
+
+			$forAB = $data[$key]->for55 + str_replace(',', '', $value['U']);
+
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totalGross );
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $data[$key]->for37 );
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data[$key]->for38 );
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $data[$key]->for39 );
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $data[$key]->for40 );
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $data[$key]->for41 );
+			$objPHPExcel->getActiveSheet()->setCellValue('L'.$cell_counter, $data[$key]->for42 );
+			$objPHPExcel->getActiveSheet()->setCellValue('M'.$cell_counter, $data[$key]->for47A );
+			$objPHPExcel->getActiveSheet()->setCellValue('N'.$cell_counter, $data[$key]->for51 );
+			$objPHPExcel->getActiveSheet()->setCellValue('O'.$cell_counter, $data[$key]->for55 );
+			$objPHPExcel->getActiveSheet()->setCellValue('AA'.$cell_counter, $value['U'] );
+			$objPHPExcel->getActiveSheet()->setCellValue('AB'.$cell_counter, $forAB );
+			$objPHPExcel->getActiveSheet()->setCellValue('AH'.$cell_counter, $data[$key]->for31 );
+
+			//compute taxDue
+			$forAG = 0;
+			$deductedTax = 0;
+
+			if($forAB > $value['W']){
+				$deductedTax = $forAB - str_replace(',', '', $value['W']);
+				$forAG = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+
+			$objPHPExcel->getActiveSheet()->setCellValue('AF'.$cell_counter, $deductedTax );
+			$objPHPExcel->getActiveSheet()->setCellValue('AG'.$cell_counter, $forAG );
+
+			$colLetter = 'AJ';
+			$AE = str_replace(',', '', $value['AE']);
+			$colVal = ( $forAG  - ($data[$key]->for31+ $AE) );
+
+			$forAL = $AE + $colVal;
+
+			if($colVal < 0){
+				$forAL = $AE-$colVal;
+				$colLetter = -1*($colVal);
+			}
+
+			$objPHPExcel->getActiveSheet()->setCellValue($colLetter.$cell_counter, $colVal );
+			$objPHPExcel->getActiveSheet()->setCellValue('AL'.$cell_counter, $forAL );
+
+			$sequence++;
+			$cell_counter++;
+		}
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
 	public function pdfActiveBIR($info){
 		$activeBIR = $this->payrollM->getTotalComputationForAllEmployee($info);
 		$staffInfo = $info[0];
-
-		// echo "<pre>";
-		// var_dump($activeBIR);
-		// exit();
 
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
@@ -2032,17 +2121,34 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(95, 236);
 		$pdf->Cell(48, 5, $this->textM->convertNumFormat($activeBIR[0]['N']), 0,2,'R');
 
+
+		$n23 = $n25 = $activeBIR[0]['U'];
+		$n24 = 0;	
+		$n29 = $activeBIR[0]['AB'];
+
+		if( $staffInfo->for55 > 0){
+			//recompute tax due stuffs
+			$n24 = $staffInfo->for55;
+			$n25 = str_replace(',', '', $n23)+$n24;
+
+			if($n25 > $staffInfo->taxExemption){
+				$deductedTax = $n25 - $staffInfo->taxExemption;//number 55 and 26 in BIR2316
+				$n29 = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+		}			
+
 		//FOR 23
 		$pdf->setXY(95, 242);
-		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['U']), 0,2,'R');
-		
+		$pdf->Cell(48, 5, $this->formatNum($n23), 0,2,'R');
+
+
 		//FOR 24
 		$pdf->setXY(95, 248);
-		$pdf->Cell(48, 5, $this->formatNum(0), 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n24), 0,2,'R');
 
 		//FOR 25
 		$pdf->setXY(95, 254);
-		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['U']), 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($n25), 0,2,'R');		
 		//FOR 26
 		$pdf->setXY(95, 260);
 		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['W']), 0,2,'R');
@@ -2082,19 +2188,24 @@ class Payrollmodel extends CI_Model {
 
 		//FOR 29, 30A, 30B, and 31
 		$pdf->setXY(95, 278);
-		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['AB']) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n29) , 0,2,'R');
+
+
+		$n30a = $activeBIR[0]['AC'];
+		$n30b = $staffInfo->for31;
+		$n31 = str_replace(',', '', $n30a)+$n30b;
 
 		//FOR 30A
 		$pdf->setXY(95, 285);
-		$pdf->Cell(48, 5, $this->formatNum(0) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n30a) , 0,2,'R');
 
 		//FOR 30B
 		$pdf->setXY(95, 292);
-		$pdf->Cell(48, 5, $this->formatNum(0) , 0,2,'R');		
+		$pdf->Cell(48, 5, $this->formatNum($staffInfo->for31) , 0,2,'R');		
 
 		//FOR 31
 		$pdf->setXY(95, 298);
-		$pdf->Cell(48, 5, $this->formatNum(0) , 0,2,'R');
+		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
 
 		//FOR 37
 		$pdf->setXY(194, 100);
@@ -2249,42 +2360,12 @@ class Payrollmodel extends CI_Model {
 
 			$totalTaxableIncome = $basicPay + $totalAdjustment + $otherSalary;
 
-
-
 			$items[$empCount]['F'] = $this->payrollM->formatNum($totalNonTax+$totalTaxableIncome);
 			$items[$empCount]['G'] = $this->payrollM->formatNum($month13);
-			
-			if( $value->active == 0 ){
-				$r = $this->dbmodel->getSingleInfo('tcLastPay', 'addOns, addLeave, monthlyRate', 'empID_fk ='.$value->empID);
-				$leaveCreditsLeft = $r->addLeave;
-				$salary = $r->monthlyRate;
-				$addOns = $r->addOns;
-				
-				$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
-				$leaveAmount = $dailyRate*$leaveCreditsLeft;
-
-				if(!empty($addOns)){
-					$addArr = unserialize(stripslashes($addOns));
-					foreach($addArr AS $add){
-						if(isset($add[0]) && isset($add[1]) ) {
-							if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name, tcPayslipAddons_Type, tcPayslipAddons_itemType', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
-								if($rrr->tcPayslipAddons_itemType == 'bonus')
-									$addOnBonus += $add[1];
-
-								if($rrr->tcPayslipAddons_itemType == 'sppDeduction')
-									$sppDeduction += $add[1];
-							}
-						}
-					}
-				}
-			}
-
 			
 			$items[$empCount]['H'] = $this->payrollM->formatNum($totalDeminimis);
 			$items[$empCount]['L'] = $this->payrollM->formatNum($spp);
 			$items[$empCount]['M'] = $this->payrollM->formatNum($totalSalariesAndOtherForms);
-
-			
 
 			$items[$empCount]['N'] = $this->payrollM->formatNum($totalNonTax);
 
