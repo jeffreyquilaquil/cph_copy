@@ -1366,8 +1366,9 @@ class Timecard extends MY_Controller {
 				$this->payrollM->generatepayroll($info);
 				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
 				if($query->status==1){
-					//$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1); //disable regenerate payslip
-					$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+					//disable temp 09-29-16
+					$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
+					//$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
 				}
 			}			
 		}
@@ -1522,7 +1523,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
