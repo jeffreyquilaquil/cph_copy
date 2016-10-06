@@ -934,7 +934,7 @@ class Staffmodel extends CI_Model {
 			
 			$eRateAve = $erate/$rnum;
 			$sRateAve = $srate/$rnum;
-			
+			$fscore = 0;
 			if($row->selfRating!='' && $row->supervisorsRating!=''){
 				//averages
 				$pdf->setXY($fourth_col, 177);
