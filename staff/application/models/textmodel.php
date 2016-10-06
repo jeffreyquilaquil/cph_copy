@@ -838,6 +838,8 @@ class Textmodel extends CI_Model {
 					1 => 'New',
 					2 => 'Printed',
 					3 => 'Signed incident report uploaded',
+					11 => 'HR Action',
+					12 => 'Immediate Supervisor Action',
 					4 => 'NTE printed',
 					5 => 'Signed NTE uploaded',
 					6 => 'Explanation Received',
