@@ -27,6 +27,26 @@ class Commonmodel extends CI_Model {
 		
 		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
 	}
+
+	//Upload function only upload file to server.
+	//If you want to insert something to a table, do it in the controller
+	public function uploadFile($file, $target, $fileName){
+		//extract extension
+		$ext = explode('.', $file['signed_doc']['name']);
+		//create the new filename
+		$newFileName = $fileName.'.'.end($ext);
+		$complete = '';
+
+		// if( $ext == 'pdf'){
+			move_uploaded_file($file['signed_doc']['tmp_name'], $target.$newFileName);
+			$complete = $newFileName;
+			return $complete;
+		// }
+		// else{
+		// 	return FALSE;
+		// }
+		exit();
+	}
 		
 	function photoResizer($source_image, $destination_filename, $width = 200, $height = 150, $quality = 70, $crop = true){
 		if( ! $image_data = getimagesize( $source_image ) ){
@@ -475,7 +495,7 @@ class Commonmodel extends CI_Model {
 		$date2 = date_create( $date2 );	
 
 		$diff = date_diff( $date1, $date2 );
-		
+
 		$return =  $diff->format( $format );
 		return $return;//date('H:i:s', strtotime($return));
 	}
