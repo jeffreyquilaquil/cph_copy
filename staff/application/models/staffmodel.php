@@ -951,14 +951,10 @@ class Staffmodel extends CI_Model {
 				$pdf->setXY($fourth_col + 8, 188);
 				$pdf->Write(0, $fscore);
 				
-				$pdf->setXY($fourth_col - 3, 191.5);
+				$pdf->setXY($fourth_col - 6, 191.5);
 				$pdf->Write(0, $this->staffM->coachingScore($fscore));
 								
-				if(!empty($row->supervisorsRatingNotes)){
-					$pdf->SetFont('Arial','',8);
-					$pdf->setXY(202, 113);
-					$pdf->MultiCell(58, 4, $row->supervisorsRatingNotes,0,'L',false);	
-				}
+				
 				
 				
 				/* //recommendation
@@ -984,6 +980,12 @@ class Staffmodel extends CI_Model {
 			
 			$pdf->setXY(183, 60);
 			$pdf->Write(0, $fscore);
+
+			if(!empty($row->supervisorsRatingNotes)){
+					$pdf->SetFont('Arial','',8);
+					$pdf->setXY(143, 85);
+					$pdf->MultiCell(55, 4, $row->supervisorsRatingNotes,0,'L',false);	
+				}
 
 			//acknowledgements
 			$pdf->SetFont('Arial','B',10);
