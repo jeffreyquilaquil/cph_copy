@@ -1508,18 +1508,17 @@ class Payrollmodel extends CI_Model {
 			$otherSalary = ($totalSalariesAndOtherForms + $n37) - 82000;
 		}
 		
-		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp+$totalSalariesAndOtherForms);
+		$tnt = $n37+$totalDeminimis+$spp+$totalSalariesAndOtherForms;
+		$n23 = $tsal+$totalAdjustment;
 
 		//FOR 21
 		$pdf->setXY(94, 229);
-		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$totalIncome+$leaveAmount+$addOnBonus),0,2,'R');
+		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$tnt+$n23),0,2,'R');
 
 		//FOR 22
 		$pdf->setXY(95, 236);
 		$pdf->Cell(48, 5, $tnt, 0,2,'R');
 
-		
-		$n23 = $tsal+$totalAdjustment;
 
 		//FOR 23
 		$pdf->setXY(95, 242);
