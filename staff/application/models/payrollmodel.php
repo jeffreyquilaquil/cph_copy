@@ -1517,7 +1517,7 @@ class Payrollmodel extends CI_Model {
 
 		//FOR 22
 		$pdf->setXY(95, 236);
-		$pdf->Cell(48, 5, $tnt, 0,2,'R');
+		$pdf->Cell(48, 5,  $this->textM->convertNumFormat($tnt), 0,2,'R');
 
 
 		//FOR 23
