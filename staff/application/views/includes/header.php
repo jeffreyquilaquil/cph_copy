@@ -163,7 +163,7 @@
 					
 					}
 
-					if( $this->user->dept== 'IT' ){
+					if( $this->user->dept == 'IT' ){
 						echo '<li '.(($content=='evaluations')?'class="current"':'').'><a href="'.$this->config->base_url().'evaluations/">Evaluations Management</a></li>';	
 					}
 					
@@ -194,7 +194,12 @@
 				<ul class="dropdown">
 					<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 					<li <?= (($content=='organizationalchart')?'class="current"':'') ?>><a href="<?= $this->config->base_url().'organizationalchart/' ?>">Organizational Chart</a></li>
-					<li><a href="<?= $this->config->base_url() ?>evaluations/">Evaluations</a></li>
+					<?php 
+						if( $this->user->dept == 'IT' ){
+							echo '<li><a href="<?= $this->config->base_url() ?>evaluations/">Evaluations</a></li>';
+						}
+					 ?>
+					
 			<?php
 				if($this->access->accessFullHRFinance==true || $this->user->level>0){
 					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';
