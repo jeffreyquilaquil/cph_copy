@@ -130,7 +130,7 @@
 				echo '<div class="message" style="padding: 8px; text-align: justify;">';
 					echo $conversation->cs_msg_text;
 				echo '</div>';
-					$attachments = json_decode( $conversation->cs_msg_attachment );
+					$attachments = json_decode( stripslashes($conversation->cs_msg_attachment) );
 					
 					if( isset($attachments) AND !empty($attachments) ){
 						echo '<div class="attachments" style="padding: 5px;">';
