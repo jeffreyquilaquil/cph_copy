@@ -32,8 +32,14 @@
 	<select id="slbCareer">
 		<?php
 
+			if(is_numeric($this->uri->segment(3))){
+				$careerType = $this->uri->segment(3);
+			}else{
+				$careerType = $this->uri->segment(4);
+			}
+
 			foreach ($positions as $value) {
-				$selected = ($value->posID == $this->uri->segment(4) ? 'selected' : '');
+				$selected = ($value->posID == $careerType ? 'selected' : '');
 				echo "<option value='".$value->posID."' {$selected}>".$value->title."</option>";
 			}
 		?>
@@ -53,7 +59,7 @@
 echo form_open("evaluations/addQuestions", array('name'=> 'frmQuestion', 'id'=>'frmQuestion', 'onsubmit'=> ''));
 $hiddenArray = array(
 	$csrf['name']=>$csrf['hash'],
-	'posID'=>$this->uri->segment(4),
+	'posID'=>$careerType,
 	'questionId'=>'',
 	'detailId'=>'',
 	'questionType'=>'technical',
@@ -135,11 +141,11 @@ echo validation_errors("<span class='error'","</span>");
 				<td class='td goals'><?php echo $row->goals?></td>
 				<td class='td expectation'><?php echo $detail[$i]->expectation;?></td>
 				<td class='td evaluator'><?php echo $detail[$i]->evaluator?></td>
-				<td class='td question'><?php echo $row->question?></td>
+				<td class='td question'><?php echo $detail[$i]->question?></td>
 				<td class='td weight'><?php echo $detail[$i]->weight?>%</td>
 			</tr>
 		<?php
-			}
+			} 
 		?>
 	</tbody>
 </table>
@@ -170,7 +176,7 @@ echo validation_errors("<span class='error'","</span>");
 		
 		if(check){
 			var data = "txtObjective="+$('#txtObjective').val()+
-			"&txtEvaluation="+$("#txtEvaluation").val()+
+			"&txtQuestion="+$("#txtEvaluation").val()+
 			"&txtExpectation="+$("#txtExpectation").val()+
 			"&txtFormat="+$("#txtFormat").val()+
 			"&txtWeight="+$("#txtWeight").val()+
@@ -181,14 +187,13 @@ echo validation_errors("<span class='error'","</span>");
 				data += "&detailsId="+$("input[name='detailId']").val()+"&questionId="+$('input[name="questionId"]').val()
 			}
 
-			console.log(data);
-
 			$.ajax({
 				type:'POST',
 				data:data,
 				url:'../../'+submitAction,
 				dataType:'json'
 			}).done(function(r){
+				console.log(r)
 				alert("The question list has been updated.");
 				if(submitAction == 'addQuestions'){
 					var row = setRow(r);
@@ -202,6 +207,8 @@ echo validation_errors("<span class='error'","</span>");
 					$(".question_row[data-question_id='"+r[0].question_id+"']").replaceWith(row).fadeIn('slow');
 				}
 				$("#tblAddQuestion textarea, #tblAddQuestion input").val('');
+			}).error(function(e){
+			//	console.log(e);
 			});
 		 }
 	}
@@ -240,7 +247,7 @@ echo validation_errors("<span class='error'","</span>");
 			'<td class="td goals">'+r[0].goals+'</td>'+
 			'<td class="td expectation">'+r[1][0].expectation+'</td>'+
 			'<td class="td evaluator">'+r[1][0].evaluator+'</td>'+
-			'<td class="td question">'+r[0].question+'</td>'+
+			'<td class="td question">'+r[1][0].question+'</td>'+
 			'<td class="td weight">'+r[1][0].weight+'%</td>';
 		return row;
 	}

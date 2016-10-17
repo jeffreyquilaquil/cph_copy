@@ -22,7 +22,7 @@ class Evaluationsmodel extends CI_model{
 		 	$data[1][$x] += ['detail_id'=>$id];
 		 	$x++;
 		}
-
+	#return "pass";
 		return $data;
 	}
 
@@ -62,6 +62,12 @@ class Evaluationsmodel extends CI_model{
 		return $this->databasemodel->getQueryResults('newPositions', "posID, title",'title != ""','', 'title');
 	}
 
+	public function saveEvaluationDate($data){
+		$data['evalDate'] = date('Y-m-d', strtotime($data['evalDate']));
+		$this->databasemodel->insertQuery("staffEvalNotifications", $data);
+		#	dd($data, false);
+	}
+
 	public function getStaffEvaluation($staffId){
 		$posID = $this->databasemodel->getSingleField('staffs','position', 'empID='.$staffId);
 		$question['technical'] = $this->getQuestions("technicalQuestions", $posID);
@@ -70,11 +76,31 @@ class Evaluationsmodel extends CI_model{
 		return $question;
 	}
 
-	function savePerformanceEvaluation($data){
+	function savePerformanceEvaluation($data, $data2){
+		if($data2['staffType'] == 2){
+			$this->databasemodel->updateQueryText('staffEvaluationNotif', 'ansDate ="'.date('Y-m-d').'"', 'empId='.$data2['empId'].' AND evaluatorId='.$data2['evaluator']);
+
+		}
 		foreach ($data as $row) {
 			$this->databasemodel->insertQuery('staffEvaluationScores', $row);
 		//	print_r($row)."<br>";
 		}
+		
 	}
+
+	function getEvaluationScore($questionType, $jobType, $empID, $staffType){
+		$questions = [];
+
+		$query = "SELECT question_id, goals FROM evalQuestions WHERE question_type = {$questionType} AND job_type = {$jobType}";
+		$questions = $this->databasemodel->getSQLQueryResults($query);
+		for($i = 0; $i < count($questions); $i++){
+			$query = "SELECT eqd.detail_id, expectation, evaluator, weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID}";
+			$questions[$i]->details = $this->databasemodel->getSQLQueryResults($query);
+		}
+	#	dd($questions);
+		return $questions;
+	}
+
+
 }
 ?> 

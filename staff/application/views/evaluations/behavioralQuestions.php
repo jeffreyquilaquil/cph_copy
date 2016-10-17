@@ -31,7 +31,6 @@
 	}
 	.question_row:hover{
 		background:#CCCCCC;
-
 	}
 
 </style>
@@ -77,20 +76,42 @@
 	</thead>
 	<tbody id='tbl_tbody'>
 		<?php
-			$evaluatorArr = ['Team Leader', 'Leaders and Clients', 'Immediate Supervisor'];
+			$evaluatorArr = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 			foreach ($questions as $row) {
 				$details = $row->details;
 		?>
 			<tr class='question_row td_hover' data-id="<?php echo $row->question_id?>">
 				<td class='td txtGoals'><?php echo $row->goals ?></td>
-				<td class='td txtQuestion'><?php echo $row->question?></td>
+				<td class='td'>
+					<table>
+						<?php 
+							$question = null;
+							$i = 0;	
+							$details_count = count($details);
+							$row_count = $details_count-1;
+
+							$questionArr = [];
+							foreach ($details as $value) {
+								array_push($questionArr, $value->question);
+							}
+							$questionArr = array_unique($questionArr);
+							$questionCount = count($questionArr) -1;
+
+							foreach ($questionArr as $question_val) {
+								$tdClass = ($i < $questionCount ? 'tdBot' : '');
+
+								echo "<tr><td class='{$tdClass} question row".$i."' >".$question_val."</td></tr>";
+								$i++;
+							}
+						 ?>
+					</table>
+				</td>
 				<td class='td'>
 					<table>
 					<?php
 						 $expectation = null;
 						 $i = 0;	
 						$details_count = count($details);
-						$row_count = $details_count-1;
 
 						$expectationArr = [];
 						foreach ($details as $value) {
@@ -166,18 +187,19 @@ var haha = 1;
 		// Whenever there is an update, and new rows have to be added,
 		// this function executes to add into the number of detail id's so it can be parsed
 		// and the system will know on what to update and what to insert.
-		detailsIdArr.push("add"); 
-
-		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Leader</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' colspan='2'> </td><td></td></tr>";
+		if(i != 0){
+			detailsIdArr.push("add"); 
+		}
+		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Mate</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' colspan='2'> </td><td></td></tr>";
 	}
 
 	// Set the input field for the text area, also include the evaluator, width, Score width.
 	function addInlineExpectation(i){
-		return "<tr> <td>Expectation</td> <td colspan='3'><textarea cols='106' class='txtExpectation row"+i+" forSave'></textarea></td> </tr>"+addInlineEvaluator(i);
+		return "<tr><td><label>Evaluation Question</label></td> <td colspan='3'><textarea cols='106' class='txtQuestion row"+i+"'></textarea></td></tr><tr>  <td>Expectation</td> <td colspan='3'><textarea cols='106' class='txtExpectation row"+i+" forSave'></textarea></td> </tr>"+addInlineEvaluator(i);
 	}
 
 	function addQuestion(){
-		var firstRow = '<tr> <td><label>Objective Goals</label></td> <td colspan="3"><textarea cols="106" id="txtObjective"></textarea></td> </tr> <tr> <td><label>Evaluation Question</label></td> <td colspan="3"><textarea cols="106" id="txtEvaluation"></textarea></td> </tr>';
+		var firstRow = '<tr> <td><label>Objective Goals</label></td> <td colspan="3"><textarea cols="106" id="txtObjective"></textarea></td> </tr> <tr> </tr>';
 
 		firstRow += addInlineExpectation(0);
 		
@@ -216,6 +238,12 @@ var haha = 1;
 		});
 
 		if(check){
+			var question = [];
+			$('.txtQuestion').each(function(){
+				question.push($(this).val());
+			});
+			question = question.join('__');
+
 			var expectation = [];
 			$('.forSave').each(function(){
 				expectation.push($(this).val());
@@ -233,7 +261,7 @@ var haha = 1;
 			});
 
 			var data = "txtObjective="+$('#txtObjective').val()+
-			"&txtEvaluation="+$('#txtEvaluation').val()+
+			"&txtQuestion="+question+
 			"&txtExpectation="+expectation+
 			"&txtEvaluator="+evaluator+
 			"&txtWeight="+weight+
@@ -243,6 +271,8 @@ var haha = 1;
 				data += "&detailsId="+detailsIdArr+"&questionId="+questionId;
 			}
 
+			//console.log(data);
+
 			$.ajax({
 				data:data,
 				type:'POST',
@@ -251,9 +281,9 @@ var haha = 1;
 				dataType:'json',
 			}).done(function(response){
 				alert("The question list has been updated.");
-				//location.reload();
-
+			//	console.log(response);
 				if(submitType == 'addQuestions'){
+					
 					var row = setRow(response);
 					$(row).appendTo('#tbl_tbody').fadeIn('slow');
 				}
@@ -276,6 +306,7 @@ var haha = 1;
 		if (addExpectation) {
 
 			$('.txtExpectation.row'+x).val($(row).find('.txtExpectationtxt.row'+x).text());
+			$('.txtQuestion.row'+x).val($(row).find('.question.row'+x).text());
 		}
 	}
 
@@ -288,7 +319,7 @@ var haha = 1;
 		$("#btnAddQuestion, #btnSubmit").css('display','none');
 		$("#btnUpdate").css("display",'block');
 		$('#txtObjective').val($(this).find('.txtGoals').text());
-		$('#txtEvaluation').val($(this).find('.txtQuestion').text());
+		$('.txtQuestion.row0').val($(this).find('.txtQuestion.row0').text());
 		$('.forSave.row0').val($(this).find('.txtExpectation.row0').text());
 
 		$expectation_count = $(this).find('.txtExpectationtxt').length;
@@ -299,19 +330,18 @@ var haha = 1;
 
 		var x = 0;
 		passDataToInput(x, $(this), true);
-
 		// if The numbers of rows for expectations are more than one.
 		if($expectation_count > 1){
 			for (var ii = 1; ii < $evaluator_count; ii++) {
 				x++;
-				addExpectation(false,ii, false);
+				addExpectation(false, ii);
 				passDataToInput(x, $(this), true); 
 			}
 		// If the numbers of rows for the Evaluator are more than one.
 		}else if($evaluator_count > 1){
 			for (var ii = 1; ii < $evaluator_count; ii++) {
 				x++;
-				addEvaluators(false,ii, false);
+				addEvaluators(false,ii);
 				passDataToInput(x, $(this), false);
 			}
 		}else{
@@ -338,29 +368,27 @@ var haha = 1;
 	});
 
 	function setRow(r){
-		var evaluatorArr = ['Team Leader', 'Leaders and Clients', 'Immediate Supervisor'];
+		var evaluatorArr = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 		var row = '<tr class="question_row" data-id="'+r[0].question_id+'" style="background:#a9fb88;">>'+
 		 '<td class="td txtGoals">'+r[0].goals+'</td>'+
-		 '<td class="td txtQuestion">'+r[0].question+'</td>'+
-		 '<td class="td">'+
-		 '<table>';
+		 '<td class="td"><table>';
 
 		var expectation = null,
+			question = null,
 			i = 0,
 			details_count = Object.keys(r[1]).length,
 			row_count = details_count -1;
-	//		console.log(details_count);
 
-		var expectationArr = [];
+		var expectationArr = [], questionArr = [];
 		for($x = 0; $x < details_count; $x++){
 			expectationArr.push(r[1][$x].expectation);
+			questionArr.push(r[1][$x].question);
 		}
 
 		 expectationArr = uniqueList(expectationArr);
 		 expectationCount = expectationArr.length -1;
 
 		for(var i in expectationArr){
-		//	tdClass = ((i < expectationCount) ? 'tdBot' : '');
 			if(i < expectationCount){
 				tdClass = 'tdBot';
 			}else{
@@ -369,6 +397,21 @@ var haha = 1;
 		  row += "<tr><td class='"+tdClass+" txtExpectationtxt row"+i+"'>"+expectationArr[i]+"</td></tr>";
 		};
 		row += "</table></td>";
+
+		row += "<td class='td'><table>";
+		questionArr = uniqueList(questionArr);
+		questionCount = questionArr.length -1;
+		for(var i in questionArr){
+		//	tdClass = ((i < expectationCount) ? 'tdBot' : '');
+			if(i < questionCount){
+				tdClass = 'tdBot';
+			}else{
+				tdClass = '';
+			}
+		  row += "<tr><td class='"+tdClass+" txtQuestion row"+i+"'>"+questionArr[i]+"</td></tr>";
+		};
+		row += "</table></td>";
+
 
 		row += "<td class='td'><table>";
 		for(i = 0; i < r[1].length;i++){
