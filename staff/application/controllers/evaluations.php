@@ -68,6 +68,7 @@ class Evaluations extends MY_Controller
 			$question = explode('__', $this->input->post('txtQuestion'));
 			$evaluator = explode(',', $this->input->post('txtEvaluator'));
 			$weight = explode(',', $this->input->post('txtWeight'));
+			$nop = explode(',', $this->input->post('txtNop'));
 
 			$expectation_count = count($expectation);
 			$question_count = count($question);
@@ -85,6 +86,7 @@ class Evaluations extends MY_Controller
 					'evaluator' => htmlentities($evaluator[$i]),
 					'question' => htmlentities($question_val),
 					'weight' => $weight[$i],
+					'nop' => $nop[$i],
 				);
 				array_push($data[1], $details_array);
 			}
@@ -127,6 +129,7 @@ class Evaluations extends MY_Controller
 			$question = explode('__', $this->input->post('txtQuestion'));
 			$evaluator = explode(',', $this->input->post('txtEvaluator'));
 			$weight = explode(',', $this->input->post('txtWeight'));
+			$nop = explode(',', $this->input->post('txtNop'));
 			$details_id = explode(',', $this->input->post('detailsId'));
 
 			$evaluator_count = count($evaluator);
@@ -143,7 +146,8 @@ class Evaluations extends MY_Controller
 					'question' => htmlentities($question_val),
 					'evaluator' => htmlentities($evaluator[$i]),
 					'weight' => $weight[$i],
-					'detail_id' => $details_id[$i]
+					'detail_id' => $details_id[$i],
+					'nop' => $nop[$i],
 					);
 				array_push($data[1], $details_array);
 			}
@@ -182,20 +186,24 @@ class Evaluations extends MY_Controller
 		}
 		// the last parameter determines on what type the user is. 
 		// If TL or rank and file
+
+		// Pass data to save.
+		// The first param is for the questions.
+		// The second is for the performance evaluation
 		$info2  = [
 			'empId' => $data['empId'],
 			'evaluator' => $data['evaluator'],
 			'staffType' => $data['staffType'],
 		];
 		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
+
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator']);
 		 	#echo $data['staffType'];
 		 }
 
 		 if($data['staffType'] == 1){
-		 	$this->evalPDF($data['empId']);
-
+		 	$this->evalPDF($data['empId'], $data['evaluator'], 2);
 		 }
 	}
 
@@ -211,7 +219,6 @@ class Evaluations extends MY_Controller
 		#	$data['ansDate'] = date('Y-m-d');
 			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId']);
 		}
-		dd($data);
 		$this->evaluationsmodel->saveEvaluationDate($data);
 	}
 
@@ -253,21 +260,20 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 
-	public function evalPDF(){
+	public function performanceEvaluationDetails(){
+
+	}
+
+	public function evalPDF($empID = 538, $evalID = 178, $staffType = 2){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		require_once('wordWrap.php');
 		$pdf = new FPDI('P');
-	#	$pdf = new PDF('P');
 
-	#	$empID = $this->uri->segment(1);
-	#	$staffType = $this->uri->segment(2);
-		$empID = 538;
-		$staffType = 2;
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		
 		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, position, supervisor', 'empID = '.$empID, 'LEFT JOIN newPositions np on np.posID = position');
-		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$info->supervisor,'LEFT JOIN newPositions np on np.posID = position');
+		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$evalID.' LEFT JOIN newPositions np on np.posID = position');
 
 		foreach($evaluationTitle as $eachTitle){		
 

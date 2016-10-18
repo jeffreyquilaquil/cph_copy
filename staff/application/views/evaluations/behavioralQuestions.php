@@ -72,6 +72,7 @@
 			<th width="30%">Expectation</th>
 			<th width="20%">Evaluator</th>
 			<th>Wt.</th>
+			<th>NOP</th>
 		</tr>
 	</thead>
 	<tbody id='tbl_tbody'>
@@ -153,6 +154,19 @@
 						?>
 					</table>
 				</td>		
+				<td class="td">
+					<table>
+						<?php 
+							$i=0;
+							foreach ($details as $value) {
+								$tdClass = ($i < $row_count ? 'tdBot' : '');
+								$text = ($value->nop == 1 ? 'Yes' : 'No');
+								echo "<tr><td class='{$tdClass} txtNop row".$i."' data-val='".$value->nop."'>".$text."</td></tr>";
+								$i++;
+							}
+						 ?>
+					</table>
+				</td>
 			</tr>
 
 		<?php
@@ -190,7 +204,7 @@ var haha = 1;
 		if(i != 0){
 			detailsIdArr.push("add"); 
 		}
-		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Mate</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' colspan='2'> </td><td></td></tr>";
+		return "<tr class='bottRow'> <td><label>Evaluator</label></td> <td> <select name='slbEvaluator' class='slbEvaluator row"+i+"'> <option value='0'>Team Mate</option> <option value='1'>Leaders and Clients</option> <option value='2'>Immediate Supervisor</option> </select> </td> <td> <label>Weight</label> <input type='number' class='wt row"+i+"' min='1' max='99' colspan='2'> </td><td>No Opportunity Presented <input type='checkbox' name='something' class='NOP row"+i+"' value='1'></td><td></td></tr>";
 	}
 
 	// Set the input field for the text area, also include the evaluator, width, Score width.
@@ -260,18 +274,29 @@ var haha = 1;
 				weight.push($(this).val()); 
 			});
 
+			var nop = [];
+			$('.NOP').each(function(){
+				if($(this).is(':checked')){
+					var val = 1;
+				}else{
+					var val = 0;
+				}
+				nop.push(val);
+			});
+
 			var data = "txtObjective="+$('#txtObjective').val()+
 			"&txtQuestion="+question+
 			"&txtExpectation="+expectation+
 			"&txtEvaluator="+evaluator+
 			"&txtWeight="+weight+
+			"&txtNop="+nop+ 
 			'&questionType=behavioral';
 
 			if(submitType == 'updateQuestions'){
 				data += "&detailsId="+detailsIdArr+"&questionId="+questionId;
 			}
 
-			//console.log(data);
+			console.log(data);
 
 			$.ajax({
 				data:data,
@@ -303,8 +328,17 @@ var haha = 1;
 	function passDataToInput(x, row, addExpectation){
 		$('.slbEvaluator.row'+x).val($(row).find('.txtEvaluator.row'+x).data('val'));
 		$('.wt.row'+x).val($(row).find('.txtWeight.row'+x).data('val'));
-		if (addExpectation) {
 
+		var checked = false;
+		if($(row).find('.txtNop.row'+x).text() == 'Yes'){
+			var checked = true;
+		}
+		console.log($(row).find('.txtNop.row'+x).text());
+		//$('.NOP.row'+x).attr('checked',checked); 
+		$('.NOP.row'+x).prop('checked',checked); 
+		//$('.txtNop.row'+x).attr('checked',checked);
+
+		if (addExpectation) {
 			$('.txtExpectation.row'+x).val($(row).find('.txtExpectationtxt.row'+x).text());
 			$('.txtQuestion.row'+x).val($(row).find('.question.row'+x).text());
 		}
@@ -426,6 +460,14 @@ var haha = 1;
 			row += "<tr><td class='"+tdClass+" txtWeight row"+i+"' data-val='"+r[1][i].weight+"'>"+r[1][i].weight+"</td></tr>";
 		}
 		row += "</table></td>";
+
+		row += '<td class="td"><table>';
+		for (var i = 0; i < r[1].length; i++) {
+			tdClass = (i < row_count ? 'tdBot' : '');
+			$text = (r[1][i].nop == 1 ? 'Yes' : 'No');
+			row += "<tr><td class='"+tdClass+" txtNop row"+i+"' data-val='"+r[1][i].nop+"'>"+$text+"</td></tr>";
+		}
+		row += '</table></td>';
 		row += '</tr>';
 		return row;
 	}
