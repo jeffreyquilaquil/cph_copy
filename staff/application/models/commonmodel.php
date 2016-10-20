@@ -27,26 +27,6 @@ class Commonmodel extends CI_Model {
 		
 		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
 	}
-
-	//Upload function only upload file to server.
-	//If you want to insert something to a table, do it in the controller
-	public function uploadFile($file, $target, $fileName){
-		//extract extension
-		$ext = explode('.', $file['signed_doc']['name']);
-		//create the new filename
-		$newFileName = $fileName.'.'.end($ext);
-		$complete = '';
-
-		// if( $ext == 'pdf'){
-			move_uploaded_file($file['signed_doc']['tmp_name'], $target.$newFileName);
-			$complete = $newFileName;
-			return $complete;
-		// }
-		// else{
-		// 	return FALSE;
-		// }
-		exit();
-	}
 		
 	function photoResizer($source_image, $destination_filename, $width = 200, $height = 150, $quality = 70, $crop = true){
 		if( ! $image_data = getimagesize( $source_image ) ){
@@ -228,6 +208,8 @@ class Commonmodel extends CI_Model {
 			}			
 		}else if($type=='eval90th'){			
 			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
+		}else if($type=='evalNotif'){
+			$cnt = $this->dbmodel->getSingleField('staffEvaluationNotif', 'COUNT(notifyId) AS cnt', 'status < 3 AND empid ='.$this->user->empID);
 		}else if($type=='unpublishedLogs'){
 			$condUsers = '';
 			if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
@@ -260,7 +242,7 @@ class Commonmodel extends CI_Model {
 			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
 		} elseif($type == 'notifStatus'){
 			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
-			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_status < 3 AND cs_post_empID_fk ='.$this->user->empID );
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_empID_fk ='.$this->user->empID );
 			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
 		} elseif($type == 'hr_accounting'){
 			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
@@ -495,7 +477,7 @@ class Commonmodel extends CI_Model {
 		$date2 = date_create( $date2 );	
 
 		$diff = date_diff( $date1, $date2 );
-
+		
 		$return =  $diff->format( $format );
 		return $return;//date('H:i:s', strtotime($return));
 	}

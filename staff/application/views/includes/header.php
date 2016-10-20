@@ -87,6 +87,7 @@
 			<?php 
 			
 			$notifStatus = $this->commonM->countResults('notifStatus');
+			$evalNotif = $this->commonM->countResults('evalNotif');
 			
 			echo '<li>
 						<a href="#">Employee Dashboard</a>
@@ -94,6 +95,7 @@
 							<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">HELPDESK <b>['.$notifStatus.']</b></a></li>							
 							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
 							<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>
+							<li><a href="'.$this->config->base_url().'evaluations/performanceEvaluationDetails/">My Performance Evaluation <b>['.$evalNotif.']</b></a></li>
 							<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>
 							<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>
 							<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>
@@ -163,7 +165,7 @@
 					
 					}
 
-					if( $this->user->dept == 'IT' ){
+					if( $this->user->dept== 'IT' ){
 						echo '<li '.(($content=='evaluations')?'class="current"':'').'><a href="'.$this->config->base_url().'evaluations/">Evaluations Management</a></li>';	
 					}
 					
@@ -194,12 +196,7 @@
 				<ul class="dropdown">
 					<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 					<li <?= (($content=='organizationalchart')?'class="current"':'') ?>><a href="<?= $this->config->base_url().'organizationalchart/' ?>">Organizational Chart</a></li>
-					<?php 
-						if( $this->user->dept == 'IT' ){
-							echo '<li><a href="<?= $this->config->base_url() ?>evaluations/">Evaluations</a></li>';
-						}
-					 ?>
-					
+					<li><a href="<?= $this->config->base_url() ?>evaluations/">Evaluations</a></li>
 			<?php
 				if($this->access->accessFullHRFinance==true || $this->user->level>0){
 					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';

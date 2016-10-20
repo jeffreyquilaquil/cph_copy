@@ -83,7 +83,7 @@ class Evaluationsmodel extends CI_model{
 		}
 		foreach ($data as $row) {
 			$this->databasemodel->insertQuery('staffEvaluationScores', $row);
-		//	print_r($row)."<br>";
+		//	print_r($row)."<br>";'
 		}
 		
 	}
@@ -94,13 +94,15 @@ class Evaluationsmodel extends CI_model{
 		$query = "SELECT question_id, goals FROM evalQuestions WHERE question_type = {$questionType} AND job_type = {$jobType}";
 		$questions = $this->databasemodel->getSQLQueryResults($query);
 		for($i = 0; $i < count($questions); $i++){
-			$query = "SELECT eqd.detail_id, expectation, evaluator, weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID}";
+			$query = "SELECT eqd.detail_id, expectation, evaluator, ses.weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID}";
 			$questions[$i]->details = $this->databasemodel->getSQLQueryResults($query);
 		}
-	#	dd($questions);
 		return $questions;
 	}
 
+	function getMyPerformanceEvaluation($empID){
 
+		return $this->databasemodel->getQueryResults('staffEvaluationNotif', '*, (SELECT concat(fname," ",lname) FROM staffs WHERE empID = evaluatorID) as evaluatorName', 'empId ='+$empID, '');
+	}
 }
 ?> 

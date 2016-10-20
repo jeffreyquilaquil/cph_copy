@@ -261,10 +261,14 @@ class Evaluations extends MY_Controller
 	}
 
 	public function performanceEvaluationDetails(){
+		$data['content'] = "evaluations/myPerformanceEvaluation";
+		$data['tpage'] = "";
 
+		$data['notifications'] = $this->evaluationsmodel->getMyPerformanceEvaluation($this->user->empID);
+		$this->load->view('includes/template', $data);
 	}
 
-	public function evalPDF($empID = 538, $evalID = 178, $staffType = 2){
+	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		require_once('wordWrap.php');
@@ -272,9 +276,8 @@ class Evaluations extends MY_Controller
 
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		
-		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, position, supervisor', 'empID = '.$empID, 'LEFT JOIN newPositions np on np.posID = position');
-		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$evalID.' LEFT JOIN newPositions np on np.posID = position');
-
+		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, position', 'empID = '.$empID, 'LEFT JOIN newPositions np on np.posID = position');
+		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$evalID, 'LEFT JOIN newPositions np on np.posID = position');
 		foreach($evaluationTitle as $eachTitle){		
 
 			if($eachTitle == "TECHNICAL GOALS AND OBJECTIVES"){
@@ -327,7 +330,7 @@ class Evaluations extends MY_Controller
 
 
 			if(!isset($supervisorId)){
-				$supervisorId = $info->supervisor;
+				$supervisorId = $evalID;
 				$posID = $info->position;
 				unset($info->supervisor);
 				unset($info->position);
@@ -400,12 +403,12 @@ class Evaluations extends MY_Controller
 		 	$i = 1;
 		 	$y = $pdf->getY();
 		 	$x = $pdf->getX(); 
+		 	
 
-		 	echo "overall";dd($questions);
+			$ttlScore = 0;
 		 	foreach($questions as $question){
 		 		
 				$fpdfCell = [];
-				$ttlScore = 0;
 
    				$pdf->setTextColor(0, 0, 0);
 				$pdf->SetFillColor(204, 255, 255);
@@ -413,20 +416,18 @@ class Evaluations extends MY_Controller
 	#		 	$pdf->SetXY(105,$y);
 	#			$pdf->MultiCell(35,5,html_entity_decode($question->question),1,'C',true);
 
-			 	$H = $pdf->GetY();
+				$H = $pdf->GetY();
 			 	$height= $H-$y;
 
 			 	$pdf->SetXY(45, $y);
 			 	$pdf->setTextColor(0, 0, 0);
 					
 				if(count($question->details) > 1){
-					
-
 					$heightDiff = $height / count($question->details);
 					#die($heightDiff);
 					foreach($question->details as $detailRow){
 						$pdf->SetXY(105, ($y + $heightDiff),'DF');
-						$pdf->MultiCell(35,5,html_entity_decode($details->question),1,'C',true);
+						$pdf->MultiCell(35,5,html_entity_decode($detailRow->question),1,'C',true);
 
 						$pdf->SetXY(45, ($y + $heightDiff));
 						$pdf->Rect(45,$y, 30, $heightDiff,'DF');
@@ -435,22 +436,25 @@ class Evaluations extends MY_Controller
 						$ttlScore += $detailRow->score;
 					}
 				}else{
-					// $cell[0]=[X,Y,height,width,text];
-
 					array_push($fpdfCell, array(45, $y, $height, 30, $question->details[0]->expectation));
 					array_push($fpdfCell, array(75, $y, $height, 30, $question->details[0]->evaluator));
 					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
 					array_push($fpdfCell, array(147, $y, $height, 35, $question->details[0]->remarks));
-					array_push($fpdfCell, array(182, $y, $height, 10, ($question->details[0]->score / $question->details[0]->weight)));
+					if($question->details[0]->weight != 0){
+						$text = $question->details[0]->score / $question->details[0]->weight;
+					}else{
+						$text = 0;
+					}
+					array_push($fpdfCell, array(182, $y, $height, 10, $text));
 					array_push($fpdfCell, array(192, $y, $height, 10, $question->details[0]->score));
 					$ttlScore += $question->details[0]->score;
 				}
 
-				// foreach($fpdfCell as $cell){
-				// 	$pdf->SetXY($cell[0],$cell[1]);
-				// 	$pdf->Rect($cell[0],$cell[1], $cell[3], $cell[2], 'DF');
-				// 	$pdf->MultiCell($cell[3], 5, $cell[4],'','C');
-				// }
+				foreach($fpdfCell as $cell){
+					$pdf->SetXY($cell[0],$cell[1]);
+					$pdf->Rect($cell[0],$cell[1], $cell[3], $cell[2], 'DF');
+					$pdf->MultiCell($cell[3], 5, $cell[4],'','C');
+				}
 
 			  	$pdf->SetXY(15,$y);
 	 	  	 	$pdf->MultiCell(30,$height,$question->goals,1,'C',true);
@@ -461,7 +465,7 @@ class Evaluations extends MY_Controller
 			 	$pdf->SetFillColor(128, 0, 0);
 			 	$pdf->cell(5,$height,$i,1,"",'C',true);
 			 	$i++;
-			 	$y=$H;
+			 	#$y=$H;
 
 		 	  // set page constants
 				$page_height = 279.4; // mm (portrait letter)
