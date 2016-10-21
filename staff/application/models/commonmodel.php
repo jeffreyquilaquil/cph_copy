@@ -257,7 +257,13 @@ class Commonmodel extends CI_Model {
 		} else if( $type == 'hdmf_loans' ){
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		} elseif( $type == 'kudos'){
-			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
+			$kWhere = 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID;
+			//var_dump($this->access->accessHR);
+			if($this->access->accessHR){
+				$kWhere .= ' OR kudosRequestStatus = 2';
+			}
+
+			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $kWhere );
 		} elseif($type == 'notifStatus'){
 			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
 			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_status < 3 AND cs_post_empID_fk ='.$this->user->empID );
