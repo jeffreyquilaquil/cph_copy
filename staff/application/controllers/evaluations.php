@@ -203,7 +203,7 @@ class Evaluations extends MY_Controller
 		 }
 
 		 if($data['staffType'] == 1){
-		 	$this->evalPDF($data['empId'], $data['evaluator'], 2);
+		 	$this->evalPDF(2, $data['empId'], $data['evaluator']);
 		 }
 	}
 
@@ -372,7 +372,7 @@ class Evaluations extends MY_Controller
 
 			// Question Headers
 			$pdf->setXY(10,65);
-			$pdf->cell(5,10,"#",1,'','C',true);
+			$pdf->cell(5,10,'#',1,'','C',true);
 
 		 	$pdf->setXY(15,65);
 		 	$pdf->cell(30,10,"Objective Goals",1,'','C',true);
@@ -401,88 +401,45 @@ class Evaluations extends MY_Controller
 
 		 	// For the real questions
 		 	$i = 1;
-		 	$y = $pdf->getY();
-		 	$x = $pdf->getX(); 
-		 	
+		 	$y = $pdf->getY();		 	
 
 			$ttlScore = 0;
-		 	foreach($questions as $question){
-		 		
+			#foreach($questions as $question){
+				$question = $questions[0];
 				$fpdfCell = [];
 
-   				$pdf->setTextColor(0, 0, 0);
-				$pdf->SetFillColor(204, 255, 255);
+				$pdf->setTextColor(0,0,0);
+				$pdf->SetFillColor(204, 255,255);
 
-	#		 	$pdf->SetXY(105,$y);
-	#			$pdf->MultiCell(35,5,html_entity_decode($question->question),1,'C',true);
+				$h = $pdf->getY();
+				$height = $h - $y;
 
-				$H = $pdf->GetY();
-			 	$height= $H-$y;
-
-			 	$pdf->SetXY(45, $y);
-			 	$pdf->setTextColor(0, 0, 0);
-					
 				if(count($question->details) > 1){
-					$heightDiff = $height / count($question->details);
-					#die($heightDiff);
-					foreach($question->details as $detailRow){
-						$pdf->SetXY(105, ($y + $heightDiff),'DF');
-						$pdf->MultiCell(35,5,html_entity_decode($detailRow->question),1,'C',true);
-
-						$pdf->SetXY(45, ($y + $heightDiff));
-						$pdf->Rect(45,$y, 30, $heightDiff,'DF');
-						$pdf->MultiCell(30,5,$detailRow->expectation,'','C');
-
-						$ttlScore += $detailRow->score;
-					}
+					// 
 				}else{
-					array_push($fpdfCell, array(45, $y, $height, 30, $question->details[0]->expectation));
-					array_push($fpdfCell, array(75, $y, $height, 30, $question->details[0]->evaluator));
-					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
-					array_push($fpdfCell, array(147, $y, $height, 35, $question->details[0]->remarks));
 					if($question->details[0]->weight != 0){
 						$text = $question->details[0]->score / $question->details[0]->weight;
 					}else{
 						$text = 0;
 					}
+
 					array_push($fpdfCell, array(182, $y, $height, 10, $text));
-					array_push($fpdfCell, array(192, $y, $height, 10, $question->details[0]->score));
-					$ttlScore += $question->details[0]->score;
+					array_push($fpdfCell, array(45, $y, $height, 30, $question->details[0]->expectation));
+					array_push($fpdfCell, array(105, $y, $height, 35, $question->details[0]->question));
+
+					foreach ($fpdfCell as $value) {
+						$pdf->setXY($value[0], $h);
+						$pdf->rect($value[3],$value[1] ,$value[0], $value[2], 'DF');
+						$pdf->multiCell($value[3], 5, $value[4]);
+					}
 				}
+				$y = $h;
+			#	echo $y;
 
-				foreach($fpdfCell as $cell){
-					$pdf->SetXY($cell[0],$cell[1]);
-					$pdf->Rect($cell[0],$cell[1], $cell[3], $cell[2], 'DF');
-					$pdf->MultiCell($cell[3], 5, $cell[4],'','C');
-				}
+				$pdf->setTextColor(255, 255, 255);
+				$pdf->SetFillColor(128, 0, 0);
 
-			  	$pdf->SetXY(15,$y);
-	 	  	 	$pdf->MultiCell(30,$height,$question->goals,1,'C',true);
-
-			// Numbering
-			 	$pdf->SetXY(10,$y);
-   				$pdf->setTextColor(255, 255, 255);
-			 	$pdf->SetFillColor(128, 0, 0);
-			 	$pdf->cell(5,$height,$i,1,"",'C',true);
-			 	$i++;
-			 	#$y=$H;
-
-		 	  // set page constants
-				$page_height = 279.4; // mm (portrait letter)
-				$bottom_margin = 20; // mm
-
-				// mm until end of page (less bottom margin of 20mm)
-				$space_left = $page_height - $pdf->GetY(); // space left on page
-				$space_left -= $bottom_margin; // less the bottom margin
-
-				// test if height of cell is greater than space left
-				if ( $height >= $space_left) {                    
-
-				   	$pdf->AddPage(); // page break.
-				    $pdf->Cell(100,5,'','B',2); // this creates a blank row for formatting reasons
-				}			
-			#	var_dump($question);
-			}
+		#	}
 
 
 		 	$pdf->SetXY(147,$y);
