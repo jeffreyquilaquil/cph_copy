@@ -67,7 +67,7 @@
 	$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
 				
 	$pdf->SetFont('Arial','B',10);
-	$pdf->setXY(17.5, 284);
+	$pdf->setXY(17.5, 269);
 	$pdf->Write(0, strtoupper($applicant_details['fname'].' '.$applicant_details['lname']));
 
 	$job_offer_file = 'JobOffer'.$joInsID.'-'.$applicant_details['lname'].'_'.$applicant_details['fname'].'.pdf';
