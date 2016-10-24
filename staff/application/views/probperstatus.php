@@ -11,14 +11,20 @@
 		</tr>
 		</thead>
 	<?php
+		$hasPrev = FALSE;
 		foreach($queryPerStatus AS $qp){
 			echo '<tr>';
 				echo '<td><b>'.$qp->perName.'</b><br/>'.$qp->perDesc.'</td>';
 				echo '<td>';
 					if(isset($arrHistory['action'][$qp->perID]['text'])){
 						echo $arrHistory['action'][$qp->perID]['text'];
+						//var_dump($arrHistory['action'][$qp->perID]['tcPrevious2316_ID']);
 						if(isset($arrHistory['action'][$qp->perID]['naVal']) && $arrHistory['action'][$qp->perID]['naVal']==1)
 							echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="'.$this->config->base_url().'css/images/check.png'.'" height="20px">N/A';
+						if( $qp->perID == 6 && !$arrHistory['action'][$qp->perID]['tcPrevious2316_ID'] ){
+							echo '<br/><a href="javascript:void(0)" onClick="showValidateDiv('.$qp->perID.')"> Previous BIR 2316</a>';
+							$hasPrev = TRUE;
+						}
 					}else{
 						echo '<a href="javascript:void(0)" onClick="showValidateDiv('.$qp->perID.')">Validate</a>';
 						if($qp->enableNA==1){
@@ -70,19 +76,67 @@
 	
 </div>
 
-<?php foreach($queryPerStatus AS $q2){ ?>
+<?php 
+	// echo "<pre>";
+	// 	var_dump($queryPerStatus);
+	foreach($queryPerStatus AS $q2){ ?>
 	<div id="<?= 'div_'.$q2->perID ?>" class="hidDiv hidden" style="padding:10px;">
 	<form action="" method="POST" enctype="multipart/form-data" onSubmit="return validateForm(<?= $q2->perID ?>, <?= $q2->enableNA ?>)">
 	<?php
+
 		echo 'To validate employee\'s '.strtolower($q2->perName).' '.$q2->perDesc;
 		echo '<br/><br/>';
-		echo $this->textM->formfield('file', 'fileupload', '', 'hidden', '', 'id="file'.$q2->perID.'" onChange="fileChange('.$q2->perID.')"');
-		echo $this->textM->formfield('button', '', 'Upload '.$q2->perName, 'btnclass', '', 'id="btnupload'.$q2->perID.'" onClick="browseFile('.$q2->perID.')"');
-		echo '<span id="filetext'.$q2->perID.'"></span>';
-		if($q2->enableNA==1){
-			echo '<br/><br/><input type="checkbox" onClick="showMyDiv('.$q2->perID.', this)"/> N/A';
+		if(!$hasPrev){
+			echo $this->textM->formfield('file', 'fileupload', '', 'hidden', '', 'id="file'.$q2->perID.'" onChange="fileChange('.$q2->perID.')"');
+			echo $this->textM->formfield('button', '', 'Upload '.$q2->perName, 'btnclass', '', 'id="btnupload'.$q2->perID.'" onClick="browseFile('.$q2->perID.')"');
+			echo '<span id="filetext'.$q2->perID.'"></span>';
+			if($q2->enableNA==1){
+				echo '<br/><br/><input type="checkbox" onClick="showMyDiv('.$q2->perID.', this)"/> N/A';
+			}
+		}
+		else{
+			echo "<input type='hidden' name='hasPrev' value='1'/>";
 		}
 		
+		if($q2->perID == 6){
+			echo '<br/><br/><strong>21. Gross Compensation Income from Present Employer</strong><br/>';
+			echo $this->textM->formfield('number', 'bir21', '', 'forminput', '00.00', 'id="bir21_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>30B. Amount of Taxes Withheld from Previous Employer</strong><br/>';
+			echo $this->textM->formfield('number', 'bir30b', '', 'forminput', '00.00', 'id="bir30b_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>31. Total Amount of Taxes Withheld As Adjusted</strong><br/>';
+			echo $this->textM->formfield('number', 'bir31', '', 'forminput', '00.00', 'id="bir31_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>37. 13th Month Pay and Other Benefits</strong><br/>';
+			echo $this->textM->formfield('number', 'bir37', '', 'forminput', '00.00', 'id="bir37_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>38. De Minimis Benefits</strong><br/>';
+			echo $this->textM->formfield('number', 'bir38', '', 'forminput', '00.00', 'id="bir38_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>39. SSS, GSIS, PHIC & Pag-ibig Contributions, & Union Dues <small>(Employee share only)</small></strong><br/>';
+			echo $this->textM->formfield('number', 'bir39', '', 'forminput', '00.00', 'id="bir39_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>40. Salaries & Other Forms of Compensation</small></strong><br/>';
+			echo $this->textM->formfield('number', 'bir40', '', 'forminput', '00.00', 'id="bir40_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>41. Total Non-Taxable/Exempt Compensation Income</strong><br/>';
+			echo $this->textM->formfield('number', 'bir41', '', 'forminput', '00.00', 'id="bir41_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>42. Basic Salary</strong><br/>';
+			echo $this->textM->formfield('number', 'bir42', '', 'forminput', '00.00', 'id="bir42_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>47A.  Adjustment or Additional Premiums </strong><br/>';
+			echo $this->textM->formfield('number', 'bir47a', '', 'forminput', '00.00', 'id="bir47a_'.$q2->perID.'" step="any"');
+
+			echo '<br/><br/><strong>51. Taxable 13th Month Pay and Other Benefits </strong><br/>';
+			echo $this->textM->formfield('number', 'bir51', '', 'forminput', '00.00', 'id="bir51_'.$q2->perID.'" step="any"');
+
+
+			echo '<br/><br/><strong>55. Total Taxable Compensation Income</strong><br/>';
+			echo $this->textM->formfield('number', 'bir55', '', 'forminput', '00.00', 'id="bir55_'.$q2->perID.'" step="any"');
+		}
+
 		echo '<br/><br/>Input link below if employee already submitted the file.<br/>'.$this->textM->formfield('text', 'filelink', '', 'forminput', 'http://', 'id="fileLink_'.$q2->perID.'"');
 		
 		
