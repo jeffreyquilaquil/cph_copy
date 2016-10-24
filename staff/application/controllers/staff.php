@@ -4565,8 +4565,10 @@ class Staff extends MY_Controller {
 // 		$start = date_create('2014-01-01');
 // 		$diff = date_diff($today,$start);
 // 		dd($diff);
-		$result = $this->dbmodel->getSingleField('tcLastPay', 'empID_fk', 'empID_fk = 1');
-		dd($result);
+		//$result = $this->dbmodel->getSingleField('tcLastPay', 'empID_fk', 'empID_fk = 1');
+		$all_staff = $this->staffM->get_cached_all_staff();
+		dd($all_staff);
+		//dd($result);
 	}
 	public function reports(){
 		$data['content'] = 'reports';
@@ -4815,12 +4817,46 @@ class Staff extends MY_Controller {
 		if( $this->input->is_ajax_request() ){
 			$id = $this->input->post('id');
 			$status = $this->input->post('status');
+			$empID = $this->input->post('empID');
 			if( isset($id) AND !empty($id) ){
+
+				$all_staff = $this->staffM->get_cached_all_staff();
+				//auto-email for each status
+				switch( $status ){
+					//printed
+					case 1:
+						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
+						<p>Please be informed that your HDMF loan application form in now printed and may be claimed at HR/Admin office.</p>
+						<p><i>Thanks,</i><br/>
+						<b>CAREERPH</b></p>';
+					break;
+					//endorsed to employee
+					case 2:
+						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
+						<p>Good day!</p>
+						<p>This e-mail serves as a confirmation that the HDMF loan application form you requested has already been endorsed to you.</p>
+						<p><span style="color:red;">Note:</span> Please notify HR thru <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> as soon as you have successfully filed your HDMF loan so that your payments can be deducted from your salary and remitted to Pag-IBIG on time. Failure to do so would delay remittance of your loan payments and Tate Publishing will not be held liable for the penalties that might be incurred.</p>
+						<p><i>Thanks,</i><br/>
+						<b>CAREERPH</b></p>';
+					break;
+					//approved loans
+					case 3:
+						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
+						<p>This is to confirm that HR has been notified of your HDMF loan approval. Please be advised to personally go to Pag-IBIG to get your loan ledger and endorse it to accounting for salary deduction.</p>
+						<p><i>Thanks,</i><br/>
+						<b>CAREERPH</b></p>';
+					break;
+				}
 
 				$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $id), array('hdmf_loan_status' => $status) );
 
 				$ntexts = 'Update on your Pag-IBIG loan application. Click <a href="'.$this->config->base_url().'hdmf/'.$id.'">here</a> to view the application';
-				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);	
+				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);
+
+				if( $msg ){
+					$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $all_staff[ $empID ]->email, 'Update on your Pag-IBIG loan application', $msg, 'CAREERPH');	
+				}
+				
 			}
 		}
 
