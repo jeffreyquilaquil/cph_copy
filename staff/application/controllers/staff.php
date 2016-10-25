@@ -1871,6 +1871,8 @@ class Staff extends MY_Controller {
 	
 	function staffleaves(){ 
 		$segment2 = $this->uri->segment(2);
+
+		$this->load->library('calendar');
 		$data['content'] = 'staffleaves';
 			
 		if($this->user!=false){
