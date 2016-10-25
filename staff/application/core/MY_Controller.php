@@ -9,7 +9,6 @@ class MY_Controller extends CI_Controller {
 
 		if($this->config->item('devmode')===true)
 			$this->db = $this->load->database('defaultdev', TRUE);
-
 		else
 			$this->db = $this->load->database('default', TRUE);
 
@@ -30,6 +29,8 @@ class MY_Controller extends CI_Controller {
 		if( $this->user ){
 			$this->hasTakenSurvey = $this->hasTakenSurvey( $this->user->empID );	
 		}
+
+		$this->load->driver('cache', ['adapter' => 'file'] );
 		
 	}
 	
