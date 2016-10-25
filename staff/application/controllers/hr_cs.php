@@ -997,6 +997,7 @@
             	$list = explode(",",$val);
             	$id = $list[0];
               	$dep = $list[4];
+              	$list[3] = $this->user->username;
 
             		// Transfer to HR
 	            	if($dep == "HR"){
