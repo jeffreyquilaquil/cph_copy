@@ -3469,9 +3469,9 @@ class Staff extends MY_Controller {
 		$data['content'] = 'probperstatus';
 		$id = $this->uri->segment(2);
 		if(is_numeric($id) && $this->access->accessFullHR===true || $this->user->empID == 474){
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus ', 'empID="'.$id.'"');
 			$data['queryPerStatus'] = $this->dbmodel->getQueryResults('staffPerRequirements', '*');
-			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', '*', 'empID_fk="'.$id.'"');
+			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus s', '*', 's.empID_fk="'.$id.'"', 'LEFT JOIN tcPrevious2316 t ON s.empID_fk = t.empID_fk');
 			
 			$data['arrHistory'] = array();
 			foreach($data['queryHistory'] AS $hq){
@@ -3485,6 +3485,7 @@ class Staff extends MY_Controller {
 					
 					$data['arrHistory']['action'][$hq->perID_fk]['text'] .= 'Validated by <b>'.$hq->adder.'</b> on '.date('m/d/Y h:i A', strtotime($hq->dateAdded));
 					$data['arrHistory']['action'][$hq->perID_fk]['naVal'] = $hq->naVal;
+					$data['arrHistory']['action'][$hq->perID_fk]['tcPrevious2316_ID'] = $hq->tcPrevious2316_ID;
 				}
 			}
 			
@@ -3499,6 +3500,7 @@ class Staff extends MY_Controller {
 					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
 
 					if( $_POST['perID'] == 6){
+						
 						$insertBIR = array(
 											'empID_fk' => $id,
 											'for21' => $_POST['bir21'],
@@ -3515,6 +3517,9 @@ class Staff extends MY_Controller {
 											'for55' => $_POST['bir55'],
 										);
 						$this->dbmodel->insertQuery('tcPrevious2316', $insertBIR);
+						if( isset($_POST['hasPrev']) && $_POST['hasPrev'] ){
+							exit();
+						}
 					}
 										
 					if(!empty($_FILES['fileupload']['name'])){
@@ -3808,6 +3813,9 @@ class Staff extends MY_Controller {
 			$_POST['otherdetails'] = $_POST['otherdetails'];
 			$_POST['whatViolation'] = implode(',', $_POST['whatViolation']);
 			$_POST['whyExcludeIS'] = $_POST['whyExcludeIS'];
+			$_POST['anonymousEmail'] = $this->user->email;
+			$_POST['anonymousName'] = $this->user->name;
+
 			unset($_POST['donotccIS']);
 			
 			if(isset($_POST['submitanonymous'])){
@@ -3843,14 +3851,33 @@ class Staff extends MY_Controller {
 	}
 	
 	public function incidentreports(){
+		//$data['content'] = 'incidentreports_';
 		$data['content'] = 'incidentreports';
 		
+		if( isset($_POST['hrAction']) ){
+			$forNoMerit = '';
+			if($_POST['reportType'] == 'noMerit'){
+				$q = $this->dbmodel->getSingleInfo('staffReportViolation', "dateSubmitted, anonymousEmail, anonymousName", 'reportID = '.$_POST['reportID']);
+				$dataE['IRRequestor'] = array('dateSubmitted' => $q->dateSubmitted,'requestoremail' =>$q->anonymousEmail, 'requestorname' => $q->anonymousName);
+			}
+			//$this->dbmodel->updateQueryText('staffReportViolation', 'hrAction="'.$_POST['reportType'].'" ' , 'reportID='.$_POST['reportID']);
+			//get supervisor
+			$r = $this->dbmodel->getSingleInfo('staffs s', "CONCAT(s.fname,' ', s.lname) as employeeName, CONCAT(sp.fname,' ', sp.lname) AS supervisorName, s.email, sp.email AS supEmail", 's.empID='.$_POST['empID'], 'LEFT JOIN staffs sp ON sp.empID = s.supervisor');
+			
+			$dataE['reportType'] = $_POST['reportType'];
+			$dataE['reportID'] = $_POST['reportID'];
+			$dataE['employeeName'] = $r->employeeName;
+			$dataE['supEmail'] = $r->supEmail;
+			$dataE['supervisorName'] = $r->supervisorName;
+
+			$this->emailM->sendEmailIncidentReport($dataE);
+		}
 		if($this->user!=false){		
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
-				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, docs,empID_fk, alias, supervisor,dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk ', 'dateSubmitted DESC');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, docs,empID_fk, alias, supervisor,dateSubmitted, status, hrAction, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk ', 'dateSubmitted DESC');
 			}
 		}
 		
@@ -3859,6 +3886,7 @@ class Staff extends MY_Controller {
 	
 	
 	public function incidentreportaction(){
+		//$data['content'] = 'incidentreportaction_';
 		$data['content'] = 'incidentreportaction';
 		if($this->user==false){
 			$data['access'] = false;
@@ -3907,7 +3935,7 @@ class Staff extends MY_Controller {
 					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
 				}
 			}
-			
+
 			$data['dir'] = 'uploads/violationreported/';
 			$data['details'] = $this->dbmodel->getSingleInfo('staffReportViolation', 'staffReportViolation.*, CONCAT(fname," ",lname) AS name', 'reportID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 			if(isset($data['details']->whatViolation)){
