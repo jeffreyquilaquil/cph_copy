@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title><?php echo $this->config->item('app_name'); ?></title>
+	<title>Tate Publishing and Enterprises (Philippines) Inc.</title>
 	<link rel="stylesheet" href="<?php echo $this->config->base_url(); ?>css/bootstrap.css">
 	<style>
 		.choice {list-style-type: none;}
