@@ -1871,6 +1871,8 @@ class Staff extends MY_Controller {
 	
 	function staffleaves(){ 
 		$segment2 = $this->uri->segment(2);
+
+		$this->load->library('calendar');
 		$data['content'] = 'staffleaves';
 			
 		if($this->user!=false){
@@ -5044,7 +5046,19 @@ class Staff extends MY_Controller {
 		
 	}
 
-	
+	public function results(){
+		if( !$this->user ){
+			show_404();
+			return true;
+		}
+		$data['results'] = $this->dbmodel->getQueryResults('exams', '*');
+		$data['content'] = 'exams/results';
+
+		
+
+		
+		$this->load->view('includes/template', $data);
+	}	
 	
 } //end class
 
