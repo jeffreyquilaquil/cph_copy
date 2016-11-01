@@ -579,6 +579,52 @@ class Emailmodel extends CI_Model {
 
 
 	}
+
+	public function sendEmailIncidentReport( $report ){
+
+		$irPDF = $this->config->base_url().'incidentreportform/'.$report['reportID'].'/';
+
+		if( $report['reportType'] == 'forIssuance' ){
+			$subject = 'For issuance of NTE to '.$report['employeeName'];
+			$to = $report['supEmail'];
+			$body = '<p>Hello '.$report['supervisorName'].'<p/>';
+			$body .= '
+				<p>Good day!</p>
+
+				<p>This is to inform you that the Human Resources Department has received an Incident Report with IR number <a href="'.$irPDF.'">'.sprintf('%04d',$report['reportID']).'</a> against one of your subordinate. Details of the IR is found on your manage staff page via Careerph under HR Incident Report. </p>
+				<p>This is to further inform that after further investigation conducted by HR, it is found that your staff has committed a violation of the Code of Conduct policy. This email serves as a notification to make you aware of the incident and that as immedaite supervisor of the employee in question, you shall do everything in your capacity as a Tate Leader to make sure discipline is given to whom it is due.</p>
+				<p>Please take the time to review the NTE generated. This is for your information and approval.</p>
+				<p>Thank you!</p>
+			';
+
+			$toHR = 'hr-list@tatepublishing.net';
+			$subjectHR = 'Issuance of NTE for Incident Report #'.sprintf('%04d', $report['reportID']);
+
+			$bodyHR = '<p>Hello HR,</p>
+
+					<p>This is to inform that the NTE you have recommended for supervisor approval has been reviewed and confirmed by the immediate supervisor of the employee in question. Kindly go ahead and print the generated NTE and endorse to the immediate supervisor thereafter.</p>
+				<p>Thank you!</p>
+			';
+
+			$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $toHR, $subjectHR, $bodyHR, 'CareerPH');
+		}
+		elseif( $report['reportType'] == 'noMerit' ){
+			$subject = 'Incident Report has no merit';
+			$to = $report['IRRequestor']['requestoremail'];
+
+			$body = '
+				<p>Hello '.$report['IRRequestor']['requestorname'].'</p>
+				<p>Good day!</p>
+				<p>This notification serves to inform you that the incident report you have filed last '.date('F d, Y', strtotime($report['IRRequestor']['dateSubmitted'])).' with <a href="'.$irPDF.'">'.sprintf('%04d',$report['reportID']).'</a> has been reviewed by the Human Resources Department. Upon evaluation, it has been found that the details you have provided in the report appears to be vague and further needs supporting documents to fully substantiate your claim.</p>
+
+				<p>Please know that the incident report you filed is treated with utmost confidentiality. It is equally important to emphasize that the recommendations from HR are based on submitted documentations and proof.</p>
+				<p>In light of the forgoing, please be advised to refile your IR. Investigation on the IR you filed may require input from groups such as IT, involved immediate supervisors and yourself. </p>
+				<p>Thank you very much for your understanding and usual cooperation!</p>
+			';
+		}
+
+		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $body, 'CareerPH');
+	}
 	
 }
 
