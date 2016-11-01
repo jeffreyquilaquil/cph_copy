@@ -1419,7 +1419,7 @@ class Textmodel extends CI_Model {
 								$a = "a";
 								$b = "b";
 								$c = a++;
-								echo $a;
+								echo $c;
 							</pre>',
 						'choices' => ['a' => 'b', 'b' => 'a1', 'c' => 'a0', 'd' => 'Syntax Error']
 					],
@@ -1444,7 +1444,7 @@ class Textmodel extends CI_Model {
 								$a = "a";
 								$b = "b";
 								$c = a++ . $b++;
-								echo $a;
+								echo $c;
 							</pre>',
 						'choices' => ['a' => '0', 'b' => 'Syntax Error', 'c' => 'ab', 'd' => 'bc']
 					],
