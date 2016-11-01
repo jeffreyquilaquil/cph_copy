@@ -1360,7 +1360,7 @@ class Textmodel extends CI_Model {
 					],
 					[
 						'questions' => 'Javascript: External Javascript code usually written inside which HTML tag?',
-						'choices' => ['a' => '&lt;javascript&gt;&lt;/javascript&gt;', 'b' => '&lt;script&gt;&lt;/script&lt;', 'c' => 'None. External Javascript codes are not enclosed with a tag', 'd' => 'None. External Javascript codes should not be enclosed with a tag']
+						'choices' => ['a' => '&lt;javascript&gt;&lt;/javascript&gt;', 'b' => '&lt;script&gt;&lt;/script&gt;', 'c' => 'None. External Javascript codes are not enclosed with a tag', 'd' => 'None. External Javascript codes should not be enclosed with a tag']
 					],
 					[
 						'questions' => 'CSS: Which of the following is <em>NOT</em> a valid CSS unit?',
