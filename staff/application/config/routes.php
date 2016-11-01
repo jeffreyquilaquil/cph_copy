@@ -40,8 +40,10 @@
 
 $route['default_controller'] = "staff";
 $route['404_override'] = '';
-$route['^(?!(mycrons|schedules|timecard|itchecklist|projecttracker|clitest|hr_cs|evaluations)).*'] = "staff/$0"; 
+$route['^(?!(mycrons|schedules|timecard|itchecklist|projecttracker|clitest|hr_cs|evaluations|exams)).*'] = "staff/$0"; 
 #$route['(:any)'] = "staff/$1";
+$route['exams/results'] = 'staff/results';
+$route['exams/results/(:num)'] = 'staff/results/$2';
 
 
 
