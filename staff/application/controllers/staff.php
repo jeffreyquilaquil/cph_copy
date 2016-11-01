@@ -5054,9 +5054,7 @@ class Staff extends MY_Controller {
 		$data['results'] = $this->dbmodel->getQueryResults('exams', '*');
 		$data['content'] = 'exams/results';
 
-		if( $this->uri->uri_segment(3) ){
-			
-		}
+		
 
 		
 		$this->load->view('includes/template', $data);
