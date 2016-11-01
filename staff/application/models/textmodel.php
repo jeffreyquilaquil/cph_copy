@@ -934,6 +934,8 @@ class Textmodel extends CI_Model {
 			$arr = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-Rated Allowance');
 		} else if($a == 'otherAllowance'){
 			$arr = array('Medicine Reimbursement','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} elseif($a == 'otherAllowancesInKey'){
+			$arr = array('medReimbursement','trainingAllowance','perfBonus','kudosBonus','discrepancyPreviousBonus');
 		} else if($a == 'payslipAddAdjustments'){
 			$arr = array('nightDiff',
 				'overTime',

@@ -821,6 +821,46 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
+	public function yearendreport($data){
+		$data['content'] = 'v_timecard/v_13thmonthmanage';
+		$data['column'] = 'withLeft';
+		$data['tpage'] = 'yearendreport';
+
+		unset($data['timecardpage']);
+
+		$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+
+		$this->load->view('includes/template', $data);		
+	}
+
+	public function taxsummary(){
+		$data['content'] = 'v_timecard/v_tax_summary';
+
+		$data['monthFullArray'] = $this->textM->constantArr('monthFullArray');
+		$data['yearFullArray'] = $this->textM->constantArr('yearFullArray');
+
+		if( isset($_POST['empID']) ){
+			$empID = $_POST['empID'];
+			$from_ = date('Y-m-d', strtotime( $_POST['from_year'].'-'.sprintf('%02d',$_POST['from_month']).'-01' ) );
+			$to_ = date('Y-m-d', strtotime( $_POST['to_year'].'-'.sprintf('%02d',$_POST['to_month']).'-31' ) );
+
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
+		    $datum = $this->payrollM->getPayslipOnTimeRange($empID, $from_, $to_,TRUE );
+			$data['staffInfo']->endDate = date('Y-12-31');
+			$activeQuery['dataQuery'][0] = $data['staffInfo'];
+			$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+			$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+			$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+			$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+			$activeQuery['dataQuery'][0]->dateRange = date('m/Y', strtotime($from_)).' - '.date('m/Y', strtotime( $_POST['to_year'].'-'.$_POST['to_month']));
+			
+			$outputFile = 'taxSummary'.$from_.'-'.$to_.'-'.$data['which'];
+			$this->payrollM->taxSummary($activeQuery['dataQuery'][0], $outputFile);			
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);			
+	}
+
 	public function managepayroll($data){
 		$data['content'] = 'v_timecard/v_manage_payroll';
 		$data['tpage'] = 'managepayroll';
@@ -1642,6 +1682,11 @@ class Timecard extends MY_Controller {
 	
 	public function alphalist(){
 		$data['content'] = 'v_timecard/v_alphalist';
+		$data['column'] = 'withLeft';
+		$data['tpage'] = 'yearendreport';
+
+		unset($data['timecardpage']);
+
 		if( $this->user != FALSE ){
 			if( $this->access->accessFullFinance == FALSE ) {
 				$data['access'] = false;
@@ -1912,7 +1957,7 @@ class Timecard extends MY_Controller {
 	public function manage13thmonth(){
 		
 		$data['content'] = 'v_timecard/v_13thmonthmanage';
-		$data['tpage'] = 'managepayroll';
+		$data['tpage'] = 'yearendreport';
 		$data['column'] = 'withLeft';
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
