@@ -575,7 +575,7 @@ class Timecard extends MY_Controller {
 			//if($this->access->accessFullHRFinance==false) $condition = ' AND tcPayrolls.status>0';
 			//else $condition = '';
 			
-			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1  AND tcPayrolls.status IN (1,2)', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk', 'payDate DESC');
+			$data['dataPayslips'] = $this->dbmodel->getQueryResults('tcPayslips', 'payslipID, payPeriodStart, payPeriodEnd, empID_fk, tcPayrolls.status', 'empID_fk="'.$data['visitID'].'" AND pstatus=1', 'LEFT JOIN tcPayrolls ON payrollsID=payrollsID_fk AND status IN (1,2)', 'payDate DESC');
 		}
 	
 		$this->load->view('includes/template', $data);
@@ -1991,7 +1991,7 @@ class Timecard extends MY_Controller {
 					'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 				if(count($data['dataInfo'])==0) $data['access'] = false;
 				else{
-					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo, $data['dataInfo']->includeEndMonth);
+					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo,0 /*$data['dataInfo']->includeEndMonth*/);
 					
 					///THIS IS FOR THE PDF
 					if(isset($_GET['show'])){
