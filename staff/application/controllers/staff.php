@@ -3853,8 +3853,8 @@ class Staff extends MY_Controller {
 	}
 	
 	public function incidentreports(){
-		//$data['content'] = 'incidentreports_';
-		$data['content'] = 'incidentreports';
+		$data['content'] = 'incidentreports_';
+		// $data['content'] = 'incidentreports';
 		
 		if( isset($_POST['hrAction']) ){
 			$forNoMerit = '';
@@ -3888,8 +3888,8 @@ class Staff extends MY_Controller {
 	
 	
 	public function incidentreportaction(){
-		//$data['content'] = 'incidentreportaction_';
-		$data['content'] = 'incidentreportaction';
+		$data['content'] = 'incidentreportaction_';
+		//$data['content'] = 'incidentreportaction';
 		if($this->user==false){
 			$data['access'] = false;
 		}else{
