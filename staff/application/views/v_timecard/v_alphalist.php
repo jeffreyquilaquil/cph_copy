@@ -5,8 +5,8 @@
 	$to_year = (isset($to_year)) ? $to_year : date('Y');
 ?>
 <style type="text/css">
-	form ul { list-style-type: none; padding-left: 0; margin-left: 0;  }
-	li { display: inline; margin-right: 5px;}
+	ul.alphalist { list-style-type: none; padding-left: 0; margin-left: 0;  }
+	ul.alphalist > li { display: inline; margin-right: 5px;}
 	label{ font-weight: bold; }
 </style>
 <h2>Generate Alphalist</h2>
@@ -16,7 +16,7 @@
 	<form name="frm_alphalist" id="frm_alphalist" method="post" action="">
 		<input type="hidden" name="which_report" value="gen_alphalist" />
 		<input type="hidden" name="which_from" value="<?php echo $which; ?>" />
-		<ul>
+		<ul class="alphalist">
 			<li><label for="from_month">From:</label></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'from_month', $from_month, '', '', 'id="from_month"', $monthFullArray); ?></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'from_year', $from_year, '', '', 'id="from_year"', $yearFullArray); ?></li>

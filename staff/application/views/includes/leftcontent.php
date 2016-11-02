@@ -25,7 +25,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 	echo '<ul id="leftMenu" style="margin:0px;">';
 		if($this->access->accessFullFinance==true){
 			if(!isset($pageyereport)) $pageyereport = $this->uri->segment(2);
-			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pageyereport=='yearendreport')?'current':'').'">Manage 
+			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pageyereport=='manage13thmonth')?'current':'').'">Manage 
 			13th Month</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pageyereport=='alphalist')?'current':'').'">Generate Alphalist</a></li>';
 		}			
