@@ -74,6 +74,8 @@
 					
 					if($this->access->accessFullFinance==true){
 						echo '<li '.(($segment2=='managepayroll')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managepayroll/">Manage Payroll</a></li>';
+
+						echo '<li '.(($segment2=='yearendreport')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/yearendreport/">Year End Reports</a></li>';
 						//echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';
 					}
 					

@@ -21,6 +21,15 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		}
 	</script>
 <?php
+}elseif( isset($tpage) && $tpage=='yearendreport' ){
+	echo '<ul id="leftMenu" style="margin:0px;">';
+		if($this->access->accessFullFinance==true){
+			if(!isset($pageyereport)) $pageyereport = $this->uri->segment(2);
+			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pageyereport=='yearendreport')?'current':'').'">Manage 
+			13th Month</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pageyereport=='alphalist')?'current':'').'">Generate Alphalist</a></li>';
+		}			
+	echo '</ul>';
 }else if(isset($tpage) && $tpage=='managepayroll'){ //MANAGE TIMECARD LEFT CONTENT
 	echo '<ul id="leftMenu" style="margin:0px;">';
 		if($this->access->accessFullFinance==true){
@@ -30,9 +39,6 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/previouspayroll/" class="'.(($pagepayroll=='previouspayroll')?'current':'').'">Previous Payrolls</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollitems/" class="'.(($pagepayroll=='payrollitems')?'current':'').'">Payroll Items</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/managepayroll/payrollsettings/" class="'.(($pagepayroll=='payrollsettings')?'current':'').'">Payroll Settings</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pagepayroll=='manage13thmonth')?'current':'').'">Manage 
-			13th Month</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pagepayroll=='manage13thmonth')?'current':'').'">Generate Alphalist</a></li>';
 		}			
 	echo '</ul>';
 } //for evaluations
