@@ -17,7 +17,7 @@
 		<th>&nbsp;</th>
 		<th>Employee Name</th>
 		<th>Total Basic Pay</th>
-		<th>Total Deductions</th>
+		<th>Total Adjustments</th>
 		<th>13th Month Amount</th>
 		<th>Period</th>
 		<th class="hiddend"><br/></th>
