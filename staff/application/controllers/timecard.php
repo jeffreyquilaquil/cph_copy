@@ -1966,9 +1966,9 @@ class Timecard extends MY_Controller {
 			else{
 				if( isset($_POST['delete_13th_record']) AND $_POST['delete_13th_record'] == 'Delete' ){
 					$del_id = $_POST['id_'];
-					$this->db->delete('tc13thMonth', array('tcmonthID' => $del_id) );
-					$atext = 'Deleted table: tc13thMonth row: tcmonthID-'.$del_id;
-					$this->commonM->addMyNotif($this->user->empID, $atext, 5);
+					foreach ($del_id as $dID) {
+						$this->db->delete('tc13thMonth', array('tcmonthID' => $dID) );	
+					}
 				}
 				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
 			}			

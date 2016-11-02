@@ -1048,9 +1048,13 @@ class Payrollmodel extends CI_Model {
 				$insArr['dateGenerated'] = date('Y-m-d H:i:s');
 								
 				///check if already exist update if exists else insert
-				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND periodFrom="'.$periodFrom.'" AND periodTo="'.$periodTo.'"');
+				$yearDate = date('Y');
+
+				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND YEAR(periodFrom) = "'.$yearDate.'" ');
 				if(!empty($monthID)){
 					$gID[] = $monthID;
+					$insArr['periodFrom'] = $periodFrom;
+					$insArr['periodTo'] = $periodTo;
 					$this->dbmodel->updateQuery('tc13thMonth', array('tcmonthID'=>$monthID), $insArr);
 				}else{
 					$insArr['empID_fk'] = $emp;

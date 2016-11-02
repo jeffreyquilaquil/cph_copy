@@ -10,6 +10,10 @@
 <h2>Generated 13th Month</h2>
 
 <hr/>
+<div style="padding-top:5px;">
+	<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
+</div>
+<br/>
 <form name="frm_13th_month" action="" method="post">
 <table id="dtable13" class="display stripe hover">
 	<thead>
@@ -28,7 +32,7 @@
 <?php
 	foreach($queryData AS $data){
 		echo '<tr>';
-			echo '<td><input type="checkbox" name="id_" value="'.$data->tcmonthID.'" /></td>';
+			echo '<td><input type="checkbox" class="classCheckMe" name="id_[]" value="'.$data->tcmonthID.'" /></td>';
 			echo '<td>'.$data->lname.', '.$data->fname.'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalBasic).'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalDeduction).'</td>';
@@ -67,6 +71,13 @@
 <script type="text/javascript">
 $(function(){
 	$('#dtable13').dataTable({});
+	$('#selectAll').click(function(){
+		$('.classCheckMe').prop('checked', true);
+	});
+	
+	$('#deselectAll').click(function(){
+		$('.classCheckMe').prop('checked', false);
+	});
 	<?php /*
         initComplete: function () {
             this.api().columns().every( function () {
