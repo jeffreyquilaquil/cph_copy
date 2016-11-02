@@ -315,27 +315,46 @@ if($this->user->access == "exec"){
 					<ul style="list-style: none; margin: 0px; padding: 0px;">
 						<li>
 							<small>Please select who:</small>
-							<select name="" id="new_redirect_select<?php echo $value->cs_post_id; ?>">
-								<option value = '--'>--</option>
-								<?php if($this->access->myaccess[0] == "full"){ ?>
-								
-								<?php foreach ($getFULLlist as $key_full => $value_full){ ?>
-											<option value="<?php echo $value_full->username.','.$value_full->empID.','.$this->user->username.',Full,'.$value_full->fname.' '.$value_full->lname; ?>"><?php echo $value_full->fname." ".$value_full->lname; ?></option>
-								<?php } ?>
+							<select name="" id="redirect_select<?php echo $value->cs_post_id; ?>" style="width: 200px;">
+									<?php if($this->access->accessFull == true) { ?>
+											<option value=""></option>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ ?>
+											<option value="<?php echo $value->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$value->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
+										<?php } ?>
+										<?php foreach ($getACClist as $key_acc => $value_acc){ ?>
+											<option value="<?php echo $value->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$value->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+										<?php } ?>
+										
+									<?php } else if ($this->access->accessHR == true) { ?>
+											<option value=""></option>
+										<?php foreach ($getHRlist as $key_hr => $value_hr){ 
+											  
+											  if($this->user->username == $value_hr->username){?>
+											  <?php }else{?>
+							        			<option value="<?php echo $value->cs_post_id.','.$value_hr->username.','.$value_hr->empID.','.$value->hr_own_empUSER.','.$value_hr->fname." ".$value_hr->lname; ?>"><?php echo $value_hr->fname." ".$value_hr->lname; ?></option>
+											  <?php }?>
+											  
+										<?php } ?>
+										<option value="<?php echo $value->cs_post_id.','.$this->user->username.','.$value_hr->empID.','.$value->hr_own_empUSER.',Finance'; ?>">Accounting</option>
+										
+									<?php }else if($this->access->accessFinance == true){?>
+											<option value=""></option>
+										<?php foreach ($getACClist as $key_acc => $value_acc){
+
+											 if($this->user->username == $value_acc->username){?>
+											  <?php }else{?>
+							        			<option value="<?php echo $value->cs_post_id.','.$value_acc->username.','.$value_acc->empID.','.$value->hr_own_empUSER.','.$value_acc->fname." ".$value_acc->lname; ?>"><?php echo $value_acc->fname." ".$value_acc->lname; ?></option>
+											  <?php }?>
 											
-								<?php }
-
-								else if($this->access->myaccess[0] == "hr"){ ?>
-									<option value="<?php echo $value->cs_post_id.",".$this->user->username.",1"; ?>">Accounting</option>
-								
-								<?php }
-
-								else if($this->access->myaccess[0] == "finance"){ ?>
-									<option value="<?php echo $value->cs_post_id.",".$this->user->username.",0"; ?>">HR</option>
-
-								<?php } ?>
-							</select><br>
-							<input type="button" class="btn_new_redirect btngreen" data-btn="<?php echo $value->cs_post_id; ?>" value="Submit" style="float:right;">
+										<?php } ?>
+										<option value="<?php echo $value->cs_post_id.','.$this->user->username.','.$value_acc->empID.','.$value->hr_own_empUSER.',HR'; ?>">HR</option>
+										
+									<?php } ?>
+								</select>
+							<br>
+							
+							<input type="submit" class="redirect_btn btngreen" data-btn="<?php echo $value->cs_post_id; ?>" value="Submit" style="float:right;">
+							
 						</li>
 					
 					</ul>
@@ -726,10 +745,13 @@ $(document).ready(function(){
 	$(".redirect_btn").click(function() {
 		
 		var btn_unique_id = $(this).data("btn");
-		var redirect_b = $('#redirect_select' +btn_unique_id+ ' option:selected').val();
+		var id = 'redirect_select'+btn_unique_id;
+		var redirect_b = $('#'+id+' option:selected').val();
 		var dataredirect_a = 'redirect_to='+ redirect_b;
 
 		console.log(dataredirect_a);
+		console.log(redirect_b);
+		console.log(btn_unique_id);
 
 		if (redirect_b == '') {
 			alert("Please Select!");
