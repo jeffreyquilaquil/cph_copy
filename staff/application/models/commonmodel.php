@@ -548,17 +548,26 @@ class Commonmodel extends CI_Model {
 	}
 
 	//check for the correct answers
-	public function check_answers( $key, $answers ){
+	public function check_answers( $key, $answers, $return = 'score' ){
 		
 		$cnt = count($key);
 		$results = [];
 		$scores = 0;
-		for ($x=0; $x < $cnt; $x++) { 
-			if( isset($answers[$x]) AND $key[$x] == $answers[$x] ){
-				$scores++;
+		$check = false;
+		if( $return == 'score' ){
+			for ($x=0; $x < $cnt; $x++) { 
+				if( isset($answers[$x]) AND $key[$x] == $answers[$x] ){
+					$scores++;
+				}
 			}
+			return $scores;	
+		} else if( $return == 'check' ){
+			if( $key == $answers ){
+				$check = true;
+			}
+			return $check;
 		}
-		return $scores;
+		
 	}
 	
 }
