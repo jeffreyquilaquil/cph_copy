@@ -244,7 +244,7 @@
 				// get the name of all accounting employee
 				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%" AND active = 1');
 				// get the name of all Full Access employee
-				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full") AND active = 1');
+				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs LEFT JOIN newPositions ON position = posID','newPositions.dept IN ("Accounting", "Human Resources") AND access != "" AND staffs.active = 1 ORDER BY dept');
 				//get all department infomation
 				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
@@ -257,6 +257,8 @@
 				foreach($categories as $category){
 					$data['categories'][$category->category_id] = $category->categorys;
 				}
+
+				
 
 				$data['category'] = $categories;
 				$this->load->view('includes/template',$data);
