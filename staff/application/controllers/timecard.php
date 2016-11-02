@@ -1930,7 +1930,7 @@ class Timecard extends MY_Controller {
 						$_POST['includeEndMonth'] = $mInfo->includeEndMonth;
 					}else{
 						$dateFrom = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
-						$dateTo = date('Y-m-d', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
+						$dateTo = date('Y-m-t', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
 					}
 					
 					if($dateFrom>$dateTo){

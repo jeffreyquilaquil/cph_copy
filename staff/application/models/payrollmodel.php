@@ -1072,8 +1072,8 @@ class Payrollmodel extends CI_Model {
 			$dates[] = date('Y-m-15', strtotime($pfrom));
 			$dates[] = date('Y-m-t', strtotime($pfrom));
 			$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
-		}	
-	
+
+		}
 		return $dates;
 	}
 	
@@ -1091,10 +1091,6 @@ class Payrollmodel extends CI_Model {
 			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, payrollsID_fk, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCode="regHoursAdded") AS "adj" , (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
 								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
 								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
-
-			// echo "<pre>";
-			// var_dump($query);
-			// exit();
 								
 			foreach($query AS $q){
 				$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
@@ -1110,7 +1106,7 @@ class Payrollmodel extends CI_Model {
 					$arrayMonths[$key] = $val;
 					$lastMonth = $key;
 					//Unset the date on $dates for it to be used if the user is allowed to generate remaining months
-					if($includeEndMonth){
+					if($includeEndMonth == 1){
 						if( $sKey = array_search($key, $dates) ){
 							unset($dates[$sKey]);
 						}
@@ -1121,7 +1117,7 @@ class Payrollmodel extends CI_Model {
 				}
 			}
 
-			if( $includeEndMonth ){
+			if( $includeEndMonth == 1){
 				foreach($dates as $dateK => $dateV){
 					//query if the date is less than the last payslip
 					$lp = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID', 'payDate > "'.$dateV.'"');
@@ -1145,7 +1141,7 @@ class Payrollmodel extends CI_Model {
 			// }
 			//exit();
 		}
-		
+
 		return $arrayMonths;
 	}
 	
@@ -2427,9 +2423,6 @@ class Payrollmodel extends CI_Model {
 	}
 
 	public function getTotalComputationForAllEmployee($info){
-		// echo "<pre>";
-		// var_dump($info);
-		// exit();
 
 		$items = array();
 		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
