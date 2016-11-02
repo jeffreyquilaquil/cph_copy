@@ -61,8 +61,8 @@
 					$data['cs_post_status'] = 1;				
 				} else {
 					//morningshift
-					$data['hr_own_empUSER'] = 'aobrero';
-					$data['cs_post_agent'] = 203;
+					$data['hr_own_empUSER'] = 'sabay';
+					$data['cs_post_agent'] = 556;
 					$data['cs_post_status'] = 1;
 				}	
 			}
@@ -244,7 +244,7 @@
 				// get the name of all accounting employee
 				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%" AND active = 1');
 				// get the name of all Full Access employee
-				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full") AND active = 1');
+				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs LEFT JOIN newPositions ON position = posID','newPositions.dept IN ("Accounting", "Human Resources") AND access != "" AND staffs.active = 1 ORDER BY dept');
 				//get all department infomation
 				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
@@ -257,6 +257,8 @@
 				foreach($categories as $category){
 					$data['categories'][$category->category_id] = $category->categorys;
 				}
+
+				
 
 				$data['category'] = $categories;
 				$this->load->view('includes/template',$data);
@@ -486,6 +488,10 @@
 							case "Facilities and Maintenance":
 								$update_array['cs_post_agent'] = 530;
 								$update_array['hr_own_empUSER'] = 'vemeterio';
+							break;
+							case "Training":
+								$update_array['cs_post_agent'] = 524;
+								$update_array['hr_own_empUSER'] = 'rodono';
 							break;
 						}
 						if( isset($update_array) AND !empty($update_array) ){
@@ -1139,8 +1145,7 @@
               
 
             function test(){ // this for testing function
-            	$data['content']='employee_incident_info';
-	  			$this->load->view('includes/template',$data);
+            	dd( date('Y-m-d H:i:sa'));
             }// end test function
 
 
