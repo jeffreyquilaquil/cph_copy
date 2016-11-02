@@ -61,8 +61,8 @@
 					$data['cs_post_status'] = 1;				
 				} else {
 					//morningshift
-					$data['hr_own_empUSER'] = 'aobrero';
-					$data['cs_post_agent'] = 203;
+					$data['hr_own_empUSER'] = 'sabay';
+					$data['cs_post_agent'] = 556;
 					$data['cs_post_status'] = 1;
 				}	
 			}
@@ -486,6 +486,10 @@
 							case "Facilities and Maintenance":
 								$update_array['cs_post_agent'] = 530;
 								$update_array['hr_own_empUSER'] = 'vemeterio';
+							break;
+							case "Training":
+								$update_array['cs_post_agent'] = 524;
+								$update_array['hr_own_empUSER'] = 'rodono';
 							break;
 						}
 						if( isset($update_array) AND !empty($update_array) ){
@@ -1139,8 +1143,7 @@
               
 
             function test(){ // this for testing function
-            	$data['content']='employee_incident_info';
-	  			$this->load->view('includes/template',$data);
+            	dd( date('Y-m-d H:i:sa'));
             }// end test function
 
 
