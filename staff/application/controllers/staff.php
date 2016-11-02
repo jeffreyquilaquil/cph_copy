@@ -5054,7 +5054,12 @@ class Staff extends MY_Controller {
 		$data['results'] = $this->dbmodel->getQueryResults('exams', '*');
 		$data['content'] = 'exams/results';
 
-		
+		if( $id = $this->uri->segment(3) ){
+			$data['questions'] = $this->textM->questions();
+			$data['answer_key'] = $this->textM->answers();
+			$data['results'] = $this->dbmodel->getQueryResults('exams', '*', 'id = '. $id)[0];
+			$data['content'] = 'exams/result';			
+		}
 
 		
 		$this->load->view('includes/template', $data);
