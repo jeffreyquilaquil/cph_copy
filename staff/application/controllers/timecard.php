@@ -20,17 +20,17 @@ class Timecard extends MY_Controller {
 		//this is the customized date according to passed url
 		if(isset($_GET['d'])) $data['today'] = $_GET['d'];
 		else $data['today'] = date('Y-m-d'); 
-			
+
 		if(is_numeric($method)){
 			$data['column'] = 'withLeft';
 			$data['visitID'] = $method;
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs','empID,username, fname, CONCAT(fname," ",lname) AS name', 'empID="'.$method.'"');
-						
-			if(empty($segment3)){
+			//var_dump($method);
+			//if(empty($segment3)){
 				$this->timelogs($data);
-			}else{
-				$this->$segment3($data);
-			}
+			// }else{
+			// 	$this->$segment3($data);
+			// }
 		}else{
 			if($method=='index')
 				$this->timelogs($data);
@@ -318,7 +318,7 @@ class Timecard extends MY_Controller {
 		
 								
 		if($this->user!=false){
-			$id = $this->uri->segment(2);
+			$id = $this->uri->segment(3);
 			if(is_numeric($id) && $this->commonM->checkStaffUnderMe($id)==false){
 				header('Location:'.$this->config->base_url().'timecard/timelogs/');
 				exit;
