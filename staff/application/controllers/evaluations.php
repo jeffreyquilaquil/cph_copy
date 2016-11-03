@@ -19,6 +19,8 @@ class Evaluations extends MY_Controller
 	public function index(){
 		
 		$data['content'] = 'evaluations/index';
+		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
+		$data['headers'] = ['eavlution ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status'];
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
 
@@ -165,7 +167,7 @@ class Evaluations extends MY_Controller
 			$dataArray = [
 				'detail_id'=>$data['technical']['detailIdArr'][$i],
 				'score' => $data['technical']['wtScoreArr'][$i],
-				'remarks' => $data['technical']['remarksArr'][$i],
+				'remarks' => (isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : ''),
 				'question_id' => $data['technical']['questionIdArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
@@ -177,7 +179,7 @@ class Evaluations extends MY_Controller
 			$dataArray = [
 				'detail_id'=>$data['behavioral']['detailIdArr'][$i],
 				'score' => $data['behavioral']['wtScoreArr'][$i],
-				'remarks' => $data['behavioral']['remarksArr'][$i],
+				'remarks' => (isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : ''),
 				'question_id' => $data['behavioral']['questionIdArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
@@ -194,16 +196,17 @@ class Evaluations extends MY_Controller
 			'empId' => $data['empId'],
 			'evaluator' => $data['evaluator'],
 			'staffType' => $data['staffType'],
+			'notifyId' => $data['notifyId'],
 		];
-		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
+	#	$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
 
 		 if($data['staffType'] == 2){
-		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator']);
+		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 	#echo $data['staffType'];
 		 }
 
 		 if($data['staffType'] == 1){
-		 	$this->evalPDF(2, $data['empId'], $data['evaluator']);
+		 	$this->evalPDF(2, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 }
 	}
 
@@ -215,39 +218,63 @@ class Evaluations extends MY_Controller
 			'evaluatorId' => $this->input->post('evaluator'),
 		];
 
+		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
+
 		if($evalDate == date('Y-m-d')){
 		#	$data['ansDate'] = date('Y-m-d');
-			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId']);
+			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 		}
-		$this->evaluationsmodel->saveEvaluationDate($data);
+		
 	}
 
 // This function should be in myCron
-	function sendEvaluationEmail($userType = 2, $empId = 538, $evaluator = 178){
+	function sendEvaluationEmail($userType = 2, $empId = 538, $evaluator = 178, $notifyId, $dueDays = 0){
 
 		// User type 2 is Rank and File Employee
 		// 1 is for the Supervisor
 		$this->load->model('emailmodel');
 
-		$subject = "90th day Performance Evaluation ";
+		
 
 		$fields = "concat(fname,' ',lname) as 'name', email";
 		$info = $this->databasemodel->getSingleInfo('staffs', $fields,'empID = '.$empId);
+		$evalInfo = $this->databasemodel->getSingleInfo('staffs', $fields,'empID ='.$evaluator);
+		$eval = $this->databasemodel->getSingleInfo('staffEvaluationNotif', 'evalDate', 'notifyId = '.$notifyId);
 		$to = $info->email;
 
-		if($userType == 1){
-			$info2 = $this->databasemodel->getSingleInfo('staffs', 'email', 'empID = '.$evaluator);
-			$subject .= "for ".$info->name;
-			$body = "Hi. Please give your Performance Evaluation for ".$info->name.". Just click the link below.";
-			$to = $info2->email;
+		// True if current date is less than the number of days before evaluation
+		
+		if($dueDays == 0){
+			if($userType == 2){
+				$subject = "Self-rating performance evaluation for ".$info->name;
+				$body = "Hi ".$info->name.". <br><br>Your performance evaluation has been generated. Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to self-rate your  performance evaluation.<br><br>Thank you.";
+				$to = $info->email;
+				$subject = "90th day Performance Evaluation ";
+			}else{
+				// The message that the evaluator will recieve
+				$subject = "for ".$info->name;
+				$body = "Hi ".$evalInfo->name.".";
+				$body .= "<br><br>Please give your Performance Evaluation for ".$info->name.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to give your evaluation.<br><br>Thank you.";
+				$to = $evalInfo->email;
+				$subject = "90th day Performance Evaluation ";
+			}
 		}else{
-			$body = "Hi ".$info->name.". This is your 90th day. Please click the link below to take your Self Performance Evaluation.";
+			if($userType == 2){
+				$subject = "Performance evaluation due for ".$info->name;
+				$body = "<pre>Hi ".$info->name.",<br></br>You are due for a performance evaluation on ".$eval->evalDate.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to conduct self-evaluation. You will recieve this remider daily unless the said evaluation is provided.</br></br>Thank you.</pre>";
+				$to = $info->email;
+			}else{
+				$subject = "Performance evaluation due for ".$info->name;
+
+				$body = "Hello ".$evalInfo->name;
+				$body .= "</br></br>The performance evaluation of ".$info->name." is due already on ".$eval->evalDate.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>Click here</a> to conduct evaluation. You will receive this reminder daily unless the said evaluation is provided.</br></br>Thank you.";		
+				$to = $evalInfo->email;
+			}		
 		}
 
-		$body .= "<br><a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."'>Click here</a>";
-		
-		$from = "CPH Evaluation";
-		
+		if($userType == 1){
+
+		}
 		$to = 'jeffrey.quilaquil@tatepublishing.net';
 		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CareerPH Auto-Emails' );
 	}
@@ -268,14 +295,15 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/template', $data);
 	}
 
-	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178){
+	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178, $evalId){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		require_once('wordWrap.php');
 		$pdf = new FPDI('P');
 
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
-		
+		$evaluatorTitles = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
+
 		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, position', 'empID = '.$empID, 'LEFT JOIN newPositions np on np.posID = position');
 		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$evalID, 'LEFT JOIN newPositions np on np.posID = position');
 		foreach($evaluationTitle as $eachTitle){		
@@ -288,8 +316,9 @@ class Evaluations extends MY_Controller
 				$job_type = 0;
 			}
 
-			$questions = $this->evaluationsmodel->getEvaluationScore($questionType, $job_type, $empID, $staffType);
+			$questions = $this->evaluationsmodel->getEvaluationScore($questionType, $job_type, $empID, $staffType, $evalId);
 		#	dd($questions);
+			$pdf->SetTitle('Evaluation Performance Form');
 			$pdf->AddPage();
 			// Header
 			$pdf->setTextColor(0, 0, 0);
@@ -326,8 +355,6 @@ class Evaluations extends MY_Controller
 				
 				$pdf->cell(35,5, $value.':' ,1,'','R',true);
 			}
-
-
 
 			if(!isset($supervisorId)){
 				$supervisorId = $evalID;
@@ -378,11 +405,11 @@ class Evaluations extends MY_Controller
 		 	$pdf->cell(30,10,"Objective Goals",1,'','C',true);
 
 		 	$pdf->setXY(45,65);
-		 	$pdf->cell(30,10,"Expectation",1,'','C',true);
+		 	$pdf->cell(35,10,"Expectation",1,'','C',true);
 
-		 	$pdf->setXY(75,65);
+		 	$pdf->setXY(80,65);
 		 	$text = ($eachTitle == "TECHNICAL GOALS AND OBJECTIVES" ? "Output Format" : "Evaluator");
-		 	$pdf->cell(30,10,$text,1,'','C',true);
+		 	$pdf->cell(25,10,$text,1,'','C',true);
 
 		 	$pdf->setXY(105,65);
 		 	$pdf->cell(35,10,"Evaluation Question",1,'','C',true);
@@ -399,58 +426,195 @@ class Evaluations extends MY_Controller
 		 	$pdf->setXY(192,65);
 		 	$pdf->MultiCell(10,5,"Wtd. Score",1,'C',true);
 
+		 	// Page standards
+		 	$pageHeight = 279.4; // (portrait size)
+		 	$bottomMargin = 20; // millimeters
+
 		 	// For the real questions
-		 	$i = 1;
+		 	$ii = 1;
 		 	$y = $pdf->getY();		 	
 
 			$ttlScore = 0;
-			#foreach($questions as $question){
-				$question = $questions[0];
+			foreach($questions as $question){
 				$fpdfCell = [];
-
-				$pdf->setTextColor(0,0,0);
-				$pdf->SetFillColor(204, 255,255);
 
 				$h = $pdf->getY();
 				$height = $h - $y;
+				$height = ($height == 0 ? 60 : $height);
 
+			#	array_push($fpdfCell, array(15, $y, $height, 30, $question->goals));		
 				if(count($question->details) > 1){
-					// 
-				}else{
-					if($question->details[0]->weight != 0){
-						$text = $question->details[0]->score / $question->details[0]->weight;
-					}else{
-						$text = 0;
+					$ttlHeight = "";
+					$y1 = $pdf->getY();
+			#		$height = 6;5
+
+					$pdf->setTextColor(255, 255,255);
+					$pdf->SetFillColor(128, 0,0);
+
+					$pdf->rect(10, $y ,5, $height, 'DF');
+					$pdf->setXY(10, $y);
+					$pdf->multiCell(10, 5, $ii,0,'',false);
+
+					$pdf->setTextColor(0,0,0);
+					$pdf->SetFillColor(204, 255,255);
+
+					$expectationArr = [];
+					$questionArr = [];
+					$expectation1Text = "";
+					foreach ($question->details as $row) {
+						if(strcmp($expectation1Text, $row->expectation)){
+							array_push($expectationArr, $row->expectation);
+							array_push($questionArr, $row->question);
+							$expectation1Text = $row->expectation;
+						}
 					}
 
+					  if(count($expectationArr) == 1){
+					  	$fpdfCell1 = [];
+					  	if(strlen($expectationArr[0]) > strlen($questionArr[0])){
+					  		array_push($fpdfCell1, array(105, $y, $height, 35, $questionArr[0]));
+					  		array_push($fpdfCell1, array(45, $y, $height,35, $expectationArr[0]));
+					  	}else{
+					  		array_push($fpdfCell1, array(45, $y, $height,35, $expectationArr[0]));
+					  		array_push($fpdfCell1, array(105, $y, $height, 35, $questionArr[0]));
+					  	}
+
+						foreach ($fpdfCell1 as $values) {
+							$height;
+							$pdf->rect($values[0], $y ,$values[3],$values[2] , 'DF');	
+							$pdf->setXY($values[0], $y);
+							$pdf->multiCell($values[3], 5, $values[4],0,'',false);
+						}
+
+					  	$height =($height / count($question->details));
+					  }
+
+					foreach($question->details as $detailsRow){
+						$text = ($detailsRow->score !=0 ? $detailsRow->score / $detailsRow->weight : 0);
+						if(count($expectationArr) > 1){
+							if(strlen($detailsRow->question) > strlen($detailsRow->expectation)){
+								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
+								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
+
+							}else{
+								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
+								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
+							} 
+						}
+
+						if($eachTitle == "BEHAVIORAL GOALS AND OBJECTIVES"){
+							$evaluatorText = $evaluatorTitles[$detailsRow->evaluator];
+						}else{
+							$evaluatorText = $detailsRow->evaluator;
+						}
+						$dy1 = $pdf->getY();
+						
+						array_unshift($fpdfCell, array(182, $y, $height, 10, $text));
+						array_unshift($fpdfCell, array(192, $y, $height, 10, $detailsRow->score));
+						array_unshift($fpdfCell, array(80, $y, $height, 25, $evaluatorText));  
+						array_unshift($fpdfCell, array(140, $y, $height, 7, $detailsRow->weight));
+						array_unshift($fpdfCell, array(147, $y, $height, 35, $detailsRow->remarks));
+						foreach ($fpdfCell as $value) {
+					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
+							$pdf->rect($value[0], $y ,$value[3], $value[2], 'DF');	
+							$pdf->setXY($value[0], $y);
+							$pdf->multiCell($value[3], 5, $value[4],0,'',false);
+						}
+						$dy2 = $pdf->getY();
+						$dHeight = $dy2 - $dy1;
+						$ttlHeight += $height;
+						$y = $pdf->getY() + 5;
+						$fpdfCell = [];
+
+					}
+
+					$pdf->setTextColor(0,0,0);
+					$pdf->SetFillColor(204, 255,255);
+
+					$pdf->rect(15, $y1, 30, $ttlHeight, 'DF');
+					$pdf->setXY(15, $y1);
+					$pdf->multiCell(30, 5, $question->goals,0,'',false);
+
+ 					$pdf->setTextColor(255, 255,255);
+					$pdf->SetFillColor(128, 0,0);
+
+					$pdf->rect(10, $y1 ,5, $ttlHeight+$dHeight, 'DF');
+					$pdf->setXY(10, $y1);
+					$pdf->multiCell(10, 5, $ii,0,'',false);
+
+					$pdf->setY($y);
+
+				}else{
+					#$y = $pdf->getY()+5;
+					$text = ($question->details[0]->score !=0 ? $question->details[0]->score / $question->details[0]->weight : 0);
+					
+					if($eachTitle == "BEHAVIORAL GOALS AND OBJECTIVES"){
+						$evaluatorText = $evaluatorTitles[$question->details[0]->evaluator];
+					}else{
+						$evaluatorText = $question->details[0]->evaluator;
+					}
+
+					$pdf->setTextColor(255, 255,255);
+					$pdf->SetFillColor(128, 0,0);
+
+					$pdf->rect(10, $y ,5, $height, 'DF');
+					$pdf->setXY(10, $y);
+					$pdf->multiCell(10, 5, $ii,0,'',false);
+
+					$pdf->setTextColor(0,0,0);
+					$pdf->SetFillColor(204, 255,255);
+
+					array_push($fpdfCell, array(15, $y, $height, 30, $question->goals));	
 					array_push($fpdfCell, array(182, $y, $height, 10, $text));
-					array_push($fpdfCell, array(45, $y, $height, 30, $question->details[0]->expectation));
-					array_push($fpdfCell, array(105, $y, $height, 35, $question->details[0]->question));
+					array_push($fpdfCell, array(80, $y, $height, 25, $evaluatorText));
+					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
+					array_push($fpdfCell, array(147, $y, $height, 35, $question->details[0]->remarks));
+					array_push($fpdfCell, array(192, $y, $height, 10, $question->details[0]->score));
+					// Questions or Expectation should be last b/c it has the most # of text and it sets the height for the other cells
+					if(strlen($question->details[0]->question) > strlen($question->details[0]->expectation)){
+						array_push($fpdfCell, array(45, $y, $height, 35, $question->details[0]->expectation));
+						array_push($fpdfCell, array(105, $y, $height, 35, $question->details[0]->question));
+					}else{
+						array_push($fpdfCell, array(105, $y, $height, 35, $question->details[0]->question));
+						array_push($fpdfCell, array(45, $y, $height, 35, $question->details[0]->expectation));
+					}
 
 					foreach ($fpdfCell as $value) {
-						$pdf->setXY($value[0], $h);
-						$pdf->rect($value[3],$value[1] ,$value[0], $value[2], 'DF');
-						$pdf->multiCell($value[3], 5, $value[4]);
+					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
+						$pdf->rect($value[0], $y ,$value[3], $value[2], 'DF');	
+						$pdf->setXY($value[0], $y);
+						$pdf->multiCell($value[3], 5, $value[4],0,'',false);
 					}
 				}
-				$y = $h;
-			#	echo $y;
 
-				$pdf->setTextColor(255, 255, 255);
-				$pdf->SetFillColor(128, 0, 0);
+				$y = $pdf->getY();
+			#	$spaceLeft = $pageHeight - $y;
+			#	$spaceLeft -= $bottomMargin;
+				
+				$ii++;	
+			}
 
-		#	}
+			$pdf->SetFillColor(255, 255, 255);
+ 
+		 	$pdf->SetX(9.5);
+		 	$pdf->cell(140, 11, '', 'T', '', '', true);
+
+			$pdf->setTextColor(255, 255,255);
+			$pdf->SetFillColor(128, 0,0);
 
 
-		 	$pdf->SetXY(147,$y);
+		 	$pdf->SetXY(147,($y+5));
 		 	$pdf->cell(45,5,"Employee's Rating",1,'','C',true);
 		 	$pdf->cell(10,5,$ttlScore."%",1,'','C',true);
 
-		 	$pdf->SetXY(147,($y+5));
+
+		 	$pdf->SetXY(147,$y);
 		 	$pdf->cell(45,5,"Employee's 20% Weighted Rating",1,'','C',true);
 		 	$pdf->cell(10,5,($ttlScore * 0.2)."%",1,'','C',true);
-		 #	dd($question,false);
 		}
 		$pdf->Output();
 	}
+
 }
+
+?>

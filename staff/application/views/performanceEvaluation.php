@@ -73,7 +73,7 @@ $behavioralQuestions = $questions['behavioral'];
 			<td><?php echo $value->details[0]->evaluator; ?></td>
 			<td><?php echo $value->details[0]->question; ?></td>
 			<td class='wt' data-val="<?php echo $value->details[0]->weight; ?>" data-id="<?php echo $value->details[0]->detail_id ?>"><?php echo $value->details[0]->weight; ?>%</td>
-			<td><textarea class='employeeremarks'></textarea></td>
+			<td><textarea class='employeeremarks'>&nbsp;</textarea></td>
 			<td>
 				<select class="empRtg">
 					<?php
@@ -188,7 +188,7 @@ $behavioralQuestions = $questions['behavioral'];
 			 						$nopFilter = "";
 			 					}
 		 						$tdClass = ($row < $row_count ? 'tdBot':'');
-		 						echo '<tr><td class="'.$tdClass.'" ><span class="wt '.$nopFilter.'" data-row="'.$row.'" data-val="'.$details->weight.'" data-id="'.$details->detail_id.'">'.$details->weight.'</span>%</td></tr>';
+		 						echo '<tr><td class="'.$tdClass.'" ><span class="wt '.$nopFilter.'" data-row="'.$row.'" data-val="'.$details->weight.'" data-id="'.$details->detail_id.'" data-qoutient="">'.$details->weight.'</span>%</td></tr>';
 		 						$row++;
 		 					}
 		 				 ?>
@@ -200,7 +200,7 @@ $behavioralQuestions = $questions['behavioral'];
 		 					$row = 0;
 		 					foreach($value->details as $details){
 		 						$tdClass = ($row < $row_count ? 'tdBot':'');
-		 						echo '<tr><td class="'.$tdClass.'"><textarea class="employeeremarks" data-row="'.$row.' " ></textarea></td></tr>';
+		 						echo '<tr><td class="'.$tdClass.'"><textarea class="employeeremarks" data-row="'.$row.' " >&nbsp;</textarea></td></tr>';
 		 						$row++;
 		 					}
 		 				 ?>
@@ -242,8 +242,9 @@ $behavioralQuestions = $questions['behavioral'];
 			 			<?php 
 			 				$row=0;
 			 				foreach ($value->details as $details) {
+			 					$nopFilter = ($details->nop == 0 ? 'opWtScore' : '');
 			 					$tdClass = ($row < $row_count ? 'tdBot':'');
-			 					echo '<tr><td class="'.$tdClass.'"><span class="wtScore" data-row="'.$row.'">0</span>%</td></tr>';
+			 					echo '<tr><td class="'.$tdClass.'"><span class="wtScore '.$nopFilter.'" data-row="'.$row.'">0</span>%</td></tr>';
 			 					$row++;
 			 				}
 			 			 ?>
@@ -283,7 +284,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		});
 
 
-		$('#tblBehavioral .empRtg').change(function(){
+		$('#tblBehavioral .empRtg').change(function(){	
 			$row = $(this).parents('#tblBehavioral tr');
 			$rowNo = $(this).data('row');
 			var opCount = $('.opWt').length;
@@ -291,34 +292,45 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			if($(this).hasClass('nop') && $(this).val() == 3){
 				var origWt = $row.find('.wt[data-row="'+$rowNo+'"]').data('val');
 				var weightQoutient = parseInt(origWt) / parseInt(opCount);
-
+				weightQoutient = parseFloat(weightQoutient.toFixed(2));
+				
 				$('.opWt').each(function(){
-					var text =  $(this).data('val') + weightQoutient;
-					$(this).text( text );
-					$(this).data('val', text);
+					var text =  parseFloat($(this).data('val')) + weightQoutient;
+					$(this).text( Math.round(text) );
+					$(this).attr('data-qoutient', text);
+
+					var $detailRow = $(this).parents('#tblBehavioral tr');
+					var rtg = $detailRow.find('.empRtg[data-row="'+ $(this).data('row') +'"]').val();
+					$detailRow.find('.wtScore[data-row="'+ $(this).data('row') +'"]').text( Math.round(rtg * text) );
 				});
+
 				$row.find('.wt[data-row="'+$rowNo+'"]').attr('data-val', 0);
 				$(this).attr('data-qoutient', weightQoutient);
-//				console.log(origWt+" / "+opCount+" = "+weightQoutient);
 				$row.find('.wt[data-row="'+$rowNo+'"]').text('0');
 				$row.find('.wtScore[data-row="'+$rowNo+'"]').text( 0 );
 
 				// Add this class to indicate that its weight have been subdivided
 				$(this).addClass('opp');			
 			}else if($(this).hasClass('nop') && $(this).hasClass('opp')){
+				
 				var qoutient = $(this).data('qoutient');
 				$row.find('.wt[data-row="'+$rowNo+'"]').attr('data-val', (qoutient * opCount) );
-				$row.find('.wt[data-row="'+$rowNo+'"]').text( (qoutient * opCount) );
+				$row.find('.wt[data-row="'+$rowNo+'"]').text( Math.round(qoutient * opCount) );
 
 				$('.opWt').each(function(){
-					var text =  $(this).data('val') - qoutient;
-					$(this).text( text );
-					$(this).data('val', text);
+					var text =  $(this).data('qoutient') - qoutient;
+					$(this).text( Math.round(text) );
+
+					var $detailRow = $(this).parents('#tblBehavioral tr');
+					var rtg = $detailRow.find('.empRtg[data-row="'+ $(this).data('row') +'"]').val();
+					$detailRow.find('.wtScore[data-row="'+ $(this).data('row') +'"]').text( Math.round(rtg * text) );				
 				});
+
 				$(this).attr('data-rtg', 0); 
 				$(this).removeClass('opp');
+
+				$row.find('.wtScore[data-row="'+$rowNo+'"]').text( $(this).val() * $row.find('.wt[data-row="'+$rowNo+'"]').data('val') );
 			}else{
-				console.log("c");
 				$row.find('.wtScore[data-row="'+$rowNo+'"]').text( $(this).val() * $row.find('.wt[data-row="'+$rowNo+'"]').data('val') );
 			}
 
@@ -394,6 +406,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			'empId':"<?php echo $empId ?>",
 			'evaluator':"<?php echo $evaluator ?>",
 			'staffType' : staffType,
+			'notifyId' : "<?php echo $notifyId ?>",
 			'empRating' : {
 				'technical': $('#tblTechnical .ttlRtg').text(),
 				'behavioral' : $('#tblBehavioral .ttlRtg').text(),
@@ -406,15 +419,17 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 
 	//	if(staffType == 2){
 			$.ajax({
-				url:'../../../evaluations/saveEvaluation',
+				url:'../../../../evaluations/saveEvaluation',
 				type:'POST',
 				data:{'data':$data},
 				async:'false',
 			}).done(function(r){
-				console.log('done');
+				console.log('done');	
+				console.log(r);
 			}).error(function(r){
 				console.log('error');
+				console.log(r);
 			});
-		}		
+	//	}		
 	}
 </script>

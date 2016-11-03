@@ -1748,6 +1748,29 @@ class Staffmodel extends CI_Model {
 		//redirect( $this->config->base_url() );
 		return true;
 	}
+
+	//get_all staff
+	public function get_all_staff( $index = 'empID' ){
+		$all_staff = $this->dbmodel->getQueryResults('staffs', '*');
+		$staffs = [];
+		if( $all_staff ){
+			foreach( $all_staff as $key => $val ){
+				$staffs[ $val->$index ] = $val;
+			}
+		}
+		return $staffs;
+	}
+
+
+	//return the cached list of staff
+	public function get_cached_all_staff(){		
+
+		if( ! $item = $this->cache->get('all_staff') ){
+			$item = $this->get_all_staff();
+			$this->cache->save( 'all_staff', $item, 3600 );
+		}
+		return $item;
+	}
 	
 } //end class
 

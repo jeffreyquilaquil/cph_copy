@@ -2589,6 +2589,7 @@ class Staff extends MY_Controller {
 		$data['questions'] = $this->evaluationsmodel->getStaffEvaluation($this->uri->segment(3));
 		$data['empId'] = $this->uri->segment(3);
 		$data['evaluator'] = $this->uri->segment(4);
+		$data['notifyId'] = $this->uri->segment(5);
 		$this->load->view('includes/templatecolorbox', $data);	
 	}
 		

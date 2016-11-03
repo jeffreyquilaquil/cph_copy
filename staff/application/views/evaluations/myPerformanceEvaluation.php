@@ -17,17 +17,17 @@
 			$evalForm = "";
 			switch ($row->status) {
 				case 0:
-					$statusText = "Pending Self-rating. <a href='".$this->config->base_url()."performanceeval/2/".$this->user->empID."/".$row->evaluatorId."' target='_blank'>Click Here</a> to enter ratings.";
+					$statusText = "Pending Self-rating. <a href='".$this->config->base_url()."performanceeval/2/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."' target='_blank'>Click Here</a> to enter ratings.";
 					break;
 				case 1:
-					$statusText = "In Progress. <a href='".$this->config->base_url()."evaluations/sendEvaluationEmail/1/".$this->user->empID."/".$row->evaluatorId."' onClick='return false;' class='sendEmail'>Click here</a> to remind Evaluator to enter ratings.";
+					$statusText = "In Progress. <a href='".$this->config->base_url()."evaluations/sendEvaluationEmail/1/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."' onClick='return false;' class='sendEmail'>Click here</a> to remind Evaluator to enter ratings.";
 					break;
 				case 2:
 					$statusText = "Pending for HR";
 					break;
 				case 3:
 					$statusText = "Evaluation Done";
-					$evalForm = "<a href='".$this->config->base_url()."evaluations/evalPDF/2/".$this->user->empID."/".$row->evaluatorId."'><img src='#'></a>";
+					$evalForm = "<a href='".$this->config->base_url()."evaluations/evalPDF/2/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."'><img src='#'></a>";
 					break;
 				case 4:
 					$statusText = "Cancelled";
@@ -39,7 +39,7 @@
 					<td>".date('F d, Y', strtotime($row->evalDate))."</td>
 					<td>".$row->evaluatorName."</td>
 					<td>".$statusText."</td>
-					<td>".$evalForm."<td>
+					<td>".$evalForm."</td>
 				";
 				echo "</tr>";
 			} ?>

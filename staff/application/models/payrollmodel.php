@@ -1026,19 +1026,25 @@ class Payrollmodel extends CI_Model {
 		
 		foreach($dataEmp AS $emp){
 			$queryPay = $this->payrollM->query13thMonth($emp, $periodFrom, $periodTo, $includeEndMonth);
+
 			if(!empty($queryPay)){
 				$pay = 0;
 				$deduction = 0;				
+				$insArr['totalBasic'] = $pay;
+				$insArr['totalDeduction'] = $deduction;
+				$insArr['totalAmount'] = 0;
+
 				foreach($queryPay AS $ask){
 					if(!empty($ask)){
 						$pay += $ask->basePay;
-						$deduction += (($ask->deduction!=NULL)?$ask->deduction:0);	
+						$deduction += ($ask->deduction-$ask->adj);
+						$insArr['totalAmount'] += $ask->pay;
 					}
 				}
-				
+
 				$insArr['totalBasic'] = $pay;
 				$insArr['totalDeduction'] = $deduction;
-				$insArr['totalAmount'] = ($pay-$deduction)/12;
+				//$insArr['totalAmount'] = ($pay-$deduction)/12;
 				$insArr['dateGenerated'] = date('Y-m-d H:i:s');
 								
 				///check if already exist update if exists else insert
@@ -1082,26 +1088,58 @@ class Payrollmodel extends CI_Model {
 			$basePay = $basePay/2; 
 			
 			
-			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
+			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, payrollsID_fk, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCode="regHoursAdded") AS "adj" , (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
 								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
 								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
 								
 			foreach($query AS $q){
-				$computepay = ($q->basePay-$q->deduction) / 12;
+				$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
 				$q->pay = round($computepay,4);
 				$payArr[$q->payDate] = $q;
 			}
 			
 			$lastMonth = '';
 			$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);
-			foreach($dates AS $d){
-				if(isset($payArr[$d])){
-					$arrayMonths[$d] = $payArr[$d];
-					$lastMonth = $d;
-				}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
-					$arrayMonths[$d] = (object) array('empID_fk'=>$empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
-				}else $arrayMonths[$d] = '';
+
+			foreach($payArr as $key => $val){
+				if( in_array($key, $dates) ){
+					$arrayMonths[$key] = $val;
+					$lastMonth = $key;
+					//Unset the date on $dates for it to be used if the user is allowed to generate remaining months
+					if($includeEndMonth){
+						if( $sKey = array_search($key, $dates) ){
+							unset($dates[$sKey]);
+						}
+					}
+				}
+				else{
+					$arrayMonths[$key] = '';
+				}
 			}
+
+			if( $includeEndMonth ){
+				foreach($dates as $dateK => $dateV){
+					//query if the date is less than the last payslip
+					$lp = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID', 'payDate > "'.$dateV.'"');
+					if($lp){
+						$arrayMonths[$dateV] = (object) array('empID_fk'=>$empID, 'payDate'=>$dateV, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+					}
+				}
+			}
+
+			// echo "<pre>";
+			// var_dump($dates);
+			// var_dump($payArr);
+			// exit();
+			// foreach($dates AS $d){
+			// 	if(isset($payArr[$d])){
+			// 		$arrayMonths[$d] = $payArr[$d];
+			// 		$lastMonth = $d;
+			// 	}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
+			// 		$arrayMonths[$d] = (object) array('empID_fk'=>$empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+			// 	}else $arrayMonths[$d] = '';
+			// }
+			//exit();
 		}
 		
 		return $arrayMonths;
