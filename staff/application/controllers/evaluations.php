@@ -20,10 +20,11 @@ class Evaluations extends MY_Controller
 		
 		$data['content'] = 'evaluations/index';
 		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
-		$data['headers'] = ['eavlution ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status'];
+		$data['evaluations'] = $this->evaluationsmodel->getStaffPerformanceEvaluation($this->user->empID, $this->user->dept, $this->user->is_supervisor);
+		$data['evaluations']['headers'] = ['Evaluation ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status', 'Actions'];
+
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
-
 		$this->load->view('includes/template', $data);
 	}
 
@@ -150,7 +151,7 @@ class Evaluations extends MY_Controller
 					'weight' => $weight[$i],
 					'detail_id' => $details_id[$i],
 					'nop' => $nop[$i],
-					);
+				);
 				array_push($data[1], $details_array);
 			}
 		}
@@ -158,6 +159,22 @@ class Evaluations extends MY_Controller
 		$result = $this->evaluationsmodel->updateQuestion($data);
 	#	dd($data);
 		print json_encode($result);
+	}
+
+	public function cancelEvaluation($empId, $notifyId){
+		$data['content'] = "evaluations/cancelEvaluationForm";
+		$data['empId'] = $empId;
+		$data['notifyId'] = $notifyId;
+		$data['name'] = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"','empId = '.$empId);
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+
+	public function saveCancelEvaluation(){
+		$data = $this->input->post('data');
+		$notifId = $data['notifyId'];
+		$data['status'] = 4;
+		unset($data['notifyId']);
+		$this->databasemodel->updateQuery('staffEvaluationNotif',array('notifyId'=>$notifId),$data);
 	}
 
 	public function saveEvaluation(){
@@ -169,8 +186,10 @@ class Evaluations extends MY_Controller
 				'score' => $data['technical']['wtScoreArr'][$i],
 				'remarks' => (isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : ''),
 				'question_id' => $data['technical']['questionIdArr'][$i],
+				'weight' => $data['technical']['weight'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
+				'notifyId' => $data['notifyId'],
 			];
 			array_push($rows, $dataArray);
 		}
@@ -181,8 +200,10 @@ class Evaluations extends MY_Controller
 				'score' => $data['behavioral']['wtScoreArr'][$i],
 				'remarks' => (isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : ''),
 				'question_id' => $data['behavioral']['questionIdArr'][$i],
+				'weight' => $data['behavioral']['weight'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
+				'notifyId' => $data['notifyId'],
 			];
 			array_push($rows, $dataArray);
 		}
@@ -198,22 +219,24 @@ class Evaluations extends MY_Controller
 			'staffType' => $data['staffType'],
 			'notifyId' => $data['notifyId'],
 		];
-	#	$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
+		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
 
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
+		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
 		 	#echo $data['staffType'];
 		 }
 
 		 if($data['staffType'] == 1){
-		 	$this->evalPDF(2, $data['empId'], $data['evaluator'], $data['notifyId']);
+		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 2','notifyId='.$data['notifyId']);
+		# 	$this->evalPDF(2, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 }
 	}
 
 	function saveEvaluationDate(){
 		$evalDate = date('Y-m-d', strtotime($this->input->post('evalDate')));
 		$data = [
-			'evalDate' => $evalDate,
+			'evalDate' => $ealDate,
 			'empId' => $this->input->post('empID'),
 			'evaluatorId' => $this->input->post('evaluator'),
 		];
@@ -225,6 +248,26 @@ class Evaluations extends MY_Controller
 			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 		}
 		
+	}
+
+	public function evaluationDetails( $notifId){
+		if(!empty($_POST)){
+			$printed = $this->input->post('fprinted');
+			$dir = UPLOADS.'/evaluations/';
+			$id = 'evalForm_'.$notifId.'.pdf';
+			$file = $_FILES['file'];
+			move_uploaded_file($file, $dir.$notifyId);
+		}
+
+		$data['content'] = "evaluations/perfEvalDetails";
+		$data['employee'] = $this->databasemodel->getSingleInfo('staffEvaluationNotif ses', 'concat(fname," ",lname) as name, title, dept, evalDate, supervisor, evaluatorId, ses.status, ses.cancelReason', 'notifyId='.$notifId,'LEFT JOIN staffs on staffs.empId = ses.empId LEFT JOIN newPositions ON posID = position');
+
+		$data['evaluator'] = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title','empId='.$data['employee']->evaluatorId,'LEFT JOIN newPositions ON posID = position');
+
+		$data['supervisor'] =  $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor','empId='.$data['employee']->supervisor,'LEFT JOIN newPositions ON posID = position');
+
+		$data['supervisor2'] =  $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title','empId='.$data['supervisor']->supervisor,'LEFT JOIN newPositions ON posID = position');
+		$this->load->view('includes/templatecolorbox', $data);
 	}
 
 // This function should be in myCron
@@ -277,6 +320,11 @@ class Evaluations extends MY_Controller
 		}
 		$to = 'jeffrey.quilaquil@tatepublishing.net';
 		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CareerPH Auto-Emails' );
+
+		echo "<script>
+				alert('The email has been sent.');
+				window.close();
+			</script>";
 	}
 
 	public function generateEvaluation($empID){
@@ -295,7 +343,7 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/template', $data);
 	}
 
-	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178, $evalId){
+	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178, $notifId){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 		require_once('wordWrap.php');
@@ -316,8 +364,8 @@ class Evaluations extends MY_Controller
 				$job_type = 0;
 			}
 
-			$questions = $this->evaluationsmodel->getEvaluationScore($questionType, $job_type, $empID, $staffType, $evalId);
-		#	dd($questions);
+			$questions = $this->evaluationsmodel->getEvaluationScore($questionType, $job_type, $empID, $staffType, $notifId);
+
 			$pdf->SetTitle('Evaluation Performance Form');
 			$pdf->AddPage();
 			// Header
@@ -347,7 +395,6 @@ class Evaluations extends MY_Controller
 			foreach($textArr as $value){
 				if(array_search( $value, $textArr) % 2 == 0){
 					$pdf->setXY(10, $y);
-					
 				}else{
 					$pdf->setXY(106	, $y);
 					$y+=5;
@@ -446,7 +493,6 @@ class Evaluations extends MY_Controller
 				if(count($question->details) > 1){
 					$ttlHeight = "";
 					$y1 = $pdf->getY();
-			#		$height = 6;5
 
 					$pdf->setTextColor(255, 255,255);
 					$pdf->SetFillColor(128, 0,0);
@@ -481,21 +527,22 @@ class Evaluations extends MY_Controller
 
 						foreach ($fpdfCell1 as $values) {
 							$height;
-							$pdf->rect($values[0], $y ,$values[3],$values[2] , 'DF');	
+							$pdf->rect($values[0], $y ,$values[3],$height, 'DF');	
 							$pdf->setXY($values[0], $y);
 							$pdf->multiCell($values[3], 5, $values[4],0,'',false);
 						}
 
-					  	$height =($height / count($question->details));
+					  	$height = ($height / count($question->details));
+					  	$y+5;
 					  }
 
 					foreach($question->details as $detailsRow){
 						$text = ($detailsRow->score !=0 ? $detailsRow->score / $detailsRow->weight : 0);
 						if(count($expectationArr) > 1){
+
 							if(strlen($detailsRow->question) > strlen($detailsRow->expectation)){
 								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
 								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
-
 							}else{
 								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
 								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
@@ -525,7 +572,6 @@ class Evaluations extends MY_Controller
 						$ttlHeight += $height;
 						$y = $pdf->getY() + 5;
 						$fpdfCell = [];
-
 					}
 
 					$pdf->setTextColor(0,0,0);
@@ -538,14 +584,13 @@ class Evaluations extends MY_Controller
  					$pdf->setTextColor(255, 255,255);
 					$pdf->SetFillColor(128, 0,0);
 
-					$pdf->rect(10, $y1 ,5, $ttlHeight+$dHeight, 'DF');
+					$pdf->rect(10, $y1 ,5, $ttlHeight, 'DF');
 					$pdf->setXY(10, $y1);
 					$pdf->multiCell(10, 5, $ii,0,'',false);
 
 					$pdf->setY($y);
 
 				}else{
-					#$y = $pdf->getY()+5;
 					$text = ($question->details[0]->score !=0 ? $question->details[0]->score / $question->details[0]->weight : 0);
 					
 					if($eachTitle == "BEHAVIORAL GOALS AND OBJECTIVES"){

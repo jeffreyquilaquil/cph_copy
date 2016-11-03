@@ -64,8 +64,7 @@ class Evaluationsmodel extends CI_model{
 
 	public function saveEvaluationDate($data){
 		$data['evalDate'] = date('Y-m-d', strtotime($data['evalDate']));
-		$this->databasemodel->insertQuery("staffEvalNotifications", $data);
-		#	dd($data, false);
+		return $this->databasemodel->insertQuery("staffEvaluationNotif", $data);
 	}
 
 	public function getStaffEvaluation($staffId){
@@ -88,13 +87,13 @@ class Evaluationsmodel extends CI_model{
 		
 	}
 
-	function getEvaluationScore($questionType, $jobType, $empID, $staffType){
+	function getEvaluationScore($questionType, $jobType, $empID, $staffType, $notifyId){
 		$questions = [];
 
 		$query = "SELECT question_id, goals FROM evalQuestions WHERE question_type = {$questionType} AND job_type = {$jobType}";
 		$questions = $this->databasemodel->getSQLQueryResults($query);
 		for($i = 0; $i < count($questions); $i++){
-			$query = "SELECT eqd.detail_id, expectation, evaluator, ses.weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID}";
+			$query = "SELECT eqd.detail_id, expectation, evaluator, ses.weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID} AND notifyId = {$notifyId}";
 			$questions[$i]->details = $this->databasemodel->getSQLQueryResults($query);
 		}
 		return $questions;
@@ -103,6 +102,66 @@ class Evaluationsmodel extends CI_model{
 	function getMyPerformanceEvaluation($empID){
 
 		return $this->databasemodel->getQueryResults('staffEvaluationNotif', '*, (SELECT concat(fname," ",lname) FROM staffs WHERE empID = evaluatorID) as evaluatorName', 'empId ='+$empID, '');
+	}
+
+	function getStaffPerformanceEvaluation($empId, $dept, $isSupervisor){
+		$evaluations = [];
+		if($dept == 'IT'){
+			foreach(range(0,4) as $status){
+				$dataRow = [];
+				$data = [];
+				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif ses', 'notifyId, ses.empid, concat(fname," ",lname) as "name", genDate,evalDate, supervisor,evaluatorId', 'status = '.$status, 'LEFT JOIN staffs ON staffs.empid = ses.empId');
+				foreach($value as $info){
+					$supervisorInfo = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name','empid = '.$info->supervisor);
+					$actionButton = "";
+
+					switch($status){
+						case 0:
+							$statusText = 'Pending Self-rating. <a href="'.$this->config->base_url().'evaluations/sendEvaluationEmail/2/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to send reminder to employee to enter self-rating';
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL"></a>';
+						break;
+						case 1:
+							$statusText = 'Employee ratings locked in. <a href="'.$this->config->base_url().'evaluations/sendEvaluationEmail/1/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to enter evaluator settings';
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL"></a>';
+						break;
+						case 2:
+							$statusText = 'Pending Evaluation Form for Printing';
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/evaluationDetails/'.$info->notifyId.'" class="iframe"><img src="#"></a>';
+						break;
+						case 3:
+							$statusText = "Done";
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/evalPDF/2/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank"><img src="#"></a>';
+						break;
+						case 4:
+							$statusText = "Cancelled";
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/evaluationDetails/'.$info->notifyId.'" class="iframe"><img src="#"></a>';
+						break;
+					}
+
+					$data = [
+						'Evaluation ID' => $info->notifyId,
+						'Employee ID' => $info->empid,
+						"Employee's Name" => $info->name,
+						"Evaluator ID" => $info->evaluatorId,
+						'Date Generated' => $info->genDate,
+						'Evaluation Date' => $info->evalDate,
+						'Immediate Supervisor' => $supervisorInfo->name,
+						'Notify ID' => $info->notifyId,
+						'Status' => $statusText,
+						'Action' => $actionButton,
+					];
+					array_push($dataRow, $data);
+				}
+				array_push($evaluations, $dataRow);
+			}
+		}else if($isSupervisor == 1){
+			$raf = $this->databasemodel->getQueryResults('staffs', 'empId', 'supervisor='.$empId);
+			foreach($raf as $employee){
+				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif', '*','empId ='.$employee->empId);
+				array_push($evaluations, $value);
+			}
+		}
+		return $evaluations;
 	}
 }
 ?> 

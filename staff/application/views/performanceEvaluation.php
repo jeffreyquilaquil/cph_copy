@@ -374,6 +374,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		technical = {
 			'remarksArr' : remarksArr,
 			'wtScoreArr' : wtScoreArr,
+			'wtArr' : wrArr,
 			'detailIdArr' : detailIdArr,
 			'questionIdArr' : questionIdArr,
 		}
@@ -396,6 +397,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		behavioral = {
 			'remarksArr' : remarksArr,
 			'wtScoreArr' : wtScoreArr,
+			'wtArr' : wtArr,
 			'detailIdArr' : detailIdArr,
 			'questionIdArr' : questionIdArr,
 		}
@@ -417,7 +419,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			}
 		}
 
-	//	if(staffType == 2){
+
 			$.ajax({
 				url:'../../../../evaluations/saveEvaluation',
 				type:'POST',
@@ -425,7 +427,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 				async:'false',
 			}).done(function(r){
 				console.log('done');	
-				console.log(r);
+				alert("The evaluation score has been recorded");
 			}).error(function(r){
 				console.log('error');
 				console.log(r);

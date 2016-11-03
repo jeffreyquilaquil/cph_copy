@@ -89,9 +89,7 @@ function submitEval(){
 			data:data,
 		}).done(function(r){
 			alert("Employee has been notified of its evaluation.");
-			console.log(r);
 		}).error(function(r){
-			console.log(r);
 		})
 	}
 }
