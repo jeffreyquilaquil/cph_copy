@@ -295,11 +295,12 @@ class Commonmodel extends CI_Model {
 	}
 	
 	function getStaffUnder($empID, $level){
-		// dd($level, false);
+		
 		$query = '';
 		///tweak for design team
 		if($level==2 OR $level==3){
 			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
+			
 			if($myDesign->grp=='Design'){
 				$supervisors = '';
 				$supQuery = $this->dbmodel->getQueryResults('staffs', 'DISTINCT empID', 'empID IN (SELECT DISTINCT supervisor FROM staffs WHERE supervisor!=0) AND dept="Production" AND grp!="Editing"', 'LEFT JOIN newPositions ON posID=position');
@@ -308,13 +309,13 @@ class Commonmodel extends CI_Model {
 						$supervisors .= $sup->empID.',';
 				}
 				
-				$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
+				$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
 			}
 		}
 		
 		
 		if(empty($query)){
-			$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+			$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
 		}
 		
 		return $query->result();
@@ -336,12 +337,20 @@ class Commonmodel extends CI_Model {
 		if username is the same with login user and not an hr, full or finance it returns FALSE
 	******/
 	function checkStaffUnderMe($username){
-		$valid = true;
+		$valid = false;
 		if(md5($username.'dv') != $this->session->userdata('u')){
 			if($this->access->accessFullHRFinance==false){
-				$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
-				$row = $query->row();
-				if(!isset($row->username)) $valid = false;
+
+				$underMe = $this->getStaffUnder($this->user->empID, $this->user->level);
+				foreach( $underMe as $staff ){
+					if( $staff->username == $username ){
+						$valid = true;
+						break;
+					}
+				}
+				//$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
+				//$row = $query->row();
+				//if(!isset($row->username)) $valid = false;
 			}			
 		}	
 		return $valid;
