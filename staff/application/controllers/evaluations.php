@@ -17,7 +17,6 @@ class Evaluations extends MY_Controller
 	}
 
 	public function index(){
-		
 		$data['content'] = 'evaluations/index';
 		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
 		$data['evaluations'] = $this->evaluationsmodel->getStaffPerformanceEvaluation($this->user->empID, $this->user->dept, $this->user->is_supervisor);
@@ -235,8 +234,9 @@ class Evaluations extends MY_Controller
 
 	function saveEvaluationDate(){
 		$evalDate = date('Y-m-d', strtotime($this->input->post('evalDate')));
+		echo $evalDate;
 		$data = [
-			'evalDate' => $ealDate,
+			'evalDate' => $evalDate,
 			'empId' => $this->input->post('empID'),
 			'evaluatorId' => $this->input->post('evaluator'),
 		];
@@ -244,10 +244,8 @@ class Evaluations extends MY_Controller
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
 
 		if($evalDate == date('Y-m-d')){
-		#	$data['ansDate'] = date('Y-m-d');
 			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 		}
-		
 	}
 
 	public function evaluationDetails( $notifId){
@@ -329,7 +327,7 @@ class Evaluations extends MY_Controller
 
 	public function generateEvaluation($empID){
 		$data['info'] = $this->databasemodel->getSingleInfo('staffs','fname, lname, dept, supervisor','empId = '.$empID, "left join newPositions on posID = position");
-		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, fname, lname, title',"dept = '".$data['info']->dept."' AND orgLevel_fk > 0","left join newPositions on posID = position");
+		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, fname, lname, title',"dept = '".$data['info']->dept."' AND levelID_fk > 0","left join newPositions on posID = position");
 		$data['empID'] = $empID;
 		$data['content'] = 'evaluations/generateEvaluation';
 		$this->load->view('includes/templatecolorbox', $data);
@@ -346,9 +344,9 @@ class Evaluations extends MY_Controller
 	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178, $notifId){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
-		require_once('wordWrap.php');
-		$pdf = new FPDI('P');
 
+		$pdf = new FPDI('P');
+		// $pdf->SetAutoPageBreak('auto');
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		$evaluatorTitles = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 
@@ -482,24 +480,21 @@ class Evaluations extends MY_Controller
 		 	$y = $pdf->getY();		 	
 
 			$ttlScore = 0;
+
 			foreach($questions as $question){
 				$fpdfCell = [];
 
 				$h = $pdf->getY();
 				$height = $h - $y;
 				$height = ($height == 0 ? 60 : $height);
-
+			if($ii == 5){
+				$y -= 10;
+			}
 			#	array_push($fpdfCell, array(15, $y, $height, 30, $question->goals));		
 				if(count($question->details) > 1){
 					$ttlHeight = "";
-					$y1 = $pdf->getY();
-
-					$pdf->setTextColor(255, 255,255);
-					$pdf->SetFillColor(128, 0,0);
-
-					$pdf->rect(10, $y ,5, $height, 'DF');
-					$pdf->setXY(10, $y);
-					$pdf->multiCell(10, 5, $ii,0,'',false);
+					$y1 = $y;
+					$iii = 1;	// to count the number of rows
 
 					$pdf->setTextColor(0,0,0);
 					$pdf->SetFillColor(204, 255,255);
@@ -526,27 +521,26 @@ class Evaluations extends MY_Controller
 					  	}
 
 						foreach ($fpdfCell1 as $values) {
-							$height;
+							
 							$pdf->rect($values[0], $y ,$values[3],$height, 'DF');	
 							$pdf->setXY($values[0], $y);
 							$pdf->multiCell($values[3], 5, $values[4],0,'',false);
 						}
 
 					  	$height = ($height / count($question->details));
-					  	$y+5;
+					
 					  }
 
 					foreach($question->details as $detailsRow){
 						$text = ($detailsRow->score !=0 ? $detailsRow->score / $detailsRow->weight : 0);
 						if(count($expectationArr) > 1){
-
 							if(strlen($detailsRow->question) > strlen($detailsRow->expectation)){
 								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
 								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
 							}else{
 								array_push($fpdfCell, array(105, $y, $height, 35, $detailsRow->question));
 								array_push($fpdfCell, array(45, $y, $height, 35, $detailsRow->expectation));
-							} 
+							}
 						}
 
 						if($eachTitle == "BEHAVIORAL GOALS AND OBJECTIVES"){
@@ -563,32 +557,48 @@ class Evaluations extends MY_Controller
 						array_unshift($fpdfCell, array(147, $y, $height, 35, $detailsRow->remarks));
 						foreach ($fpdfCell as $value) {
 					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
-							$pdf->rect($value[0], $y ,$value[3], $value[2], 'DF');	
+							// These are filters to forcefully adjust cell's dimensions
+							$value[2] = ($ii == 5 && $iii == 2 ? $value[2]+20 : $value[2]); 
+							$value[2] = ($ii == 5 && $iii == 3 ? $value[2]-15 : $value[2]);
+
+							$pdf->rect($value[0], $value[1] ,$value[3], $value[2], 'DF');
 							$pdf->setXY($value[0], $y);
 							$pdf->multiCell($value[3], 5, $value[4],0,'',false);
 						}
+						$iii++;
 						$dy2 = $pdf->getY();
 						$dHeight = $dy2 - $dy1;
 						$ttlHeight += $height;
 						$y = $pdf->getY() + 5;
 						$fpdfCell = [];
 					}
+					 	$y += 5;	
+
+					// Forcefully adjust cell height
+					$ttlHeight = ($ii == 5 ? $ttlHeight+($height/2) : $ttlHeight);
 
 					$pdf->setTextColor(0,0,0);
 					$pdf->SetFillColor(204, 255,255);
 
-					$pdf->rect(15, $y1, 30, $ttlHeight, 'DF');
+					$pdf->rect(15, $y1, 30, $ttlHeight-$height, 'DF');
 					$pdf->setXY(15, $y1);
 					$pdf->multiCell(30, 5, $question->goals,0,'',false);
 
  					$pdf->setTextColor(255, 255,255);
 					$pdf->SetFillColor(128, 0,0);
 
-					$pdf->rect(10, $y1 ,5, $ttlHeight, 'DF');
+					$pdf->rect(10, $y1 ,5, $ttlHeight-$height, 'DF');
 					$pdf->setXY(10, $y1);
 					$pdf->multiCell(10, 5, $ii,0,'',false);
+				#	echo "$ii<br>";
+
 
 					$pdf->setY($y);
+					if($y >=260){
+						$pdf->addPage();
+						$y = $pdf->getY();
+						
+					}
 
 				}else{
 					$text = ($question->details[0]->score !=0 ? $question->details[0]->score / $question->details[0]->weight : 0);
@@ -615,7 +625,7 @@ class Evaluations extends MY_Controller
 					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
 					array_push($fpdfCell, array(147, $y, $height, 35, $question->details[0]->remarks));
 					array_push($fpdfCell, array(192, $y, $height, 10, $question->details[0]->score));
-					// Questions or Expectation should be last b/c it has the most # of text and it sets the height for the other cells
+					// The most number of characters should be last b/c it has the most # of text and it sets the height for the other cells
 					if(strlen($question->details[0]->question) > strlen($question->details[0]->expectation)){
 						array_push($fpdfCell, array(45, $y, $height, 35, $question->details[0]->expectation));
 						array_push($fpdfCell, array(105, $y, $height, 35, $question->details[0]->question));
@@ -626,17 +636,17 @@ class Evaluations extends MY_Controller
 
 					foreach ($fpdfCell as $value) {
 					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
-						$pdf->rect($value[0], $y ,$value[3], $value[2], 'DF');	
+					#=	echo $y."\n";
+						$pdf->rect($value[0], $y ,$value[3], $height, 'DF');
 						$pdf->setXY($value[0], $y);
 						$pdf->multiCell($value[3], 5, $value[4],0,'',false);
-					}
+					}#	echo "<br>";
 				}
 
 				$y = $pdf->getY();
-			#	$spaceLeft = $pageHeight - $y;
-			#	$spaceLeft -= $bottomMargin;
-				
+
 				$ii++;	
+
 			}
 
 			$pdf->SetFillColor(255, 255, 255);
@@ -656,6 +666,7 @@ class Evaluations extends MY_Controller
 		 	$pdf->SetXY(147,$y);
 		 	$pdf->cell(45,5,"Employee's 20% Weighted Rating",1,'','C',true);
 		 	$pdf->cell(10,5,($ttlScore * 0.2)."%",1,'','C',true);
+
 		}
 		$pdf->Output();
 	}

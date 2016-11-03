@@ -3,8 +3,8 @@
 
 <ul class="tabs">
 	<?php 
-	#	$evaluations = $evaluations[0];
 		$counter = 0;
+
 		foreach ($tabs as $value) {
 			$current = ($counter == 0 ? 'current' : '');
 			$count = count($evaluations[$counter]);
@@ -21,7 +21,7 @@ foreach (range(0,4) as $value) {
 	$current = ($counter == 0 ? 'current' : '');
 	echo '<div id="tab-'.$counter.'" class="tab-content '.$current.'"><br>';
 	$count = count($evaluations[$value]);
-	echo '<h3>'.ucwords($value).' ('.$count.')</h3>';
+	echo '<h3>'.ucwords($tabs[$value]).' ('.$count.')</h3>';
 
 	$this->textM->renderTable($th, '',$evaluations[$value], true, true);
 

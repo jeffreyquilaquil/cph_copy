@@ -63,7 +63,7 @@ class Evaluationsmodel extends CI_model{
 	}
 
 	public function saveEvaluationDate($data){
-		$data['evalDate'] = date('Y-m-d', strtotime($data['evalDate']));
+		$data['genDate'] = date('Y-m-d');
 		return $this->databasemodel->insertQuery("staffEvaluationNotif", $data);
 	}
 
@@ -106,7 +106,7 @@ class Evaluationsmodel extends CI_model{
 
 	function getStaffPerformanceEvaluation($empId, $dept, $isSupervisor){
 		$evaluations = [];
-		if($dept == 'IT'){
+		if($dept == 'Human Resources'){
 			foreach(range(0,4) as $status){
 				$dataRow = [];
 				$data = [];

@@ -18,8 +18,9 @@
  ?>
 <h1>Generate Evaluation Form for <?php echo $info->fname." ".$info->lname; ?></h1>
 <hr>
-<input type="hidden" id="empID" value="<?php echo $this->uri->segment(3) ?>">
-<input type="hidden" id="curDate" value="<?php echo date('F d, Y') ?>">
+<form action="saveEvaluationDate" method="POST">
+<input type="hidden" name="empID" id="empID" value="<?php echo $this->uri->segment(3) ?>">
+<input type="hidden" name="curDate" id="curDate" value="<?php echo date('F d, Y') ?>">
 <table style="border-collapse: collapse;">
  	<tr class='hr'>
  		<td width="50%"><b>When will this evaluation be discussed to the employee?</b></td>
@@ -31,9 +32,10 @@
  		<td width="50#"><b>Who is evaluating the employee</b></td>
  		<td>
  			<select class="forminput" id="evaluator" name="evaluator">
- 				<?php 
+ 				<?php 	$posTitle = '';
  					foreach ($evaluator as $evalInfo) {
  						$selected ='';
+ 					
  						if($info->supervisor == $evalInfo->empID){
  							$selected = 'selected';
  							$posTitle = $evalInfo->title;
@@ -52,7 +54,7 @@
  		<td colspan="2" align="center"><input type="button" value="Notify Employee to Enter Self-Rating" onclick="submitEval()"></td>
  	</tr>
  </table>
-
+</form>
  <script type="text/javascript">
  $(function(){
  
@@ -88,7 +90,9 @@ function submitEval(){
 			url:'../../saveEvaluationDate',
 			data:data,
 		}).done(function(r){
-			alert("Employee has been notified of its evaluation.");
+			displaypleasewait();
+			alert("Performance Evaluation has been generated");
+			window.location.reload();
 		}).error(function(r){
 		})
 	}
