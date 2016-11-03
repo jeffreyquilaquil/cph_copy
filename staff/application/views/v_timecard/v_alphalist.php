@@ -3,6 +3,14 @@
 	$from_year = (isset($from_year)) ? $from_year : date('Y');
 	$to_month = (isset($to_month)) ? $to_month : '';
 	$to_year = (isset($to_year)) ? $to_year : date('Y');
+
+	$genText = '
+		<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Active Employees</button></li>
+			<li><button name="btnSubmit_withprev" value="SubmitPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
+	';
+	if(isset($_GET['which']) && $_GET['which'] == 'end'){
+		$genText = '<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Separated Employees</button></li>';
+	}
 ?>
 <style type="text/css">
 	ul.alphalist { list-style-type: none; padding-left: 0; margin-left: 0;  }
@@ -23,8 +31,7 @@
 			<li><label from="to_month">to</label></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'to_month', $to_month, '', '', 'id="to_month"', $monthFullArray); ?></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'to_year', $to_year, '', '', 'id="to_year"', $yearFullArray); ?></li>
-			<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Active Employees</button></li>
-			<li><button name="btnSubmit_withprev" value="SubmitPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
+			<?php echo $genText;?>
 		</ul>
 	</form>
 	
