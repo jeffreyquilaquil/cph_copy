@@ -295,9 +295,10 @@ class Commonmodel extends CI_Model {
 	}
 	
 	function getStaffUnder($empID, $level){
+		// dd($level, false);
 		$query = '';
 		///tweak for design team
-		if($level==2){
+		if($level==2 OR $level==3){
 			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
 			if($myDesign->grp=='Design'){
 				$supervisors = '';
