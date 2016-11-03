@@ -10,7 +10,7 @@
 <h2>Generated 13th Month</h2>
 
 <hr/>
-<div style="padding-top:5px;">
+<div class='selectionDiv' style="padding-top:5px;">
 	<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
 </div>
 <br/>
@@ -73,10 +73,27 @@ $(function(){
 	$('#dtable13').dataTable({});
 	$('#selectAll').click(function(){
 		$('.classCheckMe').prop('checked', true);
+		countChecked();
 	});
-	
+
+	$('.classCheckMe').change(function(){
+		countChecked();
+	});
+
+	function countChecked(){
+		var countCheck = 0;
+		$('.classCheckMe').each(function(){
+			if( $(this).is(':checked') ){
+				countCheck++;
+			}
+		});
+		$('.selectionLabel').remove();
+		$('.selectionDiv').append('<div class="selectionLabel"><strong><i>'+countCheck+' Selected<i></strong></div>');
+	}
+
 	$('#deselectAll').click(function(){
 		$('.classCheckMe').prop('checked', false);
+		countChecked();
 	});
 	<?php /*
         initComplete: function () {

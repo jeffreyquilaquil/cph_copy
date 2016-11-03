@@ -821,17 +821,18 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
-	public function yearendreport($data){
-		$data['content'] = 'v_timecard/v_13thmonthmanage';
-		$data['column'] = 'withLeft';
-		$data['tpage'] = 'yearendreport';
+	// public function yearendreport($data){
+	// 	$data['content'] = 'v_timecard/v_13thmonthmanage';
+	// 	$data['column'] = 'withLeft';
+	// 	$data['tpage'] = 'yearendreport';
 
-		unset($data['timecardpage']);
 
-		$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+	// 	unset($data['timecardpage']);
 
-		$this->load->view('includes/template', $data);		
-	}
+	// 	$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+
+	// 	$this->load->view('includes/template', $data);		
+	// }
 
 	public function taxsummary(){
 		$data['content'] = 'v_timecard/v_tax_summary';
@@ -902,7 +903,7 @@ class Timecard extends MY_Controller {
 						else if($show=='separated') $condition = ' AND staffs.active=0';
 					}
 					
-					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
+					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'exclude_in_reports = 0 AND office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
 				}else if($data['pagepayroll']=='previouspayroll'){
 					$data['pagePayTitle'] = 'Previous Payroll';
 					
@@ -1682,8 +1683,10 @@ class Timecard extends MY_Controller {
 	
 	public function alphalist(){
 		$data['content'] = 'v_timecard/v_alphalist';
-		$data['column'] = 'withLeft';
-		$data['tpage'] = 'yearendreport';
+		if(isset($_GET['which']) && $_GET['which'] != 'end'){
+			$data['column'] = 'withLeft';
+			$data['tpage'] = 'manage13thmonth';
+		}
 
 		unset($data['timecardpage']);
 
@@ -1723,7 +1726,7 @@ class Timecard extends MY_Controller {
 						}
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
-							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;
 							break;
@@ -1957,8 +1960,10 @@ class Timecard extends MY_Controller {
 	public function manage13thmonth(){
 		
 		$data['content'] = 'v_timecard/v_13thmonthmanage';
-		$data['tpage'] = 'yearendreport';
+		$data['tpage'] = 'manage13thmonth';
 		$data['column'] = 'withLeft';
+
+
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){

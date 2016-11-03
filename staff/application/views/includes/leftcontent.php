@@ -21,7 +21,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 		}
 	</script>
 <?php
-}elseif( isset($tpage) && $tpage=='yearendreport' ){
+}elseif( isset($tpage) && $tpage=='manage13thmonth' ){
 	echo '<ul id="leftMenu" style="margin:0px;">';
 		if($this->access->accessFullFinance==true){
 			if(!isset($pageyereport)) $pageyereport = $this->uri->segment(2);

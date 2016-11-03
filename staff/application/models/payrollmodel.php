@@ -1097,11 +1097,18 @@ class Payrollmodel extends CI_Model {
 								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
 								
 			foreach($query AS $q){
-				$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
+				//get startdate of the employee
+				$p = $this->dbmodel->getSingleInfo('staffs', 'startDate', 'empID = '.$empID);
+				$diff = $this->commonM->dateDifference($p->startDate, date('Y-m-d'));
+
+				$computepay = 0;
+				if( $diff > 30 )
+					$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
+
 				$q->pay = round($computepay,4);
 				$payArr[$q->payDate] = $q;
 			}
-			
+
 			$lastMonth = '';
 			$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);
 
@@ -2416,7 +2423,16 @@ class Payrollmodel extends CI_Model {
 		$cell_counter += 1;
 
 		//Totals
-		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13);
+		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
+		$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
+		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation']);
+		$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']);
+		$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']);
+		$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']);
+		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']);
+		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
+		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
 
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 		ob_end_clean();
