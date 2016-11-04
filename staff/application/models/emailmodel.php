@@ -291,7 +291,7 @@ class Emailmodel extends CI_Model {
 
 		$msg = '<p>Hello '.$info->name.',</p>';
 		$msg .= '<p>This is to confirm that HR has received your resignation letter duly approved by your immediate supervisor. Careerph is now updated with your effective separation date which is on '. date('F d, Y', strtotime($info->endDate) ).'.</p>';
-		$msg .= '<p>Please come to HR two days before your last day of employment and claim two copies of your exit clearance form. Note that it is your responsibility to complete the exit clearance form. Your last pay shall be release thirty (30) days after the exit clearance form is completed. For addition information, please visit <a href=" http://employee.tatepublishing.net/hr/exit-process/" alt="http://employee.tatepublishing.net/hr/exit-process/">http://employee.tatepublishing.net/hr/exit-process/</a>';
+		$msg .= '<p>Please come to HR two days before your last day of employment and claim two copies of your exit clearance form. Note that it is your responsibility to complete the exit clearance form. Your last pay shall be release thirty (30) days to ninety days (90) after the exit clearance form is completed. For addition information, please visit <a href=" http://employee.tatepublishing.net/hr/exit-process/" alt="http://employee.tatepublishing.net/hr/exit-process/">http://employee.tatepublishing.net/hr/exit-process/</a>';
 		$msg .= '<p>Reply to this email if you have questions about the exit process.</p>';
 		$msg .= '<p>Best Regards,</p>';
 		$msg .= '<p>Human Resources Department</p>';
