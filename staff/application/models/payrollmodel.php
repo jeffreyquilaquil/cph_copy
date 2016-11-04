@@ -1033,6 +1033,7 @@ class Payrollmodel extends CI_Model {
 				$insArr['totalBasic'] = $pay;
 				$insArr['totalDeduction'] = $deduction;
 				$insArr['totalAmount'] = 0;
+				$insArr['includeEndMonth'] = $includeEndMonth;
 
 				foreach($queryPay AS $ask){
 					if(!empty($ask)){
@@ -2443,7 +2444,8 @@ class Payrollmodel extends CI_Model {
 
 		//get totaltaxable
 		$cell_counter += 1;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+		$totalTaxable = $totals['totalTaxable']+$taxFromPrevious;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter,$totalTaxable );
 		
 		//get tax excemption
 		$cell_counter += 1;
