@@ -11,7 +11,7 @@ class Timecard extends MY_Controller {
 		
 	public function _remap($method){
 		$segment3 = $this->uri->segment(3);
-		$segment4 = $this->uri->segment(4);
+        $segment4 = $this->uri->segment(4);
 		$data['currentDate'] = date('Y-m-d'); //this is the exact date today		
 		$data['currentDatetime'] = date('Y-m-d H:i:s'); //this is the exact date today		
 		$data['visitID'] = (($this->user!=false)?$this->user->empID:'');
@@ -26,11 +26,11 @@ class Timecard extends MY_Controller {
 			$data['visitID'] = $method;
 			$data['row'] = $this->dbmodel->getSingleInfo('staffs','empID,username, fname, CONCAT(fname," ",lname) AS name', 'empID="'.$method.'"');
 			//var_dump($method);
-			//if(empty($segment3)){
+			if(empty($segment3)){
 				$this->timelogs($data);
-			// }else{
-			// 	$this->$segment3($data);
-			// }
+			 }else{
+			 	$this->$segment3($data);
+			 }
 		}else{
 			if($method=='index')
 				$this->timelogs($data);
