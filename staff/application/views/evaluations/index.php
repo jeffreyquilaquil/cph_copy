@@ -1,10 +1,10 @@
 <h2>Staff Evaluations</h2>
 <hr>
-
+	
 <ul class="tabs">
 	<?php 
 		$counter = 0;
-
+	#	dd($evaluations, false);
 		foreach ($tabs as $value) {
 			$current = ($counter == 0 ? 'current' : '');
 			$count = count($evaluations[$counter]);

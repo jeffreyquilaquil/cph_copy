@@ -1048,9 +1048,13 @@ class Payrollmodel extends CI_Model {
 				$insArr['dateGenerated'] = date('Y-m-d H:i:s');
 								
 				///check if already exist update if exists else insert
-				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND periodFrom="'.$periodFrom.'" AND periodTo="'.$periodTo.'"');
+				$yearDate = date('Y');
+
+				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND YEAR(periodFrom) = "'.$yearDate.'" ');
 				if(!empty($monthID)){
 					$gID[] = $monthID;
+					$insArr['periodFrom'] = $periodFrom;
+					$insArr['periodTo'] = $periodTo;
 					$this->dbmodel->updateQuery('tc13thMonth', array('tcmonthID'=>$monthID), $insArr);
 				}else{
 					$insArr['empID_fk'] = $emp;
@@ -1072,8 +1076,8 @@ class Payrollmodel extends CI_Model {
 			$dates[] = date('Y-m-15', strtotime($pfrom));
 			$dates[] = date('Y-m-t', strtotime($pfrom));
 			$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
-		}	
-	
+
+		}
 		return $dates;
 	}
 	
@@ -1093,11 +1097,18 @@ class Payrollmodel extends CI_Model {
 								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
 								
 			foreach($query AS $q){
-				$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
+				//get startdate of the employee
+				$p = $this->dbmodel->getSingleInfo('staffs', 'startDate', 'empID = '.$empID);
+				$diff = $this->commonM->dateDifference($p->startDate, date('Y-m-d'));
+
+				$computepay = 0;
+				if( $diff > 30 )
+					$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
+
 				$q->pay = round($computepay,4);
 				$payArr[$q->payDate] = $q;
 			}
-			
+
 			$lastMonth = '';
 			$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);
 
@@ -1106,7 +1117,7 @@ class Payrollmodel extends CI_Model {
 					$arrayMonths[$key] = $val;
 					$lastMonth = $key;
 					//Unset the date on $dates for it to be used if the user is allowed to generate remaining months
-					if($includeEndMonth){
+					if($includeEndMonth == 1){
 						if( $sKey = array_search($key, $dates) ){
 							unset($dates[$sKey]);
 						}
@@ -1117,7 +1128,7 @@ class Payrollmodel extends CI_Model {
 				}
 			}
 
-			if( $includeEndMonth ){
+			if( $includeEndMonth == 1){
 				foreach($dates as $dateK => $dateV){
 					//query if the date is less than the last payslip
 					$lp = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID', 'payDate > "'.$dateV.'"');
@@ -1141,7 +1152,7 @@ class Payrollmodel extends CI_Model {
 			// }
 			//exit();
 		}
-		
+
 		return $arrayMonths;
 	}
 	
@@ -2308,10 +2319,130 @@ class Payrollmodel extends CI_Model {
 
 	}
 
-	public function getTotalComputationForAllEmployee($info){
+	public function taxSummary($data, $outputFile){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/taxSummary.xls';
+		
 		// echo "<pre>";
-		// var_dump($info);
+		// var_dump($data);
 		// exit();
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$cell_counter = 7;
+
+		$objPHPExcel->getActiveSheet()->setCellValue('A2', $data->empID);
+		$objPHPExcel->getActiveSheet()->mergeCells('C2:E2');
+		$objPHPExcel->getActiveSheet()->setCellValue('C2', $data->fname.' '.$data->lname);
+		$objPHPExcel->getActiveSheet()->mergeCells('G2:H2');
+		$objPHPExcel->getActiveSheet()->setCellValue('G2', $data->dateRange);
+
+		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
+
+		$totals = array(
+			'grossIncome' => 0,
+			'basePay' => 0,
+			'otherCompensation' => 0,
+			'regTaken' => 0,
+			'sss' => 0,
+			'pagIbig' => 0,
+			'philhealth' => 0,
+			'allowance' => 0,
+			'incentives' => 0,
+			'totalTaxable' => 0 
+					);
+
+		foreach ($data->dataMonth as $eK => $eV) {
+			$regTaken = isset( $data->dataMonthItems[$eV->payslipID]["regularTaken"] )? $data->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
+			$regHoursAdded = isset( $data->dataMonthItems[$eV->payslipID]["regHoursAdded"] )? $data->dataMonthItems[$eV->payslipID]["regHoursAdded"]:0;
+			$regHoursDeducted = isset( $data->dataMonthItems[$eV->payslipID]["regHoursDeducted"] )? $data->dataMonthItems[$eV->payslipID]["regHoursDeducted"]:0;
+			$deduction = ($regTaken - $regHoursAdded + $regHoursDeducted);
+
+			$month13 += ( ( $eV->basePay + $regHoursAdded )- $regTaken - $regHoursDeducted ) / 12;
+			
+			$earning = $eV->earning;
+
+			$totals['sss'] += $sss = isset( $data->dataMonthItems[$eV->payslipID]["sss"] )? $data->dataMonthItems[$eV->payslipID]["sss"]:0;
+			$totals['pagIbig'] += $pagIbig = isset( $data->dataMonthItems[$eV->payslipID]["pagIbig"] )? $data->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
+			$totals['philhealth'] += $philhealth = isset( $data->dataMonthItems[$eV->payslipID]["philhealth"] )? $data->dataMonthItems[$eV->payslipID]["philhealth"]:0;
+			$unusedLeave = isset( $data->dataMonthItems[$eV->payslipID]["unusedLeave"] )? $data->dataMonthItems[$eV->payslipID]["unusedLeave"]:0;
+			$totalIncomeTax = isset( $data->dataMonthItems[$eV->payslipID]["incomeTax"] )? $data->dataMonthItems[$eV->payslipID]["incomeTax"]:0;
+
+			$incentives = 0;
+			$allowanceKey = $this->textM->constantArr('otherAllowancesInKey');
+			foreach ( $allowanceKey as $v ) {
+				if(array_key_exists($v, $data->dataMonthItems[$eV->payslipID])){
+					$incentives += $data->dataMonthItems[$eV->payslipID][$v];
+				}
+			}
+
+			$spp = $pagIbig+$philhealth+$sss;
+
+			//$tSalary = $eV->basePay;
+			//$basicPay = $tSalary-$deduction-$spp;
+			$otherCompensation = 0;
+
+			foreach ($data->dataMonthItems[$eV->payslipID] as $mK => $mV) {
+				if(in_array($mK, $payslipAddAdjustments)){
+					$otherCompensation += $mV;
+				}
+			}
+
+			$totals['grossIncome'] += $grossIncome = $eV->basePay + $otherCompensation + $eV->allowance - $regTaken;
+			$totals['basePay'] += $eV->basePay;
+			$totals['otherCompensation'] += $otherCompensation;
+			$totals['regTaken'] += $regTaken;
+			$totals['allowance'] += $eV->allowance;
+			$totals['incentives'] += $incentives;
+			$totals['totalTaxable'] += $eV->totalTaxable;
+
+			$objPHPExcel->getActiveSheet()->insertNewRowBefore($cell_counter,1);
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, date('F d, Y', strtotime($eV->payDate)));
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $grossIncome);
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $eV->basePay);
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $otherCompensation);
+
+			$objPHPExcel->getActiveSheet()->getStyle('E'.$cell_counter.':H'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, '('.$regTaken.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, '('.$sss.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, '('.$pagIbig.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, '('.$philhealth.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $eV->allowance);
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $incentives);
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $eV->totalTaxable);
+
+			$cell_counter++;
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $month13);			
+		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13);
+
+		$cell_counter += 1;
+
+		//Totals
+		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
+		$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
+		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation']);
+		$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']);
+		$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']);
+		$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']);
+		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']);
+		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
+		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
+	public function getTotalComputationForAllEmployee($info){
 
 		$items = array();
 		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');

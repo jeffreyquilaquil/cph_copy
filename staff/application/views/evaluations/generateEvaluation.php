@@ -40,7 +40,7 @@
  							$selected = 'selected';
  							$posTitle = $evalInfo->title;
  						}
- 						echo '<option value="'.$evalInfo->empID.'" posTitle="'.$evalInfo->title.'" '.$selected.'>'.$evalInfo->fname.' '.$evalInfo->lname.'</option>';
+ 						echo '<option value="'.$evalInfo->empID.'" posTitle="'.$evalInfo->title.'" '.$selected.'>'.$evalInfo->name.'</option>';
  					}
  				 ?>
  			</select>
@@ -83,16 +83,17 @@ function submitEval(){
 	if(nullCheck && dateCheck){
 		var data = "evalDate="+$('#evalDate').val()+
 			"&evaluator="+$('#evaluator').val()+
+			"&evaluatorName="+$('#evaluator option:selected').text()+
 			"&empID="+$('#empID').val();
 
+		displaypleasewait();
 		$.ajax({
 			type:'POST',
 			url:'../../saveEvaluationDate',
 			data:data,
 		}).done(function(r){
-			displaypleasewait();
 			alert("Performance Evaluation has been generated");
-			window.location.reload();
+			parent.$.colorbox.close();
 		}).error(function(r){
 		})
 	}

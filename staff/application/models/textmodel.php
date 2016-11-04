@@ -934,6 +934,8 @@ class Textmodel extends CI_Model {
 			$arr = array('Clothing Allowance','Laundry Allowance','Meal Allowance','Medical Cash Allowance','Rice Allowance','Pro-Rated Allowance');
 		} else if($a == 'otherAllowance'){
 			$arr = array('Medicine Reimbursement','Training Allowance','Performance Bonus','Kudos Bonus','Discrepancy on Previous Bonus','Vacation Pay');
+		} elseif($a == 'otherAllowancesInKey'){
+			$arr = array('medReimbursement','trainingAllowance','perfBonus','kudosBonus','discrepancyPreviousBonus');
 		} else if($a == 'payslipAddAdjustments'){
 			$arr = array('nightDiff',
 				'overTime',
@@ -1331,5 +1333,152 @@ class Textmodel extends CI_Model {
 		}
 	}
 
+	public function questions( $dept = 'it' ){
+		
+		$questions = [];
+
+		switch( $dept ){
+			case 'it':
+			$questions = [ 'questionnaires' =>
+				[
+					[
+						'questions' => 'CSS: Which is a valid CSS rule?',
+						'choices' => ['a' => '.center{ text-align: center; }', 'b' => 'css="text-align:center;"', 'c' => 'style="text-align="center""', 'd' => '.center{ text-align="center" }' ]
+					],
+					[
+						'questions' => 'CSS: An internal CSS is written inside which HTML tag?',
+						'choices' => ['a' => '&lt;css>&lt;/css>', 'b' => '&lt;css-style>&lt;/css-style>', 'c' => '&lt;style>&lt;/style>', 'd' => '&lt;style-tag>&lt;/style-tag>']
+					],
+					[
+						'questions' => 'PHP: What is the output of the following code?<br/>
+							<pre>
+								$a = "a";
+								$b = "b";
+								$c = $a + $b;
+								echo $c;
+							</pre>
+						',
+						'choices' => ['a' => 'Syntax Error', 'b' => '0', 'c' => 'ab', 'd' => 'Undefined']
+					],
+					[
+						'questions' => 'Javascript: External Javascript code usually written inside which HTML tag?',
+						'choices' => ['a' => '&lt;javascript&gt;&lt;/javascript&gt;', 'b' => '&lt;script&gt;&lt;/script&gt;', 'c' => 'None. External Javascript codes are not enclosed with a tag', 'd' => 'None. External Javascript codes should not be enclosed with a tag']
+					],
+					[
+						'questions' => 'CSS: Which of the following is <em>NOT</em> a valid CSS unit?',
+						'choices' => ['a' => 'px', 'b' => 'ems', 'c' => 'pt', 'd' => '%']
+					],
+					[
+						'questions' => 'PHP: What is the difference between include() and require() statements?',
+						'choices' => [
+								'a' => 'include() returns <em>Warning Error</em> when included file is not found, while require() returns <em>Fatal Error</em> when required file is not found', 
+								'b' => 'include() returns <em>Fatal Error</em> when included file is not found, while require() returns <em>Warning Error</em> when required file is not found', 
+								'c' => 'Both statements return <em>Warning Error</em>', 
+								'd' => 'Both statements return <em>Fatal Error</em>']
+					],
+					[
+						'questions' => 'HTML: How to add customary data attribute on an HTML element without displaying it to the browser?',
+						'choices' => ['a' => 'attr="value"', 'b' => 'data-attr="value"', 'c' => 'data="value"', 'd' => 'attr-data="value"']
+					],
+					[
+						'questions' => 'CSS: Given a &lt;p&gt; tag with a class of "mango", which is a valid CSS rule to float the tag on the right?',
+						'choices' => ['a' => 'p { mango.float: right; }', 'b' => 'p.mango { float: right; }', 'c' => 'p#mango { float: right; }', 'd' => 'p .mango{ float: right; }']
+					],
+					[
+						'questions' => 'SQL: Which SQL statement is use to retrieve information from the database?',
+						'choices' => ['a' => 'SELECT', 'b' => 'VIEW', 'c' => 'RETRIEVE', 'd' => 'DISPLAY']
+					],
+					[
+						'questions' => 'HTML: An HTML tag used to specify an inline frame?',
+						'choices' => ['a' => '&lt;jframe&gt;', 'b' => '&lt;iframe&gt;', 'c' => '&lt;fram&gt;', 'd' => '&lt;hframe&gt;']
+					],
+					[
+						'questions' => 'Javascript: Javascript native function to log something to the console for debugging purposes.',
+						'choices' => ['a' => 'console.log()', 'b' => 'consoleLog()', 'c' => 'logConsole()', 'd' => 'log.console()']
+					],
+					[
+						'questions' => 'PHP: What is the output of the following code?<br/>
+							<pre>
+								$a = "a";
+								$b = "b";
+								$c = $a . $b;
+								echo $c;
+							</pre>
+						',
+						'choices' => ['a' => 'Syntax Error', 'b' => '0', 'c' => 'ab', 'd' => 'Undefined']
+					],
+					[
+						'questions' => 'PHP: PHP script should start on which statement?',
+						'choices' => ['a' => '&lt;php', 'b' => '&lt;?php', 'c' => '?&gt;php', 'd' => '&lt;php?']
+					],
+					[
+						'questions' => 'SQL: Which SQL statement is use to delete information from the database?',
+						'choices' => ['a' => 'DELETE', 'b' => 'REMOVE', 'c' => 'TRUNCATE', 'd' => 'DESTROY']
+					],
+					[
+						'questions' => 'PHP: What is the output of the following code?<br/>
+							<pre>
+								$a = "a";
+								$b = "b";
+								$c = a++;
+								echo $c;
+							</pre>',
+						'choices' => ['a' => 'b', 'b' => 'a1', 'c' => 'a0', 'd' => 'Syntax Error']
+					],
+					[
+						'questions' => 'HTML: A tag that defines a division or section in a document.',
+						'choices' => ['a' => '&lt;div&gt;', 'b' => '&lt;division&gt;', 'c' => '&lt;p&gt;', 'd' => '&lt;section&gt;']
+					],
+					[
+						'questions' => 'Javascript: Consider the following code: <br/>
+							<pre>
+								(function() {
+								   var a = b = 5;
+								})()
+								alert(b);
+							</pre>
+							What will be the output?',
+						'choices' => ['a' => '5', 'b' => '10', 'c' => 'a', 'd' => 'Syntax Error']
+					],
+					[
+						'questions' => 'PHP: What is the output of the following code?<br/>
+							<pre>
+								$a = "a";
+								$b = "b";
+								$c = a++ . $b++;
+								echo $c;
+							</pre>',
+						'choices' => ['a' => '0', 'b' => 'Syntax Error', 'c' => 'ab', 'd' => 'bc']
+					],
+					[
+						'questions' => 'HTML: How many heading tags in HTML?',
+						'choices' => ['a' => '5', 'b' => '6', 'c' => '7', 'd' => '8']
+					],
+					[
+						'questions' => 'PHP: What is the correct way to open the file "time.txt" as readable?',
+						'choices' => ['a' => 'open("time.txt","read");', 'b' => 'open("time.txt");', 'c' => 'fopen("time.txt","r+");', 'd' => 'fopen("time.txt","r");']
+					],
+				]
+			];
+			break;
+			default: break;
+		}
+
+		return $questions;
+	}
+	public function answers( $dept = 'it' ){
+		
+		$answers = [];
+		switch( $dept ){
+			case 'it':
+				$answers = ['answers' =>
+					[
+						'a', 'c', 'b', 'c',  'b', 'a', 'b', 'b', 'a', 'b', 'a', 'c', 'b', 'a', 'a', 'a', 'a', 'd', 'b', 'd',
+					]
+				];
+			break;
+		}
+		return $answers;
+	}
 		
 } //end class

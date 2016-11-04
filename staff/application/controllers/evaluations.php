@@ -12,6 +12,7 @@ class Evaluations extends MY_Controller
 	{
 		parent::__construct();
 		$this->load->model('evaluationsmodel');
+		$this->load->model('commonmodel');
 		$this->load->helper('form');
 
 	}
@@ -156,24 +157,26 @@ class Evaluations extends MY_Controller
 		}
 
 		$result = $this->evaluationsmodel->updateQuestion($data);
-	#	dd($data);
 		print json_encode($result);
 	}
 
-	public function cancelEvaluation($empId, $notifyId){
-		$data['content'] = "evaluations/cancelEvaluationForm";
-		$data['empId'] = $empId;
-		$data['notifyId'] = $notifyId;
-		$data['name'] = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"','empId = '.$empId);
-		$this->load->view('includes/templatecolorbox', $data);
-	}
-
-	public function saveCancelEvaluation(){
-		$data = $this->input->post('data');
-		$notifId = $data['notifyId'];
-		$data['status'] = 4;
-		unset($data['notifyId']);
-		$this->databasemodel->updateQuery('staffEvaluationNotif',array('notifyId'=>$notifId),$data);
+	public function cancelEvaluation(){
+		if(!empty($_POST)){
+			$data['cancelReason'] = $_POST['cancelReason'];
+			$data['canceller'] = $this->user->empID;
+			$data['cancelDate'] = date('Y-m-d H:i:s');
+			$data['status'] = 4;
+			$this->databasemodel->updateQuery('staffEvaluationNotif',array('notifyId'=>$_POST['notifyId']),$data);
+			echo "<script>
+				parent.$.colorbox.close();
+			</script>";
+		}else{
+			$data['content'] = "evaluations/cancelEvaluationForm";
+			$data['empId'] = $this->uri->segment(3);
+			$data['notifyId'] = $this->uri->segment(4);
+			$data['name'] = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"','empId = '.$data['empId']);
+			$this->load->view('includes/templatecolorbox', $data);
+		}
 	}
 
 	public function saveEvaluation(){
@@ -185,7 +188,7 @@ class Evaluations extends MY_Controller
 				'score' => $data['technical']['wtScoreArr'][$i],
 				'remarks' => (isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : ''),
 				'question_id' => $data['technical']['questionIdArr'][$i],
-				'weight' => $data['technical']['weight'][$i],
+				'weight' => $data['technical']['wtArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
 				'notifyId' => $data['notifyId'],
@@ -199,7 +202,7 @@ class Evaluations extends MY_Controller
 				'score' => $data['behavioral']['wtScoreArr'][$i],
 				'remarks' => (isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : ''),
 				'question_id' => $data['behavioral']['questionIdArr'][$i],
-				'weight' => $data['behavioral']['weight'][$i],
+				'weight' => $data['behavioral']['wtArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
 				'notifyId' => $data['notifyId'],
@@ -222,8 +225,9 @@ class Evaluations extends MY_Controller
 
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
+		 	$name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
+		 	$this->commonmodel->addMyNotif($data['empId'], $name.' ['.date('d M Y, h:i A').']<br>'.$name.' has entered its self-rating for his performance evaluation. Please <a href="'.$this->config->base_url().'performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evalutaor ratings.',3,1,1);
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
-		 	#echo $data['staffType'];
 		 }
 
 		 if($data['staffType'] == 1){
@@ -234,7 +238,7 @@ class Evaluations extends MY_Controller
 
 	function saveEvaluationDate(){
 		$evalDate = date('Y-m-d', strtotime($this->input->post('evalDate')));
-		echo $evalDate;
+		$evalName = $this->input->post('evaluatorName');
 		$data = [
 			'evalDate' => $evalDate,
 			'empId' => $this->input->post('empID'),
@@ -242,7 +246,7 @@ class Evaluations extends MY_Controller
 		];
 
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
-
+		$this->commonmodel->addMyNotif($data['empId'], $evalName.' ['.date('d M Y, g:iA').']<br>'.$evalName.' has generated your performance evaluation. Please  <a href="'.$this->config->base_url().'performanceeval/2/'.$empId."/".$evaluator."/".$notifyId.'">click here</a> to enter your self-rating',3,1,1);
 		if($evalDate == date('Y-m-d')){
 			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 		}
@@ -327,7 +331,7 @@ class Evaluations extends MY_Controller
 
 	public function generateEvaluation($empID){
 		$data['info'] = $this->databasemodel->getSingleInfo('staffs','fname, lname, dept, supervisor','empId = '.$empID, "left join newPositions on posID = position");
-		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, fname, lname, title',"dept = '".$data['info']->dept."' AND levelID_fk > 0","left join newPositions on posID = position");
+		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, concat(fname," ",lname) as "name", title', 'staffs.active=1' ,"left join newPositions on posID = position",'fname ASC');
 		$data['empID'] = $empID;
 		$data['content'] = 'evaluations/generateEvaluation';
 		$this->load->view('includes/templatecolorbox', $data);
@@ -341,7 +345,7 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/template', $data);
 	}
 
-	public function evalPDF($staffType = 2, $empID = 538, $evalID = 178, $notifId){
+	public function evalPDF($staffType, $empID, $evalID, $notifId){
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 

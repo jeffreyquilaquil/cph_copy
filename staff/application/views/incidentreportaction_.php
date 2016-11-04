@@ -26,9 +26,20 @@
 					<td><?= $this->textM->formfield('select', 'status', $repStatus, 'forminput') ?></td>
 				</tr>
 			
-				<tr style="display:none;" class="signed_ir">
-					<td><b>Upload IR signed document</b></td>	
-					<td><input type="file" name="signed_doc" ></td>
+				<tr class="signed_ir hidden">
+					<td><b>Upload IR Signed Document</b></td>	
+					<td>
+					<?php
+						if($details->docs != ''){
+							$_url_ = 'attachment.php?u='.urlencode($this->textM->encryptText('staffs/violationreported')).'&f='.urlencode($this->textM->encryptText($details->docs));
+
+							echo '<a href="'. $this->config->base_url() . $_url_ .'" target="_blank" style="margin-right: 5px;"><img src="'. $this->config->base_url() .'css/images/pdf-icon.png" /></a>';
+						}
+						else{
+							echo '<input type="file" class="signed_doc" name="signed_doc" >';
+						}
+					?>
+					</td>
 				</tr>
 		
 				<tr>
@@ -48,18 +59,6 @@
 				<tr><td><br/></td></tr>
 				<tr class="trhead"><td>Incident Report Details</td></tr>
 			</table>
-			<script type="text/javascript">
-				$(function(){
-					$('select[name="status"]').change(function(){
-						var that = $(this);
-						if( that.val() == 3 ){
-							$('.signed_ir').show();
-						} else {
-							$('.signed_ir').hide();
-						}
-					});
-				});
-			</script>
 <?php	}	
 	}
 ?>	
@@ -189,6 +188,17 @@
 			$('.tableInfo').removeClass('hidden');
 			$(this).addClass('hidden');
 		});
+
+		$('select').change(function(){
+			var selectVal = $(this).val();
+			if(selectVal == 3){
+				$('.signed_ir').show();
+				$('.signed_doc').attr('required','required');
+			} else {
+				$('.signed_ir').hide();
+				$('.signed_doc').removeAttr('required','required');
+			}
+		});
 	});
 	
 	function showloading(){
@@ -204,5 +214,7 @@
 		$('.spanwhere').removeClass('hidden');
 		$('#formEditWhere').addClass('hidden');
 	}
+
+
 </script>
 
