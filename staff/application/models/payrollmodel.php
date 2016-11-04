@@ -1041,7 +1041,7 @@ class Payrollmodel extends CI_Model {
 						$insArr['totalAmount'] += $ask->pay;
 					}
 				}
-
+ 
 				$insArr['totalBasic'] = $pay;
 				$insArr['totalDeduction'] = $deduction;
 				//$insArr['totalAmount'] = ($pay-$deduction)/12;
@@ -1130,10 +1130,12 @@ class Payrollmodel extends CI_Model {
 
 			if( $includeEndMonth == 1){
 				foreach($dates as $dateK => $dateV){
-					//query if the date is less than the last payslip
-					$lp = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID', 'payDate > "'.$dateV.'"');
-					if($lp){
-						$arrayMonths[$dateV] = (object) array('empID_fk'=>$empID, 'payDate'=>$dateV, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+					//check if the payroll is not yet generated
+					$lp = $this->dbmodel->getSingleInfo('tcPayrolls LEFT JOIN tcPayslips ON payrollsID = payrollsID_fk', 'payrollsID', 'empID_fk = "'.$empID.'"AND payDate = "'.$dateV.'"');
+					if(!$lp){
+						if($dateV >= $info->startDate){
+							$arrayMonths[$dateV] = (object) array('empID_fk'=>$empID, 'payDate'=>$dateV, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+						}
 					}
 				}
 			}
@@ -2433,6 +2435,58 @@ class Payrollmodel extends CI_Model {
 		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
 		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+
+		$cell_counter += 2;
+		//for Taxable compensation from previous employer
+		$taxFromPrevious = $data->for55? $data->for55: 0;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxFromPrevious);
+
+		//get totaltaxable
+		$cell_counter += 1;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+		
+		//get tax excemption
+		$cell_counter += 1;
+		$taxExemption = $this->payrollM->computeTaxExemption($data->taxstatus);
+		$objPHPExcel->getActiveSheet()->getStyle('K'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, '('.$this->formatNum($taxExemption).')');
+
+		//get net taxable income (totaltax - taxexcemption)
+		$cell_counter += 1;
+		$netTaxable = $totals['totalTaxable'] - $taxExemption;
+		$range = ($netTaxable) > 0? $netTaxable:0;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $range );
+
+		//get tax bracket
+		$cell_counter += 1;
+		
+		$taxBracket = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$range.'" BETWEEN minRange AND maxRange');
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->minRange);
+
+		//get excess of tax base
+		$cell_counter += 1;
+		$excessTax = $taxBracket->minRange - $range;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $excessTax);
+
+		//get multiply
+		$cell_counter += 1;
+		$mulplyBy = $taxBracket->excessPercent/100;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $mulplyBy);
+
+		//get percent of excess 
+		$cell_counter += 1;
+		$excessTax *= -1;
+		$percentOfExcess = $excessTax * $mulplyBy;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $percentOfExcess);	
+
+		//get add basic tax
+		$cell_counter += 1;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->baseTax);
+
+		//get tax due
+		$cell_counter += 1;
+		$taxDue = $this->payrollM->getBIRTaxDue($netTaxable);
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);	
 
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 		ob_end_clean();

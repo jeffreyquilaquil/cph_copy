@@ -1996,7 +1996,7 @@ class Timecard extends MY_Controller {
 					'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 				if(count($data['dataInfo'])==0) $data['access'] = false;
 				else{
-					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo,0 /*$data['dataInfo']->includeEndMonth*/);
+					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo,$data['dataInfo']->includeEndMonth);
 					
 					///THIS IS FOR THE PDF
 					if(isset($_GET['show'])){
