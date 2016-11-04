@@ -134,7 +134,7 @@ require 'includes/header.php';
 			</div>		
 			
         	<!-- Form -->
-              <?php $form->formStart("","POST",'class="bs-example form-horizontal" style="width:80%"');?>
+              <?php $form->formStart("","POST",'class="bs-example form-horizontal" style="width:80%" onSubmit="return checkIAgree();"');?>
                 <fieldset>
                   <legend>Application Form    <br/><font size="2px;" ><b><i>***Check your mobile and email inbox regularly for updates on your application. </i></b></font></legend>
                     	<?php $form->text("lname",$_POST['lname'],'class="form-control"',"Last Name","",TRUE);?>
@@ -237,12 +237,29 @@ require 'includes/header.php';
                     	<?php $form->text("last_employer",$_POST['last_employer'],'class="form-control"',"Last Employer");?>
                     	<?php $form->text("employment_period",$_POST['employment_period'],'class="form-control"',"Employment Period from your Last Employer");?>
                     	<?php $form->textarea("text_resume",$_POST['text_resume'],'class="editable form-control" rows="21"',"Text Resume","",TRUE);?>
+				
+						<div class="form-group">
+							<div class="col-lg-2">&nbsp;</div>
+							<div class="col-lg-10">
+                			<div class="checkbox">
+                				<label>
+                					<input type="checkbox" name="iagree" value="yes">
+                					<p style="text-align:justify;">The information contained in this application form is correct to the best of my knowledge. I hereby authorize <strong>TATE PUBLISHING</strong> and its designated agents and representatives to conduct a comprehensive review of my background for employment. I understand that the scope of the background check report may include, but is not limited to the following areas: verification of social security number; current and previous residences; employment history, education background, character references; drug testing, civil and criminal history records, birth records, and any other public records. I further authorize any individual, company, firm, corporation, or public agency to divulge any and all information, verbal or written, pertaining to me, to or its agents. I further authorize the complete release of any records or data pertaining to me which the individual, company, firm, corporation, or public agency may have, to include information or data received from other sources.</p>
+
+									<p>It is upon agreed that TATE PUBLISHING shall handle all information with <strong>HIGH CONFIDENTIALITY</strong>.</p>
+
+                				</label>
+                			</div>
+                			</div>
+                		</div>	
+
                     	<div class="clear"></div>
                     	<?php $random = isset($_SESSION['uploads'])?$_SESSION['uploads']:md5(time()); $form->hidden("uploads",$random);?>
                     	<?php //$form->google_recaptcha(); ?>
-			<?php $recaptcha->display('style="margin-left: 187px;"'); ?>
+						<?php $recaptcha->display('style="margin-left: 187px;"'); ?>
                     	<?php $form->button("submit","Submit","id='submit_button' class='btn btn-primary' style='display:none;'");?>
                 		<hr/>
+                		
                 </fieldset>
               <?php $form->formEnd();?>
               <div class="form-head-title">
@@ -289,6 +306,15 @@ require 'includes/header.php';
 		
 		function showOpos(id){
 			$('#oDiv_'+id+' .oposDivDesc').toggle();
+		}
+
+		function checkIAgree(){
+			if( $('input[name="iagree"]').is(':checked') ){
+				return true;
+			} else {
+				alert('Please verify that the information submitted are correct.');
+				return false;
+			}
 		}
       </script>
 	  <!-- Date time picker -->
