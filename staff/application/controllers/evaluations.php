@@ -19,6 +19,7 @@ class Evaluations extends MY_Controller
 
 	public function index(){
 		$data['content'] = 'evaluations/index';
+		$data['access'] = ($this->user->levelID_fk > 0 || $this->user->dept == "Human Resources" ? true : false);
 		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
 		$data['evaluations'] = $this->evaluationsmodel->getStaffPerformanceEvaluation($this->user->empID, $this->user->dept, $this->user->is_supervisor);
 		$data['evaluations']['headers'] = ['Evaluation ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status', 'Actions'];
@@ -33,7 +34,7 @@ class Evaluations extends MY_Controller
 			$careerType = $type;
 			$type = 'technicalQuestions';
 		}
-
+		$data['access'] = ($this->user->levelID_fk > 0 || $this->user->dept = "Human Resources" ? true : false);
 		$data['content'] = 'evaluations'.($type==null ? '/questionnaires' : '/'.$type);
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
@@ -166,6 +167,7 @@ class Evaluations extends MY_Controller
 			$data['canceller'] = $this->user->empID;
 			$data['cancelDate'] = date('Y-m-d H:i:s');
 			$data['status'] = 4;
+			$this->commonmodel->addMyNotif($_POST['empId'], $this->user->name." cancelled your performance evaluation. Click <a href=evaluations/evaluationDetails/".$_POST['notifyId']." class='iframe'>here</a> to view details.",2,0,$this->user->empID);
 			$this->databasemodel->updateQuery('staffEvaluationNotif',array('notifyId'=>$_POST['notifyId']),$data);
 			echo "<script>
 				parent.$.colorbox.close();
@@ -186,7 +188,8 @@ class Evaluations extends MY_Controller
 			$dataArray = [
 				'detail_id'=>$data['technical']['detailIdArr'][$i],
 				'score' => $data['technical']['wtScoreArr'][$i],
-				'remarks' => (isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : ''),
+
+				'remarks' => htmlentities((isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : '')),
 				'question_id' => $data['technical']['questionIdArr'][$i],
 				'weight' => $data['technical']['wtArr'][$i],
 				'emp_id' => $data['empId'],
@@ -200,7 +203,7 @@ class Evaluations extends MY_Controller
 			$dataArray = [
 				'detail_id'=>$data['behavioral']['detailIdArr'][$i],
 				'score' => $data['behavioral']['wtScoreArr'][$i],
-				'remarks' => (isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : ''),
+				'remarks' => htmlentities((isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : '')),
 				'question_id' => $data['behavioral']['questionIdArr'][$i],
 				'weight' => $data['behavioral']['wtArr'][$i],
 				'emp_id' => $data['empId'],
@@ -226,7 +229,7 @@ class Evaluations extends MY_Controller
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 	$name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
-		 	$this->commonmodel->addMyNotif($data['empId'], $name.' ['.date('d M Y, h:i A').']<br>'.$name.' has entered its self-rating for his performance evaluation. Please <a href="'.$this->config->base_url().'performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evalutaor ratings.',3,1,1);
+		 	$this->commonmodel->addMyNotif($data['empId'], $name.' has entered its self-rating for his performance evaluation. Please <a href="'.$this->config->base_url().'performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evalutaor ratings.',2,1,$this->user->empID);
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
 		 }
 
@@ -246,40 +249,52 @@ class Evaluations extends MY_Controller
 		];
 
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
-		$this->commonmodel->addMyNotif($data['empId'], $evalName.' ['.date('d M Y, g:iA').']<br>'.$evalName.' has generated your performance evaluation. Please  <a href="'.$this->config->base_url().'performanceeval/2/'.$empId."/".$evaluator."/".$notifyId.'">click here</a> to enter your self-rating',3,1,1);
+		$this->commonmodel->addMyNotif($data['empId'], $evalName.' ['.date('d M Y, g:iA').']<br>'.$evalName.' has generated your performance evaluation. Please  <a href="'.$this->config->base_url().'performanceeval/2/'.$empId."/".$evaluator."/".$notifyId.'">click here</a> to enter your self-rating',2,1,$this->empID);
 		if($evalDate == date('Y-m-d')){
 			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 		}
 	}
 
-	public function evaluationDetails( $notifId){
+	public function evaluationDetails($notifId){
+		$data['employee'] = $this->databasemodel->getSingleInfo('staffEvaluationNotif ses', 'ses.empId, concat(fname," ",lname) as name, title, dept, evalDate, supervisor, evaluatorId, ses.status, ses.cancelReason, ses.hrPrintDate, ses.hrUploadDate', 'notifyId='.$notifId, 'LEFT JOIN staffs on staffs.empId = ses.empId LEFT JOIN newPositions ON posID = position');
+		$empId = $data['employee']->empId;
 		if(!empty($_POST)){
-			$printed = $this->input->post('fprinted');
-			$dir = UPLOADS.'/evaluations/';
-			$id = 'evalForm_'.$notifId.'.pdf';
-			$file = $_FILES['file'];
-			move_uploaded_file($file, $dir.$notifyId);
+			$data = array();
+			if(!isset($_POST['printDate'])){
+				$data['hrPrintDate'] = date('Y-m-d h:i:s');
+
+			}
+
+			if(is_uploaded_file($_FILES['fupload']['tmp_name'])){
+				$data['hrUploadDate'] = date('Y-m-d h:i:s');
+				$dir = UPLOAD_DIR."evaluations/";
+				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_h-ia').'.pdf';
+				move_uploaded_file($_FILES['fupload']['tmp_name'], $fileDir);
+			}
+			$this->databasemodel->updateQuery('staffEvaluationNotif','notifyId='.$notifId,$data);
+			
+			return false;
+			echo '<script>parent.$.colorbox.close();</script>';
 		}
 
 		$data['content'] = "evaluations/perfEvalDetails";
-		$data['employee'] = $this->databasemodel->getSingleInfo('staffEvaluationNotif ses', 'concat(fname," ",lname) as name, title, dept, evalDate, supervisor, evaluatorId, ses.status, ses.cancelReason', 'notifyId='.$notifId,'LEFT JOIN staffs on staffs.empId = ses.empId LEFT JOIN newPositions ON posID = position');
+		
 
 		$data['evaluator'] = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title','empId='.$data['employee']->evaluatorId,'LEFT JOIN newPositions ON posID = position');
 
 		$data['supervisor'] =  $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor','empId='.$data['employee']->supervisor,'LEFT JOIN newPositions ON posID = position');
 
 		$data['supervisor2'] =  $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title','empId='.$data['supervisor']->supervisor,'LEFT JOIN newPositions ON posID = position');
+
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 
-// This function should be in myCron
-	function sendEvaluationEmail($userType = 2, $empId = 538, $evaluator = 178, $notifyId, $dueDays = 0){
+
+	function sendEvaluationEmail($userType, $empId, $evaluator, $notifyId){
 
 		// User type 2 is Rank and File Employee
 		// 1 is for the Supervisor
 		$this->load->model('emailmodel');
-
-		
 
 		$fields = "concat(fname,' ',lname) as 'name', email";
 		$info = $this->databasemodel->getSingleInfo('staffs', $fields,'empID = '.$empId);
@@ -289,39 +304,22 @@ class Evaluations extends MY_Controller
 
 		// True if current date is less than the number of days before evaluation
 		
-		if($dueDays == 0){
-			if($userType == 2){
-				$subject = "Self-rating performance evaluation for ".$info->name;
-				$body = "Hi ".$info->name.". <br><br>Your performance evaluation has been generated. Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to self-rate your  performance evaluation.<br><br>Thank you.";
-				$to = $info->email;
-				$subject = "90th day Performance Evaluation ";
-			}else{
-				// The message that the evaluator will recieve
-				$subject = "for ".$info->name;
-				$body = "Hi ".$evalInfo->name.".";
-				$body .= "<br><br>Please give your Performance Evaluation for ".$info->name.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to give your evaluation.<br><br>Thank you.";
-				$to = $evalInfo->email;
-				$subject = "90th day Performance Evaluation ";
-			}
+		if($userType == 2){
+			$subject = "Self-rating performance evaluation for ".$info->name;
+			$body = "Hi ".$info->name.". <br><br>Your performance evaluation has been generated. Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to self-rate your  performance evaluation.<br><br>Thank you.";
+			$to = $info->email;
+			$subject = "90th day Performance Evaluation ";
 		}else{
-			if($userType == 2){
-				$subject = "Performance evaluation due for ".$info->name;
-				$body = "<pre>Hi ".$info->name.",<br></br>You are due for a performance evaluation on ".$eval->evalDate.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to conduct self-evaluation. You will recieve this remider daily unless the said evaluation is provided.</br></br>Thank you.</pre>";
-				$to = $info->email;
-			}else{
-				$subject = "Performance evaluation due for ".$info->name;
-
-				$body = "Hello ".$evalInfo->name;
-				$body .= "</br></br>The performance evaluation of ".$info->name." is due already on ".$eval->evalDate.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>Click here</a> to conduct evaluation. You will receive this reminder daily unless the said evaluation is provided.</br></br>Thank you.";		
-				$to = $evalInfo->email;
-			}		
+			// The message that the evaluator will recieve
+			$subject = "for ".$info->name;
+			$body = "Hi ".$evalInfo->name.".";
+			$body .= "<br><br>Please give your Performance Evaluation for ".$info->name.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to give your evaluation.<br><br>Thank you.";
+			$to = $evalInfo->email;
+			$subject = "90th day Performance Evaluation ";
 		}
 
-		if($userType == 1){
-
-		}
 		$to = 'jeffrey.quilaquil@tatepublishing.net';
-		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CareerPH Auto-Emails' );
+		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CAREERPH', $cc);
 
 		echo "<script>
 				alert('The email has been sent.');
@@ -558,7 +556,7 @@ class Evaluations extends MY_Controller
 						array_unshift($fpdfCell, array(192, $y, $height, 10, $detailsRow->score));
 						array_unshift($fpdfCell, array(80, $y, $height, 25, $evaluatorText));  
 						array_unshift($fpdfCell, array(140, $y, $height, 7, $detailsRow->weight));
-						array_unshift($fpdfCell, array(147, $y, $height, 35, $detailsRow->remarks));
+						array_unshift($fpdfCell, array(147, $y, $height, 35, html_entity_decode($detailsRow->remarks)));
 						foreach ($fpdfCell as $value) {
 					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
 							// These are filters to forcefully adjust cell's dimensions
@@ -627,7 +625,7 @@ class Evaluations extends MY_Controller
 					array_push($fpdfCell, array(182, $y, $height, 10, $text));
 					array_push($fpdfCell, array(80, $y, $height, 25, $evaluatorText));
 					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
-					array_push($fpdfCell, array(147, $y, $height, 35, $question->details[0]->remarks));
+					array_push($fpdfCell, array(147, $y, $height, 35, html_entity_decode($question->details[0]->remarks)));
 					array_push($fpdfCell, array(192, $y, $height, 10, $question->details[0]->score));
 					// The most number of characters should be last b/c it has the most # of text and it sets the height for the other cells
 					if(strlen($question->details[0]->question) > strlen($question->details[0]->expectation)){

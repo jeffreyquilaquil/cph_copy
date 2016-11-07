@@ -19,6 +19,7 @@
 		<br>
 		<div style="right:-1px;" style="width:100%;align:right">
 			<input type="hidden" value="<?php echo $notifyId ?>" name="notifyId">
+			<input type="hidden" value="<?php echo $empId ?>" name="empId">
 			<input type="button" value="Back" class="btnclass">
 			<input type="Submit" value="Cancel Evaluation" class="btnclass" id="btnCancel">
 		</div>

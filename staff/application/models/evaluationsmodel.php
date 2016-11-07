@@ -141,7 +141,10 @@ class Evaluationsmodel extends CI_model{
 					break;
 					case 2:
 						$statusText = 'Pending Evaluation Form for Printing';
-						$actionButton = '<a href="'.$this->config->base_url().'evaluations/evaluationDetails/'.$info->notifyId.'" class="iframe"><img src="#"></a>';
+						if($this->user->dept == "Human Resources"){
+							$actionButton = '<a href="'.$this->config->base_url().'evaluations/evaluationDetails/'.$info->notifyId.'" class="iframe"><img src="#"></a>';
+						}
+						
 					break;
 					case 3:
 						$statusText = "Ratings: Meets Expectations.";

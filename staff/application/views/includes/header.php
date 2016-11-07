@@ -74,8 +74,6 @@
 					
 					if($this->access->accessFullFinance==true){
 						echo '<li '.(($segment2=='managepayroll')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/managepayroll/">Manage Payroll</a></li>';
-
-						echo '<li '.(($segment2=='yearendreport')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/manage13thmonth/">Year End Reports</a></li>';
 						//echo '<li '.(($segment2=='reports')?'class="current"':'').'><a href="'.$this->config->base_url().'timecard/reports/">Reports</a></li>';
 					}
 					
@@ -198,7 +196,12 @@
 				<ul class="dropdown">
 					<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 					<li <?= (($content=='organizationalchart')?'class="current"':'') ?>><a href="<?= $this->config->base_url().'organizationalchart/' ?>">Organizational Chart</a></li>
-					<li><a href="<?= $this->config->base_url() ?>evaluations/">Evaluations</a></li>
+			<?php 
+				if($this->user->levelID_fk > 0 || $this->user->dept == "Human Resources"){
+					echo '<li><a href="'.$this->config->base_url().'evaluations/">Evaluations</a></li>';
+				}
+			 ?>
+					
 			<?php
 				if($this->access->accessFullHRFinance==true || $this->user->level>0){
 					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';

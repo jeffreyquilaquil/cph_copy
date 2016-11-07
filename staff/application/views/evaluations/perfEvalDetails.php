@@ -26,7 +26,12 @@
 
 	<?php 
 		if($employee->status != 4){
-			$tdTitles = ['EMPLOYEE DETAILS', 'Evaluation form printed','<input type="checkbox" name="fprinted" id="fprinted"> Tick checkbox if done printing form.', 'Upload signed coaching form', '<input type="file" name="fupload" id="fupload">'];
+			$checked = "";
+			if($employee->hrPrintDate != "0000-00-00 00:00:00"){
+				$checked = "checked";
+				echo "<input type='hidden' name='printDate' value='".$employee->hrPrintDate."'>";
+			}
+			$tdTitles = ['EMPLOYEE DETAILS', 'Evaluation form printed','<input type="checkbox" name="fprinted" id="fprinted" '.$checked.'> Tick checkbox if done printing form.', 'Upload signed coaching form', '<input type="file" name="fupload" id="fupload" >'];
 			$button = '<input type="submit" class="btnclass" value="Update"  style="float:right">';
 		}else{
 			$tdTitles = ['CANCELLATION DETAILS','Status','<strong>CANCELLED</strong>', 'Cancel Reason', $employee->cancelReason];
@@ -46,15 +51,15 @@
 		<td><?php echo $tdTitles[4] ?></td>
 	</tr>
 </table>
-</form>
+
 <br>
 <?php echo $button ?>
+</form>
 <div><br></div>
 
 <script type="text/javascript">
 
 	function disableSubmitBtn(){
-		alert("something");
 		displaypleasewait();
 	}
 </script>
