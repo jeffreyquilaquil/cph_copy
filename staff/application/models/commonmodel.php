@@ -338,21 +338,34 @@ class Commonmodel extends CI_Model {
 	******/
 	function checkStaffUnderMe($username){
 		$valid = false;
-		if(md5($username.'dv') != $this->session->userdata('u')){
-			if($this->access->accessFullHRFinance==false){
+		//dd($username, false);
+		//if(md5($username.'dv') != $this->session->userdata('u')){
 
-				$underMe = $this->getStaffUnder($this->user->empID, $this->user->level);
-				foreach( $underMe as $staff ){
-					if( $staff->username == $username ){
-						$valid = true;
-						break;
-					}
+		if($this->access->accessFullHRFinance){
+			return true;
+		}
+
+		$underMe = $this->getStaffUnder($this->user->empID, $this->user->level);
+		
+		foreach( $underMe as $staff ){
+			if( is_numeric($username) ){
+				if( $staff->empID == $username ){
+					$valid = true;
+					break;
+				}	
+			} else{
+				if( $staff->username == $username ){
+					$valid = true;
+					break;
 				}
+			}	
+
+		}
 				//$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
 				//$row = $query->row();
 				//if(!isset($row->username)) $valid = false;
-			}			
-		}	
+			//}			
+		//}	
 		return $valid;
 	}
 		
