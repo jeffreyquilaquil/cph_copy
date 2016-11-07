@@ -32,7 +32,7 @@
 <?php
 	foreach($queryData AS $data){
 		echo '<tr>';
-			echo '<td><input type="checkbox" class="classCheckMe" name="id_[]" value="'.$data->tcmonthID.'" /></td>';
+			echo '<td><input type="checkbox" class="classCheckMe" name="id_[]" data-empid="'.$data->empID_fk.'" value="'.$data->tcmonthID.'" /></td>';
 			echo '<td>'.$data->lname.', '.$data->fname.'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalBasic).'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalDeduction).'</td>';
@@ -60,7 +60,7 @@
 		<tr>
 			<td colspan="7">
 		<?php if( $this->access->accessFullFinance == true ){
-			echo '<p>On selected items: <input type="submit" onClick="confirmMsg();" name="delete_13th_record" class="btnclass" value="Delete" /></p>';
+			echo '<p>On selected items: <input type="submit" onClick="confirmMsg();" name="delete_13th_record" class="btnclass" value="Delete" /> <input type="button" name="regenerate" class="btnclass" value="Regenerate" /></p>';
 		}
 		?>
 			</td>
@@ -95,31 +95,35 @@ $(function(){
 		$('.classCheckMe').prop('checked', false);
 		countChecked();
 	});
-	<?php /*
-        initComplete: function () {
-            this.api().columns().every( function () {
-                var column = this;
-                var select = $('<select><option value=""></option></select>')
-                    .appendTo( $(column.footer()).empty() )
-                    .on( 'change', function () {
-                        var val = $.fn.dataTable.util.escapeRegex(
-                            $(this).val()
-                        );
- 
-                        column
-                            .search( val ? '^'+val+'$' : '', true, false )
-                            .draw();
-                    });
- 
-                column.data().unique().sort().each( function ( d, j ) {
-                    select.append( '<option value="'+d+'">'+d+'</option>' )
-                } );
-            } );
-        } 
-    });*/ ?>
+	$('input[name="regenerate"]').click(function(){
+		empIDs = checkIfSelected();
+		if(empIDs==false){
+			alert('Please select employee first.');
+		}else{
+			myhref = "<?= $this->config->base_url().'timecard/generate13thmonth/?empIDs=' ?>"+empIDs;
+			window.parent.jQuery.colorbox({href:myhref, iframe:true, width:"990px", height:"600px"});
+		}
+	});
 	
 	$("#dtable13 tfoot tr th select:first").css( "width", "150px" );
 });
+
+function checkIfSelected(){
+	var empIDs = '';
+	var cars = [];
+	$('.classCheckMe').each(function(){
+		if($(this).is(':checked')){
+			cars.push($(this).val());
+			empIDs = empIDs+$(this).data('empid')+',';
+		}
+	});
+	
+	if(cars.length==0){
+		return false;			
+	}else{
+		return empIDs;
+	}
+}
 
 function confirmMsg(){
 	return confirm("Are you sure to delete the item?");
