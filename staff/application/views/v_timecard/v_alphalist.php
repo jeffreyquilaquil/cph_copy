@@ -5,12 +5,10 @@
 	$to_year = (isset($to_year)) ? $to_year : date('Y');
 
 	$genText = '
-		<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Active Employees</button></li>
-			<li><button name="btnSubmit_withprev" value="SubmitPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
+		<li><button name="btnSubmit_" value="Submit" class="btnclass" data-whichfrom="active" id="btnSubmit">Generate for Active Employees</button></li>
+			<li><button name="btnSubmit_withprev" value="SubmitPrev" data-whichfrom="withPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
+			<li><button name="btnSubmit_" value="Submit" data-whichfrom="separated" class="btnclass" id="btnSubmit">Generate for Separated Employees</button></li>
 	';
-	if(isset($_GET['which']) && $_GET['which'] == 'end'){
-		$genText = '<li><button name="btnSubmit_" value="Submit" class="btnclass" id="btnSubmit">Generate for Separated Employees</button></li>';
-	}
 ?>
 <style type="text/css">
 	ul.alphalist { list-style-type: none; padding-left: 0; margin-left: 0;  }
@@ -23,7 +21,7 @@
 <div class="">
 	<form name="frm_alphalist" id="frm_alphalist" method="post" action="">
 		<input type="hidden" name="which_report" value="gen_alphalist" />
-		<input type="hidden" name="which_from" value="<?php echo $which; ?>" />
+		<input type="hidden" name="which_from" class='submit_which' value="" />
 		<ul class="alphalist">
 			<li><label for="from_month">From:</label></li>
 			<li><?php echo $this->textM->formfield('selectoption', 'from_month', $from_month, '', '', 'id="from_month"', $monthFullArray); ?></li>
@@ -38,12 +36,14 @@
 </div>
 <script type="text/javascript">
 	$(function(){
-		$('#btnSubmit').click(function(e){
+		$('button[name="btnSubmit_"]').click(function(e){
 			e.preventDefault();
 			var from_month = $('#from_month').val();
 			var to_month = $('#to_month').val();
 			var from_year = $('#from_year').val();
 			var to_year = $('#to_year').val();
+
+			$('.submit_which').val( $(this).data('whichfrom') );
 			
 			if( from_month > to_month ){
 				alert('`From` Month should not be greater than the `To` Month');
