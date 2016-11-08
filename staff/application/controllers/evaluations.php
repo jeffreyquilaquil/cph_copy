@@ -267,6 +267,7 @@ class Evaluations extends MY_Controller
 
 			if(is_uploaded_file($_FILES['fupload']['tmp_name'])){
 				$data['hrUploadDate'] = date('Y-m-d h:i:s');
+				$data['status'] = 3;
 				$dir = UPLOAD_DIR."evaluations/";
 				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_h-ia').'.pdf';
 				move_uploaded_file($_FILES['fupload']['tmp_name'], $fileDir);
@@ -598,7 +599,7 @@ class Evaluations extends MY_Controller
 					$pdf->setY($y);
 					if($y >=260){
 						$pdf->addPage();
-						$y = $pdf->getY();
+						$y = 10;
 						
 					}
 
@@ -638,16 +639,22 @@ class Evaluations extends MY_Controller
 
 					foreach ($fpdfCell as $value) {
 					//	$pdf->rect(X, Y , W, H, 'DF / D / F');
-					#=	echo $y."\n";
 						$pdf->rect($value[0], $y ,$value[3], $height, 'DF');
 						$pdf->setXY($value[0], $y);
 						$pdf->multiCell($value[3], 5, $value[4],0,'',false);
-					}#	echo "<br>";
+					}
 				}
 
 				$y = $pdf->getY();
 
 				$ii++;	
+
+				if($y >=270){
+					echo $y;
+					$pdf->addPage();
+					$y = 10;
+					
+				}
 
 			}
 

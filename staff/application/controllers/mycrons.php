@@ -545,6 +545,6 @@ class MyCrons extends MY_Controller {
 			$to = "jeffrey.quilaquil@tatepublishing.net";
 			$this->emailM->sendEmail($from, $to, $subject, $body, $fromName, $cc);
 		}
-		#exit();
+		exit();
 	}
 }

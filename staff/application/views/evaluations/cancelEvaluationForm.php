@@ -2,13 +2,6 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Document</title>
-	<style type="text/css">
-		#btnCancel{
-			background: rgb(0,128,0);
-			color:white;
-		}
-	</style>
 </head>
 <body>
 	<form action="" method="POST" onsubmit="return submitReason()">
@@ -16,13 +9,15 @@
 		<hr>
 		<strong>If yes, please state a valid reason below. Otherwise, click on the back button below.</strong>
 		<textarea placeholder="Type message here..." class="forminput" id="cancelReason" name="cancelReason"></textarea>
-		<br>
-		<div style="right:-1px;" style="width:100%;align:right">
+		
 			<input type="hidden" value="<?php echo $notifyId ?>" name="notifyId">
-			<input type="hidden" value="<?php echo $empId ?>" name="empId">
+			<input type="hidden" value="<?php echo $empId ?>" name="empId">		
+
+		<div style="float:right;">
 			<input type="button" value="Back" class="btnclass">
-			<input type="Submit" value="Cancel Evaluation" class="btnclass" id="btnCancel">
+			<input type="Submit" value="Cancel Evaluation" class="btnclass btngreen">
 		</div>
+		<br><br><br>
 	</form>
 </body>
 	<script type="text/javascript">

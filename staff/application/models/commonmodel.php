@@ -209,7 +209,7 @@ class Commonmodel extends CI_Model {
 		}else if($type=='eval90th'){			
 			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
 		}else if($type=='evalNotif'){
-			$cnt = $this->dbmodel->getSingleField('staffEvaluationNotif', 'COUNT(notifyId) AS cnt', 'status < 3 AND empid ='.$this->user->empID);
+			$cnt = $this->dbmodel->getSingleField('staffEvaluationNotif', 'COUNT(notifyId) AS cnt', 'status = 0 OR status = 1 AND empid ='.$this->user->empID);
 		}else if($type=='unpublishedLogs'){
 			$condUsers = '';
 			if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
@@ -239,13 +239,7 @@ class Commonmodel extends CI_Model {
 		} else if( $type == 'hdmf_loans' ){
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		} elseif( $type == 'kudos'){
-			$kWhere = 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID;
-			//var_dump($this->access->accessHR);
-			if($this->access->accessHR){
-				$kWhere .= ' OR kudosRequestStatus = 2';
-			}
-
-			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $kWhere );
+			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
 		} elseif($type == 'notifStatus'){
 			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
 			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_empID_fk ='.$this->user->empID );
@@ -277,12 +271,10 @@ class Commonmodel extends CI_Model {
 	}
 	
 	function getStaffUnder($empID, $level){
-		
 		$query = '';
 		///tweak for design team
-		if($level==2 OR $level==3){
+		if($level==2){
 			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
-			
 			if($myDesign->grp=='Design'){
 				$supervisors = '';
 				$supQuery = $this->dbmodel->getQueryResults('staffs', 'DISTINCT empID', 'empID IN (SELECT DISTINCT supervisor FROM staffs WHERE supervisor!=0) AND dept="Production" AND grp!="Editing"', 'LEFT JOIN newPositions ON posID=position');
@@ -291,13 +283,13 @@ class Commonmodel extends CI_Model {
 						$supervisors .= $sup->empID.',';
 				}
 				
-				$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
+				$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
 			}
 		}
 		
 		
 		if(empty($query)){
-			$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+			$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
 		}
 		
 		return $query->result();
@@ -319,20 +311,12 @@ class Commonmodel extends CI_Model {
 		if username is the same with login user and not an hr, full or finance it returns FALSE
 	******/
 	function checkStaffUnderMe($username){
-		$valid = false;
+		$valid = true;
 		if(md5($username.'dv') != $this->session->userdata('u')){
 			if($this->access->accessFullHRFinance==false){
-
-				$underMe = $this->getStaffUnder($this->user->empID, $this->user->level);
-				foreach( $underMe as $staff ){
-					if( $staff->username == $username ){
-						$valid = true;
-						break;
-					}
-				}
-				//$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
-				//$row = $query->row();
-				//if(!isset($row->username)) $valid = false;
+				$query = $this->dbmodel->dbQuery('SELECT username FROM staffs WHERE (supervisor="'.$this->user->empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$this->user->level.'" AND supervisor="'.$this->user->empID.'")) AND (username="'.$username.'" OR empID="'.$username.'")');
+				$row = $query->row();
+				if(!isset($row->username)) $valid = false;
 			}			
 		}	
 		return $valid;
@@ -537,29 +521,6 @@ class Commonmodel extends CI_Model {
 	  }
 
 	  return $text;
-	}
-
-	//check for the correct answers
-	public function check_answers( $key, $answers, $return = 'score' ){
-		
-		$cnt = count($key);
-		$results = [];
-		$scores = 0;
-		$check = false;
-		if( $return == 'score' ){
-			for ($x=0; $x < $cnt; $x++) { 
-				if( isset($answers[$x]) AND $key[$x] == $answers[$x] ){
-					$scores++;
-				}
-			}
-			return $scores;	
-		} else if( $return == 'check' ){
-			if( $key == $answers ){
-				$check = true;
-			}
-			return $check;
-		}
-		
 	}
 	
 }
