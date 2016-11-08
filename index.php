@@ -59,6 +59,7 @@ if(isset($_POST['submit'])){
 	
 	if(sizeof($error)==0){
 		unset($_POST['submit']);
+		unset($_POST['iagree']);
 		$_POST['ipaddress'] = $_SERVER["REMOTE_ADDR"]."|".$_SERVER['HTTP_X_FORWARDED_FOR'];
 		$_POST['date_created'] = "NOW()";
 		
