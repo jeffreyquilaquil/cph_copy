@@ -6,7 +6,7 @@
 
 	$genText = '
 		<li><button name="btnSubmit_" value="Submit" class="btnclass" data-whichfrom="active" id="btnSubmit">Generate for Active Employees</button></li>
-			<li><button name="btnSubmit_withprev" value="SubmitPrev" data-whichfrom="withPrev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
+			<li><button name="btnSubmit_" value="SubmitPrev" data-whichfrom="withprev" class="btnclass" id="btnSubmit2">Generate for Employees with Previous Employer</button></li>
 			<li><button name="btnSubmit_" value="Submit" data-whichfrom="separated" class="btnclass" id="btnSubmit">Generate for Separated Employees</button></li>
 	';
 ?>

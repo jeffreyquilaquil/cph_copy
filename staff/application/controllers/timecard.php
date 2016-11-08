@@ -1719,16 +1719,18 @@ class Timecard extends MY_Controller {
 						$fromprevious = ' AND empID NOT IN (SELECT empID_fk FROM tcPrevious2316) ';
 						$frompreviousLeftJoin = '';
 						$withPrev = FALSE;
-						if( isset($_POST['btnSubmit_withprev']) ){
-							$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
-							$frompreviousLeftJoin = ' LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk  ';
-							$withPrev = TRUE;
-						}
+
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
 							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;
+							case 'withprev': 	$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
+												$frompreviousLeftJoin = ' LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk  ';
+												$withPrev = TRUE;
+												$data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
+												$endDate = $to_;
+												$is_active = TRUE;
 							break;
 						}
 						//$this->textM->aaa($data['dataQuery']);						
