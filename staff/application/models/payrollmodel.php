@@ -2358,6 +2358,10 @@ class Payrollmodel extends CI_Model {
 			'totalTaxable' => 0 
 					);
 
+		//get payment dates
+		$payDates = $this->payrollM->getArrayPeriodDates(date('Y-01-01'), date('Y-12-t'));
+		$dateArr = array();
+
 		foreach ($data->dataMonth as $eK => $eV) {
 			$regTaken = isset( $data->dataMonthItems[$eV->payslipID]["regularTaken"] )? $data->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
 			$regHoursAdded = isset( $data->dataMonthItems[$eV->payslipID]["regHoursAdded"] )? $data->dataMonthItems[$eV->payslipID]["regHoursAdded"]:0;
@@ -2381,6 +2385,13 @@ class Payrollmodel extends CI_Model {
 					$incentives += $data->dataMonthItems[$eV->payslipID][$v];
 				}
 			}
+			if(isset( $data->dataMonthItems[$eV->payslipID]["incomeTax"] )){
+				$dateArr[$eV->payDate] = $data->dataMonthItems[$eV->payslipID]["incomeTax"];
+			}
+			else{
+				$dateArr[$eV->payDate] = 0;
+			}
+
 
 			$spp = $pagIbig+$philhealth+$sss;
 
@@ -2455,19 +2466,23 @@ class Payrollmodel extends CI_Model {
 
 		//get net taxable income (totaltax - taxexcemption)
 		$cell_counter += 1;
-		$netTaxable = $totals['totalTaxable'] - $taxExemption;
-		$range = ($netTaxable) > 0? $netTaxable:0;
+		$netTaxable = $totalTaxable - $taxExemption;
+		$range = $netTaxable;
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $range );
 
 		//get tax bracket
 		$cell_counter += 1;
+
+		$s = 0;
+		if($range > 0)
+			$s = $range;
 		
-		$taxBracket = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$range.'" BETWEEN minRange AND maxRange');
+		$taxBracket = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$s.'" BETWEEN minRange AND maxRange');
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->minRange);
 
 		//get excess of tax base
 		$cell_counter += 1;
-		$excessTax = $taxBracket->minRange - $range;
+		$excessTax = $taxBracket->minRange - $s;
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $excessTax);
 
 		//get multiply
@@ -2489,6 +2504,47 @@ class Payrollmodel extends CI_Model {
 		$cell_counter += 1;
 		$taxDue = $this->payrollM->getBIRTaxDue($netTaxable);
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);	
+
+		
+		$cell_counter += 4;
+
+		foreach ($payDates as $d) {
+			if( !array_key_exists($d, $dateArr)){
+				$dateArr[$d] = 0;
+			}
+		}
+		ksort($dateArr);
+		$incomeTaxTotal = 0;
+		foreach ($dateArr as $dateK => $dateV) {
+			$incomeTaxTotal += $dateV;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $dateV);
+			$cell_counter++;
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $month13+$totals['incentives']);
+
+		$cell_counter += 1;
+
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $incomeTaxTotal+$month13+$totals['incentives']);
+
+		$cell_counter += 1;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);
+
+		$cell_counter += 1;
+		$ITR = ($incomeTaxTotal+$month13+$totals['incentives']) - $taxDue;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $ITR);
+
+		$cell_counter += 3;
+		$objPHPExcel->getActiveSheet()->mergeCells('H'.$cell_counter.':J'.$cell_counter.'');
+		$objPHPExcel->getActiveSheet()->getStyle('H'.$cell_counter.':J'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
+            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+        ) ) );
+		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data->fname.' '.$data->lname);
+
+		// echo "<pre>";
+		// var_dump($dateArr);
+		//exit();
+			
 
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 		ob_end_clean();
