@@ -304,6 +304,7 @@ class Timecard extends MY_Controller {
 	
 	public function timelogs($data){
 		//$this->textM->aaa($data);
+//		$segment = $this->uri->segment();
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
 		$data['report_attendance'] = true;
@@ -488,7 +489,7 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			$data['dayArr'] = array();
 			$id = $this->uri->segment(2);
-			if(is_numeric($id) && $this->commonM->checkStaffUnderMe($id)==false){
+			if(is_numeric($id) && $this->commonM->checkStaffUnderMe( (int) $id)==false){
 				header('Location:'.$this->config->base_url().'timecard/calendar/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
 				exit;
 			}
