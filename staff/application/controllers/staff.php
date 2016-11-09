@@ -2592,6 +2592,7 @@ class Staff extends MY_Controller {
 		$data['empId'] = $this->uri->segment(3);
 		$data['evaluator'] = $this->uri->segment(4);
 		$data['notifyId'] = $this->uri->segment(5);
+		$data['status'] = $this->databasemodel->getSingleField('staffEvaluationNotif', 'status', 'notifyId = '.$data['notifyId']);
 		$this->load->view('includes/templatecolorbox', $data);	
 	}
 		

@@ -229,7 +229,7 @@ class Evaluations extends MY_Controller
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 	$name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
-		 	$this->commonmodel->addMyNotif($data['empId'], $name.' has entered its self-rating for his performance evaluation. Please <a href="'.$this->config->base_url().'performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evalutaor ratings.',2,1,$this->user->empID);
+		 	$this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evaluator ratings.',2,1,$this->user->empID);
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
 		 }
 
@@ -242,17 +242,18 @@ class Evaluations extends MY_Controller
 	function saveEvaluationDate(){
 		$evalDate = date('Y-m-d', strtotime($this->input->post('evalDate')));
 		$evalName = $this->input->post('evaluatorName');
+
 		$data = [
 			'evalDate' => $evalDate,
-			'empId' => $this->input->post('empID'),
-			'evaluatorId' => $this->input->post('evaluator'),
+			'empId' => $_POST['empID'],
+			'evaluatorId' => $_POST['evaluator'],
 		];
 
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
-		$this->commonmodel->addMyNotif($data['empId'], $evalName.' ['.date('d M Y, g:iA').']<br>'.$evalName.' has generated your performance evaluation. Please  <a href="'.$this->config->base_url().'performanceeval/2/'.$empId."/".$evaluator."/".$notifyId.'">click here</a> to enter your self-rating',2,1,$this->empID);
-		if($evalDate == date('Y-m-d')){
-			$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
-		}
+		$this->commonmodel->addMyNotif($data['empId'], $evalName.' has generated your performance evaluation. Please  <a href="performanceeval/2/'.$data['empId'].'/'.$data['evaluatorId'].'/'.$notifyId.'">click here</a> to enter your self-rating',2,1,$this->empID);
+
+		$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
+
 	}
 
 	public function evaluationDetails($notifId){
@@ -330,7 +331,7 @@ class Evaluations extends MY_Controller
 
 	public function generateEvaluation($empID){
 		$data['info'] = $this->databasemodel->getSingleInfo('staffs','fname, lname, dept, supervisor','empId = '.$empID, "left join newPositions on posID = position");
-		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, concat(fname," ",lname) as "name", title', 'staffs.active=1' ,"left join newPositions on posID = position",'fname ASC');
+		$data['evaluator'] = $this->databasemodel->getQueryResults('staffs','empID, concat(fname," ",lname) as "name", title', 'staffs.active=1 and levelID_fk > 0' ,"left join newPositions on posID = position",'fname ASC');
 		$data['empID'] = $empID;
 		$data['content'] = 'evaluations/generateEvaluation';
 		$this->load->view('includes/templatecolorbox', $data);
@@ -574,6 +575,7 @@ class Evaluations extends MY_Controller
 						$ttlHeight += $height;
 						$y = $pdf->getY() + 5;
 						$fpdfCell = [];
+						$ttlScore += intval($question->details[0]->score);
 					}
 					 	$y += 5;	
 
@@ -593,13 +595,17 @@ class Evaluations extends MY_Controller
 					$pdf->rect(10, $y1 ,5, $ttlHeight-$height, 'DF');
 					$pdf->setXY(10, $y1);
 					$pdf->multiCell(10, 5, $ii,0,'',false);
-				#	echo "$ii<br>";
-
 
 					$pdf->setY($y);
 					if($y >=260){
+						$pdf->SetFillColor(255, 255, 255);	
+						$pdf->rect(9, $y, 194, $pageHeight - $y+1, 'F');
+						$pdf->setY($y);
+					 	$pdf->cell(192, 1, '', 'T', '', '');
+					 	
 						$pdf->addPage();
 						$y = 10;
+
 						
 					}
 
@@ -643,6 +649,7 @@ class Evaluations extends MY_Controller
 						$pdf->setXY($value[0], $y);
 						$pdf->multiCell($value[3], 5, $value[4],0,'',false);
 					}
+					$ttlScore += intval($question->details[0]->score);
 				}
 
 				$y = $pdf->getY();
@@ -650,7 +657,7 @@ class Evaluations extends MY_Controller
 				$ii++;	
 
 				if($y >=270){
-					echo $y;
+				#	echo $y;
 					$pdf->addPage();
 					$y = 10;
 					

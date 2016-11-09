@@ -4,6 +4,15 @@
 $technicalQuestions = $questions['technical'];
 $behavioralQuestions = $questions['behavioral'];
 #dd($behavioralQuestions, false);
+if($uType == 0 && $status == 0){
+	// Employee has not yet taken it's self evaluation
+}else if($uType == 1 && $status == 1){
+	// Evaluator has not yet taken the evaluation
+}else{
+	exit('You have already taken this evaluation');
+}
+
+
 ?>
 
 <style type="text/css">
@@ -428,8 +437,8 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		}).done(function(r){
 			
 			alert("The evaluation score has been recorded");
-			console.log(r);
-			window.location.reload();
+		//	console.log(r);
+			parent.$.colorbox.close();
 		}).error(function(r){
 			console.log('error');
 			console.log(r);

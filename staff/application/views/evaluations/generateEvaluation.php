@@ -92,6 +92,7 @@ function submitEval(){
 			url:'../../saveEvaluationDate',
 			data:data,
 		}).done(function(r){
+			console.log(r);
 			alert("Performance Evaluation has been generated");
 			parent.$.colorbox.close();
 		}).error(function(r){
