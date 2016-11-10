@@ -57,7 +57,7 @@
 		<tr>
 			<td colspan="7">
 		<?php if( $this->access->accessFullFinance == true ){
-			echo '<p>On selected items: <input type="submit" disabled onClick="confirmMsg();" name="delete_13th_record" class="btnclass" value="Delete" /> <input type="button" name="regenerate" class="btnclass" disabled value="Regenerate" /></p>';
+			echo '<p>On selected items: <input type="submit" onClick="confirmMsg();" name="delete_tax_record" class="btnclass" value="Delete" /> <input type="button" name="regenerate" class="btnclass" disabled value="Regenerate" /></p>';
 		}
 		?>
 			</td>
