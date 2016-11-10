@@ -2565,8 +2565,8 @@ class Payrollmodel extends CI_Model {
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $ITR);
 
 		$cell_counter += 4;
-		$objPHPExcel->getActiveSheet()->mergeCells('I'.$cell_counter.':K'.$cell_counter.'');
-		$objPHPExcel->getActiveSheet()->getStyle('I'.$cell_counter.':K'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
+		$objPHPExcel->getActiveSheet()->mergeCells('H'.$cell_counter.':J'.$cell_counter.'');
+		$objPHPExcel->getActiveSheet()->getStyle('H'.$cell_counter.':J'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
             'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
         ) ) );
 		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $data->fname.' '.$data->lname);
