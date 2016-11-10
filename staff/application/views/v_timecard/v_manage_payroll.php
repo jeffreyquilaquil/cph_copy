@@ -269,7 +269,7 @@ if(count($dataMainItems)>0){ ?>
 		
 		$('select[name="type"]').change(function(){	
 			var myval = $(this).val();
-			if(myval=='addpayslipitem' || myval=='generate13thmonth'){
+			if(myval=='addpayslipitem' || myval=='generate13thmonth' || myval=='generatetaxsummary'){
 				empIDs = checkIfSelected();
 				if(empIDs==false){
 					$(this).val('reviewattendance');
@@ -277,8 +277,10 @@ if(count($dataMainItems)>0){ ?>
 				}else{
 					if(myval=='generate13thmonth')
 						myhref = "<?= $this->config->base_url().'timecard/generate13thmonth/?empIDs=' ?>"+empIDs;
-					else
+					else if(myval=='addpayslipitem')
 						myhref = "<?= $this->config->base_url().'timecard/mypayrollsetting/?empIDs=' ?>"+empIDs;
+					else
+						myhref = "<?= $this->config->base_url().'timecard/generatetaxsummary/?empIDs=' ?>"+empIDs;
 					
 					window.parent.jQuery.colorbox({href:myhref, iframe:true, width:"990px", height:"600px"});
 					$(this).val('reviewattendance');
