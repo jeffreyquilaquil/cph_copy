@@ -2322,7 +2322,7 @@ class Payrollmodel extends CI_Model {
 
 	}
 
-	public function taxSummary($data, $outputFile){
+	public function taxSummary($data, $outputFile, $insertToDB = FALSE){
 		require_once('includes/excel/PHPExcel/IOFactory.php');
 		$fileType = 'Excel5';
 		$fileName = 'includes/templates/taxSummary.xls';
@@ -2490,7 +2490,7 @@ class Payrollmodel extends CI_Model {
 		
 		//get tax excemption
 		$cell_counter += 1;
-		$taxExemption = $this->payrollM->computeTaxExemption($data->taxstatus);
+		$taxExemption = $data->taxExemption;
 		$objPHPExcel->getActiveSheet()->getStyle('K'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, '('.$this->formatNum($taxExemption).')');
 
@@ -2536,6 +2536,9 @@ class Payrollmodel extends CI_Model {
 
 		
 		$cell_counter += 4;
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $data->for30B);		
+
+		$cell_counter += 1;
 
 		foreach ($payDates as $d) {
 			if( !array_key_exists($d, $dateArr)){
@@ -2554,6 +2557,7 @@ class Payrollmodel extends CI_Model {
 
 		// $cell_counter += 1;
 
+		$incomeTaxTotal += $data->for30B;
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $incomeTaxTotal);
 
 		$cell_counter += 1;
@@ -2570,17 +2574,25 @@ class Payrollmodel extends CI_Model {
         ) ) );
 		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data->fname.' '.$data->lname);
 
-		// echo "<pre>";
-		// var_dump($dateArr);
-		//exit();
-			
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
-		ob_end_clean();
-		// We'll be outputting an excel file
-		header('Content-type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
-		$objWriter->save('php://output');
+		if(!$insertToDB){
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+			ob_end_clean();
+			// We'll be outputting an excel file
+			header('Content-type: application/vnd.ms-excel');
+			header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+			$objWriter->save('php://output');
+		}
+		else{
+			$insertArray = array(
+									'empID_fk' => $data->empID,
+									'totalTaxableIncome' => $totalTaxable,
+									'taxDue' => ($taxDue)?$taxDue:0,
+									'incomeTaxWithheld' => $incomeTaxTotal,
+									'taxRefund' => $ITR,
+									'taxSummaryDate' => $data->taxSummaryDate
+								);
+			$this->dbmodel->insertQuery('tcTaxSummary', $insertArray);
+		}
 	}
 
 	public function getTotalComputationForAllEmployee($info){

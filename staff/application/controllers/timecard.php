@@ -304,7 +304,6 @@ class Timecard extends MY_Controller {
 	
 	public function timelogs($data){
 		//$this->textM->aaa($data);
-//		$segment = $this->uri->segment();
 		$data['content'] = 'v_timecard/v_timelogs';
 		$data['tpage'] = 'timelogs';
 		$data['report_attendance'] = true;
@@ -489,7 +488,7 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			$data['dayArr'] = array();
 			$id = $this->uri->segment(2);
-			if(is_numeric($id) && $this->commonM->checkStaffUnderMe( (int) $id)==false){
+			if(is_numeric($id) && $this->commonM->checkStaffUnderMe($id)==false){
 				header('Location:'.$this->config->base_url().'timecard/calendar/'.((isset($_GET['d']))?'?d='.$_GET['d']:''));
 				exit;
 			}
@@ -841,10 +840,22 @@ class Timecard extends MY_Controller {
 		$data['monthFullArray'] = $this->textM->constantArr('monthFullArray');
 		$data['yearFullArray'] = $this->textM->constantArr('yearFullArray');
 
-		if( isset($_POST['empID']) ){
+		$segment3 = ($this->uri->segment(3))?$this->uri->segment(3):0;
+
+		if( isset($_POST['empID']) || $segment3 > 0){
 			$empID = $_POST['empID'];
-			$from_ = date('Y-m-d', strtotime( $_POST['from_year'].'-'.sprintf('%02d',$_POST['from_month']).'-01' ) );
-			$to_ = date('Y-m-d', strtotime( $_POST['to_year'].'-'.sprintf('%02d',$_POST['to_month']).'-31' ) );
+
+			if( $segment3 > 0 ){
+				$empID = $segment3;
+				$dateq = $this->dbmodel->getSingleInfo('tcTaxSummary', 'taxSummaryDate', 'empID_fk = '.$segment3 );
+				$summaryDate = explode('/', $dateq->taxSummaryDate);
+
+				$from_ = date('Y-m-d', strtotime( $summaryDate[0] ) );
+				$to_ = date('Y-m-t', strtotime( $summaryDate[1] ) );
+			}else{
+				$from_ = date('Y-m-d', strtotime( $_POST['from_year'].'-'.sprintf('%02d',$_POST['from_month']).'-01' ) );
+				$to_ = date('Y-m-d', strtotime( $_POST['to_year'].'-'.sprintf('%02d',$_POST['to_month']).'-31' ) );
+			}
 
 			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
 		    $datum = $this->payrollM->getPayslipOnTimeRange($empID, $from_, $to_,TRUE );
@@ -857,7 +868,8 @@ class Timecard extends MY_Controller {
 			$activeQuery['dataQuery'][0]->dateRange = date('m/Y', strtotime($from_)).' - '.date('m/Y', strtotime( $_POST['to_year'].'-'.$_POST['to_month']));
 			
 			$outputFile = 'taxSummary'.$from_.'-'.$to_.'-'.$data['which'];
-			$this->payrollM->taxSummary($activeQuery['dataQuery'][0], $outputFile);			
+			$this->payrollM->taxSummary($activeQuery['dataQuery'][0], $outputFile);	
+			echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manage13thmonth/";</script>';		
 		}
 
 		$this->load->view('includes/templatecolorbox', $data);			
@@ -1958,6 +1970,68 @@ class Timecard extends MY_Controller {
 		}
 		
 		$this->load->view('includes/templatecolorbox', $data);
+	}
+
+	public function generatetaxsummary(){
+		$data['content'] = 'v_timecard/v_generate_tax_summary';
+		
+		if($this->user!=false){
+			if($this->access->accessFullFinance==false) $data['access'] = false;
+			else{
+				$empIDs = $_GET['empIDs'];
+				if( isset($_POST) && !empty($_POST)){
+					$empIDss = explode(',',$empIDs);
+					array_pop($empIDss);
+					
+					$from_ = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
+					$to_ = date('Y-m-t', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
+
+					//temporary for now just want to get an insight of what how to shorten it
+					foreach($empIDss as $ids) {
+						$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($ids))?$ids:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
+					    $datum = $this->payrollM->getPayslipOnTimeRange($ids, $from_, $to_,TRUE );
+						$data['staffInfo']->endDate = date('Y-12-31');
+						$activeQuery['dataQuery'][0] = $data['staffInfo'];
+						$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+						$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+						$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+						$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+						$activeQuery['dataQuery'][0]->dateRange = date('m/Y', strtotime($from_)).' - '.date('m/Y', strtotime( $_POST['yearTo'].'-'.$_POST['monthTo']));
+						$activeQuery['dataQuery'][0]->taxSummaryDate = $from_.'/'.$to_;
+
+
+						$this->payrollM->taxSummary($activeQuery['dataQuery'][0], '', true);
+					}	
+				}
+				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate', 'empID IN ('.rtrim($empIDs, ',').')');
+			}
+		}
+		
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+
+	public function manageTaxSummary(){
+		$data['content'] = 'v_timecard/v_manage_tax_summary';
+		$data['tpage'] = 'manage13thmonth';
+		$data['column'] = 'withLeft';
+
+
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
+		
+		if($this->user!=false){
+			if($this->access->accessFullHRFinance==false) $data['access'] = false;
+			else{
+				if( isset($_POST['delete_13th_record']) AND $_POST['delete_13th_record'] == 'Delete' ){
+					$del_id = $_POST['id_'];
+					foreach ($del_id as $dID) {
+						$this->db->delete('tc13thMonth', array('tcmonthID' => $dID) );	
+					}
+				}
+				$data['queryData'] = $this->dbmodel->getQueryResults('tcTaxSummary', 'tcTaxSummary.*, CONCAT(lname, ", ", fname) as fullName, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');
+			}			
+		}
+		
+		$this->load->view('includes/template', $data);
 	}
 	
 	public function manage13thmonth(){
