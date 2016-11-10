@@ -867,9 +867,8 @@ class Timecard extends MY_Controller {
 			$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
 			$activeQuery['dataQuery'][0]->dateRange = date('m/Y', strtotime($from_)).' - '.date('m/Y', strtotime( $_POST['to_year'].'-'.$_POST['to_month']));
 			
-			$outputFile = 'taxSummary'.$from_.'-'.$to_.'-'.$data['which'];
+			$outputFile = 'taxSummary'.$from_.'-'.$to_.'-'.$data['which'];		
 			$this->payrollM->taxSummary($activeQuery['dataQuery'][0], $outputFile);	
-			echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manage13thmonth/";</script>';		
 		}
 
 		$this->load->view('includes/templatecolorbox', $data);			

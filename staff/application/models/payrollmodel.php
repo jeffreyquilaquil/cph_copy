@@ -2591,7 +2591,10 @@ class Payrollmodel extends CI_Model {
 									'taxRefund' => $ITR,
 									'taxSummaryDate' => $data->taxSummaryDate
 								);
-			$this->dbmodel->insertQuery('tcTaxSummary', $insertArray);
+			if( $this->dbmodel->getSingleInfo('tcTaxSummary', 'taxSummaryDate', 'empID_fk = '.$data->empID) )
+				$this->dbmodel->updateQuery('tcTaxSummary', 'empID_fk = '.$data->empID, $insertArray);
+			else
+				$this->dbmodel->insertQuery('tcTaxSummary', $insertArray);
 		}
 	}
 

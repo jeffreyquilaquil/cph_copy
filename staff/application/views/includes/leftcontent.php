@@ -28,6 +28,7 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'timecard/manage13thmonth/" class="'.(($pageyereport=='manage13thmonth')?'current':'').'">Manage 
 			13th Month</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pageyereport=='alphalist')?'current':'').'">Generate Alphalist</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/manageTaxSummary/?which=start" class="'.(($pageyereport=='manageTaxSummary')?'current':'').'">Tax Summary</a></li>';
 		}			
 	echo '</ul>';
 }else if(isset($tpage) && $tpage=='managepayroll'){ //MANAGE TIMECARD LEFT CONTENT

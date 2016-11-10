@@ -867,7 +867,8 @@ class Textmodel extends CI_Model {
 			$arr = array('reviewattendance'=>'Review Attendance', 
 						'generatepayslip'=>'Generate Payslip',
 						'addpayslipitem'=>'Add Payslip Item',
-						'generate13thmonth'=>'Generate 13th Month'
+                        'generate13thmonth'=>'Generate 13th Month',
+                        'generatetaxsummary'=>'Generate Tax Summary'
 					);
 		}else if($a=='payrollType' || $a=='payPeriod'){
 			$arr = array('once'=>'Once', 
