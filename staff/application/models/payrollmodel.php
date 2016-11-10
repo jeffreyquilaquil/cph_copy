@@ -2512,7 +2512,7 @@ class Payrollmodel extends CI_Model {
 
 		//get excess of tax base
 		$cell_counter += 1;
-		$excessTax = $taxBracket->minRange - $s;
+		$excessTax = $s - $taxBracket->minRange;
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $excessTax);
 
 		//get multiply
@@ -2522,7 +2522,6 @@ class Payrollmodel extends CI_Model {
 
 		//get percent of excess 
 		$cell_counter += 1;
-		$excessTax *= -1;
 		$percentOfExcess = $excessTax * $mulplyBy;
 		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $percentOfExcess);	
 
