@@ -2000,6 +2000,7 @@ class Timecard extends MY_Controller {
 
 
 						$this->payrollM->taxSummary($activeQuery['dataQuery'][0], '', true);
+						echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
 					}	
 				}
 				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate', 'empID IN ('.rtrim($empIDs, ',').')');
@@ -2020,10 +2021,10 @@ class Timecard extends MY_Controller {
 		if($this->user!=false){
 			if($this->access->accessFullHRFinance==false) $data['access'] = false;
 			else{
-				if( isset($_POST['delete_13th_record']) AND $_POST['delete_13th_record'] == 'Delete' ){
+				if( isset($_POST['delete_tax_record']) AND $_POST['delete_tax_record'] == 'Delete' ){
 					$del_id = $_POST['id_'];
 					foreach ($del_id as $dID) {
-						$this->db->delete('tc13thMonth', array('tcmonthID' => $dID) );	
+						$this->db->delete('tcTaxSummary', array('tcTaxSummary_ID' => $dID) );	
 					}
 				}
 				$data['queryData'] = $this->dbmodel->getQueryResults('tcTaxSummary', 'tcTaxSummary.*, CONCAT(lname, ", ", fname) as fullName, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'lname');

@@ -102,7 +102,7 @@
 			echo '<br/><br/><strong>21. Gross Compensation Income from Present Employer</strong><br/>';
 			echo $this->textM->formfield('number', 'bir21', '', 'forminput', '00.00', 'id="bir21_'.$q2->perID.'" step="any"');
 
-			echo '<br/><br/><strong>30B. Amount of Taxes Withheld from Previous Employer</strong><br/>';
+			echo '<br/><br/><strong>30A. Amount of Taxes Withheld from Present Employer</strong><br/>';
 			echo $this->textM->formfield('number', 'bir30b', '', 'forminput', '00.00', 'id="bir30b_'.$q2->perID.'" step="any"');
 
 			echo '<br/><br/><strong>31. Total Amount of Taxes Withheld As Adjusted</strong><br/>';
