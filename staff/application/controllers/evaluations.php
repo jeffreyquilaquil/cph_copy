@@ -23,7 +23,6 @@ class Evaluations extends MY_Controller
 		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
 		$data['evaluations'] = $this->evaluationsmodel->getStaffPerformanceEvaluation($this->user->empID, $this->user->dept, $this->user->is_supervisor);
 		$data['evaluations']['headers'] = ['Evaluation ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status', 'Actions'];
-
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
 		$this->load->view('includes/template', $data);
@@ -44,8 +43,27 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/template', $data);
 	}
 
-	public function addQuestions(){
+	public function review($jobType = 0){
+		$data['content'] = 'evaluations/reviewQuestions';
+		$data['tpage'] = 'evaluations';
+		$data['column'] = 'withLeft';
+	
+		if(!empty($_POST)){
 
+			$this->databasemodel->updateQueryText('evalQuestions', 'hrStatus = 1', 'question_id = '.$_POST['questionId'].' LIMIT 1');
+		}
+
+		$data['jobDesc'] = $this->databasemodel->getSQLQueryResults('SELECT count(DISTINCT question_id) as "rowCount", title, job_type FROM evalQuestions LEFT JOIN newPositions ON posID = job_type WHERE hrStatus = 0 and question_type = 1 GROUP BY job_type ORDER BY title');
+
+		if($jobType == 0 && !empty($data['jobDesc'])){
+			$jobType = $data['jobDesc'][0]->job_type;
+		}
+		$data['question'] = $this->evaluationsmodel->getReviewQuestions($jobType);
+		$data['question']['headers'] = ['ID','Objective Goals', 'Expectation', 'Output Format', 'Evaluation Question', 'Wt.', 'Uploaded by','Action'];
+		$this->load->view('includes/template',$data);
+	}
+
+	public function addQuestions(){
 		$type = $this->input->post('questionType');
 
 		$data[1]= array();
@@ -58,6 +76,7 @@ class Evaluations extends MY_Controller
 				'evaluator' => htmlentities($this->input->post('txtFormat')),
 				'weight' => htmlentities($this->input->post('txtWeight')),
 				'question' => htmlentities($this->input->post('txtQuestion')),
+	
 				);
 
 			array_push($data[1], $details_array);
@@ -101,6 +120,8 @@ class Evaluations extends MY_Controller
 			'job_type' => $job_type,
 			'goals' => htmlentities($this->input->post('txtObjective')),
 			'created' => date('Y-m-d'),
+			'hrStatus' => 0,
+			'uploader' => $this->user->empID,
 			);
 
 	$result = $this->evaluationsmodel->saveQuestion($data);
@@ -269,7 +290,7 @@ class Evaluations extends MY_Controller
 			if(is_uploaded_file($_FILES['fupload']['tmp_name'])){
 				$data['hrUploadDate'] = date('Y-m-d h:i:s');
 				$data['status'] = 3;
-				$dir = UPLOAD_DIR."evaluations/";
+				$dir = "../../".UPLOAD_DIR."evaluations/";
 				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_h-ia').'.pdf';
 				move_uploaded_file($_FILES['fupload']['tmp_name'], $fileDir);
 			}
@@ -351,6 +372,16 @@ class Evaluations extends MY_Controller
 
 		$pdf = new FPDI('P');
 		// $pdf->SetAutoPageBreak('auto');
+
+
+
+
+
+
+
+
+
+
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		$evaluatorTitles = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 
@@ -484,7 +515,6 @@ class Evaluations extends MY_Controller
 		 	$y = $pdf->getY();		 	
 
 			$ttlScore = 0;
-
 			foreach($questions as $question){
 				$fpdfCell = [];
 

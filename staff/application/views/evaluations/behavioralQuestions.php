@@ -61,7 +61,12 @@
 </table>
 <br>
 <form method="POST" action="" onsubmit="submitValues()">
-	<input type="button" value='Add Question' id='btnAddQuestion' class='btnclass' onclick='addQuestion()'" style="float:right">
+	<?php 
+		if($this->user->dept == 'Human Resources'){
+			echo '<input type="button" value="Add Question" id="btnAddQuestion" class="btnclass" onclick="addQuestion()" style="float:right;">';
+		}
+	 ?>
+	
 	<br>
 <table id='tblBehavioralQuestions' style='border-collapse: collapse;'>
 	<thead>

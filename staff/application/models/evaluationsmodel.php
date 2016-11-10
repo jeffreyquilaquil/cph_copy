@@ -47,14 +47,34 @@ class Evaluationsmodel extends CI_model{
 	public function getQuestions($type, $jobType){
 		$questions = [];
 		$question_type = ($type == 'behavioralQuestions' ? 2 : 1);
+		$technicalFilter = ($type != 'behavioralQuestions' ? 'AND hrStatus = 1' : '');;
 
-		$query = "SELECT * FROM evalQuestions WHERE question_type = {$question_type} AND job_type = {$jobType}";
+		$query = "SELECT * FROM evalQuestions WHERE question_type = {$question_type} AND job_type = {$jobType} ".$technicalFilter."";
 		$questions = $this->databasemodel->getSQLQueryResults($query);
 		for($i = 0; $i < count($questions); $i++){
-			$query = "SELECT * FROM evalQuestionsDetails WHERE question_id = {$questions[$i]->question_id}";
+			$query = "SELECT * FROM evalQuestionsDetails WHERE question_id = {$questions[$i]->question_id} ";
 			$questions[$i]->details = $this->databasemodel->getSQLQueryResults($query);
 		}
 		return $questions;
+	}
+
+	public function getReviewQuestions($jobType){
+		$questionList = [];
+		$questions = $this->databasemodel->getQueryResults('evalQuestions','evalQuestions.question_id, goals, created ,concat(fname," ",lname) as "name", question, expectation, evaluator, weight','hrStatus = 0 AND job_type = '.$jobType, 'LEFT JOIN staffs on empId = uploader LEFT JOIN evalQuestionsDetails ON evalQuestionsDetails.question_id = evalQuestions.question_id');
+		foreach($questions as $row){
+			$data =[
+				'ID' => $row->question_id,
+				'Objective Goals' => $row->goals,
+				'Expectation' => $row->expectation,
+				'Output Format' => $row->evaluator,
+				'Evaluation Question' => $row->question,
+				'Wt.' => $row->weight,
+				'Uploaded by' => $row->name,
+				'Action' => '<input type="button" value="Approve" data-val="1" class="btnclass btnApprove" data-Id="'.$row->question_id.'">',
+			];	
+			array_push($questionList, $data);
+		}
+		return $questionList;
 	}
 
 	public function getPositions(){
@@ -112,7 +132,7 @@ class Evaluationsmodel extends CI_model{
 			foreach(range(0,4) as $status){
 				
 				$data = [];
-				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif ses', 'notifyId, ses.empid, concat(fname," ",lname) as "name", genDate,evalDate, supervisor,evaluatorId, status', 'status = '.$status, 'LEFT JOIN staffs ON staffs.empid = ses.empId');
+				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif ses', 'notifyId, ses.empid, concat(fname," ",lname) as "name", genDate,evalDate, supervisor,evaluatorId, status, hrUploadDate', 'status = '.$status, 'LEFT JOIN staffs ON staffs.empid = ses.empId');
 				array_push($allStatus, $value);
 			}
 		}else if($isSupervisor == 1){
@@ -138,7 +158,7 @@ class Evaluationsmodel extends CI_model{
 					break;
 					case 1:
 						$statusText = 'Employee ratings locked in. <a href="'.$this->config->base_url().'evaluations/sendEvaluationEmail/1/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to enter evaluator settings';
-						$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL" class=""></a>';
+						$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL" class="btnclass"></a>';
 					break;
 					case 2:
 						$statusText = 'Pending Evaluation Form for Printings';
@@ -150,7 +170,7 @@ class Evaluationsmodel extends CI_model{
 					break;
 					case 3:
 						$statusText = "Ratings: Meets Expectations.";
-						$actionButton = '<a href="#" onlick="alert("uploaded PDF should be downloaded here.")" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
+						$actionButton = '<a href="../../'.UPLOAD_DIR.'evaluations/'.$info->empid.'_eval_'.$info->notifyId.'_'.date('d-m-y_h-ia', strtotime($info->hrUploadDate)).'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
 					break;
 					case 4:
 						$statusText = "Cancelled";

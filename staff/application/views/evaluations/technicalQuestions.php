@@ -34,8 +34,10 @@
 
 			if(is_numeric($this->uri->segment(3))){
 				$careerType = $this->uri->segment(3);
+				$back = '../';
 			}else{
 				$careerType = $this->uri->segment(4);
+				$back = '../../';
 			}
 
 			foreach ($positions as $value) {
@@ -190,11 +192,11 @@ echo validation_errors("<span class='error'","</span>");
 			$.ajax({
 				type:'POST',
 				data:data,
-				url:'../../'+submitAction,
+				url:"<?php echo $back; ?>"+submitAction,
 				dataType:'json'
 			}).done(function(r){
-				console.log(r)
-				alert("The question list has been updated.");
+		//		console.log(r)
+				alert("Your submitted question have been submitted to HR.");
 				if(submitAction == 'addQuestions'){
 					var row = setRow(r);
 					// Add the created data into the questions table
@@ -208,7 +210,7 @@ echo validation_errors("<span class='error'","</span>");
 				}
 				$("#tblAddQuestion textarea, #tblAddQuestion input").val('');
 			}).error(function(e){
-			//	console.log(e);
+	//			console.log(e);
 			});
 		 }
 	}
