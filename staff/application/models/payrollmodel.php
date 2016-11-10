@@ -2569,7 +2569,7 @@ class Payrollmodel extends CI_Model {
 		$objPHPExcel->getActiveSheet()->getStyle('H'.$cell_counter.':J'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
             'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
         ) ) );
-		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $data->fname.' '.$data->lname);
+		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data->fname.' '.$data->lname);
 
 		// echo "<pre>";
 		// var_dump($dateArr);
