@@ -4,7 +4,7 @@
 $technicalQuestions = $questions['technical'];
 $behavioralQuestions = $questions['behavioral'];
 #dd($behavioralQuestions, false);
-if($uType == 0 && $status == 0){
+if($uType == 2 && $status == 0){
 	// Employee has not yet taken it's self evaluation
 }else if($uType == 1 && $status == 1){
 	// Evaluator has not yet taken the evaluation
@@ -285,6 +285,10 @@ if($uType == 0 && $status == 0){
 <script type="text/javascript">
 var staffType = "<?php echo $this->uri->segment(2) ?>";
 	$(function(){
+			// if(typeof parent.$.colorbox.close() == 'function'){
+			// 	console.log('wala ni sya bay');
+			// }
+
 		$('#tblTechnical .empRtg').change(function(){
 			$row = $(this).parents('#tblTechnical tr');
 			$row.find('.wtScore').text( $(this).val() * parseInt($row.find('.wt').data('val')));
@@ -437,8 +441,10 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		}).done(function(r){
 			
 			alert("The evaluation score has been recorded");
+
+		//	window.close();
 		//	console.log(r);
-			parent.$.colorbox.close();
+		//	parent.$.colorbox.close();
 		}).error(function(r){
 			console.log('error');
 			console.log(r);

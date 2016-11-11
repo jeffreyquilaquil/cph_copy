@@ -245,19 +245,28 @@ class Evaluations extends MY_Controller
 			'staffType' => $data['staffType'],
 			'notifyId' => $data['notifyId'],
 		];
-		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
 
 		 if($data['staffType'] == 2){
 		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
 		 	$name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
-		 	$this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'">click here</a> to enter evaluator ratings.',2,1,$this->user->empID);
+		 	$this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'" target="_blank">click here</a> to enter evaluator ratings.',2,1,$this->user->empID);
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
+
+		 	// Self Rating Technical Questions
+		 	$info2 += ['srtq'=>['empRating']['technical']];
+		 	// Self Rating Behavioral Questions
+		 	$info2 += ['srbq'=>['empRating']['behavioral']];
 		 }
 
 		 if($data['staffType'] == 1){
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 2','notifyId='.$data['notifyId']);
-		# 	$this->evalPDF(2, $data['empId'], $data['evaluator'], $data['notifyId']);
+
+		 	// Evaluator Technical Questions
+		 	$info2 += ['etq' => ['empRating']['technical']];
+		 	$info2 += ['ebq' => ['empRating']['behavioral']];
 		 }
+
+ 		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
 	}
 
 	function saveEvaluationDate(){
@@ -271,7 +280,7 @@ class Evaluations extends MY_Controller
 		];
 
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
-		$this->commonmodel->addMyNotif($data['empId'], $evalName.' has generated your performance evaluation. Please  <a href="performanceeval/2/'.$data['empId'].'/'.$data['evaluatorId'].'/'.$notifyId.'">click here</a> to enter your self-rating',2,1,$this->empID);
+		$this->commonmodel->addMyNotif($data['empId'], $evalName.' has generated your performance evaluation. Please  <a href="performanceeval/2/'.$data['empId'].'/'.$data['evaluatorId'].'/'.$notifyId.'" target="_blank">click here</a> to enter your self-rating',2,1,$this->empID);
 
 		$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 
@@ -370,31 +379,294 @@ class Evaluations extends MY_Controller
 		require_once('includes/fpdf/fpdf.php');
 		require_once('includes/fpdf/fpdi.php');
 
+
 		$pdf = new FPDI('P');
 		// $pdf->SetAutoPageBreak('auto');
-
-
-
-
-
-
-
-
-
-
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		$evaluatorTitles = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 
-		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, position', 'empID = '.$empID, 'LEFT JOIN newPositions np on np.posID = position');
-		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title', 'empID = '.$evalID, 'LEFT JOIN newPositions np on np.posID = position');
+		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, evalDate, position, srtq, srbq, etq, ebq', 'staffs.empID = '.$empID.' AND notifyId = '.$notifId, 'LEFT JOIN newPositions np on np.posID = position LEFT JOIN staffEvaluationNotif sen ON sen.empId = staffs.empId');
+		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor', 'empID = '.$evalID, 'LEFT JOIN newPositions np on np.posID = position');
+		$evaluatorInfo2 = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor', 'empID = '.$evaluatorInfo->supervisor, 'LEFT JOIN newPositions np on np.posID = position');
+		$textArr = ['Name of Employee', 'Immediate Supervisor', 'Position Title', 'Evaluator', 'Hire Date', "Evaluator's Position",'90th Day', 'Evaluation Date'];
+
+	// For the 
+		 $pdf->addPage();
+		 $pdf->image('includes/images/logowithname.png',10,0,90,25,'PNG');
+			$pdf->setTextColor(0, 0, 0);
+			$pdf->SetFont('Arial','B',15);
+			$pdf->setXY(102, 0);
+			$pdf->cell(35,30,'PERFORMANCE EVALUATION FORM');
+
+			$pdf->SetFont('Arial','',9);
+			$pdf->setXY(132,10);
+			$pdf->cell(40,20,'Employee Self-Rating');
+
+			// Start of Employee Information
+			$pdf->SetFont('Arial','',9);
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->setXY(10,25);
+			$pdf->cell(192, 5, "Employee Information ",1,'','C', true);
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+
+			// For the bold fields
+			$pdf->SetFont('Arial','B',8);
+			$y = 30;
+
+			foreach($textArr as $value){
+				if(array_search( $value, $textArr) % 2 == 0){
+					$pdf->setXY(10, $y);
+				}else{
+					$pdf->setXY(106	, $y);
+					$y+=5;
+				}
+				
+				$pdf->cell(35,5, $value.':' ,1,'','R',true);
+			}
+
+			if(!isset($supervisorId)){
+				$supervisorId = $evalID;
+			#	$supervisor2Id = $evaluatorInfo->supervisor
+				$posID = $info->position;
+				unset($info->supervisor);
+				unset($info->position);
+			#	unset($infi)
+			}
+
+			$pdf->SetFont('Arial','',8);
+
+			$y = 30;
+			foreach ($info as $value) {
+				$pdf->setXY(45,$y);
+				$pdf->cell(61,5, $value,1,'','L',true);
+				$y += 5;
+			}
+
+			$textArr = [$evaluatorInfo->name, $evaluatorInfo->name, $evaluatorInfo->title, date('Y-m-d', strtotime($info->evalDate))];
+			$y = 30;
+			foreach ($textArr as $value) {
+				$pdf->setXY(141,$y);
+				$pdf->cell(61,5, $value,1,'','L',true);
+				$y += 5;
+			}
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+
+			$pdf->setXY(10,$y);
+			$pdf->cell(96, 5, "Ratings",1,'','C', true);
+
+			$pdf->setXY(106,$y);
+			$pdf->cell(96, 5, "The minimum required for this evaluation is 100%", 1, '', 'C', true);
+			$y += 5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','B',8);
+			$colArr2 = ['Less than 100%', '100%', 'Above 100%'];
+			$colArr3 = ['Did Not Meet Expectations', 'Meets Expectations', 'Exceeds Expectations'];
+			for($x=0;$x<3;$x++){
+				$pdf->setXY(10, $y);
+				$pdf->cell(35, 5, $colArr2[$x],1,'','R',true);
+
+				$pdf->setX(45);
+				$pdf->cell(61, 5, $colArr3[$x],1,'','R',true);
+				$y+=5;
+			}
+
+			$pdf->setXY(106, ($y-15));
+			$pdf->cell(96, 5, 'Any grade below 100% is a failed evaluation.',1,'','C',true);
+
+			$pdf->setXY(106, ($y-10));
+			$pdf->cell(45.5, 10, 'OVERALL RATING',1,'','C',true);
+
+			$pdf->setXY(151.5, ($y-10));
+			// Edit this
+
+			$overallRating = (int)( ( ( ($info->srtq * 0.2) + ($info->etq * 0.8) ) + ( ($info->srbq * 0.2) + ($info->ebq * 0.8) ) ) / 2);
+			$pdf->cell(50.5,5,$overallRating.'%',1, '','C',true);
+
+			if($overallRating < 100)
+				$overallRatingText = 'Did Not Meet Expectation';
+			if($overallRating  == 100)
+				$overallRatingText = 'Meets Expectations';
+			if($overallRating > 100)
+				$overallRatingText = 'Exceeds Expectations';
+
+			$pdf->setXY(151.6,($y-5));
+			$pdf->cell(50.5,5,$overallRatingText, 1, '', 'C', false);
+			
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->SetFont('Arial','',8);
+
+			$pdf->setXY(10, $y);
+			$pdf->cell(96, 5, "Steps",1,'','C', true);
+			$pdf->setXY(106, $y);
+			$pdf->cell(96, 5, "Weighted Ratings",1,'','C', true);
+			$y += 5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','',7);
+			$pdf->rect(10,$y,96,20,'DF');
+			$colArr = ['1. Employee gives his/her ratings in the self-ratings tab.', 
+				"2. Evaluator gives his/her ratings in the evaluator's ratings tab.", 
+				"3. Evaluator completes the summary tab.", 
+				"4. Only the white cells in all tabs can be filled-in by the employee and evaluator."
+			];
+			for($x=0;$x<4;$x++){
+				$pdf->setXY(10,($y + ($x*5)));
+				$pdf->cell(96,5,$colArr[$x],0,'','L',false);
+			}
+
+			$pdf->SetFont('Arial','B',9);
+			$pdf->setXY(106, $y);
+			$pdf->cell(70,10,'Overall Technical Rating (50%)',1,'','C',true);
+			$pdf->setXY(106, $y+10);
+			$pdf->cell(70,10,'Overall Behavioral Rating (50%)',1,'','C',true);
+
+			$pdf->setXY(176, $y);
+			$pdf->cell(26, 10, (int)( ($info->srtq * 0.2) + ($info->etq * 0.8) ).'%', 1, '','C',true);
+			$pdf->setXY(176, $y+10);
+			$pdf->cell(26, 10, (int)( ($info->srbq * 0.2) + ($info->ebq * 0.8) ).'%',1,'','C',true);
+			$y+=20;
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->SetFont('Arial','',8);
+			$pdf->setXY(10, $y);
+			$pdf->cell(192, 5,'Performance Evaluation Details',1,'','C',true);
+			$y+=5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','B',8);
+			$colArr = ["Below 80%", "For termination of probationary employment.",
+				'80% - 90%', 'For extension of probationary employment - 90 day evaluation results only.',
+				'below 100%','For termination of probationary employment - 5th month and/or 2nd probationary evaluation only.',
+				'100% and Above', 'For regularization.'
+			];
+			for($x=0;$x<8;$x++){
+				if($x % 2 == 0){
+					$pdf->setXY(10, $y);
+					$pdf->cell(35,5,$colArr[$x],1,'','R',true);
+				}else{
+					$pdf->setXY(45, $y);
+					$pdf->cell(157,5,$colArr[$x],1,'','L',true);
+					$y+=5;
+				}
+			}
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->SetFont('Arial','',8);
+			$pdf->setXY(10, $y);
+			$pdf->cell(96, 5, "Recommendation",1,'','C', true);
+			$pdf->setXY(106, $y);
+			$pdf->cell(96, 5, "Next Evaluation Date",1,'','C', true);
+			$y+=5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','B',9);
+			$pdf->SetXY(10, $y);
+			$pdf->cell(96, 5, "For Regularization",1,'','C', false);
+			$pdf->SetXY(106, $y);
+			$pdf->cell(96, 5, "NA",1,'','C', false);
+			$y+=5;
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->SetFont('Arial','',8);
+			$pdf->setXY(10, $y);
+			$pdf->cell(192, 5, "Remarks",1,'','C', true);
+			$y+=5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->rect(10, $y, 192, 20);
+			$pdf->setXY(10, $y);
+			$pdf->multicell(192, 20, 'NA',1,'C');
+			$y+=20;
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->setXY(10, $y);
+			$pdf->cell(96, 5, "Evaluator Acknowledgement",1,'','C', true);
+			$pdf->setXY(106, $y);
+			$pdf->cell(96, 5, "Second Level Manager Acknowledgement",1,'','C', true);
+			$y+=5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','',6.5);
+			$pdf->setXY(10, $y);
+			$pdf->cell(96, 5, "This is to certify that I have fairly evaluated and discussed the ratings to the employee.",1,'','C', true);
+			$pdf->setXY(106, $y);
+			$pdf->cell(96, 5, "This is to certify that I have reviewed and approved all evaluations provided.",1,'','C', true);
+			$y+=5;
+
+			$pdf->SetFont('Arial','B',8);
+			$pdf->rect(10, $y, 96, 15);
+			$pdf->setXY(10,$y+10);
+			$pdf->cell(96, 5, $evaluatorInfo->name.' / '.date('F d, Y'),0,'','C');
+			$pdf->rect(106, $y, 96, 15);
+			$pdf->setXY(106,$y+10);
+			$pdf->cell(96, 5, $evaluatorInfo2->name.' / '.date('F d, Y'),0,'','C');
+			$y+=15;
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->setXY(10,$y);
+			$pdf->cell(192, 5, 'Employee Acknowledgement',1,'','C', true);
+			$y+=5;
+
+			$pdf->setTextColor(0,0,0);
+			$pdf->SetFillColor(204, 255, 255);
+			$pdf->SetFont('Arial','',8);
+			$pdf->rect(10,$y,192,10,'DF');
+			$pdf->setXY(10,$y);
+			$pdf->multiCell(192,5,'I certify that the results of this evaluation have been discussed with me. I accept it as fair, and I acknowledge that I have been given the opportunity to discuss the results of the evaluation.',0,'C');
+			$y+=10;
+
+			$pdf->SetFont('Arial','B',8);
+			$pdf->rect(10, $y, 192, 15);
+			$pdf->setXY(10,$y+10);
+			$pdf->cell(192, 5, $info->name.' / ' .date('F d, Y'),0,'','C');
+			$y+=15;
+
+			$pdf->SetFont('Arial','',8);
+			$pdf->setXY(10,$y);
+			$pdf->cell(192, 5, 'Employee Name and Signature / Date Signed',1,'','C', true);
+			$y+=5;
+
+			$pdf->setTextColor(255, 255, 255);
+			$pdf->SetFillColor(128, 0, 0);
+			$pdf->setXY(10,$y);
+			$pdf->cell(192, 5, '',1,'','C', false);
+			$pdf->setXY(10,$y+5);
+			$pdf->cell(192, 5, 'Employee Name and Signature / Date Signed',1,'','C', true);
+
+
+
+
+// LIST OF QUESTIONS
 		foreach($evaluationTitle as $eachTitle){		
 
 			if($eachTitle == "TECHNICAL GOALS AND OBJECTIVES"){
 				$questionType = 1;
-				$job_type = $info->position;
+				$job_type = $posID;
+				$typeText = 'TECHNICAL';
+				$ttlScore = $info->srtq;
+				$evalTtlScore = $info->etq;
 			}else{
 				$questionType = 2;
 				$job_type = 0;
+				$typeText = 'BEHAVIORAL';
+				$ttlScore = $info->srbq;
+				$evalTtlScore = $info->ebq;			
 			}
 
 			$questions = $this->evaluationsmodel->getEvaluationScore($questionType, $job_type, $empID, $staffType, $notifId);
@@ -402,6 +674,10 @@ class Evaluations extends MY_Controller
 			$pdf->SetTitle('Evaluation Performance Form');
 			$pdf->AddPage();
 			// Header
+
+
+			$pdf->image('includes/images/logowithname.png',10,0,90,25,'PNG');
+
 			$pdf->setTextColor(0, 0, 0);
 			$pdf->SetFont('Arial','B',15);
 			$pdf->setXY(102, 0);
@@ -436,31 +712,28 @@ class Evaluations extends MY_Controller
 				$pdf->cell(35,5, $value.':' ,1,'','R',true);
 			}
 
-			if(!isset($supervisorId)){
-				$supervisorId = $evalID;
-				$posID = $info->position;
-				unset($info->supervisor);
-				unset($info->position);
-			}
+		#	if(!isset($supervisorId)){
+
+			#	$supervisorId = $evalID;
+			#	$posID = $info->position;
+			#	unset($info->supervisor);
+			#	unset($info->position);
+			#}
 
 			$pdf->SetFont('Arial','',8);
 
 			$y = 30;
-			foreach ($info as $value) {
+			$textArr = [$info->name, $info->title, $info->startDate, $info->ninetiethDay];
+			foreach ($textArr as $value) {
 				$pdf->setXY(45,$y);
 				$pdf->cell(61,5, $value,1,'','L',true);
 				$y += 5;
 			}
 
-			if($staffType == 1){
-				$evaluator = $evaluatorInfo->name;
-				$evaluatorTitle = $evaluatorInfo->title;
-			}else{
-				$evaluator = $info->name;
-				$evaluatorTitle = $info->title;
-			}
+			$evaluator = $evaluatorInfo->name;
+			$evaluatorTitle = $evaluatorInfo->title;
 
-			$textArr = [$evaluatorInfo->name, $evaluator, $evaluatorTitle, date('Y-m-d')];
+			$textArr = [$evaluatorInfo->name, $evaluator, $evaluatorTitle, date('Y-m-d', strtotime($info->evalDate))];
 			$y = 30;
 			foreach ($textArr as $value) {
 				$pdf->setXY(141,$y);
@@ -514,7 +787,7 @@ class Evaluations extends MY_Controller
 		 	$ii = 1;
 		 	$y = $pdf->getY();		 	
 
-			$ttlScore = 0;
+			
 			foreach($questions as $question){
 				$fpdfCell = [];
 
@@ -605,7 +878,7 @@ class Evaluations extends MY_Controller
 						$ttlHeight += $height;
 						$y = $pdf->getY() + 5;
 						$fpdfCell = [];
-						$ttlScore += intval($question->details[0]->score);
+						
 					}
 					 	$y += 5;	
 
@@ -679,7 +952,7 @@ class Evaluations extends MY_Controller
 						$pdf->setXY($value[0], $y);
 						$pdf->multiCell($value[3], 5, $value[4],0,'',false);
 					}
-					$ttlScore += intval($question->details[0]->score);
+					
 				}
 
 				$y = $pdf->getY();
@@ -696,22 +969,35 @@ class Evaluations extends MY_Controller
 			}
 
 			$pdf->SetFillColor(255, 255, 255);
- 
+
+
 		 	$pdf->SetX(9.5);
-		 	$pdf->cell(140, 11, '', 'T', '', '', true);
+		 	$pdf->cell(80, 11, '', 'T', '', '', true);
 
 			$pdf->setTextColor(255, 255,255);
 			$pdf->SetFillColor(128, 0,0);
+			$pdf->SetFont('Arial','B',10);
+			$pdf->SetXY(55,$y);
+			$pdf->cell(35,10,$typeText,1,'','C',true);
 
+			$pdf->SetFont('Arial','B',8);
 
-		 	$pdf->SetXY(147,($y+5));
-		 	$pdf->cell(45,5,"Employee's Rating",1,'','C',true);
+		 	$pdf->SetXY(88,($y));
+		 	$pdf->cell(47,5,"Employee's Rating",1,'','C',true);
 		 	$pdf->cell(10,5,$ttlScore."%",1,'','C',true);
 
-
-		 	$pdf->SetXY(147,$y);
-		 	$pdf->cell(45,5,"Employee's 20% Weighted Rating",1,'','C',true);
+		 	$pdf->SetXY(88,$y+5);
+		 	$pdf->cell(47,5,"Employee's 20% Weighted Rating",1,'','C',true);
 		 	$pdf->cell(10,5,($ttlScore * 0.2)."%",1,'','C',true);
+
+
+		 	$pdf->SetXY(145,($y));
+		 	$pdf->cell(47,5,"Evaluator's Rating",1,'','C',true);
+		 	$pdf->cell(10,5,$evalTtlScore."%",1,'','C',true);
+
+		 	$pdf->SetXY(145,$y+5);
+		 	$pdf->cell(47,5,"Evaluator's 80% Weighted Rating",1,'','C',true);
+		 	$pdf->cell(10,5,(int)($evalTtlScore * 0.8)."%",1,'','C',true);
 
 		}
 		$pdf->Output();

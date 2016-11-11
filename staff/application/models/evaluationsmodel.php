@@ -109,11 +109,10 @@ class Evaluationsmodel extends CI_model{
 
 	function getEvaluationScore($questionType, $jobType, $empID, $staffType, $notifyId){
 		$questions = [];
-
 		$query = "SELECT question_id, goals FROM evalQuestions WHERE question_type = {$questionType} AND job_type = {$jobType}";
 		$questions = $this->databasemodel->getSQLQueryResults($query);
 		for($i = 0; $i < count($questions); $i++){
-			$query = "SELECT eqd.detail_id, expectation, evaluator, ses.weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND ses.emp_id = {$empID} AND notifyId = {$notifyId}";
+			$query = "SELECT eqd.detail_id, expectation, evaluator, ses.weight, score, question, remarks FROM evalQuestionsDetails eqd LEFT JOIN staffEvaluationScores ses ON ses.detail_id = eqd.detail_id WHERE eqd.question_id = {$questions[$i]->question_id} AND ses.staff_type = {$staffType} AND notifyId = {$notifyId}";
 			$questions[$i]->details = $this->databasemodel->getSQLQueryResults($query);
 		}
 		return $questions;
@@ -138,7 +137,7 @@ class Evaluationsmodel extends CI_model{
 		}else if($isSupervisor == 1){
 	
 			foreach(range(0,4) as $status){
-				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif ses', 'notifyId, ses.empid, concat(fname," ",lname) as "name", genDate,evalDate, supervisor,evaluatorId, status', 'status = '.$status.' AND staffs.supervisor = '.$empId, 'LEFT JOIN staffs ON staffs.empid = ses.empId');
+				$value = $this->databasemodel->getQueryResults('staffEvaluationNotif ses', 'notifyId, ses.empid, concat(fname," ",lname) as "name", genDate,evalDate, supervisor,evaluatorId, status, hrUploadDate', 'status = '.$status.' AND staffs.supervisor = '.$empId, 'LEFT JOIN staffs ON staffs.empid = ses.empId');
 				array_push($allStatus, $value);
 			}
 		}
@@ -170,7 +169,7 @@ class Evaluationsmodel extends CI_model{
 					break;
 					case 3:
 						$statusText = "Ratings: Meets Expectations.";
-						$actionButton = '<a href="../../'.UPLOAD_DIR.'evaluations/'.$info->empid.'_eval_'.$info->notifyId.'_'.date('d-m-y_h-ia', strtotime($info->hrUploadDate)).'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
+						$actionButton = '<a href="../../'.UPLOAD_DIR.'evaluations/'.$info->empid.'_eval_'.$info->notifyId.'_'.date('d-m-y_h-ia'/*, strtotime($info->hrUploadDate)*/).'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
 					break;
 					case 4:
 						$statusText = "Cancelled";
