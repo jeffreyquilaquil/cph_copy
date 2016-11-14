@@ -337,8 +337,6 @@ class Evaluations extends MY_Controller
 		$evalInfo = $this->databasemodel->getSingleInfo('staffs', $fields,'empID ='.$evaluator);
 		$eval = $this->databasemodel->getSingleInfo('staffEvaluationNotif', 'evalDate', 'notifyId = '.$notifyId);
 		$to = $info->email;
-
-		// True if current date is less than the number of days before evaluation
 		
 		if($userType == 2){
 			$subject = "Self-rating performance evaluation for ".$info->name;
