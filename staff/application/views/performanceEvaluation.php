@@ -82,7 +82,7 @@ if($uType == 2 && $status == 0){
 			<td><?php echo $value->details[0]->evaluator; ?></td>
 			<td><?php echo $value->details[0]->question; ?></td>
 			<td class='wt' data-val="<?php echo $value->details[0]->weight; ?>" data-id="<?php echo $value->details[0]->detail_id ?>"><?php echo $value->details[0]->weight; ?>%</td>
-			<td><textarea class='employeeremarks'>&nbsp;</textarea></td>
+			<td><textarea class='employeeremarks'></textarea></td>
 			<td>
 				<select class="empRtg">
 					<?php
@@ -209,7 +209,7 @@ if($uType == 2 && $status == 0){
 		 					$row = 0;
 		 					foreach($value->details as $details){
 		 						$tdClass = ($row < $row_count ? 'tdBot':'');
-		 						echo '<tr><td class="'.$tdClass.'"><textarea class="employeeremarks" data-row="'.$row.' " >&nbsp;</textarea></td></tr>';
+		 						echo '<tr><td class="'.$tdClass.'"><textarea class="employeeremarks" data-row="'.$row.'"></textarea></td></tr>';
 		 						$row++;
 		 					}
 		 				 ?>
@@ -263,6 +263,17 @@ if($uType == 2 && $status == 0){
 		 <?php  
 		 	$i++;
 			 } 
+
+			 if($uType == 1){
+			 ?>
+			 <tr>
+			 	<th colspan="9"><strong>Evaluator Remarks</strong></th>
+			 </tr>
+			 <tr>
+			 	<td colspan="9" style="padding: 8px;"><textarea id="evalRemarks" class="forminput" placeholder="Please enter your remarks here."></textarea></td>
+			 </tr>
+			 <?php
+			 }
 		 ?>
 	</tbody>
 	<tbody>
@@ -377,12 +388,14 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		var remarksArr = [];
 		var detailIdArr = [];
 		var questionIdArr = [];
+		var ratingArr = [];
 		 $('.technicalQuestions').each(function(){
 			remarksArr.push($(this).find('.employeeremarks').val());
 			wtScoreArr.push($(this).find('.wtScore').text());
 			wtArr.push($(this).find('.wt').text());
 			detailIdArr.push($(this).find('.wt').data('id'));
 			questionIdArr.push($(this).data('id'));
+			ratingArr.push($(this).find('.empRtg').val());
 		});
 		technical = {
 			'remarksArr' : remarksArr,
@@ -390,6 +403,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			'wtArr' : wtArr,
 			'detailIdArr' : detailIdArr,
 			'questionIdArr' : questionIdArr,
+			'ratingArr' : ratingArr,
 		}
 
 		var wtScoreArr = [];
@@ -397,6 +411,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 		var remarksArr = [];
 		var detailIdArr = [];
 		var questionIdArr = [];
+		var ratingArr = [];
 		$('.behavioralQuestions .wtScore').each(function(){
 			var rowNo = $(this).data('row');
 			$parent = $(this).parents('.behavioralQuestions');
@@ -405,6 +420,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			wtArr.push($parent.find('.wt[data-row="'+rowNo+'"]').text());
 			detailIdArr.push($parent.find('.wt[data-row="'+rowNo+'"]').data('id'));
 			questionIdArr.push($parent.data('id'));
+			ratingArr.push($parent.find('.empRtg[data-row="'+rowNo+'"]').val());
 		});
 
 		behavioral = {
@@ -413,6 +429,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			'wtArr' : wtArr,
 			'detailIdArr' : detailIdArr,
 			'questionIdArr' : questionIdArr,
+			'ratingArr' : ratingArr,
 		}
 
 		$data = {
@@ -422,6 +439,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			'evaluator':"<?php echo $evaluator ?>",
 			'staffType' : staffType,
 			'notifyId' : "<?php echo $notifyId ?>",
+			'evalRemarks' : $('#evalRemarks').val(),
 			'empRating' : {
 				'technical': $('#tblTechnical .ttlRtg').text(),
 				'behavioral' : $('#tblBehavioral .ttlRtg').text(),
@@ -431,6 +449,8 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 				'behavioral' : $('#tblBehavioral .ttlWtRtg').text(),
 			}
 		}
+
+//		console.log($data);
 
 		displaypleasewait();
 		$.ajax({
@@ -442,7 +462,7 @@ var staffType = "<?php echo $this->uri->segment(2) ?>";
 			
 			alert("The evaluation score has been recorded");
 
-		//	window.close();
+			window.close();
 		//	console.log(r);
 		//	parent.$.colorbox.close();
 		}).error(function(r){

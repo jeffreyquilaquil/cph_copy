@@ -213,6 +213,7 @@ class Evaluations extends MY_Controller
 				'remarks' => htmlentities((isset($data['technical']['remarksArr'][$i]) ? $data['technical']['remarksArr'][$i] : '')),
 				'question_id' => $data['technical']['questionIdArr'][$i],
 				'weight' => $data['technical']['wtArr'][$i],
+				'rating' => $data['technical']['ratingArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
 				'notifyId' => $data['notifyId'],
@@ -227,6 +228,7 @@ class Evaluations extends MY_Controller
 				'remarks' => htmlentities((isset($data['behavioral']['remarksArr'][$i]) ? $data['behavioral']['remarksArr'][$i] : '')),
 				'question_id' => $data['behavioral']['questionIdArr'][$i],
 				'weight' => $data['behavioral']['wtArr'][$i],
+				'rating' => $data['behavioral']['ratingArr'][$i],
 				'emp_id' => $data['empId'],
 				'staff_type' => $data['staffType'],
 				'notifyId' => $data['notifyId'],
@@ -241,31 +243,33 @@ class Evaluations extends MY_Controller
 		// The second is for the performance evaluation
 		$info2  = [
 			'empId' => $data['empId'],
-			'evaluator' => $data['evaluator'],
+			'evaluatorId' => $data['evaluator'],
 			'staffType' => $data['staffType'],
 			'notifyId' => $data['notifyId'],
 		];
 
 		 if($data['staffType'] == 2){
-		 	$this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
-		 	$name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
-		 	$this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$empId."/".$evaluator."/".$data['notifyId'].'" target="_blank">click here</a> to enter evaluator ratings.',2,1,$this->user->empID);
-		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
+		 	 $this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
+		 	 $name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
+		 	 $this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$data['empId']."/".$data['empId']."/".$data['notifyId'].'" target="_blank">click here</a> to enter evaluator ratings.',2,1,0);
+		 	 $this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
 
 		 	// Self Rating Technical Questions
-		 	$info2 += ['srtq'=>['empRating']['technical']];
+		 	$info2 += ['srtq'=> $data['empRating']['technical']];
 		 	// Self Rating Behavioral Questions
-		 	$info2 += ['srbq'=>['empRating']['behavioral']];
+		 	$info2 += ['srbq'=> $data['empRating']['behavioral']];
 		 }
 
 		 if($data['staffType'] == 1){
 		 	$this->databasemodel->updateQueryText('staffEvaluationNotif','status = 2','notifyId='.$data['notifyId']);
 
 		 	// Evaluator Technical Questions
-		 	$info2 += ['etq' => ['empRating']['technical']];
-		 	$info2 += ['ebq' => ['empRating']['behavioral']];
+		 	$info2 += ['etq' => $data['empRating']['technical']];
+		 	// Evaluator Behavioral Questions
+		 	$info2 += ['ebq' => $data['empRating']['behavioral']];
+		 	// Evaluator Remarks
+		 	$info2 += ['evalRemarks' => $data['evalRemarks']];
 		 }
-
  		$this->evaluationsmodel->savePerformanceEvaluation($rows, $info2);
 	}
 
@@ -300,7 +304,7 @@ class Evaluations extends MY_Controller
 				$data['hrUploadDate'] = date('Y-m-d h:i:s');
 				$data['status'] = 3;
 				$dir = "../../".UPLOAD_DIR."evaluations/";
-				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_h-ia').'.pdf';
+				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_hia').'.pdf';
 				move_uploaded_file($_FILES['fupload']['tmp_name'], $fileDir);
 			}
 			$this->databasemodel->updateQuery('staffEvaluationNotif','notifyId='.$notifId,$data);
@@ -322,7 +326,7 @@ class Evaluations extends MY_Controller
 	}
 
 
-	function sendEvaluationEmail($userType, $empId, $evaluator, $notifyId){
+	function sendEvaluationEmail($userType, $empId, $evaluator, $notifyId, $cc= ''){
 
 		// User type 2 is Rank and File Employee
 		// 1 is for the Supervisor
@@ -385,7 +389,7 @@ class Evaluations extends MY_Controller
 		$evaluationTitle = ['TECHNICAL GOALS AND OBJECTIVES', 'BEHAVIORAL GOALS AND OBJECTIVES'];
 		$evaluatorTitles = ['Team Mate', 'Leaders and Clients', 'Immediate Supervisor'];
 
-		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, evalDate, position, srtq, srbq, etq, ebq', 'staffs.empID = '.$empID.' AND notifyId = '.$notifId, 'LEFT JOIN newPositions np on np.posID = position LEFT JOIN staffEvaluationNotif sen ON sen.empId = staffs.empId');
+		$info = $this->databasemodel->getSingleInfo('staffs','concat(fname," ",lname) as name, title, startDate, DATE_ADD(startDate, INTERVAL 3 MONTH) as ninetiethDay, evalDate, position, srtq, srbq, etq, ebq, evalRemarks', 'staffs.empID = '.$empID.' AND notifyId = '.$notifId, 'LEFT JOIN newPositions np on np.posID = position LEFT JOIN staffEvaluationNotif sen ON sen.empId = staffs.empId');
 		$evaluatorInfo = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor', 'empID = '.$evalID, 'LEFT JOIN newPositions np on np.posID = position');
 		$evaluatorInfo2 = $this->databasemodel->getSingleInfo('staffs', 'concat(fname," ",lname) as name, title, supervisor', 'empID = '.$evaluatorInfo->supervisor, 'LEFT JOIN newPositions np on np.posID = position');
 		$textArr = ['Name of Employee', 'Immediate Supervisor', 'Position Title', 'Evaluator', 'Hire Date', "Evaluator's Position",'90th Day', 'Evaluation Date'];
@@ -589,7 +593,7 @@ class Evaluations extends MY_Controller
 			$pdf->setTextColor(0,0,0);
 			$pdf->rect(10, $y, 192, 20);
 			$pdf->setXY(10, $y);
-			$pdf->multicell(192, 20, 'NA',1,'C');
+			$pdf->multicell(192, 20, $info->evalRemarks,1,'C');
 			$y+=20;
 
 			$pdf->setTextColor(255, 255, 255);
@@ -647,7 +651,7 @@ class Evaluations extends MY_Controller
 			$pdf->setXY(10,$y);
 			$pdf->cell(192, 5, '',1,'','C', false);
 			$pdf->setXY(10,$y+5);
-			$pdf->cell(192, 5, 'Employee Name and Signature / Date Signed',1,'','C', true);
+			$pdf->cell(192, 5, 'IMPORTANT: The Employee and Evaluator must sign each page of this performance evaluation and supporting documents.',1,'','C', true);
 
 
 
@@ -711,14 +715,6 @@ class Evaluations extends MY_Controller
 				
 				$pdf->cell(35,5, $value.':' ,1,'','R',true);
 			}
-
-		#	if(!isset($supervisorId)){
-
-			#	$supervisorId = $evalID;
-			#	$posID = $info->position;
-			#	unset($info->supervisor);
-			#	unset($info->position);
-			#}
 
 			$pdf->SetFont('Arial','',8);
 
@@ -857,7 +853,7 @@ class Evaluations extends MY_Controller
 						}
 						$dy1 = $pdf->getY();
 						
-						array_unshift($fpdfCell, array(182, $y, $height, 10, $text));
+						array_unshift($fpdfCell, array(182, $y, $height, 10, $detailsRow->rating));
 						array_unshift($fpdfCell, array(192, $y, $height, 10, $detailsRow->score));
 						array_unshift($fpdfCell, array(80, $y, $height, 25, $evaluatorText));  
 						array_unshift($fpdfCell, array(140, $y, $height, 7, $detailsRow->weight));
@@ -908,13 +904,10 @@ class Evaluations extends MY_Controller
 					 	
 						$pdf->addPage();
 						$y = 10;
-
-						
 					}
 
 				}else{
-					$text = ($question->details[0]->score !=0 ? $question->details[0]->score / $question->details[0]->weight : 0);
-					
+
 					if($eachTitle == "BEHAVIORAL GOALS AND OBJECTIVES"){
 						$evaluatorText = $evaluatorTitles[$question->details[0]->evaluator];
 					}else{
@@ -932,7 +925,7 @@ class Evaluations extends MY_Controller
 					$pdf->SetFillColor(204, 255,255);
 
 					array_push($fpdfCell, array(15, $y, $height, 30, $question->goals));	
-					array_push($fpdfCell, array(182, $y, $height, 10, $text));
+					array_push($fpdfCell, array(182, $y, $height, 10, $question->details[0]->rating));
 					array_push($fpdfCell, array(80, $y, $height, 25, $evaluatorText));
 					array_push($fpdfCell, array(140, $y, $height, 7, $question->details[0]->weight));
 					array_push($fpdfCell, array(147, $y, $height, 35, html_entity_decode($question->details[0]->remarks)));
