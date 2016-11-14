@@ -1629,6 +1629,7 @@ class Timecard extends MY_Controller {
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
 							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
+						dd($data);
 						
 						switch( $_GET['which_pdf'] ){
 							case 'view': 								
@@ -2129,7 +2130,7 @@ class Timecard extends MY_Controller {
 			foreach (range('A', 'Z') as $char) array_push($arrCell, $char);
 			foreach (range('A', 'Q') as $char) array_push($arrCell, 'A'.$char);*/
 			
-			$tcmonth_details = $this->dbmodel->getQueryArrayResults('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name"', '1', 'LEFT JOIN staffs ON empID = empID_fk');
+			$tcmonth_details = $this->dbmodel->getQueryArrayResults('tc13thMonth', 'tc13thMonth.*, CONCAT(fname," ", lname) AS "full_name", idNum', '1', 'LEFT JOIN staffs ON empID = empID_fk', 'idNum');
 									
 			
 			
@@ -2139,12 +2140,12 @@ class Timecard extends MY_Controller {
 			$counter = 3;		
 			foreach( $tcmonth_details as $tcpay ){
 				$period_text = date('M', strtotime($tcpay->periodFrom)).' - '.date('M Y', strtotime($tcpay->periodTo) );
-				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, $tcpay->empID_fk);
+				$objPHPExcel->getActiveSheet()->setCellValue('A'.$counter, sprintf('%03d',$tcpay->idNum) );
 				$objPHPExcel->getActiveSheet()->setCellValue('B'.$counter, $tcpay->full_name);
 				$objPHPExcel->getActiveSheet()->setCellValue('C'.$counter, $period_text);
-				$objPHPExcel->getActiveSheet()->setCellValue('D'.$counter, $tcpay->totalBasic);
-				$objPHPExcel->getActiveSheet()->setCellValue('E'.$counter, $tcpay->totalDeduction);
-				$objPHPExcel->getActiveSheet()->setCellValue('F'.$counter, $tcpay->totalAmount);
+				$objPHPExcel->getActiveSheet()->setCellValue('D'.$counter, $this->textM->convertNumFormat($tcpay->totalBasic) );
+				$objPHPExcel->getActiveSheet()->setCellValue('E'.$counter, $this->textM->convertNumFormat($tcpay->totalDeduction));
+				$objPHPExcel->getActiveSheet()->setCellValue('F'.$counter, $this->textM->convertNumFormat($tcpay->totalAmount));
 				$counter++;
 			}
 			
@@ -2484,6 +2485,8 @@ class Timecard extends MY_Controller {
 		}	
 	}
 	
-		
+	public function test(){
+		dd( $this->payrollM->getPaymentItems(515, 1, $condition='', '2016-10-26', '2016-11-10') );
+	}
 }
 ?>
