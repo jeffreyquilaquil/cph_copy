@@ -115,7 +115,7 @@
 									$holidayDate = $holiday['date'];
 								
 									$isDisabled = false;
-									if($holiday['type']!=4){
+									/*if($holiday['type']!=4){
 										if($att['staffHolidaySched']==1 && $holiday['type']!=3) $isDisabled = true;
 										else if($att['staffHolidaySched']==0 && $holiday['type']==3) $isDisabled = true;
 										//else if( $att['staffHolidaySched'] == 1 && $holiday['usWork'] == 0 ) $isDisabled = true; //US holiday staff who work on PH spl holiday
@@ -123,7 +123,10 @@
 
 										if( $holiday['usWork'] == true ) $isDisabled = false;
 										//if( $holiday['phWork'] == true ) $isDisabled = false;
-									}
+									}*/
+
+									if( $holiday['phWork'] == 0 ) $isDisabled == true;
+									else if( $holiday['usWork'] == 0 ) $isDisabled == true; 
 									
 									if($isDisabled==true){
 										$timeHO = 0;
