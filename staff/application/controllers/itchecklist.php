@@ -76,7 +76,7 @@ class Itchecklist extends MY_Controller {
                             $this->dbmodel->ptdbQuery('UPDATE staff SET active="'.$pt_active.'" WHERE username = "'.$info->username.'"');
                         }
 
-							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'it.cebu@tatepublishing.net,hr-list.cebu@tatepublishing.net', $subject_email, $body, 'CareerPH Auto-Email' );
+							$this->emailM->sendEmail('careers.cebu@tatepublishing.net', 'marjune.abellana@tatepublishing.net', $subject_email, $body, 'CareerPH Auto-Email' );
 						exit;
 					}
                 }
