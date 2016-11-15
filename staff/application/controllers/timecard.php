@@ -1422,8 +1422,8 @@ class Timecard extends MY_Controller {
 				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
 				if($query->status==1){
 					//disable temp 09-29-16
-					$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
-					//$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+					//$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
+					$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
 				}
 			}			
 		}
@@ -1631,7 +1631,7 @@ class Timecard extends MY_Controller {
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
 							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
-						dd($data);
+						
 						
 						switch( $_GET['which_pdf'] ){
 							case 'view': 								
@@ -2488,7 +2488,7 @@ class Timecard extends MY_Controller {
 	}
 	
 	public function test(){
-		dd( $this->payrollM->getPaymentItems(515, 1, $condition='', '2016-10-26', '2016-11-10') );
+		dd( $this->payrollM->getPaymentItems(257, 1, $condition='', '2016-10-26', '2016-11-10') );
 	}
 }
 ?>
