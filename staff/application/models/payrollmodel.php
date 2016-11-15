@@ -121,7 +121,7 @@ class Payrollmodel extends CI_Model {
 						}else $eat = false;											
 					}else if($cake->payPeriod!='once'){						
 						if(($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($cake->payEnd>=$info->payPeriodStart && $cake->payEnd<=$info->payPeriodEnd)
-							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd) || $cake->payID_fk == 32 || $cake->payID_fk == 18
+							|| ($cake->payStart>=$info->payPeriodStart && $cake->payStart<=$info->payPeriodEnd) || ($info->payPeriodStart>=$cake->payStart && $info->payPeriodStart<=$cake->payEnd) || $cake->payID_fk == 32 || $cake->payID_fk == 18 || $cake->payID_fk == 50 || $cake->payID_fk == 51
 						){
 							$eat = true; 
 						}
