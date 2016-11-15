@@ -242,10 +242,29 @@ class Payrollmodel extends CI_Model {
 				$payValue = $this->dbmodel->getSingleField('sssTable', 'employeeShare', 'minRange<="'.$info->monthlyRate.'" AND maxRange>= "'.$info->monthlyRate.'"');
 			}else if($item->payAmount=='taxTable'){
 				$happen = false;
-			}else $payValue = $item->payAmount;
+			}else if($item->payCode == 'kudosBonus'){
+				$payValue += $item->payAmount;
+			}else{
+				$payValue = $item->payAmount;
+			} 				
 			
-			if($happen==true)
-				$this->payrollM->insertPayEachDetail($payslipID, $item->payID_fk, $payValue, $hr);
+			if($happen==true){
+				$insert_array[ $payslipID ][ $item->payID_fk ]['payslipID']  = $payslipID;
+				$insert_array[ $payslipID ][ $item->payID_fk ]['payValue'] += $payValue; 
+				$insert_array[ $payslipID ][ $item->payID_fk ]['hr'] += $hr; 
+				$insert_array[ $payslipID ][ $item->payID_fk ]['payID_fk'] = $item->payID_fk;
+				//$this->payrollM->insertPayEachDetail($payslipID, $item->payID_fk, $payValue, $hr);
+			}
+				
+		}
+		if( $insert_array ){
+			foreach( $insert_array AS $key => $val ){
+				foreach( $val as $k => $v ){
+					$this->payrollM->insertPayEachDetail($v['payslipID'], $v['payID_fk'], $v['payValue'], $v['hr']);
+				}
+				//echo '<br/>';
+				//$this->payrollM->insertPayEachDetail($val['payslipID'], $val['payID_fk'], $val['payValue'], $val['hr']);
+			}
 		}
 	}
 	
@@ -605,7 +624,7 @@ class Payrollmodel extends CI_Model {
 
 
 		//echo $sql;
-		//dd($sql);
+		
 		$query = $this->dbmodel->dbQuery($sql);
 		// echo "<pre>";
 		// var_dump($query->result());
@@ -3102,7 +3121,7 @@ class Payrollmodel extends CI_Model {
 		if($payInfo->add13th>0) $rightAdd .= $this->textM->convertNumFormat($payInfo->add13th)."\n";
 		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->addLeave." remaining leave credits x ".$dailyRate." daily rate)\n";
 		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $hourlyRate)." (".$payInfo->addUnpaid." hours x ".$hourlyRate.")\n";
-
+dd($payInfo);
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
 			foreach($addArr AS $add){
