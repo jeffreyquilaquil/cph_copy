@@ -3121,7 +3121,6 @@ class Payrollmodel extends CI_Model {
 		if($payInfo->add13th>0) $rightAdd .= $this->textM->convertNumFormat($payInfo->add13th)."\n";
 		$rightAdd .= $this->textM->convertNumFormat($leaveAmount)." (".$payInfo->addLeave." remaining leave credits x ".$dailyRate." daily rate)\n";
 		$rightAdd .= $this->textM->convertNumFormat($payInfo->addUnpaid * $hourlyRate)." (".$payInfo->addUnpaid." hours x ".$hourlyRate.")\n";
-dd($payInfo);
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
 			foreach($addArr AS $add){
