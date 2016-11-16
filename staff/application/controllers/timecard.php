@@ -1631,7 +1631,7 @@ class Timecard extends MY_Controller {
 						if( isset($_GET['empID']) AND !empty($_GET['empID']) ){
 							$staff_details = $this->dbmodel->getSingleInfo('staffs', 'empID, CONCAT(fname, " ",lname) AS name,tin, CONCAT(fname, " ", mname, " ",lname) AS full_name, newPositions.title, startDate, endDate, sal AS salary, allowance, empStatus', 'empID="'.$_GET['empID'].'"', 'LEFT JOIN newPositions ON posID=position');
 						}
-						dd($data);
+						
 						
 						switch( $_GET['which_pdf'] ){
 							case 'view': 								
