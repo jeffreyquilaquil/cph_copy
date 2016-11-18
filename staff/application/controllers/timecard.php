@@ -1709,7 +1709,7 @@ class Timecard extends MY_Controller {
 			if( $this->access->accessFullFinance == FALSE ) {
 				$data['access'] = false;
 			} else {
-				$data['which'] = ( $_GET['which'] == 'end' ) ? 'separated' : 'active'; //possible value is end or start | end means separate employees | start means active
+				//$data['which'] = ( $_GET['which'] == 'end' ) ? 'separated' : 'active'; //possible value is end or start | end means separate employees | start means active
 				$data['monthFullArray'] = $this->textM->constantArr('monthFullArray');
 				$data['yearFullArray'] = $this->textM->constantArr('yearFullArray');				
 				foreach( $_POST as $key => $val ){
@@ -1735,11 +1735,12 @@ class Timecard extends MY_Controller {
 						$frompreviousLeftJoin = '';
 						$withPrev = FALSE;
 
+						//echo  $_POST['which_from'];
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
 							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
-								$is_active = TRUE;
+								$is_active = TRUE;break;
 							case 'withprev': 	$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
 												$frompreviousLeftJoin = ' LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk  ';
 												$withPrev = TRUE;
@@ -1984,6 +1985,7 @@ class Timecard extends MY_Controller {
 				if( isset($_POST) && !empty($_POST)){
 					$empIDss = explode(',',$empIDs);
 					array_pop($empIDss);
+					$taxArray = array();
 					
 					$from_ = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
 					$to_ = date('Y-m-t', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
@@ -2002,9 +2004,24 @@ class Timecard extends MY_Controller {
 						$activeQuery['dataQuery'][0]->taxSummaryDate = $from_.'/'.$to_;
 
 
-						$this->payrollM->taxSummary($activeQuery['dataQuery'][0], '', true);
-						echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
+						$k = $this->payrollM->taxSummary($activeQuery['dataQuery'][0], '', true);
+
+						$taxArray[] = $k;
+
+						//echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
 					}	
+					echo "<pre>";
+					// $taxArray['ins'] = array_filter($taxArray['ins']);
+					// $taxArray['update'] = array_filter($taxArray['update']);
+					$taxArray = array_filter($taxArray);
+					$taxArray = array_merge_recursive($taxArray);
+					var_dump($taxArray);
+
+					// if(!empty($taxArray['ins']))
+					// 	$this->dbmodel->insertQuery('tcTaxSummary', $taxArray['ins'], true);
+					// if(!empty($taxArray['update']))
+					// 	$this->dbmodel->updateBatch('tcTaxSummary', $taxArray['update'], 'empID_fk');
+					exit();
 				}
 				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate', 'empID IN ('.rtrim($empIDs, ',').')');
 			}
