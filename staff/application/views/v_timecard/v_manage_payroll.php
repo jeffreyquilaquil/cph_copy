@@ -23,8 +23,15 @@
 	<div id="silay" style="display:none; width:100%">
 		<form id="formManage" action="<?= $this->config->base_url() ?>timecard/payrollmanagement/" method="POST" style="margin:10px 0px;">
 		<?php
+			$today = date('Y-m-d');
+			$day = date('d');
+			$select = 'semi';
+			if( $day > 10 AND $day < 25 ){
+				$select = 'monthly';
+			}
+			
 			echo $this->textM->formfield('selectoption', 'type', '', 'padding5px', '', 'required', $this->textM->constantArr('managePayOptions'));
-			echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', '', 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
+			echo  ' <b>Type</b> '.$this->textM->formfield('selectoption', 'computationtype', $select, 'padding5px', '', '', array('semi'=>'Semi-Monthly', 'monthly'=>'Monthly'));
 			
 			echo ' <b>for the period</b> ';
 			
@@ -32,15 +39,26 @@
 			$semiArr = $this->payrollM->getMonthlyPeriod('semi');
 			echo '<select id="semiSelect" class="padding5px" name="periodDate">';
 				foreach($semiArr AS $k=>$semi){
-					echo '<option value="'.$semi['start'].'|'.$semi['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($semi['start'])).' - '.date('M d, Y', strtotime($semi['end'])).'</option>';
+					
+					echo '<option value="'.$semi['start'].'|'.$semi['end'].'" ';
+					if( strtotime($today) >= strtotime($semi['start']) AND strtotime($today) <= strtotime($semi['end']) ){
+						echo ' selected="selected" ';
+					}
+					//(($k==3)?'selected="selected"':'');
+					echo '>'.date('M d', strtotime($semi['start'])).' - '.date('M d, Y', strtotime($semi['end'])).'</option>';
 				}
 			echo '</select>';
 			
 			///FOR MONTHLY
 			$monthlyArr = $this->payrollM->getMonthlyPeriod('monthly');
-			echo '<select id="monthlySelect" class="padding5px hidden">';
+			echo '<select id="monthlySelect" class="padding5px" name="periodDate">';
 				foreach($monthlyArr AS $k=>$monthly){
-					echo '<option value="'.$monthly['start'].'|'.$monthly['end'].'" '.(($k==3)?'selected="selected"':'').'>'.date('M d', strtotime($monthly['start'])).' - '.date('M d, Y', strtotime($monthly['end'])).'</option>';
+					echo '<option value="'.$monthly['start'].'|'.$monthly['end'].'" ';
+
+					if( strtotime($today) >= strtotime($monthly['start']) AND strtotime($today) <= strtotime($monthly['end']) ){
+						echo ' selected="selected" ';
+					}
+					echo '>'.date('M d', strtotime($monthly['start'])).' - '.date('M d, Y', strtotime($monthly['end'])).'</option>';
 				}
 			echo '</select>';		
 			
@@ -102,6 +120,15 @@
 	?>
 	</table>
 </div>
+<script>
+	$(function(){
+		<?php if($select == 'monthly'): ?>
+			$('#semiSelect').hide();
+		<?php else: ?>
+			$('#monthlySelect').hide();
+		<?php endif; ?>
+	});	
+</script>
 <?php } ?>
 <!--------- PREVIOUS PAYROLLS ----------->
 <?php if($pagepayroll=='previouspayroll'){ ?>
@@ -255,14 +282,18 @@ if(count($dataMainItems)>0){ ?>
 		$('select[name="computationtype"]').change(function(){
 			$('.toolbar #semiSelect').removeAttr('name');
 			$('.toolbar #monthlySelect').removeAttr('name');
-			
+			console.log($(this).val());
 			if($(this).val()=='monthly'){
-				$('.toolbar #semiSelect').addClass('hidden');
-				$('.toolbar #monthlySelect').removeClass('hidden');
+				/*$('.toolbar #semiSelect').addClass('hidden');
+				$('.toolbar #monthlySelect').removeClass('hidden');*/
+				$('.toolbar #monthlySelect').show();
+				$('.toolbar #semiSelect').hide();
 				$('.toolbar #monthlySelect').attr('name', 'periodDate');
 			}else{
-				$('.toolbar #semiSelect').removeClass('hidden');
-				$('.toolbar #monthlySelect').addClass('hidden');
+				/*$('.toolbar #semiSelect').removeClass('hidden');
+				$('.toolbar #monthlySelect').addClass('hidden');*/
+				$('.toolbar #monthlySelect').hide();
+				$('.toolbar #semiSelect').show();
 				$('.toolbar #semiSelect').attr('name', 'periodDate');
 			}
 		});
