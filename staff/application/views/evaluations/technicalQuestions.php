@@ -24,21 +24,18 @@
 	input[type='number']{
 		width: 90%;
 	}
+	th{
+		padding: 5px;
+	}
 </style>
 
-<p></p>
+
 
 <div style="float:right">
 	<select id="slbCareer">
 		<?php
 
-			if(is_numeric($this->uri->segment(3))){
-				$careerType = $this->uri->segment(3);
-				$back = '../';
-			}else{
-				$careerType = $this->uri->segment(4);
-				$back = '../../';
-			}
+		$careerType = (!is_numeric($this->uri->segment(3)) ? 77 : $this->uri->segment(3));
 
 			foreach ($positions as $value) {
 				$selected = ($value->posID == $careerType ? 'selected' : '');
@@ -46,7 +43,6 @@
 			}
 		?>
 	</select>
-
 	<button class='btnclass' onclick="getQuestions()">Go</button>
 	<input type="button" value="Add Question" class='btnclass pull-right' id='btnAddQuestion' onclick='addQuestion()'>
 </div>
@@ -192,7 +188,7 @@ echo validation_errors("<span class='error'","</span>");
 			$.ajax({
 				type:'POST',
 				data:data,
-				url:"<?php echo $back; ?>"+submitAction,
+				url:"../"+submitAction,
 				dataType:'json'
 			}).done(function(r){
 		//		console.log(r)

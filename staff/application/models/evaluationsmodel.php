@@ -162,12 +162,12 @@ class Evaluationsmodel extends CI_model{
 						$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL" class="btnclass"></a>';
 					break;
 					case 1:
-						$statusText = 'Employee ratings locked in. <a href="'.$this->config->base_url().'evaluations/sendEvaluationEmail/1/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to enter evaluator settings';
+						$statusText = 'Employee ratings locked in. <a href="'.$this->config->base_url().'performanceeval/1/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to enter evaluator settings';
 						$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL" class="btnclass"></a>';
 					break;
 					case 2:
 						$statusText = 'Pending Evaluation Form for Printings';
-						if($this->user->dept == "Human Resources"){
+						if($this->user->dept == "Human Resources" || $this->user->access == "full"){
 							$actionButton = '<a href="'.$this->config->base_url().'evaluations/evaluationDetails/'.$info->notifyId.'" class="iframe"><img src="'.$editImageBase64.'"></a>';
 							$actionButton .= '<a href="'.$this->config->base_url().'evaluations/evalPDF/2/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
 						}
