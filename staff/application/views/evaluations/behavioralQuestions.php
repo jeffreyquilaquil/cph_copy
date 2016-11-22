@@ -17,15 +17,11 @@
 		border:1px solid black;
 		padding: 0px 0px 0px 0px;
 	}
-	input{
-		width: 45%;
-	}
+	
 	select{
 		height: 100%;
 	}
-	button{
-		float:right;
-	}
+	
 	.tdBot{
 		border-bottom:1px solid black;
 	}
@@ -62,7 +58,7 @@
 <br>
 <form method="POST" action="" onsubmit="submitValues()">
 	<?php 
-		if($this->user->dept == 'Human Resources'){
+		if($this->access->accessFullHRFinance == true){
 			echo '<input type="button" value="Add Question" id="btnAddQuestion" class="btnclass" onclick="addQuestion()" style="float:right;">';
 		}
 	 ?>
