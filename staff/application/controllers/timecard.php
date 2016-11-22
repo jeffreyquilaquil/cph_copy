@@ -652,8 +652,11 @@ class Timecard extends MY_Controller {
 		$id = $data['visitID'];
 		
 		$data['dir'] = 'uploads/timecard/timeloguploaddocs/';
+
+
 			
 		if(!empty($_POST)){
+
 			if($_POST['submitType']=='updateReq'){				
 				$upArr['status'] = $_POST['status'];
 				$upArr['updateNote'] = $_POST['updateNote'];
@@ -750,7 +753,25 @@ class Timecard extends MY_Controller {
 				$this->emailM->sendEmailEditedPayrollLogs($data['today'], $data['visitID']);
 				
 				//insert to tcTimelogUpdates
-				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');				
+				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');	
+
+			//publish as absent
+			}else if($_POST['submitType'] == 'publishAbsent'){
+				$schedToday = $this->timeM->getCalendarSchedule($_POST['slogdate'], $_POST['slogdate'], $_POST['empID'], true);
+			
+				$logIDD = $this->timeM->insertToDailyLogs($_POST['empID'], $_POST['slogdate'], $schedToday); //inserting to tcStaffLogPublish table
+
+				if( $logIDD ){
+					
+					$pubArr_['publishDeduct'] = 8;
+					$pubArr_['publishNote'] = 'Auto-Publish as `ABSENT`';
+					$pubArr_['datePublished'] = date('Y-m-d H:i:s');
+					$pubArr_['publishBy'] = $this->user->username;
+
+					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID' => $logIDD), $pubArr_ );
+				}
+
+
 			}else if($_POST['submitType']=='unpublish'){
 				//insert to tcTimelogUpdates
 				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');	

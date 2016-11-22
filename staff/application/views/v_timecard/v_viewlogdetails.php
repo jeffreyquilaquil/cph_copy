@@ -410,6 +410,17 @@
 		echo '</table>';
 		echo '</form>';
 		
+	} else {
+		if( $editAccess == true ){
+
+			echo '<form method="post">';
+			echo '<input type="hidden" name="slogdate" value="'.$today.'">';
+			echo '<input type="hidden" name="empID" value="'.$visitID.'">';
+			
+			echo '<input type="hidden" name="submitType" value="publishAbsent">';
+			echo '<button class="btnclass" type="submit" value="publishType">Publish as Absent</button>';
+			echo '</form>';
+		}
 	} ////END OF if(!empty($dataLog))
 	
 	////BIOMETRIC LOGS
