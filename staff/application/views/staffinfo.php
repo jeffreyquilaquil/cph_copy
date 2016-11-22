@@ -9,6 +9,7 @@
 		else{
 			echo '<div style="float:left;"><h2>'.$row->fname.' '.$row->lname.'\'s Info ';
 				if($row->active==0) echo '<span class="errortext"><b>[Not Active]</b></span>';
+				if($row->active==2) echo '<span class="errortext"><b>[Float]</b></span>';
 			echo '</h2></div>';
 			
 			if(($this->access->accessFullHR==true || $this->commonM->checkStaffUnderMe($row->username)) && $row->empStatus=='probationary') echo '<div style="float:left; padding:5px; text-align:center;" class="errortext"><a href="'.$this->config->base_url().'evaluationsupervisor/'.$row->empID.'/" class="iframe"><u style="color:red; font-size:165%;">Probationary</u></a><br/><i>Click to change</i></div>';
