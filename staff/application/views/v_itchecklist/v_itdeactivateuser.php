@@ -21,6 +21,7 @@
 			echo '<select class="padding5px" onChange="changeSetting('.$q->empID.', this)">
 					<option value="1" '.(($q->active==1)?'selected':'').'>Yes</option>
 					<option value="0" '.(($q->active==0)?'selected':'').'>No</option>
+					<option value="2" '.(($q->active==2)?'selected':'').'>Float</option>
 				</select>';
 		echo '</td>';
 		echo '</tr>';
