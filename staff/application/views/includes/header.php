@@ -164,11 +164,7 @@
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
 					
 					}
-
-					if( $this->user->dept== 'IT' ){
-						echo '<li '.(($content=='evaluations')?'class="current"':'').'><a href="'.$this->config->base_url().'evaluations/">Evaluations Management</a></li>';	
-					}
-					
+						echo '<li '.(($content=='evaluations')?'class="current"':'').'><a href="'.$this->config->base_url().'evaluations/">Evaluations Management</a></li>';						
 						
 					echo '</ul>';
 				echo '</li>';

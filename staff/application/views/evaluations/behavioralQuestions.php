@@ -6,6 +6,7 @@
 	}
 	#tblBehavioralQuestions th{
 		border:2px solid white;
+		padding: 5px;
 	}
 	.bottRow{
 		border-bottom:2px solid black;
@@ -15,13 +16,23 @@
 	}
 	.td{
 		border:1px solid black;
-		padding: 0px 0px 0px 0px;
+		padding: 0px;
 	}
-	
+	.td tr{
+		height: 100%;
+	}
+	.td td{
+		padding: 5px;
+	}
+	input{
+		width: 45%;
+	}
 	select{
 		height: 100%;
 	}
-	
+	button{
+		float:right;
+	}
 	.tdBot{
 		border-bottom:1px solid black;
 	}
@@ -58,7 +69,7 @@
 <br>
 <form method="POST" action="" onsubmit="submitValues()">
 	<?php 
-		if($this->access->accessFullHRFinance == true){
+		if($this->access->accessFullHR  == true){
 			echo '<input type="button" value="Add Question" id="btnAddQuestion" class="btnclass" onclick="addQuestion()" style="float:right;">';
 		}
 	 ?>

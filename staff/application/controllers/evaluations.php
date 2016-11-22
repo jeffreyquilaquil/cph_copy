@@ -18,7 +18,7 @@ class Evaluations extends MY_Controller
 
 	public function index(){
 		$data['content'] = 'evaluations/index';
-		$data['access'] = ($this->user->levelID_fk > 0 || $this->user->dept == "Human Resources" || $this->user->access == "full" ? true : false);
+		$data['access'] = ($this->user->levelID_fk > 0 || $this->access->accessFullHR == true ? true : false);
 		$data['tabs'] = ['Pending Self-Rating','In Progress','Pending HR','Done','Cancelled'];
 		$data['evaluations'] = $this->evaluationsmodel->getStaffPerformanceEvaluation($this->user->empID, $this->user->dept, $this->user->is_supervisor);
 		$data['evaluations']['headers'] = ['Evaluation ID',"Employee's Name",'Date Generated','Evaluation Date','Immediate Supervisor', 'Status', 'Actions'];

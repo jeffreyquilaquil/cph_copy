@@ -42,7 +42,7 @@ else if( isset($tpage) AND $tpage == 'evaluations' ){
 	echo '<li><a href="'. $this->config->base_url().'evaluations/" class="'.(empty($sidepage)?'current':'').'">Management</a></li>';
 	echo '<li><a href="'. $this->config->base_url().'evaluations/questionnaires/technicalQuestions" class="'.(($sidepage=='questionnaires' && $this->uri->segment(3)=='technicalQuestions')?'current':'').'">Technical Questionnaires</a></li>';
 	echo '<li><a href="'.$this->config->base_url().'evaluations/questionnaires/behavioralQuestions"  class="'.(($sidepage=='questionnaires' && $this->uri->segment(3)=='behavioralQuestions')?'current':'').'">Behavioral Questionnaires</a></li>';
-	if($this->user->dept == 'Human Resources'){
+	if($this->access->accessFullHR == true){
 		$reviewCount = $this->databasemodel->getSingleField('evalQuestions','count(question_id)', 'hrStatus = 0');
 		echo '<li><a href="'.$this->config->base_url().'evaluations/review">Review Questions ['.$reviewCount.']</a></li>';
 	}
