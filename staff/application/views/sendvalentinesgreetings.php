@@ -41,7 +41,7 @@
 <br>
 Choose a card: <br/><br/>
 <?php
-	for($i = 1; $i < 14; $i++){
+	for($i = 1; $i < 20; $i++){
 		echo "<img data-img='".$i."' src='".$this->config->base_url()."includes/images/".$i.".jpg' />";
 	}
 ?>

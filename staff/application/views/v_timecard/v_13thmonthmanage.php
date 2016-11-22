@@ -10,6 +10,10 @@
 <h2>Generated 13th Month</h2>
 
 <hr/>
+<div class='selectionDiv' style="padding-top:5px;">
+	<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
+</div>
+<br/>
 <form name="frm_13th_month" action="" method="post">
 <table id="dtable13" class="display stripe hover">
 	<thead>
@@ -17,7 +21,7 @@
 		<th>&nbsp;</th>
 		<th>Employee Name</th>
 		<th>Total Basic Pay</th>
-		<th>Total Deductions</th>
+		<th>Total Adjustments</th>
 		<th>13th Month Amount</th>
 		<th>Period</th>
 		<th class="hiddend"><br/></th>
@@ -28,7 +32,7 @@
 <?php
 	foreach($queryData AS $data){
 		echo '<tr>';
-			echo '<td><input type="checkbox" name="id_" value="'.$data->tcmonthID.'" /></td>';
+			echo '<td><input type="checkbox" class="classCheckMe" name="id_[]" value="'.$data->tcmonthID.'" /></td>';
 			echo '<td>'.$data->lname.', '.$data->fname.'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalBasic).'</td>';
 			echo '<td>'.$this->textM->convertNumFormat($data->totalDeduction).'</td>';
@@ -67,6 +71,30 @@
 <script type="text/javascript">
 $(function(){
 	$('#dtable13').dataTable({});
+	$('#selectAll').click(function(){
+		$('.classCheckMe').prop('checked', true);
+		countChecked();
+	});
+
+	$('.classCheckMe').change(function(){
+		countChecked();
+	});
+
+	function countChecked(){
+		var countCheck = 0;
+		$('.classCheckMe').each(function(){
+			if( $(this).is(':checked') ){
+				countCheck++;
+			}
+		});
+		$('.selectionLabel').remove();
+		$('.selectionDiv').append('<div class="selectionLabel"><strong><i>'+countCheck+' Selected<i></strong></div>');
+	}
+
+	$('#deselectAll').click(function(){
+		$('.classCheckMe').prop('checked', false);
+		countChecked();
+	});
 	<?php /*
         initComplete: function () {
             this.api().columns().every( function () {

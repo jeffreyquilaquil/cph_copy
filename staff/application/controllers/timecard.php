@@ -821,6 +821,47 @@ class Timecard extends MY_Controller {
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 	
+	// public function yearendreport($data){
+	// 	$data['content'] = 'v_timecard/v_13thmonthmanage';
+	// 	$data['column'] = 'withLeft';
+	// 	$data['tpage'] = 'yearendreport';
+
+
+	// 	unset($data['timecardpage']);
+
+	// 	$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+
+	// 	$this->load->view('includes/template', $data);		
+	// }
+
+	public function taxsummary(){
+		$data['content'] = 'v_timecard/v_tax_summary';
+
+		$data['monthFullArray'] = $this->textM->constantArr('monthFullArray');
+		$data['yearFullArray'] = $this->textM->constantArr('yearFullArray');
+
+		if( isset($_POST['empID']) ){
+			$empID = $_POST['empID'];
+			$from_ = date('Y-m-d', strtotime( $_POST['from_year'].'-'.sprintf('%02d',$_POST['from_month']).'-01' ) );
+			$to_ = date('Y-m-d', strtotime( $_POST['to_year'].'-'.sprintf('%02d',$_POST['to_month']).'-31' ) );
+
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
+		    $datum = $this->payrollM->getPayslipOnTimeRange($empID, $from_, $to_,TRUE );
+			$data['staffInfo']->endDate = date('Y-12-31');
+			$activeQuery['dataQuery'][0] = $data['staffInfo'];
+			$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+			$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+			$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+			$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+			$activeQuery['dataQuery'][0]->dateRange = date('m/Y', strtotime($from_)).' - '.date('m/Y', strtotime( $_POST['to_year'].'-'.$_POST['to_month']));
+			
+			$outputFile = 'taxSummary'.$from_.'-'.$to_.'-'.$data['which'];
+			$this->payrollM->taxSummary($activeQuery['dataQuery'][0], $outputFile);			
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);			
+	}
+
 	public function managepayroll($data){
 		$data['content'] = 'v_timecard/v_manage_payroll';
 		$data['tpage'] = 'managepayroll';
@@ -862,7 +903,7 @@ class Timecard extends MY_Controller {
 						else if($show=='separated') $condition = ' AND staffs.active=0';
 					}
 					
-					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
+					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'exclude_in_reports = 0 AND office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
 				}else if($data['pagepayroll']=='previouspayroll'){
 					$data['pagePayTitle'] = 'Previous Payroll';
 					
@@ -1365,8 +1406,11 @@ class Timecard extends MY_Controller {
 				$info['empIDs'] = $query->empID_fk;
 				$this->payrollM->generatepayroll($info);
 				$period = date('F d, Y', strtotime($query->payPeriodStart)).' - '.date('F d, Y', strtotime($query->payPeriodEnd));
-				if($query->status==1)
-					$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+				if($query->status==1){
+					//disable temp 09-29-16
+					$this->emailM->sendPublishPayrollEmail($period, 'accounting.cebu@tatepublishing.net', $query->fname, 1);
+					//$this->emailM->sendPublishPayrollEmail($period, $query->email, $query->fname, 1);
+				}
 			}			
 		}
 	}
@@ -1438,6 +1482,8 @@ class Timecard extends MY_Controller {
 	public function computelastpay(){
 
 		$data['content'] = 'v_timecard/v_computelastpay';
+
+		
 		
 		if($this->user!=false){			
 			if(!empty($_POST['submitType'])){
@@ -1518,7 +1564,7 @@ class Timecard extends MY_Controller {
 				$empID = $_GET['empID'];
 			}				
 			
-			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', ' CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"');
+			$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($empID))?$empID:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
 			
 			//compute leaveCredits
 			$data['staffInfo']->originalLeaveCredits = $data['staffInfo']->leaveCredits;
@@ -1534,7 +1580,7 @@ class Timecard extends MY_Controller {
 			
 			if(isset($data['periodFrom']) && isset($data['periodTo'])){	
 				$datum = $this->payrollM->getPayslipOnTimeRange($empID, $data['periodFrom'], $data['periodTo'], TRUE);
-				//dd($datum, false);
+				
 				$data['dateArr'] = $datum['dateArr'];
 				$data['dataMonth'] = $datum['dataMonth'];
 				$data['dataMonthItems'] = $datum['dataMonthItems'];
@@ -1590,17 +1636,30 @@ class Timecard extends MY_Controller {
 										$sDate = $data['staffInfo']->startDate;
 										// if( $sDate < '2016-01-01' )
 										// 	$sDate = '2016-01-01';
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31') );
-										$data['dateArr'] = $datum['dateArr'];
-										$data['dataMonth'] = $datum['dataMonth'];
-										$data['dataMonthItems'] = $datum['dataMonthItems'];
+										$activeQuery = array();
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31'),TRUE );
+
 										$data['staffInfo']->endDate = date('Y-12-31');
-										$data['is_active'] = TRUE;
+										$activeQuery['dataQuery'][0] = $data['staffInfo'];
+										$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+										$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+										$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+										$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+
+										// $data['dateArr'] = $datum['dateArr'];
+										// $data['dataMonth'] = $datum['dataMonth'];
+										// $data['dataMonthItems'] = $datum['dataMonthItems'];
+										// $data['staffInfo']->endDate = date('Y-12-31');
+										// $data['is_active'] = TRUE;
+
+										$this->payrollM->pdfActiveBIR($activeQuery['dataQuery']);
 									}
 									// echo "<pre>";
 									// var_dump($data);
 									// echo "</pre>";
-							 		$this->payrollM->pdfBIR($data);
+									else{
+							 			$this->payrollM->pdfBIR($data);
+							 		}
 							break;
 							case 'coe': //coe
 								//call staff details and use staffmodel->genCOEpdf()								
@@ -1624,6 +1683,13 @@ class Timecard extends MY_Controller {
 	
 	public function alphalist(){
 		$data['content'] = 'v_timecard/v_alphalist';
+		if(isset($_GET['which']) && $_GET['which'] != 'end'){
+			$data['column'] = 'withLeft';
+			$data['tpage'] = 'manage13thmonth';
+		}
+
+		unset($data['timecardpage']);
+
 		if( $this->user != FALSE ){
 			if( $this->access->accessFullFinance == FALSE ) {
 				$data['access'] = false;
@@ -1638,7 +1704,6 @@ class Timecard extends MY_Controller {
 
 				//post
 				if( isset($_POST) AND !empty($_POST) ){
-					
 					if( isset($_POST['which_report']) AND $_POST['which_report'] == 'gen_alphalist' ){
 						$from_ = date('Y-m-d', strtotime( $data['from_year'].'-'.$data['from_month'].'-01'  ) );
 						$to_ = date('Y-m-d', strtotime( $data['to_year'].'-'.$data['to_month'].'-31' ) );
@@ -1651,9 +1716,17 @@ class Timecard extends MY_Controller {
 
 						$data = array();
 						//check which to pull from
+						$fromprevious = ' AND empID NOT IN (SELECT empID_fk FROM tcPrevious2316) ';
+						$frompreviousLeftJoin = '';
+						$withPrev = FALSE;
+						if( isset($_POST['btnSubmit_withprev']) ){
+							$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
+							$frompreviousLeftJoin = ' LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk  ';
+							$withPrev = TRUE;
+						}
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
-							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '/*alphalist*/ *', 'active = 1 AND office = "PH-Cebu"');
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;
 							break;
@@ -1669,7 +1742,16 @@ class Timecard extends MY_Controller {
 
 						//$this->textM->aaa($data);
 						$filename = 'alphalist_'.$from_.'-'.$to_.'-'.$data['which'];
-						$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
+
+						if( !$is_active ){
+							$this->payrollM->getAlphaList( $data['dataQuery'], $filename, $from_, $endDate, $is_active);
+						}else{
+							if($withPrev){
+								$this->payrollM->getAlphaListForEmployeeWithPrevious( $data['dataQuery'], $filename);
+							}else{
+								$this->payrollM->getAlphaListForAllEmployee( $data['dataQuery'], $filename);
+							}
+						}
 					}
 				}
 			}
@@ -1781,9 +1863,11 @@ class Timecard extends MY_Controller {
 						$which_update = 'Check No';
 						$update_array = array('checkNo' => $this->input->post('checkno'), 'status' => 3 );
 
-						if( $last_pay_info->status >= 3 ){
+						//unset status if backtracked but 5 is greater than 3
+						if( $last_pay_info->status == 4 ){
 							unset($update_array['status']);
 						}
+
 
 						$note = 'Check number for the last pay has updated. <br/>Check number: '. $this->input->post('checkno');
 					} else {
@@ -1849,7 +1933,7 @@ class Timecard extends MY_Controller {
 						$_POST['includeEndMonth'] = $mInfo->includeEndMonth;
 					}else{
 						$dateFrom = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
-						$dateTo = date('Y-m-d', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
+						$dateTo = date('Y-m-t', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
 					}
 					
 					if($dateFrom>$dateTo){
@@ -1876,8 +1960,10 @@ class Timecard extends MY_Controller {
 	public function manage13thmonth(){
 		
 		$data['content'] = 'v_timecard/v_13thmonthmanage';
-		$data['tpage'] = 'managepayroll';
+		$data['tpage'] = 'manage13thmonth';
 		$data['column'] = 'withLeft';
+
+
 		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
 		
 		if($this->user!=false){
@@ -1885,9 +1971,9 @@ class Timecard extends MY_Controller {
 			else{
 				if( isset($_POST['delete_13th_record']) AND $_POST['delete_13th_record'] == 'Delete' ){
 					$del_id = $_POST['id_'];
-					$this->db->delete('tc13thMonth', array('tcmonthID' => $del_id) );
-					$atext = 'Deleted table: tc13thMonth row: tcmonthID-'.$del_id;
-					$this->commonM->addMyNotif($this->user->empID, $atext, 5);
+					foreach ($del_id as $dID) {
+						$this->db->delete('tc13thMonth', array('tcmonthID' => $dID) );	
+					}
 				}
 				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
 			}			
@@ -1910,7 +1996,7 @@ class Timecard extends MY_Controller {
 					'LEFT JOIN staffs ON empID=empID_fk LEFT JOIN newPositions ON posID=position');
 				if(count($data['dataInfo'])==0) $data['access'] = false;
 				else{
-					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo, $data['dataInfo']->includeEndMonth);
+					$data['dataMonth'] = $this->payrollM->query13thMonth($data['dataInfo']->empID_fk, $data['dataInfo']->periodFrom, $data['dataInfo']->periodTo,0 /*$data['dataInfo']->includeEndMonth*/);
 					
 					///THIS IS FOR THE PDF
 					if(isset($_GET['show'])){

@@ -476,7 +476,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',14);
 		$pdf->setXY(85, 92);
-		$pdf->Write(0, $row->name);
+		$pdf->Write(0, utf8_decode($row->name));
 		$pdf->setXY(85, 101);
 		$pdf->Write(0, date('F d, Y',strtotime($row->startDate)));
 		$pdf->setXY(85, 110);
@@ -523,7 +523,7 @@ class Staffmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',14);
 		$pdf->setXY(95, 91);
-		$pdf->Write(0, $row->name);
+		$pdf->Write(0, utf8_decode($row->name));
 		$pdf->setXY(95, 100);
 		$pdf->Write(0, $row->title);
 		$pdf->setXY(95, 109);
@@ -692,92 +692,112 @@ class Staffmodel extends CI_Model {
 				
 		$pdf = new FPDI();
 		$pdf->AddPage();
-		$pdf->setSourceFile(PDFTEMPLATES_DIR.'coaching_form.pdf');
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'CoachingForm2016.pdf');
 			
 		if($type=='evaluation') $tplIdx = $pdf->importPage(3);
 		else $tplIdx = $pdf->importPage(1);
 			
 		$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+		$pdf->SetAutoPageBreak('auto', .5);
 				
-		$pdf->SetFont('Arial','',10);
+		$pdf->SetFont('Arial','',8.5);
 		$pdf->SetTextColor(0, 0, 0);
+
+		$column_first_x = 56;
+		$column_second_x = 162;
+		$column_third_x = 250;
 		
-		$pdf->setXY(40, 55);
+		$pdf->setXY($column_first_x, 45.5);
 		$pdf->Write(0, $row->name);
-		$pdf->setXY(35, 60);
+		$pdf->setXY($column_first_x, 50);
 		$pdf->Write(0, $row->title);
-		$pdf->setXY(35, 65.5);
+		$pdf->setXY($column_first_x, 54.5);
 		$pdf->Write(0, $row->dept);
-		$pdf->setXY(35, 70.5);
+		$pdf->setXY($column_first_x, 58.5);
 		$pdf->Write(0, $row->reviewer);
-		$pdf->setXY(65, 75.5);
-		$pdf->Write(0, $row->coachedImprovement);
+
+		if( $type == 'expectation'){
+			$pdf->setXY($column_first_x + 8, 63.5);
+			$pdf->Write(0, $row->coachedImprovement);	
+		}
+		
 		
 		if(isset($row->supName)){
-			$pdf->setXY(143, 55);
+			$pdf->setXY($column_second_x, 45.5);
 			$pdf->Write(0, $row->supName);
-			$pdf->setXY(160, 60);
+			$pdf->setXY($column_second_x, 50);
 			$pdf->Write(0, $row->supTitle);
 		}
 		if(isset($row->sup2ndName)){
-			$pdf->setXY(143, 65.5);
+			$pdf->setXY($column_second_x, 54.5);
 			$pdf->Write(0, $row->sup2ndName);
-			$pdf->setXY(160, 70.5);
+			$pdf->setXY($column_second_x, 58.5);
 			$pdf->Write(0, $row->sup2ndTitle);
 		}
 		
-		$pdf->setXY(270, 55);
+		$pdf->setXY($column_third_x, 45.5);
 		$pdf->Write(0, date('F d, Y',strtotime($row->coachedDate)));
-		$pdf->setXY(270, 60);
+		$pdf->setXY($column_third_x, 50);
 		$pdf->Write(0, date('F d, Y',strtotime($row->coachedEval)));
-		
+
+		$width = 89;
+		$width_3 = 82;
+		$first_row = 96;
+		$second_row = 117;
+		$third_row = 138;
+		$fourth_row = 160;
+		$second_col = 108;
+		$third_col = 197;
+		$line_height = 3.5;
+		$pdf->SetFont('Arial','',8);
 		$allAE = explode('--^_^--',$row->coachedAspectExpected);						
 		if($type=='expectation'){
 			if(isset($allAE[0])){
 				$deta = explode('++||++',$allAE[0]);
-				$pdf->setXY(20, 108);
-				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-				$pdf->setXY(135, 108);
-				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);	
+				$pdf->setXY(20, $first_row + 4);
+				$pdf->MultiCell($width, 4, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $first_row);
+				$pdf->SetFont('Arial','',8);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);	
 			}
 			if(isset($allAE[1])){
 				$deta = explode('++||++',$allAE[1]);
-				$pdf->setXY(20, 127);
-				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-				$pdf->setXY(135, 127);
-				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+				$pdf->setXY(20, $second_row + 4);
+				$pdf->MultiCell($width, 4, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $second_row);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);
 			}
 			if(isset($allAE[2])){
 				$deta = explode('++||++',$allAE[2]);
-				$pdf->setXY(20, 146);
-				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-				$pdf->setXY(135, 146);
-				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+				$pdf->setXY(20, $third_row + 4);
+				$pdf->MultiCell($width, 4, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $third_row);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);
 			}
 			if(isset($allAE[3])){
 				$deta = explode('++||++',$allAE[3]);
-				$pdf->setXY(20, 166);
-				$pdf->MultiCell(110, 4, $deta[0],0,'L',false);
-				$pdf->setXY(135, 166);
-				$pdf->MultiCell(110, 4, $deta[1],0,'L',false);
+				$pdf->setXY(20, $fourth_row + 4);
+				$pdf->MultiCell($width, 4, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $fourth_row);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);
 			}
 			
 			$support = explode('--^_^--',$row->coachedSupport);
 			if(isset($support[0])){
-				$pdf->setXY(248, 108);
-				$pdf->MultiCell(100, 4, $support[0],0,'L',false);
+				$pdf->setXY($third_col, $first_row);
+				$pdf->MultiCell($width_3, $line_height, $support[0],0,'L',false);
 			}
 			if(isset($support[1])){
-				$pdf->setXY(248, 127);
-				$pdf->MultiCell(100, 4, $support[1],0,'L',false);
+				$pdf->setXY($third_col, $second_row);
+				$pdf->MultiCell($width_3, $line_height, $support[1],0,'L',false);
 			}
 			if(isset($support[2])){
-				$pdf->setXY(248, 146);
-				$pdf->MultiCell(100, 4, $support[2],0,'L',false);
+				$pdf->setXY($third_col, $third_row);
+				$pdf->MultiCell($width_3, $line_height, $support[2],0,'L',false);
 			}
 			if(isset($support[3])){
-				$pdf->setXY(248, 166);
-				$pdf->MultiCell(100, 4, $support[3],0,'L',false);
+				$pdf->setXY($third_col, $fourth_row);
+				$pdf->MultiCell($width_3, $line_height, $support[3],0,'L',false);
 			}
 		
 			//page2
@@ -785,90 +805,118 @@ class Staffmodel extends CI_Model {
 			$tplIdx = $pdf->importPage(2);
 			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);	
 
+
 			//acknowledgements
 			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(17, 61);
-			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
-			$pdf->setXY(137, 63); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
+			$pdf->setXY(15, 88);
+			$pdf->MultiCell(75, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(105, 88); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
 			
-			$pdf->setXY(17, 80);
-			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
-			$pdf->setXY(137, 82); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
+			$pdf->setXY(15, 118);
+			$pdf->MultiCell(75, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(105, 118); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
 			
-			$pdf->setXY(180, 71);
-			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
-			$pdf->setXY(312, 73); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
+			$pdf->setXY(150, 118);
+			$pdf->MultiCell(75, 4, strtoupper($row->name),0,'C',false); //employee's name
+			$pdf->setXY(245, 118); $pdf->Write(0, date('Y-m-d', strtotime($row->dateGenerated)));
 		}
 		
 		if($type=='evaluation'){
+
+			$first_row = 90;
+			$second_row = 112;
+			$third_row = 134;
+			$fourth_row = 154;
+			$width = 69;
+			$second_col = 91;
+			$fourth_col = 238;
+			$fifth_col = 263;
+			$third_col = 161;
+
 			if(isset($allAE[0])){
 				$deta = explode('++||++',$allAE[0]);
-				$pdf->setXY(23, 136);
-				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
-				$pdf->setXY(150, 136);
-				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+				$pdf->setXY(23, $first_row + 6);
+				$pdf->MultiCell($width, $line_height, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $first_row);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);	
 			}
 			if(isset($allAE[1])){
 				$deta = explode('++||++',$allAE[1]);
-				$pdf->setXY(23, 155);
-				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
-				$pdf->setXY(150, 155);
-				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+				$pdf->setXY(23, $second_row + 6 );
+				$pdf->MultiCell($width, $line_height, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $second_row );
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);	
 			}
 			if(isset($allAE[2])){
 				$deta = explode('++||++',$allAE[2]);
-				$pdf->setXY(23, 174);
-				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
-				$pdf->setXY(150, 174);
-				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
+				$pdf->setXY(23, $third_row + 6);
+				$pdf->MultiCell($width, $line_height, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $third_row );
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);	
 			}
+			if(isset($allAE[3])){
+				$deta = explode('++||++',$allAE[3]);
+				$pdf->setXY(23, $fourth_row + 6);
+				$pdf->MultiCell($width, $line_height, $deta[0],0,'L',false);
+				$pdf->setXY($second_col, $fourth_row);
+				$pdf->MultiCell($width, $line_height, $deta[1],0,'L',false);	
+			}
+
+			$support = explode('--^_^--',$row->coachedSupport);
+			if(isset($support[0])){
+				$pdf->setXY($third_col, $first_row);
+				$pdf->MultiCell($width, $line_height, $support[0],0,'L',false);
+			}
+			if(isset($support[1])){
+				$pdf->setXY($third_col, $second_row);
+				$pdf->MultiCell($width, $line_height, $support[1],0,'L',false);
+			}
+			if(isset($support[2])){
+				$pdf->setXY($third_col, $third_row);
+				$pdf->MultiCell($width, $line_height, $support[2],0,'L',false);
+			}
+			if(isset($support[3])){
+				$pdf->setXY($third_col, $fourth_row);
+				$pdf->MultiCell($width, $line_height, $support[3],0,'L',false);
+			}
+
+
+
 			//ratings
+			$pdf->SetFont('Arial','B',10);
 			$eRating = explode('|', $row->selfRating);
 			if(isset($eRating[0])){
-				$pdf->setXY(288, 145);
+				$pdf->setXY($fourth_col, $first_row + 6);
 				$pdf->Write(0, $eRating[0]);
 			}
 			if(isset($eRating[1])){
-				$pdf->setXY(288, 165);
+				$pdf->setXY($fourth_col, $second_row + 6);
 				$pdf->Write(0, $eRating[1]);
 			}
 			if(isset($eRating[2])){
-				$pdf->setXY(288, 182);
+				$pdf->setXY($fourth_col, $third_row + 6);
 				$pdf->Write(0, $eRating[2]);
+			}
+			if(isset($eRating[3])){
+				$pdf->setXY($fourth_col, $fourth_row + 6);
+				$pdf->Write(0, $eRating[3]);
 			}
 			
 			$sRating = explode('|', $row->supervisorsRating);
 			if(isset($sRating[0])){
-				$pdf->setXY(330, 145);
+				$pdf->setXY($fifth_col, $first_row + 6);
 				$pdf->Write(0, $sRating[0]);
 			}
 			if(isset($sRating[1])){
-				$pdf->setXY(330, 165);
+				$pdf->setXY($fifth_col, $second_row + 6);
 				$pdf->Write(0, $sRating[1]);
 			}
 			if(isset($sRating[2])){
-				$pdf->setXY(330, 182);
+				$pdf->setXY($fifth_col, $fourth_row + 6);
 				$pdf->Write(0, $sRating[2]);
 			}
-			
-			//page2
-			$pdf->AddPage();
-			$tplIdx = $pdf->importPage(4);
-			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
-			
-			if(isset($allAE[3])){
-				$deta = explode('++||++',$allAE[3]);
-				$pdf->setXY(23, 44);
-				$pdf->MultiCell(125, 4, $deta[0],0,'L',false);
-				$pdf->setXY(150, 44);
-				$pdf->MultiCell(120, 4, $deta[1],0,'L',false);	
-			}
-			if(isset($eRating[3])){
-				$pdf->setXY(288, 51);
-				$pdf->Write(0, $eRating[3]);
-			}
 			if(isset($sRating[3])){
-				$pdf->setXY(330, 51);
+				$pdf->setXY($fifth_col, $third_row + 6);
 				$pdf->Write(0, $sRating[3]);
 			}
 			
@@ -886,31 +934,27 @@ class Staffmodel extends CI_Model {
 			
 			$eRateAve = $erate/$rnum;
 			$sRateAve = $srate/$rnum;
-			
+			$fscore = 0;
 			if($row->selfRating!='' && $row->supervisorsRating!=''){
 				//averages
-				$pdf->setXY(288, 65);
+				$pdf->setXY($fourth_col, 177);
 				$pdf->Write(0, number_format($eRateAve, 2));
-				$pdf->setXY(330, 65);
+				$pdf->setXY($fifth_col, 177);
 				$pdf->Write(0, number_format($sRateAve, 2));
 				//weighed average
-				$pdf->setXY(288, 72);
+				$pdf->setXY($fourth_col, 183);
 				$pdf->Write(0, number_format(($eRateAve*0.20), 2));
-				$pdf->setXY(330, 72);
+				$pdf->setXY($fifth_col, 183);
 				$pdf->Write(0, number_format(($sRateAve*0.80), 2));
 				//total weighed average
 				$fscore = number_format((($eRateAve*0.20) + ($sRateAve*0.80)), 2);
-				$pdf->setXY(227, 100);
+				$pdf->setXY($fourth_col + 8, 188);
 				$pdf->Write(0, $fscore);
 				
-				$pdf->setXY(203, 110);
+				$pdf->setXY($fourth_col - 6, 191.5);
 				$pdf->Write(0, $this->staffM->coachingScore($fscore));
 								
-				if(!empty($row->supervisorsRatingNotes)){
-					$pdf->SetFont('Arial','',8);
-					$pdf->setXY(202, 113);
-					$pdf->MultiCell(58, 4, $row->supervisorsRatingNotes,0,'L',false);	
-				}
+				
 				
 				
 				/* //recommendation
@@ -929,19 +973,33 @@ class Staffmodel extends CI_Model {
 				} */				
 			}
 			
+			//page2
+			$pdf->AddPage();
+			$tplIdx = $pdf->importPage(4);
+			$pdf->useTemplate($tplIdx, null, null, 0, 0, true);
+			
+			$pdf->setXY(183, 60);
+			$pdf->Write(0, $fscore);
+
+			if(!empty($row->supervisorsRatingNotes)){
+					$pdf->SetFont('Arial','',8);
+					$pdf->setXY(143, 85);
+					$pdf->MultiCell(55, 4, $row->supervisorsRatingNotes,0,'L',false);	
+				}
+
 			//acknowledgements
 			$pdf->SetFont('Arial','B',10);
-			$pdf->setXY(15, 153);
-			$pdf->MultiCell(100, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
-			$pdf->setXY(133, 155); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
+			$pdf->setXY(15, 135);
+			$pdf->MultiCell(75, 4, strtoupper($row->supName),0,'C',false); //immediate supervisor
+			$pdf->setXY(103, 136); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
 			
-			$pdf->setXY(15, 172.5);
-			$pdf->MultiCell(100, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
-			$pdf->setXY(133, 174.5); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
+			$pdf->setXY(15, 164);
+			$pdf->MultiCell(75, 4, strtoupper($row->sup2ndName),0,'C',false); //second level supervisor
+			$pdf->setXY(103, 165); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
 			
-			$pdf->setXY(175, 163);
-			$pdf->MultiCell(100, 4, strtoupper($row->name),0,'C',false); //employee's name
-			$pdf->setXY(308, 165); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
+			$pdf->setXY(145, 164);
+			$pdf->MultiCell(80, 4, strtoupper($row->name),0,'C',false); //employee's name
+			$pdf->setXY(245, 165); $pdf->Write(0, (($row->dateEvaluated=='0000-00-00')?date('Y-m-d'):date('Y-m-d', strtotime($row->dateEvaluated))));
 		}	
 		
 		
@@ -950,14 +1008,21 @@ class Staffmodel extends CI_Model {
 	
 	public function coachingScore($score){
 		$scoretext = '';
-		if($score>=8.00 && $score<=10.00)
-			$scoretext = 'Excellent (Exceeds expectations)';
-		else if($score>=5.00 && $score<=7.99)
-			$scoretext = 'Good (Meets expectations)';
-		else if($score>=3.00 && $score<=4.99)
-			$scoretext = 'Fair (Improvement needed)';
-		else if($score<=2.99)
-			$scoretext = 'Poor (Unsatisfactory)';
+		// if($score>=s.00 && $score<=10.00)
+		// 	$scoretext = 'Excellent (Exceeds expectations)';
+		// else if($score>=5.00 && $score<=7.99)
+		// 	$scoretext = 'Good (Meets expectations)';
+		// else if($score>=3.00 && $score<=4.99)
+		// 	$scoretext = 'Fair (Improvement needed)';
+		// else if($score<=2.99)
+		// 	$scoretext = 'Poor (Unsatisfactory)';
+		if( $score >= 1.5 ){
+			$scoretext = 'Exceeds Expectations';
+		} else if( $score >= 1.00 ){
+			$scoretext = 'Met Expectations';
+		} else if( $score < 1.00 ){
+			$scoretext = 'Did Not Meet Expectations';
+		}
 		
 		return $scoretext;
 	}
@@ -1281,7 +1346,7 @@ class Staffmodel extends CI_Model {
 		$pdf->SetFont('Arial','B',10);
 		$pdf->setXY(25, 196); $pdf->Write(0, '(Complainant) '.strtoupper(((!empty($row->alias))?$row->alias:$row->name)).' (ID#: '.$row->idNum.'), '.date('F d, Y', strtotime($row->dateSubmitted)));
 		
-		$pdf->setXY(25, 220.5); $pdf->Write(0, 'MARIANNE CELESTE VELASCO, '.date('F d, Y', strtotime($row->dateSubmitted)));
+		$pdf->setXY(25, 220.5); $pdf->Write(0, strtoupper($this->user->name).', '.date('F d, Y', strtotime($row->dateSubmitted)));
 		$pdf->setXY(25, 254); $pdf->Write(0, strtoupper($row->supervisorName).', '.date('F d, Y', strtotime($row->dateSubmitted)));
 			
 								
@@ -1682,6 +1747,29 @@ class Staffmodel extends CI_Model {
 
 		//redirect( $this->config->base_url() );
 		return true;
+	}
+
+	//get_all staff
+	public function get_all_staff( $index = 'empID' ){
+		$all_staff = $this->dbmodel->getQueryResults('staffs', '*');
+		$staffs = [];
+		if( $all_staff ){
+			foreach( $all_staff as $key => $val ){
+				$staffs[ $val->$index ] = $val;
+			}
+		}
+		return $staffs;
+	}
+
+
+	//return the cached list of staff
+	public function get_cached_all_staff(){		
+
+		if( ! $item = $this->cache->get('all_staff') ){
+			$item = $this->get_all_staff();
+			$this->cache->save( 'all_staff', $item, 3600 );
+		}
+		return $item;
 	}
 	
 } //end class

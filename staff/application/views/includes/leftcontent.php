@@ -35,6 +35,20 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pagepayroll=='manage13thmonth')?'current':'').'">Generate Alphalist</a></li>';
 		}			
 	echo '</ul>';
+} //for evaluations
+else if( isset($tpage) AND $tpage == 'evaluations' ){
+	$sidepage = $this->uri->segment(2);
+	echo '<ul id="leftMenu" style="margin:0px;">';
+	echo '<li><a href="'. $this->config->base_url().'evaluations/" class="'.(empty($sidepage)?'current':'').'">Management</a></li>';
+	echo '<li><a href="'. $this->config->base_url().'evaluations/questionnaires/technicalQuestions" class="'.(($sidepage=='questionnaires' && $this->uri->segment(3)=='technicalQuestions')?'current':'').'">Technical Questionnaires</a></li>';
+	echo '<li><a href="'.$this->config->base_url().'evaluations/questionnaires/behavioralQuestions"  class="'.(($sidepage=='questionnaires' && $this->uri->segment(3)=='behavioralQuestions')?'current':'').'">Behavioral Questionnaires</a></li>';
+	if($this->user->dept == 'Human Resources'){
+		$reviewCount = $this->databasemodel->getSingleField('evalQuestions','count(question_id)', 'hrStatus = 0');
+		echo '<li><a href="'.$this->config->base_url().'evaluations/review">Review Questions ['.$reviewCount.']</a></li>';
+	}
+	echo '</ul>';
+
+
 }else if($this->user!=false && isset($row) && count($row)>0){
 	$fname = '';
 
@@ -99,7 +113,8 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			echo '<li><a href="'.$this->config->base_url().'staffinfo/'.$row->username.'/" '.(($content=='staffinfo')?'class="current"':'').'>'.trim($row->fname).'\'s Info</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/'.$row->empID.'/calendar/" '.(($this->uri->segment(1)=='timecard')?'class="current"':'').'>Timecard and Payroll</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/" class="iframe">Issue NTE</a></li>';
-			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';			
+			echo '<li><a href="'.$this->config->base_url().'evaluations/generateEvaluation/'.$row->empID.'/" class="iframe">Generate Evaluation</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'generatecis/'.$row->empID.'/" class="iframe">Generate CIS</a></li>';		
 			echo '<li><a href="'.$this->config->base_url().'setcoach/'.$row->empID.'/" class="iframe">Set/Add as Coach</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/" class="iframe">Generate Coaching Form</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'generatewrittenwarning/'.$row->empID.'/" class="iframe">Generate Written Warning</a></li>';

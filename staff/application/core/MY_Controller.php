@@ -11,7 +11,11 @@ class MY_Controller extends CI_Controller {
 			$this->db = $this->load->database('defaultdev', TRUE);
 		else
 			$this->db = $this->load->database('default', TRUE);
+
+		
+		
 		$this->ptDB = $this->load->database('projectTracker', TRUE);
+		
 		
 		session_start();
 		$this->load->model('Databasemodel', 'dbmodel');
@@ -21,6 +25,13 @@ class MY_Controller extends CI_Controller {
 		
 		$this->user = $this->getLoggedUser();
 		$this->access = $this->getUserAccess();
+
+		if( $this->user ){
+			$this->hasTakenSurvey = $this->hasTakenSurvey( $this->user->empID );	
+		}
+
+		$this->load->driver('cache', ['adapter' => 'file'] );
+		
 	}
 	
 	function getLoggedUser(){ 
@@ -53,7 +64,8 @@ class MY_Controller extends CI_Controller {
 		$access->accessFullHRFinance = false;
 		$access->accessHRFinance = false;
 		$access->accessMedPerson = false;
-		
+		$access->accessMainHR = false;
+		$access->accessMainFinance = false;
 		
 		if($this->user!=false){
 			$access->myaccess = explode(',',$this->user->access);
@@ -64,6 +76,8 @@ class MY_Controller extends CI_Controller {
 			if(in_array('med_person', $access->myaccess)) $access->accessMedPerson = true;
 			if(in_array('main_hr', $access->myaccess)) $access->accessMainHR = true;
 			if(in_array('main_finance', $access->myaccess)) $access->accessMainFinance = true;
+			//$access->accessMainFinance = true;
+			//$access->accessMainHR = true;
 			if(count(array_intersect($access->myaccess,array('full','hr')))>0) $access->accessFullHR = true;
 			if(count(array_intersect($access->myaccess,array('full','finance','med_finance')))>0) $access->accessFullFinance = true;
 			if(count(array_intersect($access->myaccess,array('full','hr','finance')))>0) $access->accessFullHRFinance = true;
@@ -76,6 +90,11 @@ class MY_Controller extends CI_Controller {
 
 	function checklogged($username, $pw){
 		return $query = $this->dbmodel->dbQuery('SELECT empID, username, password, active FROM staffs WHERE username = "'.$username.'" AND password = "'.md5($pw).'" LIMIT 1');
+	}
+
+	function hasTakenSurvey( $empID ){
+		$empID = $this->dbmodel->getSingleField('staffSurveyResults', 'empID_fk', 'empID_fk ='. $empID );
+		if( $empID ){ return true; } else { return false; }
 	}
 	
 	function isSetNotEmpty($val){

@@ -41,7 +41,7 @@
 			echo '<td>'.$this->textM->convertNumFormat($me->pay).'</td>';
 			
 			$basePay += $me->basePay;
-			$deduction += $me->deduction;
+			$deduction += ($me->deduction-$me->adj);
 			$pay += $me->pay;
 		}else{
 			echo '<td>0.00</td>';

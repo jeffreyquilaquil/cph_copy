@@ -11,6 +11,7 @@
 
 <div style="padding-bottom:5px;">
 	<a class="cpointer" id="selectAll">Select All</a> | <a class="cpointer" id="deselectAll">Deselect All</a>
+	<?php //dd($dataAttendance); ?>
 </div>
 
 <div style="overflow: auto;">
@@ -73,7 +74,7 @@
 	<?php
 	echo '<form id="formattendance" action="" method="POST" onSubmit="displaypleasewait();">';
 	///staffHolidaySched 0-PHL and 1 for US
-	
+		
 		foreach($dataAttendance AS $empID=>$att){
 			echo '<tr>';
 				echo '<td align="left">';
@@ -117,6 +118,11 @@
 									if($holiday['type']!=4){
 										if($att['staffHolidaySched']==1 && $holiday['type']!=3) $isDisabled = true;
 										else if($att['staffHolidaySched']==0 && $holiday['type']==3) $isDisabled = true;
+										//else if( $att['staffHolidaySched'] == 1 && $holiday['usWork'] == 0 ) $isDisabled = true; //US holiday staff who work on PH spl holiday
+										//else if( $att['staffHolidaySched'] == 0 && $holiday['phWork'] == 0 ) $isDisabled = true; //PH holiday staff who work on US holiday
+
+										if( $holiday['usWork'] == true ) $isDisabled = false;
+										//if( $holiday['phWork'] == true ) $isDisabled = false;
 									}
 									
 									if($isDisabled==true){

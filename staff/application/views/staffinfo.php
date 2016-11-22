@@ -30,9 +30,9 @@
 	
 	?>	
 
-<!----------------------- START OF TAB 1 ----------------------->		
+<?php /* <!----------------------- START OF TAB 1 ----------------------->		 */ ?>
 	<div id="tab-1" class="tab-content current">
-<!----------------------- PENDING UPDATED DETAILS ----------------------->		
+<?php /* <!----------------------- PENDING UPDATED DETAILS ----------------------->	*/ ?>	
 	<?php
 	if($current == 'myinfo' && count($updatedVal)>0){ ?>
 	<table class="tableInfo" style="background-color:#fffaaa;">
@@ -49,7 +49,7 @@
 		echo '<tr><td colspan=4><br/></td></tr></table>';
 	} 
 ?>
-<!----------------------- PERSONAL DETAILS ----------------------->			
+<?php /* <!----------------------- PERSONAL DETAILS ----------------------->	*/ ?>	
 		<table class="tableInfo" style="position:relative;">
 			<?php 		
 			echo '<tr class="trlabel" id="pdetails">';
@@ -122,7 +122,7 @@
 			<tr><td colspan=2><br/></td></tr>
 		</table>
 		
-<!----------------------- JOB DETAILS ----------------------->			
+<?php /* <!----------------------- JOB DETAILS ----------------------->			*/ ?>
 		<?php	
 		echo '<table class="tableInfo" id="jobtbl">';
 			echo '<tr class="trlabel" id="jdetails">';
@@ -177,7 +177,7 @@
 				echo $this->staffM->displayInfo('jdetails', 'coachedOf', $cul, false);
 			}
 			
-			//echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
+			echo $this->staffM->displayInfo('jdetails', 'empStatus', $row->empStatus, true);
 			if($row->agencyID_fk!=0){
 				$agencyName = $this->dbmodel->getSingleField('agencies', 'agencyName', 'agencyID="'.$row->agencyID_fk.'"');
 				echo $this->staffM->displayInfo('jdetails', 'agencyID_fk', $agencyName, false);
@@ -203,7 +203,7 @@
 		<tr><td colspan=2><br/></td></tr>
 	</table>
 
-<!----------------------- COMPENSATION DETAILS ----------------------->	
+<?php /* <!----------------------- COMPENSATION DETAILS ----------------------->	*/ ?>
 <?php 
 	if($this->access->accessFullHRFinance==true || $current=='myinfo' || $isUnderMe==true){
 	echo '<table class="tableInfo" id="compensationtbl">';
@@ -237,7 +237,7 @@
 <?php } 
 if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->accessMedPerson == true ){
 ?>	
-<!----------------------- PERSONAL FILES ----------------------->	
+<?php /* <!----------------------- PERSONAL FILES ----------------------->	*/ ?>
 	<table class="tableInfo" id="personalfiletbl">
 		<tr class="trlabel">
 			<td>
@@ -300,11 +300,14 @@ if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->ac
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching/')).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName'] ) );
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -320,7 +323,7 @@ if( $current=='myinfo' || $this->access->accessFullHR==true || $this->access->ac
 	echo '<table>';
 }
 
-if($current=='myinfo' || $this->access->accessFullHR==true){
+if($current=='myinfo' || $this->access->accessFullHR==true){ /*
 ?>	
 <!----------------------- DISCIPLINARY MEASURES ----------------------->	
 	<table class="tableInfo" id="disciplinarytbl">
@@ -413,11 +416,14 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'. $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -430,13 +436,13 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 				echo '</tr>';
 			}
 		}
-	echo '<table>';
+	echo '<table>'; */
 }
 
 
 if($current=='myinfo' || $this->access->accessFullHR==true){
 ?>	
-<!----------------------- PERFORMANCE RELATED DOCUMENTS ----------------------->	
+<?php /* <!----------------------- PERFORMANCE RELATED DOCUMENTS ----------------------->	*/ ?>
 	<table class="tableInfo" id="performancetbl">
 		<tr class="trlabel">
 			<td>
@@ -541,11 +547,14 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 					
 					
 					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
-						$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else if($upArr[$uu]['type']=='coaching')
-						$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
 					else
-						$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
 					
 					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
 					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
@@ -563,7 +572,7 @@ if($current=='myinfo' || $this->access->accessFullHR==true){
 
 if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 ?>	
-<!----------------------- TIME OFF DETAILS ----------------------->		
+<?php /* <!----------------------- TIME OFF DETAILS ----------------------->		*/ ?>
 	<table class="tableInfo" id="timeOff">
 		<tr class="trlabel">
 			<td>Time Off Details &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('timeOff', this)" class="droptext">Show</a>]
@@ -623,11 +632,14 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 		<tr><td colspan=6><br/></td></tr>
 	</table>
 <?php }
+
+
 	if(count($disciplinary)>0){
 ?>	
+<?php /* <!------------------ DISCIPLINARY RECORDS ---------------------> */  ?>
 	<table class="tableInfo" id="disRec">
 		<tr class="trlabel">
-			<td>Disciplinary Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disRec', this)" class="droptext">Show</a>]</td>
+			<td>Attendance Disciplinary Records &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disRec', this)" class="droptext">Show</a>]</td>
 		</tr>		
 	</table>
 	
@@ -638,6 +650,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			<td>Level of Offense</td>
 			<td>Date Issued</td>
 			<td>Issued By</td>
+			<td>NTE</td>
 			<td>CAR</td>
 			<td>Edit</td>
 		</tr>
@@ -651,14 +664,26 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 					<td>'.date('M d, Y', strtotime($dis->dateissued)).'</td>
 					<td>'.$dis->issuerName.'</td>';
 				echo '<td>';
+					if( !empty($dis->nteuploaded) ){
+						$nte_file = explode('|', $dis->nteuploaded);
+						if( isset($nte_file[2]) AND file_exists(UPLOADS.'NTE/'.$nte_file[2]) ){
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($nte_file[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+						}
+					} else {
+						echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+					}
+				echo '</td>';
+
+				echo '<td>';
 					if($dis->status==1) echo 'Not yet generated.';
 					else if(!empty($dis->caruploaded)){
 						$xc = explode('|', $dis->caruploaded);
 						if(isset($xc[2]) && file_exists(UPLOADS.'NTE/'.$xc[2])){
-							echo '<a class="iframe" href="'.$this->config->base_url().UPLOADS.'NTE/'.$xc[2].'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
+							echo '<a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($xc[2])).'"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 						}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 					}else echo '<a class="iframe" href="'.$this->config->base_url().'ntepdf/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/pdf-icon.png"/></a>';
 				echo '</td>';
+
 			
 				echo '<td><a class="iframe" href="'.$this->config->base_url().'detailsNTE/'.$dis->nteID.'/"><img src="'.$this->config->base_url().'css/images/view-icon.png"/></a></td>';
 			echo '</tr>';
@@ -667,11 +692,127 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 		
 		<tr><td colspan=6><br/></td></tr>
 	</table>
+	<?php 
+		/* DISCIPLINARY RECORDS UPLOADED SIGNED DOCUMENTS */
+	?>
+	<table class="tableInfo" id="disciplinarytbl">
+		<tr class="trlabel">
+			<td>
+				Uploaded Disciplinary Files &nbsp;&nbsp;&nbsp;[<a href="javascript:void(0);" onClick="toggleDisplay('disciplinarytbl', this)" class="droptext">Show</a>]
+					<? if(!in_array("exec", $this->access->myaccess)){ ?><a href="javascript:void(0)" class="edit" onClick="addFile('disciplinary')">+ Add File</a><? } ?>
+				<form class="pfformi" action="" method="POST" enctype="multipart/form-data">
+					<input type="file" name="pfilei[]" multiple="multiple" class="pfilei hidden" onChange="formSubmitfile('disciplinary')"/>
+					<input type="hidden" name="typeVal" value="disciplinary"/>
+					<input type="hidden" name="submitType" value="uploadPF"/>
+				</form>
+			</td>
+		</tr>		
+	</table>
+	<?php 
+ 	$upArr = array();
+	foreach($disciplinaryUploaded AS $pf){
+		$xxArr = array();
+		$xxArr['upID'] = $pf->upID;
+		$xxArr['type'] = 'pf';
+		$xxArr['docName'] = $pf->docName;
+		$xxArr['fileName'] = $pf->fileName;
+		$xxArr['dateUploaded'] = $pf->dateUploaded;
+		$upArr[] = $xxArr;
+	}
+	foreach($nteUploadedFiles AS $nU){
+		if($nU->nteuploaded!=''){
+			$nEx = explode('|', $nU->nteuploaded);
+			if(count($nEx)==3){
+				$xxArr = array();
+				$xxArr['upID'] = 0;
+				$xxArr['type'] = 'NTE';
+				$xxArr['docName'] = 'NTE Uploaded File';
+				$xxArr['fileName'] = $nEx[2];
+				$xxArr['dateUploaded'] = $nEx[1];
+				$upArr[] = $xxArr;
+			}
+		}		
+		if($nU->caruploaded!=''){
+			$cEx = explode('|', $nU->caruploaded);
+			if(count($cEx)==3){
+				$xxArr = array();
+				$xxArr['upID'] = 0;
+				$xxArr['type'] = 'CAR';
+				$xxArr['docName'] = 'CAR Uploaded File';
+				$xxArr['fileName'] = $cEx[2];
+				$xxArr['dateUploaded'] = $cEx[1];
+				$upArr[] = $xxArr;
+			}
+		}
+	}	
+		
+	$volume = array();	
+	foreach($upArr as $key => $upr) {
+		$volume[$key]  = $upr['dateUploaded'];
+	}
+	
+	if(!empty($upArr) && !empty($volume)){
+		array_multisort($volume, SORT_DESC, $upArr);
+	}
+	echo '<table class="tableInfo hidden" id="disciplinarytblData">';
+		if(count($upArr)==0){
+			echo '<tr><td colspan=3>No files uploaded.</td></tr>';
+		}else{
+			$upArrCnt = count($upArr);
+			echo '<tr class="trhead">
+					<td>Date Uploaded</td>								
+					<td>Document Name</td>
+					<td width="220px"><br/></td>
+				</tr>';
+			for($uu=0; $uu<$upArrCnt; $uu++){
+				echo '<tr>';
+					echo '<td>'.date('d M Y', strtotime($upArr[$uu]['dateUploaded'])).'</td>';
+					echo '<td>
+							<span class="upClass_'.$upArr[$uu]['upID'].'">'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'</span>
+							<input id="uploadDoc_'.$upArr[$uu]['upID'].'" type="text" value="'.(($upArr[$uu]['docName']!='')?$upArr[$uu]['docName']:$upArr[$uu]['fileName']).'" class="forminput hidden uploadDoc'.$upArr[$uu]['upID'].'"/>
+						</td>';
+					echo '<td align="right">';
+					
+							
+					
+					if($this->access->accessFullHR==true && $upArr[$uu]['type']=='pf'){
+						echo '<button onClick="editUploadDoc('.$upArr[$uu]['upID'].', 0)" class="upClass_'.$upArr[$uu]['upID'].'">Update</button>
+						<img id="uploadDocimg'.$upArr[$uu]['upID'].'" src="'.$this->config->base_url().'css/images/small_loading.gif'.'" width="25" class="hidden"/>
+						<button class="uploadDoc'.$upArr[$uu]['upID'].' hidden" onClick="editUploadDoc('.$upArr[$uu]['upID'].', 1)">Update</button>';
+						echo '<button onClick="delFile('.$upArr[$uu]['upID'].', \''.$upArr[$uu]['fileName'].'\')">Delete</button>';		
+					}
+					
+					
+					if($upArr[$uu]['type']=='NTE' || $upArr[$uu]['type']=='CAR')
+						//$fileUrl = $this->config->base_url().'uploads/NTE/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('NTE')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
+					else if($upArr[$uu]['type']=='coaching')
+						//$fileUrl = $this->config->base_url().'uploads/coaching/'.$upArr[$uu]['fileName'];
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('coaching')).'&f='.urlencode($this->textM->encryptText($upArr[$uu]['fileName']));
+					else
+						$fileUrl = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'. $row->username)).'&f='.urlencode($this->textM->encryptText( $upArr[$uu]['fileName']));
+						//$fileUrl = $this->config->base_url().UPLOAD_DIR.$row->username.'/'.$upArr[$uu]['fileName'];
+					
+					$ext = strtolower(pathinfo($upArr[$uu]['fileName'], PATHINFO_EXTENSION));
+					if(in_array($ext, array('jpg', 'png', 'gif', 'pdf', 'bmp'))){
+						echo '<a class="iframe" href="'.$fileUrl.'"><button>View</button></a>';
+					}else{
+						echo '<a href="'.$fileUrl.'"><button>Download</button></a>';
+					}					
+					
+					echo '</td>';
+				echo '</tr>';
+			}
+		}
+	echo '<table>';
+
+	?>
+
 <?php } 
 }
 ?>
 
-<!----------------------- PERFORMANCE TRACK RECORDS ----------------------->
+<?php /* <!----------------------- PERFORMANCE TRACK RECORDS -----------------------> */ ?>
 <?php if(count($perfTrackRecords)>0 && ($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true || $row->coach==$this->user->empID)){ ?>
 	<table class="tableInfo" id="perfTrack">
 		<tr class="trlabel">
@@ -735,7 +876,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 	if($current=='myinfo' || $this->access->accessFullHR==true){
 		$cntpayslips = count($dataPayslips);
 ?>	
-<!----------------------- DISCIPLINARY MEASURES ----------------------->	
+<?php /* <!----------------------- Previous payslips ----------------------->	*/ ?>
 	<table class="tableInfo" id="prevpaytbl">
 		<tr class="trlabel">
 			<td>
@@ -761,7 +902,8 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 			foreach($dataPayslips AS $slip){
 				echo '<tr>';
 					echo '<td>'.$slip.'</td>';
-					echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					//echo '<td align="right"><a href="'.$this->config->base_url().$payslipDIR.$slip.'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
+					echo '<td align="right"><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText(str_replace('uploads/', '', $payslipDIR) ) ).'&f='.urlencode($this->textM->encryptText($slip)).'" target="_blank"><img src="'.$this->config->base_url().'css/images/pdf-icon.png" width="25px"/></a></td>';
 				echo '</tr>';
 			}
 		}
@@ -769,8 +911,8 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 
 	} ?>
 	</div>
-<!----------------------- END OF TAB 1 ----------------------->		
-<!----------------------- START OF TAB 2 NOTES ----------------------->		
+<?php /* <!----------------------- END OF TAB 1 ----------------------->		*/ ?>
+<?php /* <!----------------------- START OF TAB 2 NOTES ----------------------->	*/ ?>	
 	<div id="tab-2" class="tab-content">
 		<table class="tableInfo">
 			<tr class="trheadnote trlabel"><td>
@@ -821,7 +963,7 @@ if($this->access->accessFullHR==true || $current=='myinfo' || $isUnderMe==true){
 	?>		
 		
 	</div>	
-<!----------------------- END OF TAB 2 ----------------------->		
+<?php /* <!----------------------- END OF TAB 2 ----------------------->		*/ ?>
 <?php } ?>
 <script type="text/javascript" src="<?= $this->config->base_url() ?>js/tinymce/tinymce.min.js"></script>
 <script type="text/javascript">

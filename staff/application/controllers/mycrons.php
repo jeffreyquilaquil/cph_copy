@@ -516,5 +516,35 @@ class MyCrons extends MY_Controller {
 	}//end of compensation reports
 	
 	
+	public function nearDueEvaluations(){
+		$results = $this->dbmodel->getQueryResults('staffEvaluationNotif', 'notifyId, empId, evaluatorId, evalDate, status','evalDate between NOW() and DATE_ADD(NOW(), INTERVAL 10 DAY) AND STATUS = 0 OR STATUS  = 1');
 		
+		foreach($results as $value){
+			$employee = $this->dbmodel->getSingleInfo('staffs','CONCAT(fname," ",lname) as "name", email, supervisor', 'empId = '.$value->empId);
+			$evaluator = $this->dbmodel->getSingleInfo('staffs','CONCAT(fname," ",lname) as "name", email', 'empID = '.$value->evaluatorId);
+			$supervisor1 = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as "name", email, supervisor','empId = '.$employee->supervisor);
+			$supervisor2 = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as "name", email', 'empId = '.$supervisor1->supervisor);
+			$cc = [$evaluator->email, $supervisor1->email, $supervisor2->email];
+			$cc = implode(';', $cc);
+			if($value->status == 0){
+				$to = $employee->email;
+			
+				$body = 'Hi '.$employee->name.',<br><br>
+					You are due for a performance evaluation on '.$value->evalDate.'. Please <a href="'.$this->config->base_url().'evaluations/performanceeval/2/'.$value->empId.'/'.$value->evaluatorId.'/'.$value->notifyId.'" target="_blank">click here</a> to conduct self-evaluation. You will receive this reminder daily unless the said evaluation is provided.<br><br>Thank you.';
+				$to = $employee->email;
+				$this->commonM->addMyNotif($value->empId,'Hi '.$employee->name.',<br>You are due for a performance evaluation on '.date('F d, Y', strtotime($value->evalDate)).'. Please <a href="evaluations/performanceeval/2/'.$value->empId.'/'.$value->evaluatorId.'/'.$value->notifyId.'">click here</a> to conduct self-evaluation. You will recieve this reminder daily unless the said evaluation is provided.',2, 0,0);
+			}else{
+				$body = 'Hello '.$evaluator->name.',<br><br>
+					The performance evaluation of '.$employee->name.' is due already on '.date('F d, Y', strtotime($value->evalDate)).'. Please <a href="'.$this->config->base_url().'evaluations/performanceeval/1/'.$value->empId.'/'.$value->evaluatorId.'/'.$value->notifyId.'" target="_blank">click here</a> to conduct evaluation. You will receive this reminder daily unless the said evaluation is provided.<br><br>Thank you.';
+				$to = $evaluator->email;
+				$this->commonM->addMyNotif($value->evaluatorId, $employee->name.' has entered his self-rating for his performance evaluation. Please <a href="evaluations/performanceeval/1/'.$value->empId.'/'.$value->evaluatorId.'/'.$value->notifyId.'">click here</a> to enter evaluators rating',2, 0,0);
+			}
+			$from = 'careers.cebu@tatepublishing.net';
+			$fromName = 'CAREERPH';
+			$subject = "Performance evaluation due for ".$employee->name;
+			$to = "jeffrey.quilaquil@tatepublishing.net";
+			$this->emailM->sendEmail($from, $to, $subject, $body, $fromName, $cc);
+		}
+		exit();
+	}
 }

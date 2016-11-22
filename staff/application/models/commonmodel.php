@@ -208,6 +208,8 @@ class Commonmodel extends CI_Model {
 			}			
 		}else if($type=='eval90th'){			
 			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
+		}else if($type=='evalNotif'){
+			$cnt = $this->dbmodel->getSingleField('staffEvaluationNotif', 'COUNT(notifyId) AS cnt', 'status = 0 OR status = 1 AND empid ='.$this->user->empID);
 		}else if($type=='unpublishedLogs'){
 			$condUsers = '';
 			if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL

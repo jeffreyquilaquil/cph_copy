@@ -385,6 +385,10 @@
 				if($holidayType!=4 && $holidayType!=0){
 					if($staffHoliday==1 && $holidayType!=3) $showHoliday = false;
 					else if($staffHoliday==0 && $holidayType==3) $showHoliday = false;
+					//if( $staffHoliday == 1 && $holiday['usWork'] == 0 ) $showHoliday = true;
+					//else if( $staffHoliday == 0 && $holiday['phWork'] == 0 ) $showHoliday = true;
+
+					if( $holiday['usWork'] == true ) $showHoliday = true;
 				}
 				if($showHoliday==true){
 					echo '<tr><td>Holiday Hours</td><td>'.$this->textM->formfield('number', 'publishHO', $this->payrollM->getHolidayHours($holidayDate, $dataLog), 'forminput', '', 'required').'</td></tr>';
@@ -450,7 +454,7 @@
 						$dd = explode('|', $u->docs);
 						foreach($dd AS $d){
 							if(!empty($d))
-								$message .= '<li><a href="'.$this->config->base_url().$dir.$d.'">'.$d.'</a></li>';
+								$message .= '<li><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('timecard/timeloguploaddocs')).'&f='.urlencode($this->textM->encryptText($d)).'">'.$d.'</a></li>';
 						}
 						$message .= '</ul>';
 					}

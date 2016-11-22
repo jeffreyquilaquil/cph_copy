@@ -16,7 +16,8 @@
 				
 				echo '<tr class="nnotes nstat_'.$m['type'].'" valign="top">';	
 
-				$img = '/'.UPLOAD_DIR.$m['username'].'/'.$m['username'].'.jpg';	
+				//$img = '/'.UPLOAD_DIR.$m['username'].'/'.$m['username'].'.jpg';	
+				$img = $this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$m['username'])).'&f='.urlencode($this->textM->encryptText($m['username'].'.jpg'));
 
 				if($m['from']=='careerPH' && !file_exists($img) || $m['from']=='pt'){
 					if($m['from']=='pt'){

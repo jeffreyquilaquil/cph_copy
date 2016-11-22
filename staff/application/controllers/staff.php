@@ -1865,6 +1865,8 @@ class Staff extends MY_Controller {
 	
 	function staffleaves(){ 
 		$segment2 = $this->uri->segment(2);
+
+		$this->load->library('calendar');
 		$data['content'] = 'staffleaves';
 			
 		if($this->user!=false){
@@ -2581,7 +2583,19 @@ class Staff extends MY_Controller {
 			echo 'Sorry, no record for this CIS.';
 		}
 	}
-	
+
+	public function performanceeval(){
+		$this->load->model('evaluationsmodel');
+		$data['content'] = 'performanceEvaluation';
+		$data['uType'] = $this->uri->segment(2);
+		$data['questions'] = $this->evaluationsmodel->getStaffEvaluation($this->uri->segment(3));
+		$data['empId'] = $this->uri->segment(3);
+		$data['evaluator'] = $this->uri->segment(4);
+		$data['notifyId'] = $this->uri->segment(5);
+		$data['status'] = $this->databasemodel->getSingleField('staffEvaluationNotif', 'status', 'notifyId = '.$data['notifyId']);
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
+		
 	public function staffcis(){
 		$data['content'] = 'staffcis';
 		
@@ -3463,9 +3477,9 @@ class Staff extends MY_Controller {
 		$data['content'] = 'probperstatus';
 		$id = $this->uri->segment(2);
 		if(is_numeric($id) && $this->access->accessFullHR===true || $this->user->empID == 474){
-			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus', 'empID="'.$id.'"');
+			$data['row'] = $this->dbmodel->getSingleInfo('staffs', 'empID, username, fname, lname, CONCAT(fname," ",lname) AS name, perStatus ', 'empID="'.$id.'"');
 			$data['queryPerStatus'] = $this->dbmodel->getQueryResults('staffPerRequirements', '*');
-			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus', '*', 'empID_fk="'.$id.'"');
+			$data['queryHistory'] = $this->dbmodel->getQueryResults('staffPerEmpStatus s', '*', 's.empID_fk="'.$id.'"', 'LEFT JOIN tcPrevious2316 t ON s.empID_fk = t.empID_fk');
 			
 			$data['arrHistory'] = array();
 			foreach($data['queryHistory'] AS $hq){
@@ -3479,6 +3493,7 @@ class Staff extends MY_Controller {
 					
 					$data['arrHistory']['action'][$hq->perID_fk]['text'] .= 'Validated by <b>'.$hq->adder.'</b> on '.date('m/d/Y h:i A', strtotime($hq->dateAdded));
 					$data['arrHistory']['action'][$hq->perID_fk]['naVal'] = $hq->naVal;
+					$data['arrHistory']['action'][$hq->perID_fk]['tcPrevious2316_ID'] = $hq->tcPrevious2316_ID;
 				}
 			}
 			
@@ -3491,6 +3506,29 @@ class Staff extends MY_Controller {
 					$insArr['perType'] = 1; //1 for action
 					$insArr['perValue'] = $_POST['perName'].' validated.';
 					if(isset($_POST['naVal'])) $insArr['naVal'] = $_POST['naVal'];
+
+					if( $_POST['perID'] == 6){
+						
+						$insertBIR = array(
+											'empID_fk' => $id,
+											'for21' => $_POST['bir21'],
+											'for30B' => $_POST['bir30b'],
+											'for31' => $_POST['bir31'],
+											'for37' => $_POST['bir37'],
+											'for38' => $_POST['bir38'],
+											'for39' => $_POST['bir39'],
+											'for40' => $_POST['bir40'],
+											'for41' => $_POST['bir41'],
+											'for42' => $_POST['bir42'],
+											'for47A' => $_POST['bir47a'],
+											'for51' => $_POST['bir51'],
+											'for55' => $_POST['bir55'],
+										);
+						$this->dbmodel->insertQuery('tcPrevious2316', $insertBIR);
+						if( isset($_POST['hasPrev']) && $_POST['hasPrev'] ){
+							exit();
+						}
+					}
 										
 					if(!empty($_FILES['fileupload']['name'])){
 						$fextn = $this->textM->getFileExtn($_FILES['fileupload']['name']);
@@ -3782,6 +3820,9 @@ class Staff extends MY_Controller {
 			$_POST['otherdetails'] = $_POST['otherdetails'];
 			$_POST['whatViolation'] = implode(',', $_POST['whatViolation']);
 			$_POST['whyExcludeIS'] = $_POST['whyExcludeIS'];
+			$_POST['anonymousEmail'] = $this->user->email;
+			$_POST['anonymousName'] = $this->user->name;
+
 			unset($_POST['donotccIS']);
 			
 			if(isset($_POST['submitanonymous'])){
@@ -3817,14 +3858,33 @@ class Staff extends MY_Controller {
 	}
 	
 	public function incidentreports(){
-		$data['content'] = 'incidentreports';
+		$data['content'] = 'incidentreports_';
+		// $data['content'] = 'incidentreports';
 		
+		if( isset($_POST['hrAction']) ){
+			$forNoMerit = '';
+			if($_POST['reportType'] == 'noMerit'){
+				$q = $this->dbmodel->getSingleInfo('staffReportViolation', "dateSubmitted, anonymousEmail, anonymousName", 'reportID = '.$_POST['reportID']);
+				$dataE['IRRequestor'] = array('dateSubmitted' => $q->dateSubmitted,'requestoremail' =>$q->anonymousEmail, 'requestorname' => $q->anonymousName);
+			}
+			//$this->dbmodel->updateQueryText('staffReportViolation', 'hrAction="'.$_POST['reportType'].'" ' , 'reportID='.$_POST['reportID']);
+			//get supervisor
+			$r = $this->dbmodel->getSingleInfo('staffs s', "CONCAT(s.fname,' ', s.lname) as employeeName, CONCAT(sp.fname,' ', sp.lname) AS supervisorName, s.email, sp.email AS supEmail", 's.empID='.$_POST['empID'], 'LEFT JOIN staffs sp ON sp.empID = s.supervisor');
+			
+			$dataE['reportType'] = $_POST['reportType'];
+			$dataE['reportID'] = $_POST['reportID'];
+			$dataE['employeeName'] = $r->employeeName;
+			$dataE['supEmail'] = $r->supEmail;
+			$dataE['supervisorName'] = $r->supervisorName;
+
+			$this->emailM->sendEmailIncidentReport($dataE);
+		}
 		if($this->user!=false){		
 			if($this->access->accessFullHR==false){
 				$data['access'] = false;
 			}else{	
 				$data['reportStatus'] = $this->textM->constantArr('incidentRepStatus');
-				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, empID_fk, alias, dateSubmitted, status, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk', 'dateSubmitted DESC');
+				$data['reportData'] = $this->dbmodel->getQueryResults('staffReportViolation', 'reportID, docs,empID_fk, alias, supervisor,dateSubmitted, status, hrAction, CONCAT(fname," ",lname) AS name', 'status!=0', 'LEFT JOIN staffs ON empID=empID_fk ', 'dateSubmitted DESC');
 			}
 		}
 		
@@ -3833,7 +3893,8 @@ class Staff extends MY_Controller {
 	
 	
 	public function incidentreportaction(){
-		$data['content'] = 'incidentreportaction';
+		$data['content'] = 'incidentreportaction_';
+		//$data['content'] = 'incidentreportaction';
 		if($this->user==false){
 			$data['access'] = false;
 		}else{
@@ -3865,7 +3926,7 @@ class Staff extends MY_Controller {
 					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
 				}
 			}
-			
+
 			$data['dir'] = 'uploads/violationreported/';
 			$data['details'] = $this->dbmodel->getSingleInfo('staffReportViolation', 'staffReportViolation.*, CONCAT(fname," ",lname) AS name', 'reportID="'.$id.'"', 'LEFT JOIN staffs ON empID=empID_fk');
 			if(isset($data['details']->whatViolation)){
@@ -4448,42 +4509,44 @@ class Staff extends MY_Controller {
 	}
 
 	public function kudosrequestM(){
-		$data['content'] = 'kudosrequestM';
-	
-		$condition = '';
-
-		$all = '';
-		$and = '';
-
-		if(!$this->access->accessFull && !$this->access->accessFinance){
-			$condition = 'kudosReceiverSupID = '.$this->user->empID;
-			$all = $condition;
-		}
-
-		if( $all != '')
-			$and = " AND ";
-
-		$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
-		$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
-		$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
-
-
-		$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
-		$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
-		$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
-
-		$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+		if( $this->user ){
+			$data['content'] = 'kudosrequestM';
 		
-		//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
-		$newData = array();
+			$condition = '';
 
-		//Rearrange data base on statuses
-		foreach ($p as $key => $value) {
-			$newData[$value->kudosRequestStatus][] = $value;
+			$all = '';
+			$and = '';
+
+			if(!$this->access->accessFull && !$this->access->accessFinance){
+				$condition = 'kudosReceiverSupID = '.$this->user->empID;
+				$all = $condition;
+			}
+
+			if( $all != '')
+				$and = " AND ";
+
+			$data['cnt_is'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $condition.$and.' kudosRequestStatus = 1');
+			$data['cnt_hr'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 2');
+			$data['cnt_acc'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', ' kudosRequestStatus = 3');
+
+
+			$data['cnt_all'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all);
+			$data['cnt_approved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 4");
+			$data['cnt_disapproved'] = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $all.$and." kudosRequestStatus = 5");
+
+			$p = $this->dbmodel->getSQLQueryResults("SELECT kudosReceiverSupID, payPeriod, kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus, dateRequested, dateApproved, reasonForDisapproving, statusName,CONCAT(r.fname,' ' , r.lname) AS requestorName, CONCAT(s.fname,' ', s.lname) AS staffName FROM kudosRequest LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID ORDER BY kudosRequestID ");
+			
+			//$p = $this->dbmodel->getSQLQueryResults('kudosRequest', 'kudosRequestID, kudosReason, kudosAmount, kudosRequestStatus,statusName,CONCAT(r.fname," " , r.lname) AS requestorName, CONCAT(s.fname," ", s.lname) AS staffName', 1,'LEFT JOIN staffs s ON s.empID = kudosReceiverID LEFT JOIN staffs r ON r.empID = kudosRequestorID LEFT JOIN kudosRequestStatusLabels ON kudosRequestStatus = statusID','kudosRequestID');
+			$newData = array();
+
+			//Rearrange data base on statuses
+			foreach ($p as $key => $value) {
+				$newData[$value->kudosRequestStatus][] = $value;
+			}
+			$data['results'] = $newData;
+
+			$this->load->view('includes/template', $data);	
 		}
-		$data['results'] = $newData;
-
-		$this->load->view('includes/template', $data);	
 	}
 	
 	function test(){
@@ -4831,6 +4894,120 @@ class Staff extends MY_Controller {
 		//$this->textM->aaa($data);
 		$this->load->view('includes/template', $data);
 	}
+
+	//survey
+	public function surveys(){
+		$data['content'] = 'misc/benefits_survey';
+
+
+		if( $this->input->post('submit') ){
+
+			$insert_array['empID_fk'] = $this->user->empID;
+			$insert_array['answers'] = json_encode($_POST);
+			$insert_array['date_submitted'] = date('Y-m-d H:i:s');
+			$this->dbmodel->insertQuery( 'staffSurveyResults', $insert_array );
+			$data['success'] = true;
+
+		}
+
+		$this->load->view('includes/templatecolorbox', $data);
+	}
+	//end survey
+
+	public function survey_result(){
+
+		$data['content'] = 'misc/benefits_survey_result';
+
+		$data['survey_results'] = $this->dbmodel->getSQLQueryResults('SELECT * FROM staffSurveyResults');
+
+		$frequencies = $this->config->item('frequencies');
+		$questions = $this->config->item('questions');
+		$maxicare_rating = $this->config->item('maxicare_rating');
+		$ratings = $this->config->item('ratings');
+		$second_questions = $this->config->item('second_questions');
+
+		$frequency_result = [];
+		$maxicare_rating_result = [];
+		$all_comments = [];
+		$satisfaction_result = [];
+		$suggestions = [];
+		$counter = 0;
+		foreach( $data['survey_results'] as $results ){
+			$result = json_decode( $results->answers );
+			
+			
+			foreach( $questions as $qKey => $question ){
+				foreach( $frequencies as $key => $frequency ){
+					$key_name = $question['name'].'_frequency';
+					if( isset($result->$key_name) AND $result->$key_name == $key ){
+						$frequency_result[ $qKey ][ $key ] ++;	
+					}					
+				}				
+			}
+
+			foreach( $maxicare_rating as $mkey => $mrating ){
+				if( $result->maxicare_rating == $mkey ){
+					$maxicare_rating_result[ $mkey ] ++;
+				}
+			}
+
+			foreach( $second_questions as $sKey => $second_question ){
+				foreach( $ratings as $rating ){
+
+					$qname = 'satisfaction_'.$second_question['name'];
+					if( isset($result->$qname) AND $result->$qname === $rating ){
+						
+						$satisfaction_result[ $sKey ][ $rating ] ++;
+					}
+				}
+				$cname = 'comments_'.$second_question['name'];
+				
+				if( !empty($result->$cname) ){
+					$all_comments[ $sKey ][] = $result->$cname;	
+					//array_push($all_comments[$sKey], $result->$cname);
+				}
+				
+			}
+
+			$suggestions[$counter] = $result->suggestion;
+			
+			$counter++;
+
+		}
+		//dd($all_comments,false);
+		$data['frequency_result'] = $frequency_result;
+		$data['maxicare_rating_result'] = $maxicare_rating_result;
+		$data['all_comments'] = $all_comments;
+		$data['satisfaction_result'] = $satisfaction_result;
+		$data['suggestions'] = $suggestions;
+		$data['label_frequencies'] = $this->config->item('frequencies');
+		$data['label_questions'] = $this->config->item('questions');
+		$data['label_maxicare_rating'] = $this->config->item('maxicare_rating');
+		$data['label_ratings'] = $this->config->item('ratings');
+		$data['label_second_questions'] = $this->config->item('second_questions');
+		$data['suggestions'] = $suggestions;
+		
+		$this->load->view('includes/template', $data);
+		
+	}
+	public function results(){
+		if( !$this->user ){
+			show_404();
+			return true;
+		}
+		$data['results'] = $this->dbmodel->getQueryResults('exams', '*');
+		$data['content'] = 'exams/results';
+
+		if( $id = $this->uri->segment(3) ){
+			$data['questions'] = $this->textM->questions();
+			$data['answer_key'] = $this->textM->answers();
+			$data['results'] = $this->dbmodel->getQueryResults('exams', '*', 'id = '. $id)[0];
+			$data['content'] = 'exams/result';			
+		}
+
+		
+		$this->load->view('includes/template', $data);
+	}	
 	
 } //end class
 

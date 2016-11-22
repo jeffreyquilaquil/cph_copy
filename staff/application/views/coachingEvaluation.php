@@ -62,14 +62,14 @@
 						<i>'.$selfNotes[$i].'</i></p>';
 				}
 				
-				echo '<p><b>On a scale of 1 to 10, please rate how well did you achieve the expected behaviour:</b><br/>
-					Rate 1 if you fail to meet the expectation on any level<br/>
-					Rate 5 if you meet the expectation<br/>			
-					Rate 10 if you went beyond and exceeded the expectations.
+				echo '<p><b>Please rate how well did you achieve the expected behaviour:</b><br/>
+					Rate 0 if you fail to meet the expectation on any level<br/>
+					Rate 1 if you meet the expectation<br/>			
+					Rate 2 if you went beyond and exceeded the expectations.
 				</p>';				
 				echo '<select name="rate" class="forminput">';
 				echo '<option value=""></option>';
-				for($e=1; $e<=10; $e++){
+				for($e=0; $e<=2; $e++){
 					echo '<option value="'.$e.'" '.(($row->status==2 && $supRating[$i]==$e)?'selected="selected"':'').'>'.$e.'</option>';
 				}
 				echo '</select>';
@@ -197,7 +197,7 @@
 	
 	function coachingScore(score){
 		scoretext = '';
-		if(score>=8.00 && score<=10.00)
+		/*if(score>=8.00 && score<=10.00)
 			scoretext = 'Excellent (Exceeds expectations)';
 		else if(score>=5.00 && score<=7.99)
 			scoretext = 'Good (Meets expectations)';
@@ -205,7 +205,14 @@
 			scoretext = 'Fair (Improvement needed)';
 		else if(score<=2.99)
 			scoretext = 'Poor (Unsatisfactory)';
-		
+		*/
+		if( score >= 1.5 ){
+			scoretext = 'Exceeds Expectations';
+		} else if( score >= 1.00 ){
+			scoretext = 'Met Expectations';
+		} else if( score < 1.00 ){
+			scoretext = 'Did Not Meet Expectations';
+		}
 		return scoretext;
 	}
 	

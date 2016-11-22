@@ -127,7 +127,7 @@
 						
 			if($row->status<5 && ($row->iscancelled==0 || $row->iscancelled==4) && 
 				(($row->leaveType<4 && strtotime(date('Y-m-d H:i',strtotime($row->leaveStart))) > strtotime(date('Y-m-d H:i'))) || 
-				($row->leaveType==4 && $ccc==true)) &&
+				($row->leaveType==4 && $ccc==true)) ||
 				$row->status!=3
 			){
 				echo '<button id="canceThisRequest" class="btnclass">Cancel</button>';
@@ -139,7 +139,7 @@
 			
 			//Refile button if leaveStatus is approved without pay and leave credits not 0
 			//emergency and sick leaves. Vacation leaves cannot be refiled. 
-			if($row->iscancelled==0 && ($row->leaveType==2 || $row->leaveType==3) && $row->status==2 && $row->isrefiled==0 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)){
+			if( ($row->iscancelled==0 && ($row->leaveType==2 || $row->leaveType==3) && $row->status==2 && $row->isrefiled==0 && $row->leaveCredits>0 && $row->hrapprover!=0 && empty($row->refiledata)) || $row->status==3 ){
 				echo ' <button id="refilebtn" class="btnclass btnorange">Refile</button>';
 			}
 
@@ -250,9 +250,9 @@
 		foreach($ama AS $a):
 			if(strpos($a, 'upDocDV++')!==false){
 				$a = str_replace('upDocDV++','', $a);
-				echo '<div><a href="'.$this->config->base_url().UPLOAD_DIR.$row->username.'/'.$a.'"><button>View file</button></a>';
+				echo '<div><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$row->username)).'&f='.urlencode($this->textM->encryptText($a)).'"><button>View file</button></a>';
 			}else if($a!='' && file_exists(UPLOADS.'leaves/'.$a)){
-				echo '<div><a href="'.$this->config->base_url().UPLOADS.'leaves/'.$a.'"><button>View file</button></a>';
+				echo '<div><a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('leaves')).'&f='.urlencode($this->textM->encryptText($a)).'"><button>View file</button></a>';
 				
 				$belongto = explode('_',$a);
 				if($belongto[1]==$this->user->empID)

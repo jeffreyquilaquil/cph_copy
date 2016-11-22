@@ -32,7 +32,7 @@
 			echo '<tr>';
 				echo '<td>'.$data->paydate.'</td>';
 				echo '<td>
-						<a href="'.$this->config->base_url().UPLOADS.'/prevPayslips/'.$data->filename.'" target="_blank">
+						<a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('prevPayslips')).'&f='.urlencode($this->textM->encryptText($data->filename)).'" target="_blank">
 							<img width="20px" src="'.$this->config->base_url().'css/images/pdf-icon.png">
 						</a>
 					</td>';

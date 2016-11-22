@@ -98,7 +98,7 @@
 						
 							echo '<li><a class="iframe2" href="'.$this->config->base_url().'issueNTE/'.$row->empID.'/">Issue NTE</a></li>
 							<li><a class="iframe2" href="'.$this->config->base_url().'generatecis/'.$row->empID.'/">Generate CIS</a></li>';
-							
+						echo '<li><a class="iframe2" href="'.$this->config->base_url().'evaluations/generateEvaluation/'.$row->empID.'/">Generate Evaluation</a></li>';
 						echo '<li><a class="iframe2" href="'.$this->config->base_url().'generatecoaching/'.$row->empID.'/">Generate Coaching</a></li>';
 						echo '<li><a href="'.$this->config->base_url().'generatewrittenwarning/'.$row->empID.'/" class="iframe">Generate Written Warning</a></li>';
 						

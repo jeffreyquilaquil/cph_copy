@@ -182,27 +182,43 @@ class Payrollmodel extends CI_Model {
 				$hr = 0;
 				
 				if($info->startDate>$info->payPeriodStart && $info->startDate<=$info->payPeriodEnd){
-					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd);
+
+					//update 09-27-2016 weekends should be included for new hire
+					$hr = $this->payrollM->getNumDays($info->startDate, $info->payPeriodEnd, false);
 				}else if($info->endDate!="0000-00-00" && $info->endDate>=$info->payPeriodStart && $info->endDate<$info->payPeriodEnd){
+
+					//weekends already subtracted
 					$hr = $this->payrollM->getNumDays($info->payPeriodStart, $info->endDate);
 					//check if the endDate has publish, if not then we can subtract to $hr;
 
-					$endDate = $info->endDate;
-					while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
-						//check if on weekends, don't subtract since $hr has already weekends subtracted
-						$endDateDay = date('l', strtotime($endDate) );
-						if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
-							$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
-							if( isset($hasPublish) AND empty($hasPublish) ){
-								$hr--;
-							}
+					if( $hr > 1 ){
+						$endDateDay = date('l', strtotime($info->endDate) );
+			
+						//don't pay weekends if endDate ends on Monday
+						if( in_array($endDateDay, array('Monday') ) ){
+							$hr = $hr - 2;
 						}
-						//decrement
-						$endDateObj = new DateTime($endDate);
-						$endDateObj->sub( new DateInterval('P1D') );
+						/*
+						//don't include weekends to subtract
+						//weekends are paid
+						$endDate = $info->endDate;
+						while( strtotime($endDate) >= strtotime($info->payPeriodStart) ){
+							//check if on weekends, don't subtract since $hr has already weekends subtracted
+							$endDateDay = date('l', strtotime($endDate) );
+							if( !in_array($endDateDay, array('Saturday', 'Sunday') ) ){
+								//$hasPublish = $this->dbmodel->getSingleField('tcStaffLogPublish', 'sLogDate', 'sLogDate = "'. $endDate .'" AND empID_fk = '. $info->empID_fk );
+								//if( isset($hasPublish) AND empty($hasPublish) ){
+									$hr--;
+								//}
+							}
+							//decrement
+							$endDateObj = new DateTime($endDate);
+							$endDateObj->sub( new DateInterval('P1D') );
 
-						$endDate = $endDateObj->format('Y-m-d');
+							$endDate = $endDateObj->format('Y-m-d');
+						}*/	
 					}
+					
 				}	
 				
 				if($item->prevAmount=='basePay'){					
@@ -291,8 +307,9 @@ class Payrollmodel extends CI_Model {
 	public function getNumHours($empID, $dateStart, $dateEnd, $type='publishDeduct', $publishType=''){
 		if(is_numeric($type)){ //this is for the holiday
 			$cond = ' AND (holidayType='.$type.' OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY))='.$type.'))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHO) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHO!="" AND showStatus=1 '.$cond);
@@ -301,8 +318,9 @@ class Payrollmodel extends CI_Model {
 			else $holidayType = '1,3,4';
 			
 			$cond = ' AND (holidayType IN ('.$holidayType.') OR ((SELECT holidayType FROM tcAttendance WHERE dateToday=DATE_ADD(slogDate,INTERVAL 1 DAY)) IN ('.$holidayType.')))';
-			if($type==1 || $type==2) $cond .= ' AND staffHolidaySched=0';
+			if($type==1) $cond .= ' AND staffHolidaySched=0';
 			else if($type==3) $cond .= ' AND staffHolidaySched=1';
+			else if( $type==2) $cond .= ' AND staffHolidaySched IN (0, 1)'; //special holiday should affect both shifts
 			
 			$hourDeduction = $this->dbmodel->getSingleField('tcStaffLogPublish LEFT JOIN tcAttendance ON dateToday=slogDate LEFT JOIN staffs ON empID=empID_fk', 'SUM(publishHOND) AS hours', 
 			'empID_fk="'.$empID.'" AND slogDate BETWEEN "'.$dateStart.'" AND "'.$dateEnd.'" AND publishHOND!=""  AND showStatus=1 '.$cond);
@@ -622,6 +640,8 @@ class Payrollmodel extends CI_Model {
 	
 	public function isHoliday($date){
 		$holiday = false;
+		//$holiday['phWork'] = 0;
+		//$holiday['usWork'] = 0;
 		
 		$holidayType = $this->dbmodel->getSingleField('tcAttendance', 'holidayType', 'dateToday="'.$date.'"');
 		if(!empty($holidayType) && $holidayType>0){
@@ -634,7 +654,15 @@ class Payrollmodel extends CI_Model {
 				$holiday['date'] = $date;
 				$holiday['type'] = $holidayType2;
 			}
-		}		
+		}
+
+		//check who has work on this day
+		$whoHasWork = $this->dbmodel->getSingleInfo('staffHolidays', 'phWork, usWork', 'holidayDate = "'.$date.'"');
+		if( $whoHasWork ){
+			$holiday['phWork'] = $whoHasWork->phWork;
+			$holiday['usWork'] = $whoHasWork->usWork;
+		}
+		
 		
 		return $holiday;
 	}
@@ -998,25 +1026,35 @@ class Payrollmodel extends CI_Model {
 		
 		foreach($dataEmp AS $emp){
 			$queryPay = $this->payrollM->query13thMonth($emp, $periodFrom, $periodTo, $includeEndMonth);
+
 			if(!empty($queryPay)){
 				$pay = 0;
 				$deduction = 0;				
+				$insArr['totalBasic'] = $pay;
+				$insArr['totalDeduction'] = $deduction;
+				$insArr['totalAmount'] = 0;
+
 				foreach($queryPay AS $ask){
 					if(!empty($ask)){
 						$pay += $ask->basePay;
-						$deduction += (($ask->deduction!=NULL)?$ask->deduction:0);	
+						$deduction += ($ask->deduction-$ask->adj);
+						$insArr['totalAmount'] += $ask->pay;
 					}
 				}
-				
+
 				$insArr['totalBasic'] = $pay;
 				$insArr['totalDeduction'] = $deduction;
-				$insArr['totalAmount'] = ($pay-$deduction)/12;
+				//$insArr['totalAmount'] = ($pay-$deduction)/12;
 				$insArr['dateGenerated'] = date('Y-m-d H:i:s');
 								
 				///check if already exist update if exists else insert
-				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND periodFrom="'.$periodFrom.'" AND periodTo="'.$periodTo.'"');
+				$yearDate = date('Y');
+
+				$monthID = $this->dbmodel->getSingleField('tc13thMonth', 'tcmonthID', 'empID_fk="'.$emp.'" AND YEAR(periodFrom) = "'.$yearDate.'" ');
 				if(!empty($monthID)){
 					$gID[] = $monthID;
+					$insArr['periodFrom'] = $periodFrom;
+					$insArr['periodTo'] = $periodTo;
 					$this->dbmodel->updateQuery('tc13thMonth', array('tcmonthID'=>$monthID), $insArr);
 				}else{
 					$insArr['empID_fk'] = $emp;
@@ -1038,8 +1076,8 @@ class Payrollmodel extends CI_Model {
 			$dates[] = date('Y-m-15', strtotime($pfrom));
 			$dates[] = date('Y-m-t', strtotime($pfrom));
 			$pfrom = date('Y-m-d', strtotime($pfrom.' +1 month'));
-		}	
-	
+
+		}
 		return $dates;
 	}
 	
@@ -1054,28 +1092,67 @@ class Payrollmodel extends CI_Model {
 			$basePay = $basePay/2; 
 			
 			
-			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
+			$query = $this->dbmodel->getQueryResults('tcPayrolls', 'empID_fk, payDate, payrollsID_fk, basePay, (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCode="regHoursAdded") AS "adj" , (SELECT SUM(payValue) FROM tcPayslipDetails LEFT JOIN tcPayslipItems ON payID=payItemID_fk WHERE payslipID_fk=payslipID AND payCategory=0 AND payType="debit") AS deduction', 
 								'empID_fk="'.$empID.'" AND payDate BETWEEN "'.$periodFrom.'" AND "'.$periodTo.'" AND tcPayrolls.status!=3 AND pstatus=1',
 								'LEFT JOIN tcPayslips ON payrollsID_fk=payrollsID', 'payDate');
 								
 			foreach($query AS $q){
-				$computepay = ($q->basePay-$q->deduction) / 12;
+				//get startdate of the employee
+				$p = $this->dbmodel->getSingleInfo('staffs', 'startDate', 'empID = '.$empID);
+				$diff = $this->commonM->dateDifference($p->startDate, date('Y-m-d'));
+
+				$computepay = 0;
+				if( $diff > 30 )
+					$computepay = (($q->basePay+$q->adj)-$q->deduction ) / 12;
+
 				$q->pay = round($computepay,4);
 				$payArr[$q->payDate] = $q;
 			}
-			
+
 			$lastMonth = '';
 			$dates = $this->payrollM->getArrayPeriodDates($periodFrom, $periodTo);
-			foreach($dates AS $d){
-				if(isset($payArr[$d])){
-					$arrayMonths[$d] = $payArr[$d];
-					$lastMonth = $d;
-				}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
-					$arrayMonths[$d] = (object) array('empID_fk'=>$empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
-				}else $arrayMonths[$d] = '';
+
+			foreach($payArr as $key => $val){
+				if( in_array($key, $dates) ){
+					$arrayMonths[$key] = $val;
+					$lastMonth = $key;
+					//Unset the date on $dates for it to be used if the user is allowed to generate remaining months
+					if($includeEndMonth == 1){
+						if( $sKey = array_search($key, $dates) ){
+							unset($dates[$sKey]);
+						}
+					}
+				}
+				else{
+					$arrayMonths[$key] = '';
+				}
 			}
+
+			if( $includeEndMonth == 1){
+				foreach($dates as $dateK => $dateV){
+					//query if the date is less than the last payslip
+					$lp = $this->dbmodel->getSingleInfo('tcPayrolls', 'payrollsID', 'payDate > "'.$dateV.'"');
+					if($lp){
+						$arrayMonths[$dateV] = (object) array('empID_fk'=>$empID, 'payDate'=>$dateV, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+					}
+				}
+			}
+
+			// echo "<pre>";
+			// var_dump($dates);
+			// var_dump($payArr);
+			// exit();
+			// foreach($dates AS $d){
+			// 	if(isset($payArr[$d])){
+			// 		$arrayMonths[$d] = $payArr[$d];
+			// 		$lastMonth = $d;
+			// 	}else if(!isset($payArr[$d]) && $includeEndMonth==1 && $lastMonth!='' && $d!=$lastMonth){
+			// 		$arrayMonths[$d] = (object) array('empID_fk'=>$empID, 'payDate'=>$d, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
+			// 	}else $arrayMonths[$d] = '';
+			// }
+			//exit();
 		}
-		
+
 		return $arrayMonths;
 	}
 	
@@ -1215,7 +1292,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->SetFont('Arial','',9);
 		$pdf->MultiCell(0, 4, 'KNOW ALL MEN BY THESE PRESENTS:', 0, 'L', false); 
 		$pdf->Ln(4);
-		$pdf->MultiCell(0, 5, 'That I, '.$data->full_name.', Filipino, of legal age, a resident of ________________ ________________________________________________, and formerly employed with Tate Publishing and Enterprises (Philippines), Inc., do by these presents acknowledge receipt of the sum of '.$data->amount_in_words.' ('.$data->amount_in_figure.'), Philippine Currency, from Tate Publishing and Enterprises (Philippines), Inc. in full payment and final settlement of my separation pay, 13th month pay, terminal benefits and accrued employment benefits due to me or which may be due to me from Tate Publishing and Enterprises (Philippines), Inc. under the law or under any existing agreement with respect thereto, as well as any and all claims of whatever kind and nature which I have or may have against Tate Publishing and Enterprises (Philippines), Inc., arising from my employment with and the termination of my employment with Tate Publishing and Enterprises (Philippines), Inc.', 0, 'J', false, $indent); 
+		$pdf->MultiCell(0, 5, 'That I, '.utf8_decode($data->full_name).', Filipino, of legal age, a resident of ________________ ________________________________________________, and formerly employed with Tate Publishing and Enterprises (Philippines), Inc., do by these presents acknowledge receipt of the sum of '.$data->amount_in_words.' ('.$data->amount_in_figure.'), Philippine Currency, from Tate Publishing and Enterprises (Philippines), Inc. in full payment and final settlement of my separation pay, 13th month pay, terminal benefits and accrued employment benefits due to me or which may be due to me from Tate Publishing and Enterprises (Philippines), Inc. under the law or under any existing agreement with respect thereto, as well as any and all claims of whatever kind and nature which I have or may have against Tate Publishing and Enterprises (Philippines), Inc., arising from my employment with and the termination of my employment with Tate Publishing and Enterprises (Philippines), Inc.', 0, 'J', false, $indent); 
 		$pdf->Ln(4);
 		$pdf->MultiCell(0, 5, 'In consideration of said payment, I do hereby quitclaim, release, discharge and waive any and all actions of whatever nature, expected, real or apparent, which I may have against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients by reason of or arising from my employment with the company. I will institute no action, whether civil, criminal, labor or administrative against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients. Any and all actions which I may have commenced either solely in my name or jointly with others before any office, board, bureau, court, or tribunal against Tate Publishing and Enterprises (Philippines), Inc., its directors, officers, employees, agents and clients are hereby deemed and considered voluntary withdrawn by me and I will no longer testify or continue to prosecute said action(s).', 0, 'J', false, $indent);
 		$pdf->Ln(4);
@@ -1279,10 +1356,17 @@ class Payrollmodel extends CI_Model {
 
 		//FOR THE PERIOD
 		//FROM
+
+		$z = date('Y', strtotime($staffInfo->startDate) );
+		$x = date('Y');
+
+		$birStartDate = ( $z < $x )? '01-01' : date('m-d', strtotime($staffInfo->startDate)) ;
+		$birStartDate = explode('-', $birStartDate);
+
 		$pdf->setXY(183, 35);
-		$pdf->Write(0, '01');
+		$pdf->Write(0, $birStartDate[0]);
 		$pdf->setXY(191, 35);
-		$pdf->Write(0, '01'); 
+		$pdf->Write(0, $birStartDate[1]); 
 		//TO
 		$pdf->setXY(227, 35);
 		$pdf->Write(0, date('m', strtotime($staffInfo->endDate)));
@@ -1397,16 +1481,27 @@ class Payrollmodel extends CI_Model {
 		$salary = $payInfo->monthlyRate;
 		$dailyRate = $this->payrollM->getDailyHourlyRate($salary, 'daily');
 		$hourlyRate = $this->payrollM->getDailyHourlyRate($salary, 'hourly');
-		$leaveAmount = $payInfo->addLeave * $dailyRate;		
+		$leaveAmount = $payInfo->addLeave * $dailyRate;
 		$addOnBonus = 0;
 		$unusedLeave = 0;
+		$sppDeduction = 0;
 		
 		if(!empty($payInfo->addOns)){
 			$addArr = unserialize(stripslashes($payInfo->addOns));
 			foreach($addArr AS $add){
 				if(isset($add[0]) && isset($add[1]) ) {
-					if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
-						$addOnBonus += $add[1];
+					// if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus' )
+					// 	$addOnBonus += $add[1];
+					// if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+					// 	$sppDeduction += $add[1];
+					// }
+					if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name, tcPayslipAddons_Type, tcPayslipAddons_itemType', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+						if($rrr->tcPayslipAddons_itemType == 'bonus')
+							$addOnBonus += $add[1];
+
+						if($rrr->tcPayslipAddons_itemType == 'sppDeduction')
+							$sppDeduction += $add[1];
+					}
 				}
 			}
 		}
@@ -1415,8 +1510,6 @@ class Payrollmodel extends CI_Model {
 		foreach($dataMonth AS $m){
 			$payArr[$m->payDate] = $m;
 		}
-		//echo '<pre>';
-		//var_dump($dateArr);
 				
 		$month13c = 0;
 		$data_items = $this->payrollM->_getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems, $payInfo->dateGenerated );
@@ -1443,7 +1536,7 @@ class Payrollmodel extends CI_Model {
 		// else $personalExemption += ($dependents*25000);
 		
 		//MISC COMPUTATIONS
-		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig;
+		$spp = $totalSSS+$totalPhilhealth+$totalPagIbig - $sppDeduction;
 		$tsal = $totalSalary - $totalDeduction - $spp;
 
 		$n55 = $tsal+$totalAdjustment;
@@ -1453,30 +1546,28 @@ class Payrollmodel extends CI_Model {
 		if($data['is_active'])
 			$n37 = $total13th;
 
-		$totalDeminimis = 0;
-		foreach ($data['allowances'] as $key => $value) {
-			$allowanceArray = $this->textM->constantArr('allowances');
-			if(in_array($key, $allowanceArray)){
-				$totalDeminimis += $value;
-			}
-		}
+		$otherSalary = 0;
+		list($totalDeminimis, $totalSalariesAndOtherForms) = $this->payrollM->getDeminimis($data['allowances']);
 
-		$totalDeminimis += $leaveAmount;
-		$totalDeminimis += $addOnBonus;
-		$totalDeminimis += $unusedLeave;
+		$totalSalariesAndOtherForms += $leaveAmount;
+		$totalSalariesAndOtherForms += $addOnBonus;
+		$totalSalariesAndOtherForms += $unusedLeave;
+
+		if( ($totalSalariesAndOtherForms + $n37) > 82000 ){
+			$otherSalary = ($totalSalariesAndOtherForms + $n37) - 82000;
+		}
 		
-		$tnt = $this->textM->convertNumFormat($n37+$totalDeminimis+$spp);
+		$tnt = $n37+$totalDeminimis+$spp+$totalSalariesAndOtherForms;
+		$n23 = $tsal+$totalAdjustment;
 
 		//FOR 21
 		$pdf->setXY(94, 229);
-		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$totalIncome+$leaveAmount+$addOnBonus),0,2,'R');
+		$pdf->Cell(49, 5, $this->textM->convertNumFormat(/*$n21*/$tnt+$n23),0,2,'R');
 
 		//FOR 22
 		$pdf->setXY(95, 236);
-		$pdf->Cell(48, 5, $tnt, 0,2,'R');
+		$pdf->Cell(48, 5,  $this->textM->convertNumFormat($tnt), 0,2,'R');
 
-		
-		$n23 = $tsal+$totalAdjustment;
 
 		//FOR 23
 		$pdf->setXY(95, 242);
@@ -1558,6 +1649,10 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 122);
 		$pdf->Cell(48, 5, $this->formatNum($spp), 0,2,'R');		
 
+		//FOR 40
+		$pdf->setXY(194, 136);
+		$pdf->Cell(48, 5, $this->formatNum($totalSalariesAndOtherForms), 0,2,'R');				
+
 		//FOR 41
 
 		$pdf->setXY(194, 147);
@@ -1576,9 +1671,9 @@ class Payrollmodel extends CI_Model {
 		$pdf->Cell(48, 5, $this->formatNum($totalAdjustment), 0,2,'R');	
 
 		//FOR 51
-		$excs = '';
+		$excs = 0.00;
 		if($total13th > 82000)
-			$excs = $this->formatNum($total13th-82000);
+			$excs = $this->formatNum($otherSalary);
 		$pdf->setXY(194, 253);
 		$pdf->Cell(48, 5, $excs, 0,2,'R');
 
@@ -1587,13 +1682,14 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(194, 297);
 		$pdf->Cell(48, 5, $this->formatNum($n55), 0,2,'R');
 
+		$utf8Name = $staffInfo->fname."  ".$staffInfo->lname;
 		//FOR 56
 		$pdf->setXY(65, 309);
 		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
 
 		//FOR 56
 		$pdf->setXY(55, 317);
-		$pdf->Cell(75, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		$pdf->Cell(75, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//FOR 56
 		$pdf->setXY(55, 342);
@@ -1602,7 +1698,8 @@ class Payrollmodel extends CI_Model {
 		//FOR 59
 		$pdf->setXY(157, 352);
 		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
-		$pdf->Cell(68, 5, $staffInfo->fname."  ".$staffInfo->lname, 0,2,'C');
+		
+		$pdf->Cell(68, 5, utf8_decode($utf8Name), 0,2,'C');
 
 		//OUTPUT PDF
 		$pdf->Output('lastpay.pdf', 'I');
@@ -1610,8 +1707,7 @@ class Payrollmodel extends CI_Model {
 	}
 
 	//bir alpha list which is tied to pdfBIR
-	public function getAlphaList( $dataQuery, $filename, $startDate, $endDate, $is_active = FALSE ){
-		
+	public function getAlphaList( $dataQuery, $filename, $startDate, $endDate, $is_active = FALSE ){	
 		require_once('includes/excel/PHPExcel/IOFactory.php');
 		$fileType = 'Excel5';
 		$fileName = 'includes/templates/bir_alphalist_.xls';
@@ -1682,6 +1778,7 @@ class Payrollmodel extends CI_Model {
 			$leaveAmount = 0;	
 			$addOnBonus = 0;
 			$unusedLeave = 0;
+			$sppDeduction = 0;
 
 			//for separated employee
 			if(!$is_active){
@@ -1698,6 +1795,9 @@ class Payrollmodel extends CI_Model {
 						if(isset($add[0]) && isset($add[1])){
 							if( $add[0] == 'Unpaid Bonuses' || $add[0] == 'Unpaid Performance Bonuses' || $add[0] == 'Unpaid Bonus')
 								$addOnBonus += $add[1];
+							if( $rrr = $this->dbmodel->getSingleInfo('tcPayslipAddons', 'tcPayslipAddons_Name', '"'.$add[0].'" LIKE CONCAT("%", tcPayslipAddons_Name, "%")') ){
+								$sppDeduction += $add[1];
+							}
 						}
 					}
 				}
@@ -1822,9 +1922,689 @@ class Payrollmodel extends CI_Model {
 		header('Content-Disposition: attachment; filename="'.$filename.'".xls"');
 		$objWriter->save('php://output');
 	}
+
+	public function getAlphaListForAllEmployee($data, $outputFile){
+		// echo "<pre>";
+		// var_dump($data);
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/alphalist_template.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$sequence = 1;
+		$cell_counter = 10;
+		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
+
+		foreach ($data_items as $key => $value) {
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
+			foreach ($value as $k => $v) {
+				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
+			}
+			$sequence++;
+			$cell_counter++;
+		}
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
+	public function getAlphaListForEmployeeWithPrevious($data, $outputFile){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/alphalist_with_previous.xls';
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$sequence = 1;
+		$cell_counter = 12;
+		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
+
+		foreach ($data_items as $key => $value) {
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
+			$totalGross = 0;
+			$forAA = 0;
+
+			foreach ($value as $l => $v) {
+				$k = $l;
+				switch ($l) {
+					case 'F': $totalGross += str_replace(',', '', $v);
+					case 'G': $k = 'P'; break;
+					case 'H': $k = 'Q'; break;
+					case 'L': $k = 'T'; break;
+					case 'M': $k = 'V'; break;
+					case 'N': $k = 'W'; break;
+					case 'R': $k = 'X'; break;
+					case 'S': $k = 'Y'; break;
+					case 'T': $k = 'Z'; break;
+					case 'U': $k = 'W'; break;
+					case 'V': $k = 'AC'; break;
+					case 'W': $k = 'AD'; break;
+					case 'AC': $k = 'AI'; break;
+					case 'AE' : $k = 'AI'; break;
+				}
+				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
+			}
+			$totalGross += $data[$key]->for21;
+
+			$forAB = $data[$key]->for55 + str_replace(',', '', $value['U']);
+
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totalGross );
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $data[$key]->for37 );
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data[$key]->for38 );
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $data[$key]->for39 );
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $data[$key]->for40 );
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $data[$key]->for41 );
+			$objPHPExcel->getActiveSheet()->setCellValue('L'.$cell_counter, $data[$key]->for42 );
+			$objPHPExcel->getActiveSheet()->setCellValue('M'.$cell_counter, $data[$key]->for47A );
+			$objPHPExcel->getActiveSheet()->setCellValue('N'.$cell_counter, $data[$key]->for51 );
+			$objPHPExcel->getActiveSheet()->setCellValue('O'.$cell_counter, $data[$key]->for55 );
+			$objPHPExcel->getActiveSheet()->setCellValue('AA'.$cell_counter, $value['U'] );
+			$objPHPExcel->getActiveSheet()->setCellValue('AB'.$cell_counter, $forAB );
+			$objPHPExcel->getActiveSheet()->setCellValue('AH'.$cell_counter, $data[$key]->for31 );
+
+			//compute taxDue
+			$forAG = 0;
+			$deductedTax = 0;
+
+			if($forAB > $value['W']){
+				$deductedTax = $forAB - str_replace(',', '', $value['W']);
+				$forAG = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+
+			$objPHPExcel->getActiveSheet()->setCellValue('AF'.$cell_counter, $deductedTax );
+			$objPHPExcel->getActiveSheet()->setCellValue('AG'.$cell_counter, $forAG );
+
+			$colLetter = 'AJ';
+			$AE = str_replace(',', '', $value['AE']);
+			$colVal = ( $forAG  - ($data[$key]->for31+ $AE) );
+
+			$forAL = $AE + $colVal;
+
+			if($colVal < 0){
+				$forAL = $AE-$colVal;
+				$colLetter = -1*($colVal);
+			}
+
+			$objPHPExcel->getActiveSheet()->setCellValue($colLetter.$cell_counter, $colVal );
+			$objPHPExcel->getActiveSheet()->setCellValue('AL'.$cell_counter, $forAL );
+
+			$sequence++;
+			$cell_counter++;
+		}
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
+	public function pdfActiveBIR($info){
+		$activeBIR = $this->payrollM->getTotalComputationForAllEmployee($info);
+		$staffInfo = $info[0];
+
+		require_once('includes/fpdf/fpdf.php');
+		require_once('includes/fpdf/fpdi.php');
+		$pdf = new FPDI();	
+		
+		$pdf->AddPage();	
+		$pdf->setSourceFile(PDFTEMPLATES_DIR.'BIR2316.pdf');
+		$tplIdx = $pdf->importPage(1);
+		$pdf->useTemplate($tplIdx, null, null, 284.07783333333, 367.63325, true);
+		$pdf->SetAutoPageBreak(true,1);
+			
+		//SET DEFAULT FONT TO ARIAL BOLD size 12PT
+		$pdf->SetFont('Arial','B',12);
+		$pdf->setTextColor(0, 0, 0);
+		
+		//FOR THE YEAR
+		$pdf->setXY(77, 35);
+		$pdf->Write(0, date("Y")); 
+		//$pdf->Write(0, $pdf->w.' '.$pdf->h); 
+
+		//FOR THE PERIOD
+		//FROM
+
+		$z = date('Y', strtotime($staffInfo->startDate) );
+		$x = date('Y');
+
+		$birStartDate = ( $z < $x )? '01-01' : date('m-d', strtotime($staffInfo->startDate)) ;
+		$birStartDate = explode('-', $birStartDate);
+
+		$pdf->setXY(183, 35);
+		$pdf->Write(0, $birStartDate[0]);
+		$pdf->setXY(191, 35);
+		$pdf->Write(0, $birStartDate[1]); 
+		//TO
+		$pdf->setXY(227, 35);
+		$pdf->Write(0, date('m', strtotime($staffInfo->endDate)));
+		$pdf->setXY(235, 35);
+		$pdf->Write(0, date('d', strtotime($staffInfo->endDate)));
+
+		//TAXPAYER TIN
+		$pdf->setXY(76,47);
+		$tin = explode('-', $this->textM->decryptText($staffInfo->tin));
+		$pdf->Write(0, $tin[0]);
+		$pdf->setXY(94,47);
+		$pdf->Write(0, $tin[1]);		
+		$pdf->setXY(111,47);
+		$pdf->Write(0, $tin[2]);
+		$pdf->setXY(127,47);
+		$pdf->Write(0, $tin[3]);
+
+		//FOR EMPLOYEE'S NAME
+		$pdf->setXY(43,57);
+		$pdf->setFont('Arial', 'B', 8);
+		$fullName = strtoupper(utf8_decode($staffInfo->fullName));
+		$fullName = $this->textM->constantText('', $fullName);
+		$pdf->Write(0, $fullName);
+
+		//FOR RDO
+		$pdf->setXY(129,57);
+		$pdf->setFont('Arial','B',12);
+		$pdf->Write(0, '081');		
+
+		//FOR EMPLOYEE'S ADDRESS
+		$pdf->setFont('Arial','B',8);
+		$pdf->setXY(43,67);
+		$pdf->Write(0, strtoupper($staffInfo->address));
+		$pdf->setFont('Arial','B',10);
+		$pdf->setXY(128, 67);
+		$pdf->Write(0, $staffInfo->zip);
+
+		//FOR EMPLOYEES TAX STATUS
+		if( isset($staffInfo->taxStatus) ){
+			$ts = $staffInfo->taxStatus;
+			if($ts < 6){
+				$pdf->setXY(62, 107);
+			}
+			else{
+				$pdf->setXY(95, 107);
+			}
+			$pdf->Write(0, 'x');
+		}
+
+		//FOR EMPLOYEE'S BDATE
+		$pdf->setXY(45,97);
+		$pdf->Write(0, date('m', strtotime($staffInfo->bdate)) );
+		$pdf->setXY(55,97);
+		$pdf->Write(0, date('d', strtotime($staffInfo->bdate)) );
+		$pdf->setXY(65,97);
+		$pdf->Write(0, date('Y', strtotime($staffInfo->bdate)) );
+
+		//FOR TATE'S INFORMATION
+		//TIN
+		$pdf->setXY(76,167);
+		$pdf->Write(0, '423');
+		$pdf->setXY(94,167);
+		$pdf->Write(0, '687');
+		$pdf->setXY(111,167);
+		$pdf->Write(0, '498');
+		$pdf->setXY(127,167);
+		$pdf->Write(0, '0000');
+		//TATE'S ADDRESS
+		$pdf->setXY(45,176);
+		$pdf->Write(0, 'TATE PUBLISHING AND ENTERPRISES (PHILIPPINES),');
+		$pdf->setXY(45,186);
+		$pdf->Write(0, 'SALINAS DRIVE LAHUG  CEBU CITY');
+		//ZIP
+		$pdf->setXY(128,186);
+		$pdf->Write(0, '6000');
+
+		//FOR 21
+		$pdf->setXY(94, 229);
+		$pdf->Cell(49, 5, $this->textM->convertNumFormat($activeBIR[0]['F']),0,2,'R');
+
+		//FOR 22
+		$pdf->setXY(95, 236);
+		$pdf->Cell(48, 5, $this->textM->convertNumFormat($activeBIR[0]['N']), 0,2,'R');
+
+
+		$n23 = $n25 = $activeBIR[0]['U'];
+		$n24 = 0;	
+		$n29 = $activeBIR[0]['AB'];
+
+		if( $staffInfo->for55 > 0){
+			//recompute tax due stuffs
+			$n24 = $staffInfo->for55;
+			$n25 = str_replace(',', '', $n23)+$n24;
+
+			if($n25 > $staffInfo->taxExemption){
+				$deductedTax = $n25 - $staffInfo->taxExemption;//number 55 and 26 in BIR2316
+				$n29 = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+		}			
+
+		//FOR 23
+		$pdf->setXY(95, 242);
+		$pdf->Cell(48, 5, $this->formatNum($n23), 0,2,'R');
+
+
+		//FOR 24
+		$pdf->setXY(95, 248);
+		$pdf->Cell(48, 5, $this->formatNum($n24), 0,2,'R');
+
+		//FOR 25
+		$pdf->setXY(95, 254);
+		$pdf->Cell(48, 5, $this->formatNum($n25), 0,2,'R');		
+		//FOR 26
+		$pdf->setXY(95, 260);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['W']), 0,2,'R');
+
+		//FOR 27. 27 is always 0
+		$pdf->setXY(95, 266);
+		$pdf->Cell(48, 5, $this->formatNum('0'), 0,2,'R');	
+		
+		//FOR 28
+		$n25 = str_replace(',', '', $activeBIR[0]['U']);
+		$n26 = str_replace(',', '', $activeBIR[0]['W']);
+
+		$n28 = $n25 - $n26;
+
+		if( $n28 < 0 )
+			$n28 = 0;
+		
+		$pdf->setXY(95, 272);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['AA']), 0,2,'R');
+
+		// $n30a = $n30b = $n31 = 0;
+
+		// if($n55 > $personalExemption){
+		// 	$deductedTax = $n55 - $personalExemption;//number 55 and 26 in BIR2316
+		// 	$n29 = $this->payrollM->getBIRTaxDue($deductedTax);
+		// }
+
+		// if( $n29 > 0 && $payInfo->taxWithheldFromPrevious == 0 ){
+		// 	$n30a = $n31 = $n29;
+		// }
+		// if( $n29 > 0 && $payInfo->taxWithheldFromPrevious > 0 ){
+		// 	$n31 = $n29;
+		// 	$n30b = $payInfo->taxWithheldFromPrevious;
+		// 	$n30a = $n29 - $n30b;
+		// }
+
+
+		//FOR 29, 30A, 30B, and 31
+		$pdf->setXY(95, 278);
+		$pdf->Cell(48, 5, $this->formatNum($n29) , 0,2,'R');
+
+
+		$n30a = $activeBIR[0]['AC'];
+		$n30b = $staffInfo->for31;
+		$n31 = str_replace(',', '', $n30a)+$n30b;
+
+		//FOR 30A
+		$pdf->setXY(95, 285);
+		$pdf->Cell(48, 5, $this->formatNum($n30a) , 0,2,'R');
+
+		//FOR 30B
+		$pdf->setXY(95, 292);
+		$pdf->Cell(48, 5, $this->formatNum($staffInfo->for31) , 0,2,'R');		
+
+		//FOR 31
+		$pdf->setXY(95, 298);
+		$pdf->Cell(48, 5, $this->formatNum($n31) , 0,2,'R');
+
+		//FOR 37
+		$pdf->setXY(194, 100);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['G']), 0,2,'R');		
+
+		//FOR 38
+		$pdf->setXY(194, 110);
+
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['H']), 0,2,'R');
+
+		//FOR 39
+		$pdf->setXY(194, 122);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['L']), 0,2,'R');		
+
+		//FOR 40
+		$pdf->setXY(194, 136);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['M']), 0,2,'R');				
+
+		//FOR 41
+
+		$pdf->setXY(194, 147);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['N']), 0,2,'R');			
+
+		//FOR 42
+		$pdf->setXY(194, 166);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['R']), 0,2,'R');			
+		
+		//FOR 47A
+		$pdf->setXY(194, 209);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['T']), 0,2,'R');	
+
+		//FOR 51
+		$pdf->setXY(194, 253);
+		$pdf->Cell(48, 5,  $this->formatNum($activeBIR[0]['S']), 0,2,'R');
+
+		//FOR 55
+		
+		$pdf->setXY(194, 297);
+		$pdf->Cell(48, 5, $this->formatNum($activeBIR[0]['U']), 0,2,'R');
+
+		$utf8Name = $staffInfo->fname."  ".$staffInfo->lname;
+		//FOR 56
+		$pdf->setXY(65, 309);
+		$pdf->Cell(48, 5, "Diana Rose T. Bartulin", 0,2,'R');
+
+		//FOR 56
+		$pdf->setXY(55, 317);
+		$pdf->Cell(75, 5, utf8_decode($utf8Name), 0,2,'C');
+
+		//FOR 56
+		$pdf->setXY(55, 342);
+		$pdf->Cell(75, 5, "Diana Rose T. Bartulin", 0,2,'C');
+
+		//FOR 59
+		$pdf->setXY(157, 352);
+		//$pdf->Write(0, $staffInfo->fname." ".$staffs->mname." ".$staffInfo->lname);
+		
+		$pdf->Cell(68, 5, utf8_decode($utf8Name), 0,2,'C');
+
+		$pdf->Output('bir2316.pdf', 'I');
+
+
+
+	}
+
+	public function taxSummary($data, $outputFile){
+		require_once('includes/excel/PHPExcel/IOFactory.php');
+		$fileType = 'Excel5';
+		$fileName = 'includes/templates/taxSummary.xls';
+		
+		// echo "<pre>";
+		// var_dump($data);
+		// exit();
+
+		// Read the file
+		$objReader = PHPExcel_IOFactory::createReader($fileType);
+		$objPHPExcel = $objReader->load($fileName);
+
+		$cell_counter = 7;
+
+		$objPHPExcel->getActiveSheet()->setCellValue('A2', $data->empID);
+		$objPHPExcel->getActiveSheet()->mergeCells('C2:E2');
+		$objPHPExcel->getActiveSheet()->setCellValue('C2', $data->fname.' '.$data->lname);
+		$objPHPExcel->getActiveSheet()->mergeCells('G2:H2');
+		$objPHPExcel->getActiveSheet()->setCellValue('G2', $data->dateRange);
+
+		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
+
+		$totals = array(
+			'grossIncome' => 0,
+			'basePay' => 0,
+			'otherCompensation' => 0,
+			'regTaken' => 0,
+			'sss' => 0,
+			'pagIbig' => 0,
+			'philhealth' => 0,
+			'allowance' => 0,
+			'incentives' => 0,
+			'totalTaxable' => 0 
+					);
+
+		foreach ($data->dataMonth as $eK => $eV) {
+			$regTaken = isset( $data->dataMonthItems[$eV->payslipID]["regularTaken"] )? $data->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
+			$regHoursAdded = isset( $data->dataMonthItems[$eV->payslipID]["regHoursAdded"] )? $data->dataMonthItems[$eV->payslipID]["regHoursAdded"]:0;
+			$regHoursDeducted = isset( $data->dataMonthItems[$eV->payslipID]["regHoursDeducted"] )? $data->dataMonthItems[$eV->payslipID]["regHoursDeducted"]:0;
+			$deduction = ($regTaken - $regHoursAdded + $regHoursDeducted);
+
+			$month13 += ( ( $eV->basePay + $regHoursAdded )- $regTaken - $regHoursDeducted ) / 12;
+			
+			$earning = $eV->earning;
+
+			$totals['sss'] += $sss = isset( $data->dataMonthItems[$eV->payslipID]["sss"] )? $data->dataMonthItems[$eV->payslipID]["sss"]:0;
+			$totals['pagIbig'] += $pagIbig = isset( $data->dataMonthItems[$eV->payslipID]["pagIbig"] )? $data->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
+			$totals['philhealth'] += $philhealth = isset( $data->dataMonthItems[$eV->payslipID]["philhealth"] )? $data->dataMonthItems[$eV->payslipID]["philhealth"]:0;
+			$unusedLeave = isset( $data->dataMonthItems[$eV->payslipID]["unusedLeave"] )? $data->dataMonthItems[$eV->payslipID]["unusedLeave"]:0;
+			$totalIncomeTax = isset( $data->dataMonthItems[$eV->payslipID]["incomeTax"] )? $data->dataMonthItems[$eV->payslipID]["incomeTax"]:0;
+
+			$incentives = 0;
+			$allowanceKey = $this->textM->constantArr('otherAllowancesInKey');
+			foreach ( $allowanceKey as $v ) {
+				if(array_key_exists($v, $data->dataMonthItems[$eV->payslipID])){
+					$incentives += $data->dataMonthItems[$eV->payslipID][$v];
+				}
+			}
+
+			$spp = $pagIbig+$philhealth+$sss;
+
+			//$tSalary = $eV->basePay;
+			//$basicPay = $tSalary-$deduction-$spp;
+			$otherCompensation = 0;
+
+			foreach ($data->dataMonthItems[$eV->payslipID] as $mK => $mV) {
+				if(in_array($mK, $payslipAddAdjustments)){
+					$otherCompensation += $mV;
+				}
+			}
+
+			$totals['grossIncome'] += $grossIncome = $eV->basePay + $otherCompensation + $eV->allowance - $regTaken;
+			$totals['basePay'] += $eV->basePay;
+			$totals['otherCompensation'] += $otherCompensation;
+			$totals['regTaken'] += $regTaken;
+			$totals['allowance'] += $eV->allowance;
+			$totals['incentives'] += $incentives;
+			$totals['totalTaxable'] += $eV->totalTaxable;
+
+			$objPHPExcel->getActiveSheet()->insertNewRowBefore($cell_counter,1);
+			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, date('F d, Y', strtotime($eV->payDate)));
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $grossIncome);
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $eV->basePay);
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $otherCompensation);
+
+			$objPHPExcel->getActiveSheet()->getStyle('E'.$cell_counter.':H'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, '('.$regTaken.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, '('.$sss.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, '('.$pagIbig.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, '('.$philhealth.')');
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $eV->allowance);
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $incentives);
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $eV->totalTaxable);
+
+			$cell_counter++;
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $month13);			
+		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13);
+
+		$cell_counter += 1;
+
+		//Totals
+		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
+		$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
+		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation']);
+		$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']);
+		$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']);
+		$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']);
+		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']);
+		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
+		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
+		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
+		ob_end_clean();
+		// We'll be outputting an excel file
+		header('Content-type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'.$outputFile.'".xls"');
+		$objWriter->save('php://output');
+	}
+
+	public function getTotalComputationForAllEmployee($info){
+
+		$items = array();
+		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
+		$payslipDeductAdjustments = $this->textM->constantArr('payslipDeductAdjustments');
+
+		$empCount = 0;
+	
+		foreach ($info as $key => $value) {
+			$items[$empCount]['B'] = $this->textM->decryptText( $value->tin );
+			$items[$empCount]['C'] = $value->lname;
+			$items[$empCount]['D'] = $value->fname;
+			$items[$empCount]['E'] = $value->mname;
+			
+			$earning = 0;
+			$month13 = 0;
+			$sss = 0;
+			$pagIbig = 0;
+			$philhealth = 0;
+			$totalSalary = 0;
+			$totalDeduction = 0;
+			$unusedLeave = 0;
+			$leaveAmount = 0;
+			$regHoursAdded = 0;
+			$addOnBonus = 0;
+			$regHoursDeducted = 0;
+			$sppDeduction = 0;
+			$totalAdjustment = 0;
+			$totalIncomeTax = 0;
+
+			//loop for earning
+			foreach ($value->dataMonth as $eK => $eV) {
+				$regTaken = isset( $value->dataMonthItems[$eV->payslipID]["regularTaken"] )? $value->dataMonthItems[$eV->payslipID]["regularTaken"]:0;
+				$regHoursAdded = isset( $value->dataMonthItems[$eV->payslipID]["regHoursAdded"] )? $value->dataMonthItems[$eV->payslipID]["regHoursAdded"]:0;
+				$regHoursDeducted = isset( $value->dataMonthItems[$eV->payslipID]["regHoursDeducted"] )? $value->dataMonthItems[$eV->payslipID]["regHoursDeducted"]:0;
+				$totalDeduction += ($regTaken - $regHoursAdded + $regHoursDeducted);
+
+				$month13 += ( ( $eV->basePay + $regHoursAdded )- $regTaken - $regHoursDeducted ) / 12;
+				
+				$earning += $eV->earning;
+
+				$sss += isset( $value->dataMonthItems[$eV->payslipID]["sss"] )? $value->dataMonthItems[$eV->payslipID]["sss"]:0;
+				$pagIbig += isset( $value->dataMonthItems[$eV->payslipID]["pagIbig"] )? $value->dataMonthItems[$eV->payslipID]["pagIbig"]:0;
+				$philhealth += isset( $value->dataMonthItems[$eV->payslipID]["philhealth"] )? $value->dataMonthItems[$eV->payslipID]["philhealth"]:0;
+				$unusedLeave += isset( $value->dataMonthItems[$eV->payslipID]["unusedLeave"] )? $value->dataMonthItems[$eV->payslipID]["unusedLeave"]:0;
+				$totalIncomeTax += isset( $value->dataMonthItems[$eV->payslipID]["incomeTax"] )? $value->dataMonthItems[$eV->payslipID]["incomeTax"]:0;
+
+				$totalSalary += $eV->basePay;
+			}
+
+			// echo "<pre>";
+			// var_dump($value->dataMonthItems);
+			
+
+			foreach ($value->dataMonthItems as $mK => $mV) {
+				foreach ($mV as $mmK => $mmV) {
+					if(in_array($mmK, $payslipAddAdjustments)){
+						$totalAdjustment += $mmV;
+					}
+					// elseif(in_array($mmK, $payslipDeductAdjustments)){
+					// 	echo '<strong>'.$mmK.':</strong> '.$mmV.' -  Deduct <br/>';
+					// 	$totalAdjustment -= $mmV;
+					// }
+				}
+			}
+
+			$earning += $month13;
+
+			$spp = $sss + $pagIbig + $philhealth - ($sppDeduction);
+
+			$otherSalary = 0;
+			list($totalDeminimis, $totalSalariesAndOtherForms) = $this->payrollM->getDeminimis($value->allowances);
+			$totalSalariesAndOtherForms += $leaveAmount;
+			$totalSalariesAndOtherForms += $unusedLeave;
+
+			if ( ($month13 + $totalSalariesAndOtherForms) > 82000){
+				$otherSalary = ($month13 + $totalSalariesAndOtherForms) - 82000;
+				$totalSalariesAndOtherForms = $totalSalariesAndOtherForms - $otherSalary;
+			}
+
+			$basicPay = $totalSalary-$totalDeduction-$spp;
+
+			$totalNonTax = $month13 + $totalDeminimis + $spp + $totalSalariesAndOtherForms;
+
+			$totalTaxableIncome = $basicPay + $totalAdjustment + $otherSalary;
+
+			$items[$empCount]['F'] = $this->payrollM->formatNum($totalNonTax+$totalTaxableIncome);
+			$items[$empCount]['G'] = $this->payrollM->formatNum($month13);
+			
+			$items[$empCount]['H'] = $this->payrollM->formatNum($totalDeminimis);
+			$items[$empCount]['L'] = $this->payrollM->formatNum($spp);
+			$items[$empCount]['M'] = $this->payrollM->formatNum($totalSalariesAndOtherForms);
+
+			$items[$empCount]['N'] = $this->payrollM->formatNum($totalNonTax);
+
+			//basicPay = totalSalary - totaldeduction - spp
+			
+			$items[$empCount]['R'] = $this->payrollM->formatNum($basicPay);
+			$items[$empCount]['S'] = $this->payrollM->formatNum($otherSalary);
+			$items[$empCount]['T'] = $this->payrollM->formatNum($totalAdjustment);
+
+			
+			$items[$empCount]['U'] = $this->payrollM->formatNum($totalTaxableIncome);	
+
+			$taxstatus = $this->textM->constantArr('taxstatus')[$value->taxstatus];
+			preg_match('#\((.*?)\)#', $taxstatus, $match);
+			
+			$items[$empCount]['V'] = $match[1];
+			$items[$empCount]['W'] = $this->payrollM->formatNum($value->taxExemption);
+
+			$netTaxable = $totalTaxableIncome-$value->taxExemption;
+			if( $netTaxable < 0 )
+				$netTaxable = 0;
+
+			$items[$empCount]['AA'] = $this->payrollM->formatNum($netTaxable);
+
+			$taxDue = 0;
+			if($totalTaxableIncome > $value->taxExemption){
+				$deductedTax = $totalTaxableIncome - $value->taxExemption;//number 55 and 26 in BIR2316
+				$taxDue = $this->payrollM->getBIRTaxDue($deductedTax);
+			}
+			
+			$items[$empCount]['AB'] = $this->payrollM->formatNum($taxDue);
+			$items[$empCount]['AC'] = $this->payrollM->formatNum($totalIncomeTax);
+
+			//if AB < AC = AB - AC else the other way around
+			$yearEndAdjustment = $taxDue - $totalIncomeTax;
+			$yColumn = 'AD';
+			if( $yearEndAdjustment < 0){
+				$yearEndAdjustment *= -1;
+				$yColumn = 'AE';
+			}
+
+			$items[$empCount][$yColumn] = $this->payrollM->formatNum($yearEndAdjustment);
+			$items[$empCount]['AF'] = $this->payrollM->formatNum($taxDue);
+
+			$empCount++;
+		}
+		return $items;
+	}
+
+
 	
 	public function formatNum($d){
 		return $this->textM->convertNumFormat($d);
+	}
+
+	public function getDeminimis($allowances){
+
+		$totalDeminimis = 0;
+		$totalSalariesAndOtherForms = 0;
+
+		foreach ($allowances as $key => $value) {
+			$allowanceArray = $this->textM->constantArr('deminimisAllowance');
+			$otherAllowanceArray = $this->textM->constantArr('otherAllowance');
+			if(in_array($key, $allowanceArray)){
+				$totalDeminimis += $value;
+			}
+			else if(in_array($key, $otherAllowanceArray)){
+				$totalSalariesAndOtherForms += $value;
+			}
+		}
+		return array($totalDeminimis, $totalSalariesAndOtherForms);
 	}
 
 	public function _getTotalComputation( $payArr, $staffInfo, $dateArr, $dataMonth, $dataMonthItems, $dateGenerated = '0000-00-00' ){
@@ -1860,8 +2640,6 @@ class Payrollmodel extends CI_Model {
 		$data['unusedLeave'] = 0;
 
 		$flag = 0;
-		// echo "<pre>";
-		// var_dump($payArr);
 
 		foreach($dateArr AS $date){
 			$data['payDate'] .= date('d-M-Y', strtotime($date))."\n";
@@ -1874,6 +2652,8 @@ class Payrollmodel extends CI_Model {
 				$data['regHoursDeducted'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursDeducted']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursDeducted']:'0.00');				
 
 				$data['refundCostofVaccines'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']))?$dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']:'0.00');
+
+				$data['idReplacement'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['idReplacement']))?$dataMonthItems[$payArr[$date]->payslipID]['idReplacement']:'0.00');
 
 				$data['payslipAdjustment'] = ((isset($dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']))?$dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']:'0.00');
 
@@ -1903,13 +2683,18 @@ class Payrollmodel extends CI_Model {
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regPHLHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regUSHoliday']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoliday']:0;
-				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
-
+				
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffAdded']:0;
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffSpecialHoliday']:0;
+				
 				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']))?$dataMonthItems[$payArr[$date]->payslipID]['nightDiffRegHoliday']:0;
 
+				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']))?$dataMonthItems[$payArr[$date]->payslipID]['regHoursAdded']:0;
+
 				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']))?$dataMonthItems[$payArr[$date]->payslipID]['refundCostofVaccines']:0;
+				
+
+				$payArr[$date]->adjustment += (isset($dataMonthItems[$payArr[$date]->payslipID]['idReplacement']))?$dataMonthItems[$payArr[$date]->payslipID]['idReplacement']:0;
 
 				$payArr[$date]->adjustment -= (isset($dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']))?$dataMonthItems[$payArr[$date]->payslipID]['payslipAdjustment']:0;
 
@@ -1949,7 +2734,7 @@ class Payrollmodel extends CI_Model {
 
 				$data['netPay'] .= $this->textM->convertNumFormat($payArr[$date]->net)."\n";
 									
-				$data['totalIncome'] += ($payArr[$date]->earning + $data['month13c']) - $data['refundCostofVaccines'] - $data['payslipAdjustment'] - $data['regHoursDeducted'];
+				$data['totalIncome'] += ($payArr[$date]->earning + $data['month13c']) - $data['refundCostofVaccines'] - $data['payslipAdjustment'] - $data['regHoursDeducted'] + $data['idReplacement'];
 				//echo $payArr[$date]->earning.'-'.$data['totalIncome'].'<br/>';
 				$data['totalSalary'] += $payArr[$date]->basePay;
 				$data['totalDeduction'] += $data['regTaken'];
@@ -2001,7 +2786,7 @@ class Payrollmodel extends CI_Model {
 		$pdf->setXY(20, 46);
 		$pdf->Write(0, $staffInfo->idNum); //employee id number
 		$pdf->setXY(38, 44);
-		$pdf->MultiCell(80, 4, $staffInfo->lname.', '.$staffInfo->fname,0,'C',false);  //employee name
+		$pdf->MultiCell(80, 4, utf8_decode($staffInfo->lname.', '.$staffInfo->fname),0,'C',false);  //employee name
 		$pdf->setXY(117.5, 44);
 		$pdf->MultiCell(44, 4, date('F d, Y', strtotime($staffInfo->startDate)),0,'C',false);  //start date
 		$pdf->setXY(162, 44);
@@ -2239,7 +3024,7 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->SetFont('Arial','B',11);
 		$pdf->setXY(61, 216.2); $pdf->MultiCell(34, 5, 'PHP '.$this->textM->convertNumFormat($payInfo->netLastPay),0,'C',false); //received amount of
-		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, strtoupper($staffInfo->fname.' '.$staffInfo->lname),0,'C',false); //name 
+		$pdf->setXY(128, 241.5); $pdf->MultiCell(78, 5, utf8_decode(strtoupper($staffInfo->fname.' '.$staffInfo->lname)),0,'C',false); //name 
 		
 		$pdf->Output('lastpay.pdf', 'I');		
 	}	

@@ -61,8 +61,8 @@
 					$data['cs_post_status'] = 1;				
 				} else {
 					//morningshift
-					$data['hr_own_empUSER'] = 'aobrero';
-					$data['cs_post_agent'] = 203;
+					$data['hr_own_empUSER'] = 'sabay';
+					$data['cs_post_agent'] = 556;
 					$data['cs_post_status'] = 1;
 				}	
 			}
@@ -244,7 +244,7 @@
 				// get the name of all accounting employee
 				$data['getACClist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access LIKE "%finance%" AND active = 1');
 				// get the name of all Full Access employee
-				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs','access IN ("hr","finance","full") AND active = 1');
+				$data['getFULLlist']=$this->ask_hr->getdata('username, lname, fname, empID','staffs LEFT JOIN newPositions ON position = posID','newPositions.dept IN ("Accounting", "Human Resources") AND access != "" AND staffs.active = 1 ORDER BY dept');
 				//get all department infomation
 				$data['department_email'] = $this->ask_hr->getdata('dept_emil_id,email,department','redirection_department');
 
@@ -257,6 +257,8 @@
 				foreach($categories as $category){
 					$data['categories'][$category->category_id] = $category->categorys;
 				}
+
+				
 
 				$data['category'] = $categories;
 				$this->load->view('includes/template',$data);
@@ -275,7 +277,7 @@
 			$data['all_staff_empID'] = $this->commonM->_getAllStaff('empID');
 
 			$data['ticket'] = $this->dbmodel->getSingleInfo('hr_cs_post', 'hr_cs_post.*, s.fname, s.lname, n.title, n.dept, (SELECT CONCAT(fname, " ", lname) FROM staffs ss WHERE ss.empID = s.supervisor ) AS "supervisor", MAX( hr_cs_msg.cs_msg_date_submitted ) AS last_update, post_id', 'cs_post_id = '.$insedent_id, 'LEFT JOIN staffs s ON s.empID = hr_cs_post.cs_post_empID_fk LEFT JOIN newPositions n ON n.posID = s.position LEFT JOIN hr_cs_msg ON cs_msg_postID_fk = cs_post_id LEFT JOIN incident_rating ON post_id = cs_post_id');
-
+			//dd($data['ticket'], false);
 			$categories = $this->ask_hr->getdata('categorys, category_id', 'assign_category');
 			foreach($categories as $category){
 				$data['categories'][$category->category_id] = $category->categorys;
@@ -437,6 +439,8 @@
 				$data['redirect'] = true;
 				unset($_POST);
 			} //end post
+
+			//$this->output->enable_profiler(true);
 			$data['conversations'] = $this->ask_hr->getdata('*','hr_cs_msg','cs_msg_postID_fk = '.$insedent_id);
 			$this->load->view('includes/templatecolorbox',$data);
 
@@ -484,6 +488,10 @@
 							case "Facilities and Maintenance":
 								$update_array['cs_post_agent'] = 530;
 								$update_array['hr_own_empUSER'] = 'vemeterio';
+							break;
+							case "Training":
+								$update_array['cs_post_agent'] = 524;
+								$update_array['hr_own_empUSER'] = 'rodono';
 							break;
 						}
 						if( isset($update_array) AND !empty($update_array) ){
@@ -995,6 +1003,7 @@
             	$list = explode(",",$val);
             	$id = $list[0];
               	$dep = $list[4];
+              	$list[3] = $this->user->username;
 
             		// Transfer to HR
 	            	if($dep == "HR"){
@@ -1103,12 +1112,13 @@
             {
             	if( $this->input->is_ajax_request() ){
             		//update due date when based on urgency
-            		$add_string = 'P'.$this->input->post('add_days').'D';
-					$endDateObj = new DateTime( date('Y-m-d') );
+            		$hours = $this->input->post('add_days') * 24;
+            		$add_string = 'PT'.$hours.'H';
+					$endDateObj = new DateTime( date('Y-m-d H:i:s') );
 					$endDateObj->add( new DateInterval($add_string) );
 
-					$update_array['due_date'] = $endDateObj->format('Y-m-d');
-					dd($update_array);
+					$update_array['due_date'] = $endDateObj->format('Y-m-d H:i:s');
+					//dd($update_array);
 			
             		$this->dbmodel->updateQuery('hr_cs_post','cs_post_id = '. $this->input->post('inci_id'), $update_array );
             		$this->_addNote( $this->input->post('inci_id'), 'Update due date to '. $update_array['due_date'] );
@@ -1135,8 +1145,7 @@
               
 
             function test(){ // this for testing function
-            	$data['content']='employee_incident_info';
-	  			$this->load->view('includes/template',$data);
+            	dd( date('Y-m-d H:i:sa'));
             }// end test function
 
 

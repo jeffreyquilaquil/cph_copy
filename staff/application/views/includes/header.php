@@ -87,6 +87,7 @@
 			<?php 
 			
 			$notifStatus = $this->commonM->countResults('notifStatus');
+			$evalNotif = $this->commonM->countResults('evalNotif');
 			
 			echo '<li>
 						<a href="#">Employee Dashboard</a>
@@ -94,6 +95,7 @@
 							<li><a href="'.$this->config->base_url().'hr_cs/employee_dashboard/'.$this->user->empID.'/">HELPDESK <b>['.$notifStatus.']</b></a></li>							
 							<li><a href="'.$this->config->base_url().'hr_cs/" class="iframe">Ask A Question</a></li>
 							<li><a href="'.$this->config->base_url().'sendValentinesGreetings/" class="iframe">Send Personal Greetings</a></li>
+							<li><a href="'.$this->config->base_url().'evaluations/performanceEvaluationDetails/">My Performance Evaluation <b>['.$evalNotif.']</b></a></li>
 							<li><a href="'.$this->config->base_url().'changepassword/" class="iframe">Update My Password</a></li>
 							<li><a href="'.$this->config->base_url().'upsignature/" class="iframe">Update My Signature</a></li>
 							<li><a href="'.$this->config->base_url().'requestcoe/" class="iframe">Request for Certificate of Employment</a></li>
@@ -134,7 +136,7 @@
 					$hdmf_loans = $this->commonM->countResults('hdmf_loans');
 					$kudosrequestM = $this->commonM->countResults('kudos');
 					
-					if($this->access->accessFullHR==true){
+					if($this->access->accessFullHR==true && $this->user->empID != 524 ){
 						$cntincidentreport = $this->commonM->countResults('incidentreport');
 						echo '<li '.(($content=='incidentreports')?'class="current"':'').'><a href="'.$this->config->base_url().'incidentreports/">HR Incident Reports '.(($cntincidentreport>0)?'['.$cntincidentreport.']':'').'</a></li>';
 						echo '<li '.(($content=='staffupdated')?'class="current"':'').'><a href="'.$this->config->base_url().'staffupdated/">Manage Update Requests '.(($updateRequestNum>0)?'<b>['.$updateRequestNum.']</b>':'').'</a></li>';
@@ -162,6 +164,11 @@
 						echo '<li '.(($content=='medrequests')?'class="current"':'').'><a href="'.$this->config->base_url().'medrequests/">Medicine Reimbursement '.(($medrequests>0)?'<b>['.$medrequests.']</b>':'').'</a></li>';
 					
 					}
+
+					if( $this->user->dept== 'IT' ){
+						echo '<li '.(($content=='evaluations')?'class="current"':'').'><a href="'.$this->config->base_url().'evaluations/">Evaluations Management</a></li>';	
+					}
+					
 						
 					echo '</ul>';
 				echo '</li>';
@@ -189,10 +196,19 @@
 				<ul class="dropdown">
 					<li><a href="http://employee.tatepublishing.net/hr/forms/" target="_blank">Download Forms</a></li>
 					<li <?= (($content=='organizationalchart')?'class="current"':'') ?>><a href="<?= $this->config->base_url().'organizationalchart/' ?>">Organizational Chart</a></li>
+			<?php 
+				if($this->user->levelID_fk > 0 || $this->user->dept == "Human Resources"){
+					echo '<li><a href="'.$this->config->base_url().'evaluations/">Evaluations</a></li>';
+				}
+			 ?>
+					
 			<?php
 				if($this->access->accessFullHRFinance==true || $this->user->level>0){
 					echo '<li '.(($content=='allpositions')?'class="current"':'').'><a href="'.$this->config->base_url().'allpositions/">List of all Positions</a></li>';
 					echo '<li><a href="'.$this->config->base_url().'addnewposition/" class="iframe">Add New Position</a></li>';
+				}
+				if( $this->access->accessHR == true OR $this->access->accessFull ){
+					echo '<li><a href="'.$this->config->base_url().'survey_result/">Benefits Survey Result</a>';
 				}
 			?>
 				</ul>
