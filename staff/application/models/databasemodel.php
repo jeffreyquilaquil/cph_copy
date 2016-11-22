@@ -92,7 +92,7 @@ class Databasemodel extends CI_Model {
 		return $arr;
 	}
 	
-	function insertQuery($table, $array){
+	function insertQuery($table, $array, $batch = false){
 		date_default_timezone_set("Asia/Manila");
 		if(count($array) > 0){
 			/*$sql = "INSERT INTO $table (";
@@ -108,7 +108,13 @@ class Databasemodel extends CI_Model {
 			$sql .= rtrim($cols,',').') VALUES ('.rtrim($vals,',').')';
 			
 			$this->db->query($sql);*/
-			$this->db->insert($table, $array);
+			if(!$batch){
+				$this->db->insert($table, $array);
+			}else{
+				$this->db->insert_batch($table, $array);
+			}
+			
+
 			return $this->db->insert_id();
 		}	
 	}
@@ -131,6 +137,10 @@ class Databasemodel extends CI_Model {
 	function updateQuery($table, $where = array(), $data = array()) {
 		$this->db->where($where);
 		$this->db->update($table, $data);
+	}
+
+	function updateBatch($table, $data, $where){
+		$this->db->update_batch($table, $data, $where);
 	}
 	
 	function updateQueryText($table, $set, $where){
