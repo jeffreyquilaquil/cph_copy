@@ -14,7 +14,7 @@ class Evaluations extends MY_Controller
 		$this->load->model('evaluationsmodel');
 		$this->load->model('commonmodel');
 		$this->load->helper('form');
-
+		dd($this->user);
 	}
 
 	public function index(){
@@ -303,8 +303,8 @@ class Evaluations extends MY_Controller
 			if(is_uploaded_file($_FILES['fupload']['tmp_name'])){
 				$data['hrUploadDate'] = date('Y-m-d h:i:s');
 				$data['status'] = 3;
-				$dir = "../../".UPLOAD_DIR."evaluations/";
-				$fileDir = $dir.$empId."_eval_".$notifId."_".date('d-m-y_hia').'.pdf';
+				$dir = "../../".UPLOADS."evaluations/";
+				$fileDir = $dir.$empId."_eval_".strtotime(date('Y-m-d h:i:s')).'.pdf';
 				move_uploaded_file($_FILES['fupload']['tmp_name'], $fileDir);
 			}
 			$this->databasemodel->updateQuery('staffEvaluationNotif','notifyId='.$notifId,$data);
@@ -352,7 +352,6 @@ class Evaluations extends MY_Controller
 			$subject = "90th day Performance Evaluation ";
 		}
 
-		$to = 'jeffrey.quilaquil@tatepublishing.net';
 		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CAREERPH', $cc);
 
 		echo "<script>

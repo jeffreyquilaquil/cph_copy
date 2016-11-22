@@ -175,7 +175,7 @@ class Evaluationsmodel extends CI_model{
 					break;
 					case 3:
 						$statusText = "Ratings: Meets Expectations.";
-						$actionButton = '<a href="../../'.UPLOAD_DIR.'evaluations/'.$info->empid.'_eval_'.$info->notifyId.'_'.date('d-m-y_hia'/*, strtotime($info->hrUploadDate)*/).'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
+						$actionButton = '<a href="../../'.UPLOADS.'evaluations/'.$info->empid.'_eval_'.strtotime($info->hrUploadDate).'" target="_blank"><img src="'.$pdfImageBase64.'"></a>';
 					break;
 					case 4:
 						$statusText = "Cancelled";
