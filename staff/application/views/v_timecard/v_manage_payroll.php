@@ -18,6 +18,7 @@
 			<option value="pending" <?= (($show=='pending')?'selected="selected"':'') ?>>Pending separation</option>
 			<option value="suspended" <?= (($show=='suspended')?'selected="selected"':'') ?>>Suspended employees</option>
 			<option value="separated" <?= (($show=='separated')?'selected="selected"':'') ?>>Separated employees</option>
+			<option value="floating" <?= (($show=='floating')?'selected="selected"':'') ?>>Floating employees</option>
 		</select>
 	</div>
 	<div id="silay" style="display:none; width:100%">

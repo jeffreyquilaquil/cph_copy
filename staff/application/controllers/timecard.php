@@ -936,6 +936,7 @@ class Timecard extends MY_Controller {
 							else $condition = ' AND empID=0';						
 						}
 						else if($show=='separated') $condition = ' AND staffs.active=0';
+						else if($show=='floating') $condition = ' AND staffs.active=2';
 					}
 					
 					$data['dataStaffs'] = $this->dbmodel->getQueryResults('staffs', 'empID, lname, fname, username, title, dept, staffHolidaySched', 'exclude_in_reports = 0 AND office="PH-Cebu" '.$condition, 'LEFT JOIN newPositions ON posID=position', 'lname');
@@ -1759,7 +1760,7 @@ class Timecard extends MY_Controller {
 						//echo  $_POST['which_from'];
 						switch( $_POST['which_from'] ){
 							case 'separated': $data['dataQuery'] = $this->dbmodel->getQueryResults('tcLastPay', 'tcLastPay.*, empID, idNum, fname, lname, username, startDate, endDate, sal, tin', '1', 'LEFT JOIN staffs ON empID=empID_fk','lname ASC'); break;
-							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active = 1 AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
+							case 'active': $data['dataQuery'] = $this->dbmodel->getQueryResults('staffs', '*', 'exclude_in_reports = 0 AND active IN (1,2) AND office = "PH-Cebu"'.$fromprevious, 'LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk'.$frompreviousLeftJoin , 'lname ASC');
 								$endDate = $to_;
 								$is_active = TRUE;break;
 							case 'withprev': 	$fromprevious = ' AND empID IN (SELECT empID_fk FROM tcPrevious2316) ';
@@ -2003,18 +2004,26 @@ class Timecard extends MY_Controller {
 			if($this->access->accessFullFinance==false) $data['access'] = false;
 			else{
 				$empIDs = $_GET['empIDs'];
-				if( isset($_POST) && !empty($_POST)){
-					$empIDss = explode(',',$empIDs);
-					array_pop($empIDss);
-					$taxArray = array();
+				if( isset($_POST) && !empty($_POST) ){
+					//$empIDss = explode(',',$empIDs);
+					$empIDss = rtrim($empIDs,',');
+					//array_pop($empIDss);
+
+					$taxArray = array_fill_keys(array('ins','update'),array());
 					
 					$from_ = date('Y-m-d', strtotime($_POST['yearFrom'].'-01-01'));
 					$to_ = date('Y-m-t', strtotime($_POST['monthTo'].' 01, '.$_POST['yearTo']));
 
+					$dataStaffInfo = $this->dbmodel->getQueryResults('staffs', 'tcTaxSummary_ID, for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID IN ('.$empIDss.')','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk LEFT JOIN tcTaxSummary tx ON tx.empID_fk = empID');
+
+					// echo "<pre>";
+					// var_dump($dataStaffInfo);
+					// exit();
+
 					//temporary for now just want to get an insight of what how to shorten it
-					foreach($empIDss as $ids) {
-						$data['staffInfo']	= $this->dbmodel->getSingleInfo('staffs', 'for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'empID="'.((isset($ids))?$ids:'').'"','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk');
-					    $datum = $this->payrollM->getPayslipOnTimeRange($ids, $from_, $to_,TRUE );
+					foreach($dataStaffInfo as $staffInfo) {
+						$data['staffInfo']	= $staffInfo;
+					    $datum = $this->payrollM->getPayslipOnTimeRange($staffInfo->empID, $from_, $to_,TRUE );
 						$data['staffInfo']->endDate = date('Y-12-31');
 						$activeQuery['dataQuery'][0] = $data['staffInfo'];
 						$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
@@ -2027,22 +2036,36 @@ class Timecard extends MY_Controller {
 
 						$k = $this->payrollM->taxSummary($activeQuery['dataQuery'][0], '', true);
 
-						$taxArray[] = $k;
+						array_push($taxArray['ins'], $k['ins']);
+						array_push($taxArray['update'], $k['update']);
 
-						//echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
+
+						echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
 					}	
-					echo "<pre>";
-					// $taxArray['ins'] = array_filter($taxArray['ins']);
-					// $taxArray['update'] = array_filter($taxArray['update']);
-					$taxArray = array_filter($taxArray);
-					$taxArray = array_merge_recursive($taxArray);
-					var_dump($taxArray);
+					
 
-					// if(!empty($taxArray['ins']))
-					// 	$this->dbmodel->insertQuery('tcTaxSummary', $taxArray['ins'], true);
-					// if(!empty($taxArray['update']))
-					// 	$this->dbmodel->updateBatch('tcTaxSummary', $taxArray['update'], 'empID_fk');
-					exit();
+					$taxArray['ins'] = array_filter($taxArray['ins']);
+					$taxArray['update'] = array_filter($taxArray['update']);
+					
+					$insertArray = array();
+					$updateArray = array();
+
+					foreach ($taxArray['ins'] as $key => $value) {
+						array_push($insertArray, $value[0]);
+					}
+					foreach ($taxArray['update'] as $key => $value) {
+						array_push($updateArray, $value[0]);
+					}
+
+					// var_dump($insertArray);
+					// //var_dump($updateArray);
+
+					if(!empty($taxArray['ins']))
+						$this->dbmodel->insertQuery('tcTaxSummary', $insertArray, true);
+					if(!empty($taxArray['update']))
+						$this->dbmodel->updateBatch('tcTaxSummary', $updateArray, 'empID_fk');
+
+					echo '<script> parent.window.location.href="'.$this->config->base_url().'timecard/manageTaxSummary/";</script>';
 				}
 				$data['dataStaffs']	= $this->dbmodel->getQueryResults('staffs', 'empID, idNum, fname, lname, startDate', 'empID IN ('.rtrim($empIDs, ',').')');
 			}

@@ -2342,25 +2342,23 @@ class Payrollmodel extends CI_Model {
 	}
 
 	public function taxSummary($data, $outputFile, $insertToDB = FALSE){
-		require_once('includes/excel/PHPExcel/IOFactory.php');
-		$fileType = 'Excel5';
-		$fileName = 'includes/templates/taxSummary.xls';
-		
-		// echo "<pre>";
-		// var_dump($data);
-		// exit();
+		if(!$insertToDB){
+			require_once('includes/excel/PHPExcel/IOFactory.php');
+			$fileType = 'Excel5';
+			$fileName = 'includes/templates/taxSummary.xls';
+			
+			// Read the file
+			$objReader = PHPExcel_IOFactory::createReader($fileType);
+			$objPHPExcel = $objReader->load($fileName);
 
-		// Read the file
-		$objReader = PHPExcel_IOFactory::createReader($fileType);
-		$objPHPExcel = $objReader->load($fileName);
+			$cell_counter = 7;
 
-		$cell_counter = 7;
-
-		$objPHPExcel->getActiveSheet()->setCellValue('A2', $data->empID);
-		$objPHPExcel->getActiveSheet()->mergeCells('C2:E2');
-		$objPHPExcel->getActiveSheet()->setCellValue('C2', $data->fname.' '.$data->lname);
-		$objPHPExcel->getActiveSheet()->mergeCells('G2:H2');
-		$objPHPExcel->getActiveSheet()->setCellValue('G2', $data->dateRange);
+			$objPHPExcel->getActiveSheet()->setCellValue('A2', $data->empID);
+			$objPHPExcel->getActiveSheet()->mergeCells('C2:E2');
+			$objPHPExcel->getActiveSheet()->setCellValue('C2', $data->fname.' '.$data->lname);
+			$objPHPExcel->getActiveSheet()->mergeCells('G2:H2');
+			$objPHPExcel->getActiveSheet()->setCellValue('G2', $data->dateRange);
+		}
 
 		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
 
@@ -2432,46 +2430,28 @@ class Payrollmodel extends CI_Model {
 			$totals['incentives'] += $incentives;
 			$totals['totalTaxable'] += $eV->totalTaxable;
 
-			if( $cell_counter  > 7 ){
-				$objPHPExcel->getActiveSheet()->insertNewRowBefore($cell_counter,1);
+			if(!$insertToDB){
+
+				if( $cell_counter  > 7 ){
+					$objPHPExcel->getActiveSheet()->insertNewRowBefore($cell_counter,1);
+				}
+				$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, date('F d, Y', strtotime($eV->payDate)));
+				$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $grossIncome);
+				$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $eV->basePay);
+				$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $otherCompensation);
+
+				$objPHPExcel->getActiveSheet()->getStyle('E'.$cell_counter.':H'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
+				$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $regTaken*-1);
+				$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $sss*-1);
+				$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $pagIbig*-1);
+				$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $philhealth*-1);
+				$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $eV->allowance);
+				$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $incentives);
+				$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $eV->totalTaxable);
+
 			}
-			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, date('F d, Y', strtotime($eV->payDate)));
-			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $grossIncome);
-			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $eV->basePay);
-			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $otherCompensation);
-
-			$objPHPExcel->getActiveSheet()->getStyle('E'.$cell_counter.':H'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
-			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $regTaken*-1);
-			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $sss*-1);
-			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $pagIbig*-1);
-			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $philhealth*-1);
-			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $eV->allowance);
-			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $incentives);
-			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $eV->totalTaxable);
-
-
 			$cell_counter++;
 		}
-
-		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $month13);			
-		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13);
-
-		$cell_counter += 1;
-
-		//Totals
-		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
-		$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
-		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation']);
-		$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
-		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
-
-		$cell_counter += 1;
-
 		$total13thAndIncentives = $month13+$totals['incentives'];
 		$totalDifference = 0;
 		//$adjustment for 13thmonth pay exceeding 82,000
@@ -2481,94 +2461,118 @@ class Payrollmodel extends CI_Model {
 		}
 
 		$totals['totalTaxable'] += $totalDifference;
-
-		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totalDifference);
-		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $totalDifference*-1);
-
-		$cell_counter += 1;
-		$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
-		$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
-		$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation'] + $totalDifference);
-		$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']*-1);
-		$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
-		$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $total13thAndIncentives);
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
-
-		$cell_counter += 2;
-		//for Taxable compensation from previous employer
 		$taxFromPrevious = $data->for55? $data->for55: 0;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxFromPrevious);
-
-		//get totaltaxable
-		$cell_counter += 1;
 		$totalTaxable = $totals['totalTaxable']+$taxFromPrevious;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter,$totalTaxable );
-		
-		//get tax excemption
-		$cell_counter += 1;
 		$taxExemption = $data->taxExemption;
-		$objPHPExcel->getActiveSheet()->getStyle('K'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, '('.$this->formatNum($taxExemption).')');
-
-		//get net taxable income (totaltax - taxexcemption)
-		$cell_counter += 1;
 		$netTaxable = $totalTaxable - $taxExemption;
 		$range = $netTaxable;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $range );
-
-		//get tax bracket
-		$cell_counter += 1;
 
 		$s = 0;
 		if($range > 0)
 			$s = $range;
-		
+
 		$taxBracket = $this->dbmodel->getSingleInfo('taxTable', 'excessPercent, baseTax, minRange', 'taxType="yearly" AND "'.$s.'" BETWEEN minRange AND maxRange');
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->minRange);
-
-		//get excess of tax base
-		$cell_counter += 1;
 		$excessTax = $s - $taxBracket->minRange;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $excessTax);
-
-		//get multiply
-		$cell_counter += 1;
 		$mulplyBy = $taxBracket->excessPercent/100;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $mulplyBy);
-
-		//get percent of excess 
-		$cell_counter += 1;
 		$percentOfExcess = $excessTax * $mulplyBy;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $percentOfExcess);	
-
-		//get add basic tax
-		$cell_counter += 1;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->baseTax);
-
-		//get tax due
-		$cell_counter += 1;
 		$taxDue = $this->payrollM->getBIRTaxDue($netTaxable);
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);	
-
-		
-		$cell_counter += 4;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $data->for30B);		
-
-		$cell_counter += 1;
-
 		foreach ($payDates as $d) {
 			if( !array_key_exists($d, $dateArr)){
 				$dateArr[$d] = 0;
 			}
 		}
 		ksort($dateArr);
+
+
+
+		if(!$insertToDB){
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $month13);			
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13);
+
+			$cell_counter += 1;
+
+			//Totals
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation']);
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $month13+$totals['incentives']);
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+
+			$cell_counter += 1;
+
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totalDifference);
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $totalDifference*-1);
+
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('B'.$cell_counter, $totals['grossIncome']);
+			$objPHPExcel->getActiveSheet()->setCellValue('C'.$cell_counter, $totals['basePay']);
+			$objPHPExcel->getActiveSheet()->setCellValue('D'.$cell_counter, $totals['otherCompensation'] + $totalDifference);
+			$objPHPExcel->getActiveSheet()->setCellValue('E'.$cell_counter, $totals['regTaken']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('F'.$cell_counter, $totals['sss']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('G'.$cell_counter, $totals['pagIbig']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $totals['philhealth']*-1);
+			$objPHPExcel->getActiveSheet()->setCellValue('I'.$cell_counter, $totals['allowance']);
+			$objPHPExcel->getActiveSheet()->setCellValue('J'.$cell_counter, $total13thAndIncentives);
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $totals['totalTaxable']);
+
+			$cell_counter += 2;
+			//for Taxable compensation from previous employer
+			
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxFromPrevious);
+
+			//get totaltaxable
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter,$totalTaxable );
+			
+			//get tax excemption
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->getStyle('K'.$cell_counter)->applyFromArray( array( 'font' => array('color' => array('rgb' => 'ff0000') ) ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, '('.$this->formatNum($taxExemption).')');
+
+			//get net taxable income (totaltax - taxexcemption)
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $range );
+
+			//get tax bracket
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->minRange);
+
+			//get excess of tax base
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $excessTax);
+
+			//get multiply
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $mulplyBy);
+
+			//get percent of excess 
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $percentOfExcess);	
+
+			//get add basic tax
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxBracket->baseTax);
+
+			//get tax due
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);	
+
+			$cell_counter += 4;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $data->for31);		
+		}
+
+		$cell_counter += 1;
 		$incomeTaxTotal = 0;
 		foreach ($dateArr as $dateK => $dateV) {
 			$incomeTaxTotal += $dateV;
-			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $dateV);
+			if(!$insertToDB){
+				$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $dateV);
+			}
 			$cell_counter++;
 		}
 
@@ -2576,24 +2580,28 @@ class Payrollmodel extends CI_Model {
 
 		// $cell_counter += 1;
 
-		$incomeTaxTotal += $data->for30B;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $incomeTaxTotal);
-
-		$cell_counter += 1;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);
-
-		$cell_counter += 1;
+		$incomeTaxTotal += $data->for31;
 		$ITR = ($incomeTaxTotal) - $taxDue;
-		$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $ITR);
 
-		$cell_counter += 4;
-		$objPHPExcel->getActiveSheet()->mergeCells('H'.$cell_counter.':J'.$cell_counter.'');
-		$objPHPExcel->getActiveSheet()->getStyle('H'.$cell_counter.':J'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
-            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-        ) ) );
-		$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data->fname.' '.$data->lname);
 
 		if(!$insertToDB){
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $incomeTaxTotal);
+
+			$cell_counter += 1;
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $taxDue);
+
+			$cell_counter += 1;
+			
+			$objPHPExcel->getActiveSheet()->setCellValue('K'.$cell_counter, $ITR);
+
+			$cell_counter += 4;
+			$objPHPExcel->getActiveSheet()->mergeCells('H'.$cell_counter.':J'.$cell_counter.'');
+			$objPHPExcel->getActiveSheet()->getStyle('H'.$cell_counter.':J'.$cell_counter.'')->applyFromArray( array( 'font' => array('bold' => true ), 'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+	        ) ) );
+			$objPHPExcel->getActiveSheet()->setCellValue('H'.$cell_counter, $data->fname.' '.$data->lname);
+
+		
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $fileType);
 			ob_end_clean();
 			// We'll be outputting an excel file
@@ -2602,7 +2610,11 @@ class Payrollmodel extends CI_Model {
 			$objWriter->save('php://output');
 		}
 		else{
-			$insertArray = array(
+
+			$insertArray = array();
+			$updateArray = array();
+
+			$toBeOrNotToBe = array(
 									'empID_fk' => $data->empID,
 									'totalTaxableIncome' => $totalTaxable,
 									'taxDue' => ($taxDue)?$taxDue:0,
@@ -2610,10 +2622,14 @@ class Payrollmodel extends CI_Model {
 									'taxRefund' => $ITR,
 									'taxSummaryDate' => $data->taxSummaryDate
 								);
-			if( $this->dbmodel->getSingleInfo('tcTaxSummary', 'taxSummaryDate', 'empID_fk = '.$data->empID) )
-				$this->dbmodel->updateQuery('tcTaxSummary', 'empID_fk = '.$data->empID, $insertArray);
+			if( $data->tcTaxSummary_ID )
+				$updateArray[] = $toBeOrNotToBe;
+				//$this->dbmodel->updateQuery('tcTaxSummary', 'empID_fk = '.$data->empID, $insertArray);
 			else
-				$this->dbmodel->insertQuery('tcTaxSummary', $insertArray);
+				$insertArray[] = $toBeOrNotToBe;
+				//$this->dbmodel->insertQuery('tcTaxSummary', $insertArray);
+
+			return array('ins' => $insertArray, 'update' => $updateArray);
 		}
 	}
 

@@ -56,6 +56,30 @@ class Itchecklist extends MY_Controller {
                             $subject_email = 'USER DEACTIVATED';
 							
 							echo 'Status in careerph and PT has been change to "INACTIVE"';
+						}elseif( $_POST['status']==2 ){
+							$pt_active = 'N';
+                            $cph_active = '2';
+							$this->commonM->addMyNotif($this->user->empID, 'You deactivated the status of '.$info->username.'.', 5);
+							
+							$body = '<p>Hi Guyz,</p>
+									<p>'.$this->user->fname.' Changed the account of "'.$info->name.'" in "'.$db_string.'" to "FLOATING" via CareerPH Account Deactivation page. Please perform checklist below:<p>
+									<ul>
+										<li>Lock email</li>
+										<li>Change samba password</li>										
+										<li>Remove in wifi list</li>
+										<li>Remove groups & change password for cebu staff storage</li>
+										<li>Check work equipments</li>
+										<li>Change password of computer\'s profile account</li>
+										<li>Disable HPBX (for calls)</li>								
+									</ul>
+									<p>Ignore if mentioned above already done.</p>
+									<p><br/></p>
+									<p>Thanks!</p>
+									<p>CAREERPH</p>
+                                    ';
+                            $subject_email = 'USER DEACTIVATED';
+							
+							echo 'Status in careerph and PT has been change to "FLOATING"';
 						}else{
                             $pt_active = 'Y';
                             $cph_active = '1';

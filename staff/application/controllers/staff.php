@@ -176,7 +176,7 @@ class Staff extends MY_Controller {
 					$data['error'] = 'Unable to login. Check your login details.';
 				}else if($row->password != md5($pw)){
 					$data['error'] = 'Invalid password.';
-				}else if($row->active==0){
+				}else if($row->active==0 || $row->active==2){
 					$data['error'] = 'Your account has been deactivated. Please contact HR.';
 				}else{
 					$this->session->set_userdata('uid', $row->empID);			
