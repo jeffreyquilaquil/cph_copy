@@ -525,7 +525,7 @@ class MyCrons extends MY_Controller {
 			$supervisor1 = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as "name", email, supervisor','empId = '.$employee->supervisor);
 			$supervisor2 = $this->dbmodel->getSingleInfo('staffs', 'CONCAT(fname," ",lname) as "name", email', 'empId = '.$supervisor1->supervisor);
 			$cc = [$evaluator->email, $supervisor1->email, $supervisor2->email];
-			$cc = implode(';', $cc);
+			$cc = implode(',', $cc);
 			if($value->status == 0){
 				$to = $employee->email;
 			
@@ -542,7 +542,6 @@ class MyCrons extends MY_Controller {
 			$from = 'careers.cebu@tatepublishing.net';
 			$fromName = 'CAREERPH';
 			$subject = "Performance evaluation due for ".$employee->name;
-			$to = "jeffrey.quilaquil@tatepublishing.net";
 			$this->emailM->sendEmail($from, $to, $subject, $body, $fromName, $cc);
 		}
 		exit();

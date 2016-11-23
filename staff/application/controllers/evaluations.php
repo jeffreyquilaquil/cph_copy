@@ -12,6 +12,7 @@ class Evaluations extends MY_Controller
 	{
 		parent::__construct();
 		$this->load->model('evaluationsmodel');
+		$this->load->model('emailmodel');
 		$this->load->model('commonmodel');
 		$this->load->helper('form');
 	}
@@ -247,8 +248,11 @@ class Evaluations extends MY_Controller
 			'notifyId' => $data['notifyId'],
 		];
 
+
 		 if($data['staffType'] == 2){
-		 	 $this->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
+
+		 	 $this->emailModel->sendEvaluationEmail(1, $data['empId'], $data['evaluator'], $data['notifyId']);
+
 		 	 $name = $this->databasemodel->getSingleField('staffs','concat(fname," ",lname) as "name"', 'empId = '.$data['empId']);
 		 	 $this->commonmodel->addMyNotif($data['evaluator'], $name.' has entered its self-rating for his performance evaluation. Please <a href="performanceeval/1/'.$data['empId']."/".$data['empId']."/".$data['notifyId'].'" target="_blank">click here</a> to enter evaluator ratings.',2,1,0);
 		 	 $this->databasemodel->updateQueryText('staffEvaluationNotif','status = 1','notifyId='.$data['notifyId']);
@@ -285,7 +289,7 @@ class Evaluations extends MY_Controller
 		$notifyId = $this->evaluationsmodel->saveEvaluationDate($data);
 		$this->commonmodel->addMyNotif($data['empId'], $evalName.' has generated your performance evaluation. Please  <a href="performanceeval/2/'.$data['empId'].'/'.$data['evaluatorId'].'/'.$notifyId.'" target="_blank">click here</a> to enter your self-rating',2,1,$this->empID);
 
-		$this->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
+		$this->emailModel->sendEvaluationEmail(2, $data['empId'], $data['evaluatorId'], $notifyId);
 
 	}
 
@@ -324,39 +328,17 @@ class Evaluations extends MY_Controller
 		$this->load->view('includes/templatecolorbox', $data);
 	}
 
-
-	function sendEvaluationEmail($userType, $empId, $evaluator, $notifyId, $cc= ''){
-
-		// User type 2 is Rank and File Employee
-		// 1 is for the Supervisor
-		$this->load->model('emailmodel');
-
-		$fields = "concat(fname,' ',lname) as 'name', email";
-		$info = $this->databasemodel->getSingleInfo('staffs', $fields,'empID = '.$empId);
-		$evalInfo = $this->databasemodel->getSingleInfo('staffs', $fields,'empID ='.$evaluator);
-		$eval = $this->databasemodel->getSingleInfo('staffEvaluationNotif', 'evalDate', 'notifyId = '.$notifyId);
-		$to = $info->email;
+	/**
+		PARAMS
+		$staff_info = array(); //array of staff info who needs to be evaluated
+		$evaluator_info = array(); //array of supervisor staff info who evaluated
+		$evaluation_info = array(); //array of evaluation info
+	**/
+	//public function sendEvaluationEmail($evaluation_info, $staff_info, $supervisor_info){
+	public function sendEmail($userType, $staff_id, $evaluator_id, $evaluation_id, $cc= ''){
 		
-		if($userType == 2){
-			$subject = "Self-rating performance evaluation for ".$info->name;
-			$body = "Hi ".$info->name.". <br><br>Your performance evaluation has been generated. Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to self-rate your  performance evaluation.<br><br>Thank you.";
-			$to = $info->email;
-			$subject = "90th day Performance Evaluation ";
-		}else{
-			// The message that the evaluator will recieve
-			$subject = "for ".$info->name;
-			$body = "Hi ".$evalInfo->name.".";
-			$body .= "<br><br>Please give your Performance Evaluation for ".$info->name.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$empId."/".$evaluator."/".$notifyId."'>click here</a> to give your evaluation.<br><br>Thank you.";
-			$to = $evalInfo->email;
-			$subject = "90th day Performance Evaluation ";
-		}
+		$this->emailmodel->sendEvaluationEmail($userType, $staff_id, $evaluator_id, $evaluation_id, $cc);
 
-		$this->emailmodel->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CAREERPH', $cc);
-
-		echo "<script>
-				alert('The email has been sent.');
-				window.close();
-			</script>";
 	}
 
 	public function generateEvaluation($empID){

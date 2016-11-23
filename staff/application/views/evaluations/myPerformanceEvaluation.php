@@ -21,7 +21,7 @@
 					$statusText = "Pending Self-rating. <a href='".$this->config->base_url()."performanceeval/2/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."' target='_blank'>Click Here</a> to enter ratings.";
 					break;
 				case 1:
-					$statusText = "Employee ratings locked in. <a href='".$this->config->base_url()."evaluations/sendEvaluationEmail/1/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."' onClick='return false;' class='sendEmail'>Click here</a> to enter evaluator's raings.";
+					$statusText = "Employee ratings locked in. <a href='".$this->config->base_url()."evaluations/sendEmail/1/".$this->user->empID."/".$row->evaluatorId."/".$row->notifyId."' onClick='return false;' class='sendEmail'>Click here</a> to enter evaluator's ratings.";
 					break;
 				case 2:
 					$statusText = "Pending Evaluation Form for Printing";

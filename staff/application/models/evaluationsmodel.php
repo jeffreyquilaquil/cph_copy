@@ -158,7 +158,7 @@ class Evaluationsmodel extends CI_model{
 
 				switch($info->status){
 					case 0:
-						$statusText = 'Pending Self-rating. <a href="'.$this->config->base_url().'evaluations/sendEvaluationEmail/2/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to send reminder to employee to enter self-rating';
+						$statusText = 'Pending Self-rating. <a href="'.$this->config->base_url().'evaluations/sendEmail/2/'.$info->empid.'/'.$info->evaluatorId.'/'.$info->notifyId.'" target="_blank">Click here</a> to send reminder to employee to enter self-rating';
 						$actionButton = '<a href="'.$this->config->base_url().'evaluations/cancelEvaluation/'.$info->empid.'/'.$info->notifyId.'" class="iframe"><input type="button" value="CANCEL" class="btnclass"></a>';
 					break;
 					case 1:
