@@ -1104,7 +1104,7 @@ class Payrollmodel extends CI_Model {
 	public function query13thMonth($empID, $periodFrom, $periodTo, $includeEndMonth=0){
 		$arrayMonths = array();
 		
-		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, fname, lname, startDate, endDate, sal', 'empID="'.$empID.'"');
+		$info = $this->dbmodel->getSingleInfo('staffs', 'empID, fname, lname, startDate, endDate, sal, active', 'empID="'.$empID.'"');
 		if(count($info)>0){
 			$basePay = ($this->textM->decryptText($info->sal));
 			//for convert the string to float
@@ -1153,7 +1153,7 @@ class Payrollmodel extends CI_Model {
 					//check if the payroll is not yet generated
 					$lp = $this->dbmodel->getSingleInfo('tcPayrolls LEFT JOIN tcPayslips ON payrollsID = payrollsID_fk', 'payrollsID', 'empID_fk = "'.$empID.'"AND payDate = "'.$dateV.'"');
 					if(!$lp){
-						if($dateV >= $info->startDate){
+						if($dateV >= $info->startDate && $info->active != 2){
 							$arrayMonths[$dateV] = (object) array('empID_fk'=>$empID, 'payDate'=>$dateV, 'basePay'=>$basePay, 'deduction'=>0, 'pay'=>($basePay/12));
 						}
 					}
