@@ -27,6 +27,24 @@ class Commonmodel extends CI_Model {
 		
 		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
 	}
+
+	public function uploadFile($file, $target, $fileName){
+		//extract extension
+		$ext = explode('.', $file['signed_doc']['name']);
+		//create the new filename
+		$newFileName = $fileName.'.'.end($ext);
+		$complete = '';
+
+		// if( $ext == 'pdf'){
+			move_uploaded_file($file['signed_doc']['tmp_name'], $target.$newFileName);
+			$complete = $newFileName;
+			return $complete;
+		// }
+		// else{
+		// 	return FALSE;
+		// }
+		exit();
+	}
 		
 	function photoResizer($source_image, $destination_filename, $width = 200, $height = 150, $quality = 70, $crop = true){
 		if( ! $image_data = getimagesize( $source_image ) ){
@@ -239,10 +257,16 @@ class Commonmodel extends CI_Model {
 		} else if( $type == 'hdmf_loans' ){
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		} elseif( $type == 'kudos'){
-			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
+			$kWhere = 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID;
+			if($this->access->accessHR){
+				$kWhere .= ' OR kudosRequestStatus = 2';
+			}
+
+			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $kWhere );
+//			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
 		} elseif($type == 'notifStatus'){
 			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
-			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_empID_fk ='.$this->user->empID );
+			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_status < 3 AND cs_post_empID_fk ='.$this->user->empID );
 			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', 'COUNT(notifStatus)', 'notifStatus = 0 AND cs_post_empID_fk= '.$this->user->empID);
 		} elseif($type == 'hr_accounting'){
 			//$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" AND cs_msg_type != 2 ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_agent ='.$this->user->empID.' AND cs_post_status = 1' );
@@ -273,7 +297,7 @@ class Commonmodel extends CI_Model {
 	function getStaffUnder($empID, $level){
 		$query = '';
 		///tweak for design team
-		if($level==2){
+		if($level==2 OR $level==3 ){
 			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
 			if($myDesign->grp=='Design'){
 				$supervisors = '';
@@ -283,13 +307,13 @@ class Commonmodel extends CI_Model {
 						$supervisors .= $sup->empID.',';
 				}
 				
-				$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
+				$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor IN ('.rtrim($supervisors, ',').')');
 			}
 		}
 		
 		
 		if(empty($query)){
-			$query = $this->dbmodel->dbQuery('SELECT empID, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
+			$query = $this->dbmodel->dbQuery('SELECT empID, username, CONCAT(fname," ",lname) AS name FROM staffs WHERE supervisor="'.$empID.'" OR supervisor IN (SELECT DISTINCT empID FROM staffs e WHERE levelID_fk!=0 AND levelID_fk<"'.$level.'" AND supervisor="'.$empID.'")');
 		}
 		
 		return $query->result();
@@ -543,6 +567,29 @@ class Commonmodel extends CI_Model {
 	  }
 
 	  return $text;
+	}
+
+	//check for the correct answers
+	public function check_answers( $key, $answers, $return = 'score' ){
+		
+		$cnt = count($key);
+		$results = [];
+		$scores = 0;
+		$check = false;
+		if( $return == 'score' ){
+			for ($x=0; $x < $cnt; $x++) { 
+				if( isset($answers[$x]) AND $key[$x] == $answers[$x] ){
+					$scores++;
+				}
+			}
+			return $scores;	
+		} else if( $return == 'check' ){
+			if( $key == $answers ){
+				$check = true;
+			}
+			return $check;
+		}
+		
 	}
 	
 }
