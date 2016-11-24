@@ -57,7 +57,7 @@
 		<tr>
 			<td colspan="7">
 		<?php if( $this->access->accessFullFinance == true ){
-			echo '<p>On selected items: <input type="submit" onClick="confirmMsg();" name="delete_tax_record" class="btnclass" value="Delete" /> <input type="button" name="regenerate" class="btnclass" disabled value="Regenerate" /></p>';
+			echo '<p>On selected items: <input type="submit" onClick="confirmMsg();" name="delete_tax_record" class="btnclass" value="Delete" /> <input type="button" name="regenerate" class="btnclass" value="Regenerate" /></p>';
 		}
 		?>
 			</td>
@@ -97,7 +97,7 @@ $(function(){
 		if(empIDs==false){
 			alert('Please select employee first.');
 		}else{
-			myhref = "<?= $this->config->base_url().'timecard/generate13thmonth/?empIDs=' ?>"+empIDs;
+			myhref = "<?= $this->config->base_url().'timecard/generatetaxsummary/?empIDs=' ?>"+empIDs;
 			window.parent.jQuery.colorbox({href:myhref, iframe:true, width:"990px", height:"600px"});
 		}
 	});

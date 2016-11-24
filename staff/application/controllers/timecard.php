@@ -652,11 +652,8 @@ class Timecard extends MY_Controller {
 		$id = $data['visitID'];
 		
 		$data['dir'] = 'uploads/timecard/timeloguploaddocs/';
-
-
 			
 		if(!empty($_POST)){
-
 			if($_POST['submitType']=='updateReq'){				
 				$upArr['status'] = $_POST['status'];
 				$upArr['updateNote'] = $_POST['updateNote'];
@@ -753,25 +750,7 @@ class Timecard extends MY_Controller {
 				$this->emailM->sendEmailEditedPayrollLogs($data['today'], $data['visitID']);
 				
 				//insert to tcTimelogUpdates
-				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');	
-
-			//publish as absent
-			}else if($_POST['submitType'] == 'publishAbsent'){
-				$schedToday = $this->timeM->getCalendarSchedule($_POST['slogdate'], $_POST['slogdate'], $_POST['empID'], true);
-			
-				$logIDD = $this->timeM->insertToDailyLogs($_POST['empID'], $_POST['slogdate'], $schedToday); //inserting to tcStaffLogPublish table
-
-				if( $logIDD ){
-					
-					$pubArr_['publishDeduct'] = 8;
-					$pubArr_['publishNote'] = 'Auto-Publish as `ABSENT`';
-					$pubArr_['datePublished'] = date('Y-m-d H:i:s');
-					$pubArr_['publishBy'] = $this->user->username;
-
-					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID' => $logIDD), $pubArr_ );
-				}
-
-
+				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');				
 			}else if($_POST['submitType']=='unpublish'){
 				//insert to tcTimelogUpdates
 				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');	
@@ -1670,11 +1649,20 @@ class Timecard extends MY_Controller {
 							 		//$this->textM->aaa($data);
 									//for active employee
 									if( isset($_GET['is_active']) ){
-										$sDate = $data['staffInfo']->startDate;
-										// if( $sDate < '2016-01-01' )
-										// 	$sDate = '2016-01-01';
+										//$sDate = $data['staffInfo']->startDate;
+										$startingDate = date('Y-01-01');
+										$endingDate = date('Y-12-31');
+
+										if(isset($_GET['yearOfBIR'])){
+											$y = $_GET['yearOfBIR'];
+											$startingDate = $y.'-01-01';
+											$endingDate = $y.'-12-31';
+										}else{
+											$y = date('Y');
+										}
+
 										$activeQuery = array();
-										$datum = $this->payrollM->getPayslipOnTimeRange($empID, date('Y-01-01'), date('Y-12-31'),TRUE );
+										$datum = $this->payrollM->getPayslipOnTimeRange($empID, $startingDate,$endingDate ,TRUE );
 
 										$data['staffInfo']->endDate = date('Y-12-31');
 										$activeQuery['dataQuery'][0] = $data['staffInfo'];
@@ -1682,18 +1670,9 @@ class Timecard extends MY_Controller {
 										$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
 										$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
 										$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
-
-										// $data['dateArr'] = $datum['dateArr'];
-										// $data['dataMonth'] = $datum['dataMonth'];
-										// $data['dataMonthItems'] = $datum['dataMonthItems'];
-										// $data['staffInfo']->endDate = date('Y-12-31');
-										// $data['is_active'] = TRUE;
-
+										$activeQuery['dataQuery'][0]->yearOfBIR = $y;
 										$this->payrollM->pdfActiveBIR($activeQuery['dataQuery']);
 									}
-									// echo "<pre>";
-									// var_dump($data);
-									// echo "</pre>";
 									else{
 							 			$this->payrollM->pdfBIR($data);
 							 		}
@@ -2121,6 +2100,111 @@ class Timecard extends MY_Controller {
 		}
 		
 		$this->load->view('includes/template', $data);
+	}
+
+	public function birmanagement(){
+		$data['content'] = 'v_timecard/v_manage_bir2316';
+		$data['tpage'] = 'manage13thmonth';
+		$data['column'] = 'withLeft';
+
+		unset($data['timecardpage']); //unset timecardpage value so that timecard header will not show
+
+		if(isset($_GET['show']) && $_GET['show'] == 'distro'){
+			$year = $_GET['year'];
+
+			$dataStaffInfo = $this->dbmodel->getQueryResults('staffs', 'tcTaxSummary_ID, for21, for30B, for31, for37, for38, for39, for41, for42, for47A, for55, CONCAT(lname, ", ", fname, " ", mname) AS fullName, address, zip, empID, username, tin, idNum, fname, lname, bdate, startDate, active, endDate, taxstatus, taxExemption, sal, leaveCredits', 'staffs.active IN (1,2) AND exclude_in_reports = 0 AND office="PH-Cebu" AND (endDate = "0000-00-00" OR YEAR(endDate) = '.$year.') ','LEFT JOIN taxStatusExemption ON taxstatus = taxStatus_fk LEFT JOIN tcPrevious2316 t ON empID = t.empID_fk LEFT JOIN tcTaxSummary tx ON tx.empID_fk = empID');
+
+			$fileArray = array();
+
+			foreach($dataStaffInfo as $staffInfo) {
+				$sDate = $staffInfo->startDate;
+				
+				$startingDate = $year.'-01-01';
+				$endingDate = $year.'-12-31';
+
+				$activeQuery = array();
+
+				$datum = $this->payrollM->getPayslipOnTimeRange($staffInfo->empID, $startingDate,$endingDate ,TRUE );
+
+				$staffInfo->endDate = date('Y-12-31');
+				$activeQuery['dataQuery'][0] = $staffInfo;
+				$activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+				$activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+				$activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+				$activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+				$activeQuery['dataQuery'][0]->yearOfBIR = $year;
+
+				$q = $this->payrollM->pdfActiveBIR($activeQuery['dataQuery'], true);
+				array_push($fileArray, $q);
+			}
+
+			$temp_file_name = "bir2316/$year-BIR2316.zip";
+
+			$zip = new ZipArchive();
+			$file = $temp_file_name;
+			if($zip->open($file, ZipArchive::OVERWRITE) === TRUE){
+				foreach ($fileArray as $filenames) {
+					$zip->addFile($filenames);
+				}
+				
+				$zip->close();
+
+				//var_dump($zip);
+				header('Content-type: application/zip');
+				header('Content-Disposition: attachment; filename="'.$year.'-BIR2316.zip"');
+				readfile("/home/fitt/cph/staff/bir2316/$year-BIR2316.zip");
+			}
+			else{
+				echo "There's something wrong ".error_get_last();
+			}
+
+		}
+		
+		
+
+		// $activeQuery = array();
+		// $datum = $this->payrollM->getPayslipOnTimeRange($empID, $startingDate,$endingDate ,TRUE );
+
+		// $data['staffInfo']->endDate = date('Y-12-31');
+		// $activeQuery['dataQuery'][0] = $data['staffInfo'];
+		// $activeQuery['dataQuery'][0]->dateArr = $datum['dateArr'];
+		// $activeQuery['dataQuery'][0]->dataMonth = $datum['dataMonth'];
+		// $activeQuery['dataQuery'][0]->dataMonthItems = $datum['dataMonthItems'];
+		// $activeQuery['dataQuery'][0]->allowances = $datum['allowances'];
+		// $activeQuery['dataQuery'][0]->yearOfBIR = $y;
+		// $this->payrollM->pdfActiveBIR($activeQuery['dataQuery']);
+		
+		// $temp_file_name = '/home/fitt/cph/staff/bir2316/my-pdf.zip';
+
+		// $zip = new ZipArchive();
+		// $file = $temp_file_name;
+		// if($zip->open($file, ZipArchive::OVERWRITE) === TRUE){
+		// 	$zip->addFile('bir2316/sample.pdf');
+		// 	$zip->close();
+
+		// 	//var_dump($zip);
+		// 	header('Content-type: application/zip');
+		// 	header('Content-Disposition: attachment; filename="my-pdf.zip"');
+		// 	readfile('/home/fitt/cph/staff/bir2316/my-pdf.zip');
+		// }
+		// else{
+		// 	echo "There's something wrong ".error_get_last();
+		// }
+
+		
+		$this->load->view('includes/template', $data);
+	}
+
+	public function birmanagement_ajax(){
+		//$data['content'] = 'v_timecard/v_bir2316_ajax';
+		unset($data['timecardpage']);
+
+		if(isset($_POST)){
+			$year = $_POST['year'];
+
+			$data['queryData'] = $this->dbmodel->getQueryResults('staffs', '"'.$year.'" AS yearOfBIR, empID, CONCAT(lname, ", ", fname) as fullName, startDate, endDate, title, staffs.active','staffs.active IN (1,2) AND exclude_in_reports = 0 AND office="PH-Cebu" AND (endDate = "0000-00-00" OR YEAR(endDate) = '.$year.') ', 'LEFT JOIN newPositions ON posID=position', 'lname');
+		}
+		$this->load->view('v_timecard/v_bir2316_ajax', $data);
 	}
 	
 	public function detail13thmonth($data){

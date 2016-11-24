@@ -29,6 +29,8 @@ if($this->user!=false && $this->uri->segment(1)=='schedules'){
 			13th Month</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/alphalist/?which=start" class="'.(($pageyereport=='alphalist')?'current':'').'">Generate Alphalist</a></li>';
 			echo '<li><a href="'.$this->config->base_url().'timecard/manageTaxSummary/?which=start" class="'.(($pageyereport=='manageTaxSummary')?'current':'').'">Tax Summary</a></li>';
+			echo '<li><a href="'.$this->config->base_url().'timecard/birmanagement/?year=2016" class="'.(($pageyereport=='birmanagement')?'current':'').'">BIR 2316 Management</a></li>';
+
 		}			
 	echo '</ul>';
 }else if(isset($tpage) && $tpage=='managepayroll'){ //MANAGE TIMECARD LEFT CONTENT

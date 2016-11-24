@@ -2071,8 +2071,9 @@ class Payrollmodel extends CI_Model {
 		$objWriter->save('php://output');
 	}
 
-	public function pdfActiveBIR($info){
+	public function pdfActiveBIR($info, $download = FALSE){
 		$activeBIR = $this->payrollM->getTotalComputationForAllEmployee($info);
+
 		$staffInfo = $info[0];
 
 		require_once('includes/fpdf/fpdf.php');
@@ -2091,14 +2092,14 @@ class Payrollmodel extends CI_Model {
 		
 		//FOR THE YEAR
 		$pdf->setXY(77, 35);
-		$pdf->Write(0, date("Y")); 
+		$pdf->Write(0, $staffInfo->yearOfBIR); 
 		//$pdf->Write(0, $pdf->w.' '.$pdf->h); 
 
 		//FOR THE PERIOD
 		//FROM
 
 		$z = date('Y', strtotime($staffInfo->startDate) );
-		$x = date('Y');
+		$x = $staffInfo->yearOfBIR;
 
 		$birStartDate = ( $z < $x )? '01-01' : date('m-d', strtotime($staffInfo->startDate)) ;
 		$birStartDate = explode('-', $birStartDate);
@@ -2335,9 +2336,14 @@ class Payrollmodel extends CI_Model {
 		
 		$pdf->Cell(68, 5, utf8_decode($utf8Name), 0,2,'C');
 
-		$pdf->Output('bir2316.pdf', 'I');
+		if(!$download){
+			$pdf->Output('bir2316.pdf', 'I');
+		}else{
+			$outputFiles = $staffInfo->fname."  ".$staffInfo->lname.' - BIR2316.pdf';
+			$pdf->Output('/home/fitt/cph/staff/bir2316/'.$outputFiles, 'F');
 
-
+			return 'bir2316/'.$outputFiles;
+		}
 
 	}
 
@@ -2634,7 +2640,6 @@ class Payrollmodel extends CI_Model {
 	}
 
 	public function getTotalComputationForAllEmployee($info){
-
 		$items = array();
 		$payslipAddAdjustments = $this->textM->constantArr('payslipAddAdjustments');
 		$payslipDeductAdjustments = $this->textM->constantArr('payslipDeductAdjustments');
