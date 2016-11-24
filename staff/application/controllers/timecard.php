@@ -2167,7 +2167,7 @@ class Timecard extends MY_Controller {
 				//var_dump($zip);
 				header('Content-type: application/zip');
 				header('Content-Disposition: attachment; filename="'.$year.'-BIR2316.zip"');
-				readfile("/home/fitt/cph/staff/bir2316/$year-BIR2316.zip");
+				readfile("/home/careerph/public_html/staff/bir2316/$year-BIR2316.zip");
 			}
 			else{
 				echo "There's something wrong ".error_get_last();

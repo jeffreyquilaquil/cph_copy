@@ -2340,7 +2340,7 @@ class Payrollmodel extends CI_Model {
 			$pdf->Output('bir2316.pdf', 'I');
 		}else{
 			$outputFiles = $staffInfo->fname."  ".$staffInfo->lname.' - BIR2316.pdf';
-			$pdf->Output('/home/fitt/cph/staff/bir2316/'.$outputFiles, 'F');
+			$pdf->Output('/home/careerph/public_html/staff/bir2316/'.$outputFiles, 'F');
 
 			return 'bir2316/'.$outputFiles;
 		}
