@@ -13,6 +13,7 @@
 	}
 	.question_row:hover{
 		background:#CCCCCC;
+		cursor: pointer;
 	}
 	#tblAddQuestion td{
 		height: 40px;
