@@ -752,20 +752,20 @@ class Timecard extends MY_Controller {
 				//insert to tcTimelogUpdates
 				$this->timeM->addToLogUpdate($id, $data['today'], '<b>Published. Time Paid: '.$pubArr['publishTimePaid'].' Hours</b>');
 				//publish as absent
--			}else if($_POST['submitType'] == 'publishAbsent'){
--				$schedToday = $this->timeM->getCalendarSchedule($_POST['slogdate'], $_POST['slogdate'], $_POST['empID'], true);
--			
--				$logIDD = $this->timeM->insertToDailyLogs($_POST['empID'], $_POST['slogdate'], $schedToday); //inserting to tcStaffLogPublish table
--
--				if( $logIDD ){
--					
--					$pubArr_['publishDeduct'] = 8;
--					$pubArr_['publishNote'] = 'Auto-Publish as `ABSENT`';
--					$pubArr_['datePublished'] = date('Y-m-d H:i:s');
--					$pubArr_['publishBy'] = $this->user->username;
--
--					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID' => $logIDD), $pubArr_ );
--				}				
+			}else if($_POST['submitType'] == 'publishAbsent'){
+				$schedToday = $this->timeM->getCalendarSchedule($_POST['slogdate'], $_POST['slogdate'], $_POST['empID'], true);
+			
+				$logIDD = $this->timeM->insertToDailyLogs($_POST['empID'], $_POST['slogdate'], $schedToday); //inserting to tcStaffLogPublish table
+
+				if( $logIDD ){
+					
+					$pubArr_['publishDeduct'] = 8;
+					$pubArr_['publishNote'] = 'Auto-Publish as `ABSENT`';
+					$pubArr_['datePublished'] = date('Y-m-d H:i:s');
+					$pubArr_['publishBy'] = $this->user->username;
+
+					$this->dbmodel->updateQuery('tcStaffLogPublish', array('slogID' => $logIDD), $pubArr_ );
+				}				
 			}else if($_POST['submitType']=='unpublish'){
 				//insert to tcTimelogUpdates
 				$info = $this->dbmodel->getSingleInfo('tcStaffLogPublish', 'publishTimePaid, datePublished, publishBy', 'slogID="'.$_POST['slogID'].'" AND showStatus=1');	
@@ -2167,7 +2167,7 @@ class Timecard extends MY_Controller {
 				//var_dump($zip);
 				header('Content-type: application/zip');
 				header('Content-Disposition: attachment; filename="'.$year.'-BIR2316.zip"');
-				readfile("/home/careerph/public_html/staff/bir2316/$year-BIR2316.zip");
+				readfile("/home/fitt/cph/staff/bir2316/$year-BIR2316.zip");
 			}
 			else{
 				echo "There's something wrong ".error_get_last();
