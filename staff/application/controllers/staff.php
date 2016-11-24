@@ -1625,17 +1625,11 @@ class Staff extends MY_Controller {
 				exit;
 			} 
 			
-
-			
 			if($data['segment2']=='offset'){
-				$data['allowedOffset'] = $this->dbmodel->getSingleInfo('staffs', 'offsetHrs', 'empID="'.$this->user->empID.'"');
-
 				$data['numOffset'] = $this->dbmodel->getQueryResults('staffLeaves', 'totalHours', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3 AND leaveType=4');
-
 			}else{
 				$data['numLeaves'] = $this->dbmodel->getQueryResults('staffLeaves', 'leaveID', 'empID_fk="'.$this->user->empID.'" AND leaveStart LIKE "'.date('Y-m').'%" AND iscancelled=0 AND status!=3');
 			}
-			
 									
 			if(!empty($_POST)){			
 				if($_POST['submitType']=='chooseFromUploaded'){
@@ -1698,7 +1692,7 @@ class Staff extends MY_Controller {
 						$tambal += $noffset->totalHours;
 					endforeach;
 					
-					if(($tambal+$_POST['totalHours']) > $data['allowedOffset']->offsetHrs ) $data['errortxt'] .= 'You cannot file offset leave more than '.$data['allowedOffset']->offsetHrs.' hours in a month.<br/>';
+					if(($tambal+$_POST['totalHours'])>16) $data['errortxt'] .= 'You cannot file offset leave more than 16 hours in a month.<br/>';
 					
 					if($offdatecheck==false) $data['errortxt'] .= 'Check your schedule of work to compensate<br/>';
 					if(empty($offdates)) $data['errortxt'] .= 'Schedule of work to compensate absence is empty<br/>';
@@ -2589,7 +2583,19 @@ class Staff extends MY_Controller {
 			echo 'Sorry, no record for this CIS.';
 		}
 	}
-	
+
+	public function performanceeval(){
+		$this->load->model('evaluationsmodel');
+		$data['content'] = 'performanceEvaluation';
+		$data['uType'] = $this->uri->segment(2);
+		$data['questions'] = $this->evaluationsmodel->getStaffEvaluation($this->uri->segment(3));
+		$data['empId'] = $this->uri->segment(3);
+		$data['evaluator'] = $this->uri->segment(4);
+		$data['notifyId'] = $this->uri->segment(5);
+		$data['status'] = $this->databasemodel->getSingleField('staffEvaluationNotif', 'status', 'notifyId = '.$data['notifyId']);
+		$this->load->view('includes/templatecolorbox', $data);	
+	}
+		
 	public function staffcis(){
 		$data['content'] = 'staffcis';
 		
@@ -3529,8 +3535,7 @@ class Staff extends MY_Controller {
 						$filename = str_replace(' ', '_', $_POST['perName']).'_'.date('YmdHis').'.'.$fextn;
 						
 						move_uploaded_file($_FILES['fileupload']['tmp_name'], UPLOAD_DIR.$data['row']->username.'/'.$filename);							
-						//$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';
-						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$data['row']->username)).'&f='.urlencode($this->textM->encryptText($filename)).'">'.$_POST['perName'].'</a>';	
+						$insArr['perValue'] .= '<br/>File uploaded <a href="'.$this->config->base_url().UPLOAD_DIR.$data['row']->username.'/'.$filename.'">'.$_POST['perName'].'</a>';	
 
 						//add data to staffUploads table
 						$upArr['empID_fk'] = $id;
@@ -3899,33 +3904,17 @@ class Staff extends MY_Controller {
 			
 			if(!empty($_POST)){
 				if($_POST['submitType']=='changeStatus'){
-					$continue = TRUE;
-					$isUploaded = '';
-
-					if($_POST['status'] == 3){
-						$isUploaded = $this->commonM->uploadFile($_FILES, 'uploads/staffs/violationreported/', 'IR-'.$id.'-'.date('Y-m-d'));
-						if( $isUploaded ){
-							$isUploaded = ', docs="'.$isUploaded.'"';
-						}
-						else{
-							$continue = FALSE;
-							echo "<script>alert('Please upload a PDF File.');</script>";
-						}
+					$insArr['status'] = $_POST['status'];
+					$insArr['statusNote'] = $_POST['statusNote'];
+					$insArr['staffReportViolation_fk'] = $id;
+					$insArr['updatedBy'] = $this->user->username;
+					$insArr['dateUpdated'] = date('Y-m-d H:i:s');
+					$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
+					
+					if(is_numeric($insArr['status'])){
+						$this->dbmodel->updateQueryText('staffReportViolation', 'status="'.$insArr['status'].'"', 'reportID="'.$id.'"');
 					}
-
-					if($continue){
-						$insArr['status'] = $_POST['status'];
-						$insArr['statusNote'] = $_POST['statusNote'];
-						$insArr['staffReportViolation_fk'] = $id;
-						$insArr['updatedBy'] = $this->user->username;
-						$insArr['dateUpdated'] = date('Y-m-d H:i:s');
-						
-						if(is_numeric($insArr['status'])){
-							$this->dbmodel->updateQueryText('staffReportViolation', 'status="'.$insArr['status'].'"'.$isUploaded, 'reportID="'.$id.'"');
-						}
-						$this->dbmodel->insertQuery('staffReportViolationHistory', $insArr);
-						$data['actionsaved'] = true;
-					}
+					$data['actionsaved'] = true;
 				}else if($_POST['submitType']=='editwhere'){
 					$this->dbmodel->updateQueryText('staffReportViolation', '`where`="'.$_POST['where'].'"', 'reportID="'.$id.'"');
 					
@@ -4572,34 +4561,26 @@ class Staff extends MY_Controller {
 		// $info->endDate = '2016-06-15';
 		// $info->supEmail = 'marjune.abellana@tatepublishing.net';
 		// $this->emailM->emailSeparationDateAdvanceNotice( $info );
-		// $date13 = date('Y-m-d');
-		// $endDateObj = new DateTime( $date13 );
-		// $endDateObj->add( new DateInterval( 'P90D') );
+		$date13 = date('Y-m-d');
+		$endDateObj = new DateTime( $date13 );
+		$endDateObj->add( new DateInterval( 'P90D') );
 
-		// //check if endDate is Tuesday
-		// $endDate = $endDateObj->format('l');
-		// dd($endDateObj->format('Y-m-d'), false);
-		// //dd($endDate);
-		// while( $endDate != 'Tuesday' ){
+		//check if endDate is Tuesday
+		$endDate = $endDateObj->format('l');
+		dd($endDateObj->format('Y-m-d'), false);
+		//dd($endDate);
+		while( $endDate != 'Tuesday' ){
 
 			
-		// 	$endDateObj->add( new DateInterval('P1D') );
-		// 	$endDate = $endDateObj->format('l');
+			$endDateObj->add( new DateInterval('P1D') );
+			$endDate = $endDateObj->format('l');
 
-		// 	dd($endDate, false);
-		// }
-		// $releaseDate = $endDateObj->format('Y-m-d');
-		// dd($releaseDate);
+			dd($endDate, false);
+		}
+		$releaseDate = $endDateObj->format('Y-m-d');
+		dd($releaseDate);
 		//$arrayOfDataThatIsNew['releaseDate'] = $releaseDate;
-// 		$today = date_create( date('Y-m-d') );
-// 		$start = date_create('2014-01-01');
-// 		$diff = date_diff($today,$start);
-// 		dd($diff);
-		//$result = $this->dbmodel->getSingleField('tcLastPay', 'empID_fk', 'empID_fk = 1');
-		$all_staff = $this->staffM->get_cached_all_staff();
-		dd($all_staff);
-		//dd($result);
-	}
+}
 	public function reports(){
 		$data['content'] = 'reports';
 		$which_report = $this->uri->segment(2);
@@ -4847,46 +4828,12 @@ class Staff extends MY_Controller {
 		if( $this->input->is_ajax_request() ){
 			$id = $this->input->post('id');
 			$status = $this->input->post('status');
-			$empID = $this->input->post('empID');
 			if( isset($id) AND !empty($id) ){
-
-				$all_staff = $this->staffM->get_cached_all_staff();
-				//auto-email for each status
-				switch( $status ){
-					//printed
-					case 1:
-						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
-						<p>Please be informed that your HDMF loan application form in now printed and may be claimed at HR/Admin office.</p>
-						<p><i>Thanks,</i><br/>
-						<b>CAREERPH</b></p>';
-					break;
-					//endorsed to employee
-					case 2:
-						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
-						<p>Good day!</p>
-						<p>This e-mail serves as a confirmation that the HDMF loan application form you requested has already been endorsed to you.</p>
-						<p><span style="color:red;">Note:</span> Please notify HR thru <a href="mailto:hr.cebu@tatepublishing.net">hr.cebu@tatepublishing.net</a> as soon as you have successfully filed your HDMF loan so that your payments can be deducted from your salary and remitted to Pag-IBIG on time. Failure to do so would delay remittance of your loan payments and Tate Publishing will not be held liable for the penalties that might be incurred.</p>
-						<p><i>Thanks,</i><br/>
-						<b>CAREERPH</b></p>';
-					break;
-					//approved loans
-					case 3:
-						$msg = '<p>Hi '. $all_staff[ $empID ]->fname .' '. $all_staff[ $empID ]->lname.',</p>
-						<p>This is to confirm that HR has been notified of your HDMF loan approval. Please be advised to personally go to Pag-IBIG to get your loan ledger and endorse it to accounting for salary deduction.</p>
-						<p><i>Thanks,</i><br/>
-						<b>CAREERPH</b></p>';
-					break;
-				}
 
 				$this->dbmodel->updateQuery('staff_hdmf_loan', array('hdmf_loan_id' => $id), array('hdmf_loan_status' => $status) );
 
 				$ntexts = 'Update on your Pag-IBIG loan application. Click <a href="'.$this->config->base_url().'hdmf/'.$id.'">here</a> to view the application';
-				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);
-
-				if( $msg ){
-					$this->emailM->sendEmail('careers.cebu@tatepublishing.net', $all_staff[ $empID ]->email, 'Update on your Pag-IBIG loan application', $msg, 'CAREERPH');	
-				}
-				
+				$this->commonM->addMyNotif( $this->input->post('empID'), $ntexts, 5, 1);	
 			}
 		}
 
@@ -4904,7 +4851,7 @@ class Staff extends MY_Controller {
 				array_push($data['data_query_'. $val->hdmf_loan_status ]['headers'], 'voucher');
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'hdmf/'.$val->hdmf_loan_id.'/?a=upload">Upload voucher</a>';
 				}				
@@ -4916,8 +4863,7 @@ class Staff extends MY_Controller {
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					//$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
 				}					
@@ -4930,8 +4876,7 @@ class Staff extends MY_Controller {
 				if( !empty($val->hdmf_loan_voucher_url) ){
 					
 					$file_name = pathinfo( $val->hdmf_loan_voucher_url, PATHINFO_FILENAME );
-					//$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
-					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'attachment.php?u='.urlencode($this->textM->encryptText('staffs/'.$val->username)).'&f='.urlencode($this->textM->encryptText($file_name.'.pdf')).'">View uploaded voucher</a>';	
+					$info['voucher'] = '  <a class="iframe" href="'.$this->config->base_url().'uploads/staffs/'.$val->username.'/'.$file_name.'">View uploaded voucher</a>';	
 				} else {
 					$info['voucher'] = '  <img src="'.$this->config->base_url().'css/images/404-error-sign.jpg" style="width: 30px; height: 30px;" />';
 				}
@@ -5045,7 +4990,6 @@ class Staff extends MY_Controller {
 		$this->load->view('includes/template', $data);
 		
 	}
-
 	public function results(){
 		if( !$this->user ){
 			show_404();
