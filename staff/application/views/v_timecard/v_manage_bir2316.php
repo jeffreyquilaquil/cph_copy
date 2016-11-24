@@ -21,7 +21,9 @@ Select Year:
 <hr/>
 
 <form class='frm_bir2316' name="frm_13th_month" action="" method="post">
-
+	<div class='loadingGif'>
+		<img src="<?=$this->config->base_url()?>includes/images/loading.gif" style='width:100px;align:center;'>
+	</div>
 </form>
 <script type="text/javascript">
 $(function(){
@@ -41,7 +43,8 @@ $(function(){
 
 	$('select[name="yearchange"]').change(function(){
 		var year = $(this).val();
-		
+		$('.frm_bir2316').children().not('.loadingGif').remove();
+		showhideloadinggif('show');
 		callAjax(year);
 	});
 
@@ -52,10 +55,14 @@ $(function(){
 			type: "POST",
 			success: function (e){
 				console.log(e);
-				$('.frm_bir2316').children().remove();
 				$('.frm_bir2316').append(e);
+				showhideloadinggif('hide');
 			}
 		});
+	}
+
+	function showhideloadinggif(toggle){
+		$('.loadingGif')[toggle]();
 	}
 
 	function countChecked(){
