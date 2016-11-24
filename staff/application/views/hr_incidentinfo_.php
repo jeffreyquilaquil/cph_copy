@@ -120,6 +120,7 @@
 				default: $div_class = 'internal_notes_lbl';	break;
 			}
 			if( $conversation->cs_msg_type == 2 AND $this->user->empID == $ticket->cs_post_empID_fk ){
+				break;
 			} else {
 				echo '<div style="margin-top: 5px; display: block; border: solid 1px #ccc;">';
 				echo '<div class="'.$div_class.'">';
