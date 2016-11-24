@@ -1542,9 +1542,9 @@ class Staff extends MY_Controller {
 			}
 						
 			//check if you are allowed to issue nte
-			if($this->user->access=='' && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
-				$data['access'] = false;
-			}
+			// if($this->user->access=='' && $this->commonM->checkStaffUnderMe($data['row']->username)==false){
+			// 	$data['access'] = false;
+			// }
 		}
 	
 		$this->load->view('includes/templatecolorbox', $data);
