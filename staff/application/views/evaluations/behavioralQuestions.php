@@ -24,15 +24,11 @@
 	.td td{
 		padding: 5px;
 	}
-	input{
-		width: 45%;
-	}
+	
 	select{
 		height: 100%;
 	}
-	button{
-		float:right;
-	}
+	
 	.tdBot{
 		border-bottom:1px solid black;
 	}
