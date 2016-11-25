@@ -1925,9 +1925,19 @@ class Payrollmodel extends CI_Model {
 
 			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(-1*$totalTaxWithheld) );
 
-			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($n31) );
+			$yearEndAdjustment = $n29 - (-1*$totalTaxWithheld);
+			$forV = $forW = 0;
+			if( $yearEndAdjustment < 0){
+				$forW = $yearEndAdjustment *= -1;
+				$forV = 0;
+			}
+			else{
+				$forV = $yearEndAdjustment;
+				$forW = 0;
+			}
 
-			$objPHPExcel->getActiveSheet()->setCellValue('W'.$cell_counter, $this->formatNum(0) );
+			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($forV) );
+			$objPHPExcel->getActiveSheet()->setCellValue('W'.$cell_counter, $this->formatNum($forW) );
 
 			$objPHPExcel->getActiveSheet()->setCellValue('X'.$cell_counter, $this->formatNum($n31) );
 			$objPHPExcel->getActiveSheet()->setCellValue('Y'.$cell_counter, 'Y' );
