@@ -28,8 +28,6 @@ class Commonmodel extends CI_Model {
 		$this->dbmodel->insertQuery('staffMyNotif', $insArr);
 	}
 
-	//Upload function only upload file to server.
-	//If you want to insert something to a table, do it in the controller
 	public function uploadFile($file, $target, $fileName){
 		//extract extension
 		$ext = explode('.', $file['signed_doc']['name']);
@@ -228,6 +226,8 @@ class Commonmodel extends CI_Model {
 			}			
 		}else if($type=='eval90th'){			
 			$cnt = $this->dbmodel->getSingleField('staffEvaluation', 'COUNT(evalID) AS cnt', 'status=1 AND hrStatus>0');
+		}else if($type=='evalNotif'){
+			$cnt = $this->dbmodel->getSingleField('staffEvaluationNotif', 'COUNT(notifyId) AS cnt', 'status = 0 OR status = 1 AND empid ='.$this->user->empID);
 		}else if($type=='unpublishedLogs'){
 			$condUsers = '';
 			if($this->config->item('timeCardTest')==true){ ///////////////TEST USERS ONLY REMOVE THIS IF LIVE TO ALL
@@ -258,12 +258,12 @@ class Commonmodel extends CI_Model {
 			$cnt = $this->dbmodel->getSingleField('staff_hdmf_loan', 'count(hdmf_loan_id)', 'hdmf_loan_status=0');
 		} elseif( $type == 'kudos'){
 			$kWhere = 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID;
-			//var_dump($this->access->accessHR);
 			if($this->access->accessHR){
 				$kWhere .= ' OR kudosRequestStatus = 2';
 			}
 
 			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', $kWhere );
+//			$cnt = $this->dbmodel->getSingleField('kudosRequest', 'COUNT(kudosRequestID)', 'kudosRequestStatus = 1 AND kudosReceiverSupID = '.$this->user->empID);
 		} elseif($type == 'notifStatus'){
 			// SELECT COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != 'bpodutan' ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt FROM hr_cs_post WHERE cs_post_empID_fk = 468
 			$cnt = $this->dbmodel->getSingleField('hr_cs_post', ' COUNT( (SELECT reply_empUser FROM hr_cs_msg WHERE cs_msg_postID_fk = cs_post_id AND reply_empUser != "'.$this->user->username.'" ORDER BY cs_msg_date_submitted DESC LIMIT 1) ) AS cnt ', 'cs_post_status < 3 AND cs_post_empID_fk ='.$this->user->empID );
@@ -295,12 +295,10 @@ class Commonmodel extends CI_Model {
 	}
 	
 	function getStaffUnder($empID, $level){
-		
 		$query = '';
 		///tweak for design team
-		if($level==2 OR $level==3){
+		if($level==2 OR $level==3 ){
 			$myDesign = $this->dbmodel->getSingleInfo('staffs', 'supervisor, grp', 'empID="'.$empID.'"', 'LEFT JOIN newPositions ON posID=position');
-			
 			if($myDesign->grp=='Design'){
 				$supervisors = '';
 				$supQuery = $this->dbmodel->getQueryResults('staffs', 'DISTINCT empID', 'empID IN (SELECT DISTINCT supervisor FROM staffs WHERE supervisor!=0) AND dept="Production" AND grp!="Editing"', 'LEFT JOIN newPositions ON posID=position');
@@ -366,6 +364,7 @@ class Commonmodel extends CI_Model {
 				//if(!isset($row->username)) $valid = false;
 			//}			
 		//}	
+
 		return $valid;
 	}
 		
@@ -524,7 +523,7 @@ class Commonmodel extends CI_Model {
 		$date2 = date_create( $date2 );	
 
 		$diff = date_diff( $date1, $date2 );
-
+		
 		$return =  $diff->format( $format );
 		return $return;//date('H:i:s', strtotime($return));
 	}

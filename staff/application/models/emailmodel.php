@@ -626,5 +626,37 @@ class Emailmodel extends CI_Model {
 		$this->emailM->sendEmail( 'careers.cebu@tatepublishing.net', $to, $subject, $body, 'CareerPH');
 	}
 	
+
+	public function sendEvaluationEmail($userType, $staff_id, $evaluator_id, $evaluation_id, $cc=''){
+	 	$fields = "concat(fname,' ',lname) as 'name', email";
+	 	$staff_info = $this->databasemodel->getSingleInfo('staffs',$fields,'empId='.$staff_id);
+	 	$evaluator_info = $this->databasemodel->getSingleInfo('staffs',$fields,"empId=".$evaluator_id);
+	 	#$evaluation_info = $this->databasemodel->getSingleField('staffEva','*',"notifyId=".$evaluation_id);
+
+	 	/*
+		 * User type 1 is Supervisor,	
+		 * 2 is Rank and File
+	 	 */
+	
+	 	if($userType == 1){
+	 		$subject = "90th day Performance Evaluation";
+	 		$body = "Hi ".$evaluator_info->name.".<br><br>Please give your Performance Evaluation for ".$staff_info->name.". Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$staff_id."/".$evaluator_id."/".$evaluation_id."'>click here</a> to give your evaluation.<br><br>Thank you.";
+	 		$to = $evaluator_info->email;
+	 	}
+
+	 	if($userType == 2){
+	 		$subject = "90th day Performance Evaluation";
+	 		$body = "Hi ".$info->name.". <br><br>Your performance evaluation has been generated. Please <a href='".$this->config->base_url()."performanceeval/".$userType."/".$staff_id."/".$evaluator_id."/".$evaluation_id."'>click here</a> to self-rate your performance evaluation.<br><br>Thank you.";
+	 		$to = $staff_info->email;
+	 	}
+
+	 	$this->sendEmail('careers.cebu@tatepublishing.net', $to, $subject, $body, 'CAREERPH', $cc);
+
+		echo "<script>
+				alert('The email has been sent.');
+				window.close();
+			</script>";
+	}
+
 }
 
