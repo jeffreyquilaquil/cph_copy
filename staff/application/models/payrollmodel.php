@@ -1989,6 +1989,11 @@ class Payrollmodel extends CI_Model {
 		$cell_counter = 12;
 		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
 
+
+		// echo "<pre>";
+		// var_dump($data_items);
+		// exit();
+
 		foreach ($data_items as $key => $value) {
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
 			$totalGross = 0;
@@ -1996,6 +2001,7 @@ class Payrollmodel extends CI_Model {
 
 			foreach ($value as $l => $v) {
 				$k = $l;
+
 				switch ($l) {
 					case 'F': $totalGross += str_replace(',', '', $v);
 					case 'G': $k = 'P'; break;
@@ -2010,8 +2016,9 @@ class Payrollmodel extends CI_Model {
 					case 'V': $k = 'AC'; break;
 					case 'W': $k = 'AD'; break;
 					case 'AC': $k = 'AI'; break;
-					case 'AE' : $k = 'AI'; break;
+					case 'AE' : $k = 'AK'; break;
 				}
+				echo $k.$cell_counter.' ';
 				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
 			}
 			$totalGross += $data[$key]->for21;
@@ -2052,7 +2059,7 @@ class Payrollmodel extends CI_Model {
 
 			if($colVal < 0){
 				$forAL = $AE-$colVal;
-				$colLetter = -1*($colVal);
+				$colVal = -1*($colVal);
 			}
 
 			$objPHPExcel->getActiveSheet()->setCellValue($colLetter.$cell_counter, $colVal );
