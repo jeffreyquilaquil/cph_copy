@@ -33,13 +33,13 @@ class Evaluations extends MY_Controller
 			$careerType = $type;
 			$type = 'technicalQuestions';
 		}
-		$data['access'] = ($this->user->levelID_fk > 0 || $this->user->dept = "Human Resources" ? true : false);
 		$data['content'] = 'evaluations'.($type==null ? '/questionnaires' : '/'.$type);
+		$data['access'] = ($this->user->levelID_fk > 0 || $this->access->accessFullHR ? true : false);
 		$data['tpage'] = 'evaluations';
 		$data['column'] = 'withLeft';
 		$data['questions'] = $this->evaluationsmodel->getQuestions($type, $careerType);
 		$data['positions'] = $this->evaluationsmodel->getPositions();
-		
+		//dd($data['positions']);
 		$this->load->view('includes/template', $data);
 	}
 

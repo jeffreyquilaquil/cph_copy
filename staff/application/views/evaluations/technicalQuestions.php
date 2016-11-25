@@ -11,6 +11,9 @@
 		border:1px solid black;
 		padding: 0px 0px 0px 0px;
 	}
+	td{
+		text-align: center;
+	}
 	.question_row:hover{
 		background:#CCCCCC;
 		cursor: pointer;

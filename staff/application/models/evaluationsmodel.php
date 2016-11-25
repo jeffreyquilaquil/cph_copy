@@ -79,7 +79,16 @@ class Evaluationsmodel extends CI_model{
 
 	public function getPositions(){
 		// Fetch the list of positions so that it can be synced with the technical questions
-		return $this->databasemodel->getQueryResults('newPositions', "posID, title",'title != ""','', 'title');
+		if($this->access->accessFullHR){
+			return $this->databasemodel->getQueryResults('newPositions', "posID, title",'title != ""','', 'title');
+		}
+
+		// if not full access
+		$data = [];
+		$positions = $this->databasemodel->getSQLQueryResults('SELECT posID, title FROM staffs LEFT JOIN newPositions ON posID = position WHERE title != "" AND supervisor='.$this->user->empID.' GROUP BY title ORDER BY title');
+		array_push($positions, (object)['posID'=>$this->user->position,'title'=>$this->user->title]);
+		return $positions;
+		
 	}
 
 	public function saveEvaluationDate($data){

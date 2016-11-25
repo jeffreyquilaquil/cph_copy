@@ -34,6 +34,7 @@
 	}
 	.question_row:hover{
 		background:#CCCCCC;
+		cursor: pointer;
 	}
 
 </style>
@@ -65,7 +66,7 @@
 <br>
 <form method="POST" action="" onsubmit="submitValues()">
 	<?php 
-		if($this->access->accessFullHR  == true){
+		if($this->access->accessFullHR){
 			echo '<input type="button" value="Add Question" id="btnAddQuestion" class="btnclass" onclick="addQuestion()" style="float:right;">';
 		}
 	 ?>
@@ -109,7 +110,7 @@
 							foreach ($questionArr as $question_val) {
 								$tdClass = ($i < $questionCount ? 'tdBot' : '');
 
-								echo "<tr><td class='{$tdClass} question row".$i."' >".$question_val."</td></tr>";
+								echo "<tr><td class='innerTd {$tdClass} question row".$i."' >".$question_val."</td></tr>";
 								$i++;
 							}
 						 ?>
@@ -132,7 +133,7 @@
 						foreach ($expectationArr as $expectation_val) {
 							$tdClass = ($i < $expectationCount ? 'tdBot' : '');
 
-							echo "<tr><td class='{$tdClass} txtExpectationtxt row".$i."' >".$expectation_val."</td></tr>";
+							echo "<tr><td class='innerTd {$tdClass} txtExpectationtxt row".$i."' >".$expectation_val."</td></tr>";
 							$i++;
 						}
 					?>
@@ -144,7 +145,7 @@
 							$i = 0;
 							foreach ($details as $value) {
 								$tdClass = ($i < $row_count ? 'tdBot' : '');
-								echo "<tr><td class='{$tdClass} txtEvaluator row".$i."' data-val='".$value->evaluator."' data-id='".$value->detail_id."'>".$evaluatorArr[$value->evaluator]."</td></tr>";
+								echo "<tr><td class='innerTd {$tdClass} txtEvaluator row".$i."' data-val='".$value->evaluator."' data-id='".$value->detail_id."'>".$evaluatorArr[$value->evaluator]."</td></tr>";
 							$i++;
 							}
 						?>
@@ -156,7 +157,7 @@
 							$i = 0;
 							foreach($details as $value){
 								$tdClass = ($i < $row_count ? 'tdBot' : '');
-								echo "<tr><td class='{$tdClass} txtWeight row".$i."' data-val='".$value->weight."'>".$value->weight."%</td></tr>";
+								echo "<tr><td class='innerTd {$tdClass} txtWeight row".$i."' data-val='".$value->weight."'>".$value->weight."%</td></tr>";
 							$i++;
 							}
 						?>
@@ -169,7 +170,7 @@
 							foreach ($details as $value) {
 								$tdClass = ($i < $row_count ? 'tdBot' : '');
 								$text = ($value->nop == 1 ? 'Yes' : 'No');
-								echo "<tr><td class='{$tdClass} txtNop row".$i."' data-val='".$value->nop."'>".$text."</td></tr>";
+								echo "<tr><td class='innerTd {$tdClass} txtNop row".$i."' data-val='".$value->nop."'>".$text."</td></tr>";
 								$i++;
 							}
 						 ?>
@@ -203,6 +204,17 @@ var i = 1;
 var detailsIdArr = [];
 var questionId = null;
 var haha = 1;
+	$(document).ready(function(){
+		$('.question_row').each(function(){
+			var heightArr = [];
+			//console.log(this);
+			$(this).find('.innerTd').each(function(){
+				heightArr.push($(this).height());
+			});
+			heightArr.sort(function(a,b){return b-a});
+			$(this).find('.innerTd').height( heightArr[0] );		
+		});
+	})
 
 	// Append this row whenever the "add evaluator" button is clicked.
 	function addInlineEvaluator(i){
@@ -354,6 +366,8 @@ var haha = 1;
 
 
 	$(document).on('dblclick', '.question_row', function(){
+		var access = "<?php echo $this->access->accessFullHR; ?>";
+		if(!access) return false;
 		i=1; 	detailsIdArr=[];
 		$('#addQuestionTbl *, #addEvaluatorTbl *, #addExpectationTbl *').remove();
 		questionId = $(this).data('id');
