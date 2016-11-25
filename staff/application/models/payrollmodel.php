@@ -1829,7 +1829,6 @@ class Payrollmodel extends CI_Model {
 			foreach( $data_items as $di_key => $di_val ){
 				$$di_key = $di_val;
 			}
-
 			
 			//declare payinfo manually (add13 = total13th, )
 
@@ -1924,7 +1923,7 @@ class Payrollmodel extends CI_Model {
 
 			$objPHPExcel->getActiveSheet()->setCellValue('T'.$cell_counter, $this->formatNum($n29) );
 
-			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(0) );
+			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(-1*$totalTaxWithheld) );
 
 			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($n31) );
 
