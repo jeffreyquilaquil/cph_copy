@@ -62,7 +62,7 @@ class Timecard extends MY_Controller {
 		}
 				
 		//STAFF SCHEDULES		
-		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active=1 AND exclude_schedule=0'.$staffID);	
+		$queryStaffs = $this->dbmodel->getQueryResults('staffs', 'empID', 'active IN (1, 2) AND exclude_schedule=0'.$staffID);	
 		
 		foreach($queryStaffs AS $staff){
 			$schedToday = $this->timeM->getCalendarSchedule($today, $today, $staff->empID, true);
