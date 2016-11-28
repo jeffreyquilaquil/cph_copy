@@ -192,6 +192,7 @@
 				echo $this->staffM->displayInfo('jdetails', 'endDate', (($row->endDate!='0000-00-00')? date('F d, Y',strtotime($row->endDate)) : ''), true, 'First day employee is no longer connected with Tate');
 				echo $this->staffM->displayInfo('jdetails', 'accessEndDate', (($row->accessEndDate!='0000-00-00')? date('F d, Y',strtotime($row->accessEndDate)) : ''), true, 'First day of no access');
 				echo $this->staffM->displayInfo('jdetails', 'terminationType', $row->terminationType, true);
+				echo $this->staffM->displayInfo('jdetails', 'floatStartDate', (($row->floatStartDate!='0000-00-00')? date('F d, Y',strtotime($row->floatStartDate)) : ''), true);
 			}
 			
 									
