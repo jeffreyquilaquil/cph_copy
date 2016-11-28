@@ -774,7 +774,7 @@ class Timecardmodel extends CI_Model {
 				
 				if(isset($yoyo['suspend'])){
 					$sched .= '<a href="'.$this->config->base_url().'detailsNTE/'.$yoyo['suspend'].'/" class="iframe tanone"><div class="daysbox dayonleave">SUSPENDED</div></a>';
-				}else if( strtotime( $queryFloat->floatStartDate ) <= strtotime( $yoyo['schedDate'] ) ){
+				}else if( $queryFloat->floatStartDate != '0000-00-00' AND strtotime( $queryFloat->floatStartDate ) <= strtotime( $yoyo['schedDate'] ) ){
 					$sched .= '<div class="daysbox dayonleave">FLOATING STATUS</div>';
 				}else{
 					if(isset($yoyo['leave'])){
