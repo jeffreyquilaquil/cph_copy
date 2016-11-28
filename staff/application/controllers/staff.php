@@ -520,6 +520,7 @@ class Staff extends MY_Controller {
 									$this->schedM->endSchedule($empID, $_POST['endDate']); ///end schedule for payroll
 								}
 								if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
+								if(isset($_POST['floatStartDate']) && $_POST['floatStartDate']!='') $_POST['floatStartDate'] = date('Y-m-d', strtotime($_POST['floatStartDate']));
 								if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
 								
 								$encArr = $this->textM->constantArr('encText');
