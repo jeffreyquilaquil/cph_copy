@@ -63,7 +63,7 @@
 				}
 			echo '</select>';		
 			
-			echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen');
+			echo ' '.$this->textM->formfield('submit', '', 'Let\'s Go!', 'btnclass btngreen btnletgo');
 			echo '&nbsp;&nbsp;<a class="inline" href="#inline_content"><img src="'.$this->config->base_url().'css/images/icon-question1.png" width="16px"/></a>';
 			
 			echo $this->textM->formfield('textarea', 'empIDs', '', 'hidden');
@@ -125,8 +125,10 @@
 	$(function(){
 		<?php if($select == 'monthly'): ?>
 			$('#semiSelect').hide();
+			$('#semiSelect').removeAttr('name');
 		<?php else: ?>
 			$('#monthlySelect').hide();
+			$('#monthlySelect').removeAttr('name');
 		<?php endif; ?>
 	});	
 </script>
@@ -269,14 +271,22 @@ if(count($dataMainItems)>0){ ?>
 		
 		$('.toolbar #formManage').submit(function(){
 			empIDs = checkIfSelected();
-			if(empIDs==false){
-				alert('Please select employee first.');
+			var payDate = $('.toolbar select[name="periodDate"] option:selected').text();
+			console.log(payDate);
+			var con = confirm('Do you want to generate payroll for '+ payDate +'?');
+			if( con == true ){
+				if(empIDs==false){
+					alert('Please select employee first.');
+					return false;
+				}else{
+					$('textarea[name="empIDs"]').text(empIDs);
+					displaypleasewait();
+					return true;
+				}
+			} else {
 				return false;
-			}else{
-				$('textarea[name="empIDs"]').text(empIDs);
-				displaypleasewait();
-				return true;
 			}
+	
 		});
 		
 		
@@ -288,13 +298,17 @@ if(count($dataMainItems)>0){ ?>
 				/*$('.toolbar #semiSelect').addClass('hidden');
 				$('.toolbar #monthlySelect').removeClass('hidden');*/
 				$('.toolbar #monthlySelect').show();
+				$('.toolbar #semiSelect').removeAttr('name');
 				$('.toolbar #semiSelect').hide();
+				
 				$('.toolbar #monthlySelect').attr('name', 'periodDate');
 			}else{
 				/*$('.toolbar #semiSelect').removeClass('hidden');
 				$('.toolbar #monthlySelect').addClass('hidden');*/
 				$('.toolbar #monthlySelect').hide();
-				$('.toolbar #semiSelect').show();
+				$('.toolbar #monthlySelect').removeAttr('name');
+
+				$('.toolbar #semiSelect').show();				
 				$('.toolbar #semiSelect').attr('name', 'periodDate');
 			}
 		});
