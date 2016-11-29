@@ -1044,7 +1044,7 @@ class Staff extends MY_Controller {
 			
 			$pdf = new FPDI();
 			$pdf->AddPage();
-			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE_V2.pdf');
 			
 			if($row->status==1 || $this->uri->segment(4)=='nform'){ //if NTE form		
 				$tplIdx = $pdf->importPage(1);
@@ -1058,13 +1058,16 @@ class Staff extends MY_Controller {
 				
 				$pdf->setXY(47, 42.8);
 				$pdf->Write(0, $row->name);	
+
+				$pdf->setXY(47, 47);
+				$pdf->Write(0, $row->title);
 				
 				if(isset($sName->name)){
-					$pdf->setXY(47, 51.5);
+					$pdf->setXY(47, 55);
 					$pdf->Write(0, $sName->name);	
 				}
 				
-				$pdf->setXY(47, 47);
+				$pdf->setXY(47, 51);
 				$pdf->Write(0, 'The Human Resource Department');	
 				
 				$pdf->setTextColor(255, 0, 0);
