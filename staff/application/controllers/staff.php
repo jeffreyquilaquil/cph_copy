@@ -417,6 +417,8 @@ class Staff extends MY_Controller {
 			
 			
 				$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, supervisor, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
+
+				//dd($data['query']);
 								
 				if(isset($_POST) && !empty($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report'){					
 					header("Content-Type: application/xls");    
@@ -425,6 +427,7 @@ class Staff extends MY_Controller {
 					header("Expires: 0");
 					
 					$txt = '';
+					$txt = "\r\n";
 					$tab = "\t";
 					$cntNewYork = count($data['fvalue']);
 					for($i=0;$i<$cntNewYork;$i++){
@@ -439,6 +442,7 @@ class Staff extends MY_Controller {
 							if( in_array($data['fvalue'][$j], array('sal', 'tin', 'hdmf', 'philhealth','sss', 'hmoNumber', 'bankAccnt') ) )
 								$txt .= $this->textM->convertDecryptedText($data['fvalue'][$j],$q->$data['fvalue'][$j]);
 							else if($data['fvalue'][$j]=='phone') $txt .= $q->phone1.((!empty($q->phone2))?','.$q->phone2:'');
+							else if($data['fvalue'][$j]=='active') $txt .= $this->textM->constantArr('active')[ $q->active ];
 							else $txt .= trim($q->$data['fvalue'][$j]);
 							$txt .= $tab;
 						}
