@@ -53,7 +53,8 @@
 	<a id="dall" href="javascript:void(0)">Deselect All</a>&nbsp;&nbsp;&nbsp;
 	<a id="shide" href="javascript:void(0)">Hide</a>&nbsp;&nbsp;&nbsp;
 	<input type="submit" name="submitType" value="Generate Employee Report" class="btnclass"/>&nbsp;&nbsp;&nbsp;
-	<input type="checkbox" name="includeinactive" <?= ((isset($_POST['includeinactive'])) ? 'checked':'') ?>/> Include Separated Employees
+	<input type="checkbox" name="includeinactive" id="includeinactive" <?= ((isset($_POST['includeinactive'])) ? 'checked':'') ?>/> <label for="includeinactive">Include Separated Employees</label> &nbsp;&nbsp;&nbsp;
+	<input type="checkbox" name="includefloat" id="includefloat" <?php echo ((isset($_POST['includefloat'])) ? 'checked' : ''); ?> /> <label for="includefloat">Include Floating Employees</labe>
 </form>
 <hr/><br/>
 </div>
@@ -82,7 +83,7 @@
 				else if($fvalue[$i]=='phone'){ echo $row->phone1; if($row->phone2!=''){ echo ', '.$row->phone2; } }
 				else if($fvalue[$i]=='address'){ echo $row->address; if($row->city!=''){ echo ', '.$row->city; } if($row->country!=''){ echo ', '.$row->country; } if($row->zip!=''){ echo ', '.$row->zip; } }
 				else if($fvalue[$i]=='gender') echo (($row->gender=='F')?'Female':'Male');
-				else if($fvalue[$i]=='active') echo (($row->active=='1')?'Yes':'No');
+				else if($fvalue[$i]=='active') { echo $this->textM->constantArr('active')[ $row->active ]; }
 				else if($fvalue[$i]=='username') echo strtolower($row->$fvalue[$i]);
 				else if($fvalue[$i]=='terminationType') echo $this->staffM->infoTextVal('terminationType', $row->$fvalue[$i]);
 				else if($fvalue[$i]=='sal') echo $this->textM->convertDecryptedText('sal',$row->$fvalue[$i]);
