@@ -245,7 +245,7 @@ class Payrollmodel extends CI_Model {
 			}else if($item->payCode == 'kudosBonus'){
 				$payValue += $item->payAmount;
 			}else{
-				$payValue = $item->payAmount;
+				$payValue = str_replace(',','',$item->payAmount);
 			} 				
 			
 			if($happen==true){
@@ -258,6 +258,7 @@ class Payrollmodel extends CI_Model {
 				
 		}
 		if( $insert_array ){
+
 			foreach( $insert_array AS $key => $val ){
 				foreach( $val as $k => $v ){
 					$this->payrollM->insertPayEachDetail($v['payslipID'], $v['payID_fk'], $v['payValue'], $v['hr']);
