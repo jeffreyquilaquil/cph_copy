@@ -209,7 +209,8 @@ $(function () {
 				accessEndDate:$('#accessEndDate').val(),
 				active:$('#active').val(),
 				levelID_fk:$('#levelID_fk').val(),
-				terminationType:$('#terminationType').val()
+				terminationType:$('#terminationType').val(),
+				floatStartDate: $('#floatStartDate').val()
 			},function(){
 				window.location.reload();
 			});
