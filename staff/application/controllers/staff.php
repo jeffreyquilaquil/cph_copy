@@ -300,6 +300,7 @@ class Staff extends MY_Controller {
 	
 	public function manageStaff(){
 		$data['content'] = 'manageStaff';
+		// $active = ' AND staffs.active = 1 ';
 		///$this->textM->aaa($this->user, false);
 		//$this->textM->aaa($this->access, true);
 		if($this->user!=false){		
@@ -340,8 +341,17 @@ class Staff extends MY_Controller {
 						endforeach;
 					}
 
-					if(!isset($_POST['includeinactive']))
-						$condition .= ' AND staffs.active=1';
+					if(isset($_POST['includeinactive']) AND !isset($_POST['includefloat']) ){
+						$active .= ' AND staffs.active IN (0, 1)';
+					} else if(!isset($_POST['includeinactive']) AND isset($_POST['includefloat'])){
+						$active .= ' AND staffs.active IN (1, 2)';
+					} else if(isset($_POST['includeinactive']) AND isset($_POST['includefloat'])) {
+						$active .= ' AND staffs.active IN (0, 1, 2) ';
+					} else {
+						$active .= ' AND staffs.active IN (1) ';
+					}
+						
+					$condition .= $active;
 
 					if($_POST['submitType']=='Generate Employee Report'){
 						$narr = array('lname', 'fname');
@@ -388,12 +398,27 @@ class Staff extends MY_Controller {
 					$flds = $flds.'email, newPositions.title, dept';
 					$data['fvalue'] = array('email', 'title', 'dept');
 					
-					if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= '';
-					else $condition .= 'AND staffs.active=1';
+					// if(isset($_POST['includeinactive']) && $_POST['includeinactive']=='on') $condition .= ' AND staffs.active IN (0, 1) ';
+					// else if( isset($_POST['includefloat']) && $_POST['includefloat'] == 'on' ) $condition .= '';
+					// else $condition .= 'AND staffs.active=1';
+
+					if(isset($_POST['includeinactive']) AND !isset($_POST['includefloat']) ){
+						$active .= ' AND staffs.active IN (0, 1)';
+					} else if(isset($_POST['includeinactive']) AND !isset($_POST['includeinactive'])){
+						$active .= ' AND staffs.active IN (1, 2)';
+					} else if(isset($_POST['includeinactive']) AND isset($_POST['includeinactive'])) {
+						$active .= ' AND staffs.active IN (0, 1, 2) ';
+					} else {
+						$active .= ' AND staffs.active IN (1) ';
+					}
+
+					
 				}
-				
+			
 			
 				$data['query'] = $this->dbmodel->getQueryResults('staffs', 'empID, username, supervisor, '.$flds, $condition, 'LEFT JOIN newPositions ON posId=position LEFT JOIN orgLevel ON levelID=levelID_fk', 'lname');
+
+				//dd($data['query']);
 								
 				if(isset($_POST) && !empty($_POST['submitType']) && $_POST['submitType']=='Generate Employee Report'){					
 					header("Content-Type: application/xls");    
@@ -402,6 +427,7 @@ class Staff extends MY_Controller {
 					header("Expires: 0");
 					
 					$txt = '';
+					$txt = "\r\n";
 					$tab = "\t";
 					$cntNewYork = count($data['fvalue']);
 					for($i=0;$i<$cntNewYork;$i++){
@@ -416,6 +442,7 @@ class Staff extends MY_Controller {
 							if( in_array($data['fvalue'][$j], array('sal', 'tin', 'hdmf', 'philhealth','sss', 'hmoNumber', 'bankAccnt') ) )
 								$txt .= $this->textM->convertDecryptedText($data['fvalue'][$j],$q->$data['fvalue'][$j]);
 							else if($data['fvalue'][$j]=='phone') $txt .= $q->phone1.((!empty($q->phone2))?','.$q->phone2:'');
+							else if($data['fvalue'][$j]=='active') $txt .= $this->textM->constantArr('active')[ $q->active ];
 							else $txt .= trim($q->$data['fvalue'][$j]);
 							$txt .= $tab;
 						}
@@ -520,6 +547,7 @@ class Staff extends MY_Controller {
 									$this->schedM->endSchedule($empID, $_POST['endDate']); ///end schedule for payroll
 								}
 								if(isset($_POST['accessEndDate']) && $_POST['accessEndDate']!='') $_POST['accessEndDate'] = date('Y-m-d', strtotime($_POST['accessEndDate']));
+								if(isset($_POST['floatStartDate']) && $_POST['floatStartDate']!='') $_POST['floatStartDate'] = date('Y-m-d', strtotime($_POST['floatStartDate']));
 								if(isset($_POST['regDate']) && $_POST['regDate']!='') $_POST['regDate'] = date('Y-m-d', strtotime($_POST['regDate']));
 								
 								$encArr = $this->textM->constantArr('encText');
@@ -1044,7 +1072,7 @@ class Staff extends MY_Controller {
 			
 			$pdf = new FPDI();
 			$pdf->AddPage();
-			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE.pdf');
+			$pdf->setSourceFile(PDFTEMPLATES_DIR.'NTE_V2.pdf');
 			
 			if($row->status==1 || $this->uri->segment(4)=='nform'){ //if NTE form		
 				$tplIdx = $pdf->importPage(1);
@@ -1058,13 +1086,16 @@ class Staff extends MY_Controller {
 				
 				$pdf->setXY(47, 42.8);
 				$pdf->Write(0, $row->name);	
+
+				$pdf->setXY(47, 47);
+				$pdf->Write(0, $row->title);
 				
 				if(isset($sName->name)){
-					$pdf->setXY(47, 51.5);
+					$pdf->setXY(47, 55);
 					$pdf->Write(0, $sName->name);	
 				}
 				
-				$pdf->setXY(47, 47);
+				$pdf->setXY(47, 51);
 				$pdf->Write(0, 'The Human Resource Department');	
 				
 				$pdf->setTextColor(255, 0, 0);

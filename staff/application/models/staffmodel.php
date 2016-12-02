@@ -15,7 +15,7 @@ class Staffmodel extends CI_Model {
 		$updated = array();
 		if(count($orig)>0){			
 			foreach($new AS $k=>$v):
-				if($k=='bdate' || $k=='startDate' || $k=='endDate' || $k=='accessEndDate' || $k=='regDate'){
+				if($k=='bdate' || $k=='startDate' || $k=='endDate' || $k=='accessEndDate' || $k=='regDate' || $k=='floatStartDate'){
 					if($v=='') $v = '0000-00-00';
 					else $v = date('Y-m-d', strtotime($v));
 				}else if(in_array($k, $encArr)){
@@ -558,7 +558,7 @@ class Staffmodel extends CI_Model {
 		if($fld=='pemail' || $fld=='email')
 			$vvalue = '<a href="mailto:'.$v.'">'.$v.'</a>';
 		$aclass='';
-		if(in_array($fld,array('bdate', 'startDate', 'endDate', 'accessEndDate', 'regDate'))) $aclass = 'datepick';
+		if(in_array($fld,array('bdate', 'startDate', 'endDate', 'accessEndDate', 'regDate', 'floatStartDate'))) $aclass = 'datepick';
 		
 		$disp = '<tr class="'.$c.'tr '.$showhide.'">
 					<td width="30%">'.$this->textM->constantText('txt_'.$fld).'</td>

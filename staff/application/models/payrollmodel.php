@@ -245,7 +245,7 @@ class Payrollmodel extends CI_Model {
 			}else if($item->payCode == 'kudosBonus'){
 				$payValue += $item->payAmount;
 			}else{
-				$payValue = $item->payAmount;
+				$payValue = str_replace(',','',$item->payAmount);
 			} 				
 			
 			if($happen==true){
@@ -258,6 +258,7 @@ class Payrollmodel extends CI_Model {
 				
 		}
 		if( $insert_array ){
+
 			foreach( $insert_array AS $key => $val ){
 				foreach( $val as $k => $v ){
 					$this->payrollM->insertPayEachDetail($v['payslipID'], $v['payID_fk'], $v['payValue'], $v['hr']);
@@ -1829,7 +1830,6 @@ class Payrollmodel extends CI_Model {
 			foreach( $data_items as $di_key => $di_val ){
 				$$di_key = $di_val;
 			}
-
 			
 			//declare payinfo manually (add13 = total13th, )
 
@@ -1924,11 +1924,21 @@ class Payrollmodel extends CI_Model {
 
 			$objPHPExcel->getActiveSheet()->setCellValue('T'.$cell_counter, $this->formatNum($n29) );
 
-			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(0) );
+			$objPHPExcel->getActiveSheet()->setCellValue('U'.$cell_counter, $this->formatNum(-1*$totalTaxWithheld) );
 
-			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($n31) );
+			$yearEndAdjustment = $n29 - (-1*$totalTaxWithheld);
+			$forV = $forW = 0;
+			if( $yearEndAdjustment < 0){
+				$forW = $yearEndAdjustment *= -1;
+				$forV = 0;
+			}
+			else{
+				$forV = $yearEndAdjustment;
+				$forW = 0;
+			}
 
-			$objPHPExcel->getActiveSheet()->setCellValue('W'.$cell_counter, $this->formatNum(0) );
+			$objPHPExcel->getActiveSheet()->setCellValue('V'.$cell_counter, $this->formatNum($forV) );
+			$objPHPExcel->getActiveSheet()->setCellValue('W'.$cell_counter, $this->formatNum($forW) );
 
 			$objPHPExcel->getActiveSheet()->setCellValue('X'.$cell_counter, $this->formatNum($n31) );
 			$objPHPExcel->getActiveSheet()->setCellValue('Y'.$cell_counter, 'Y' );
@@ -1990,6 +2000,11 @@ class Payrollmodel extends CI_Model {
 		$cell_counter = 12;
 		$data_items = $this->payrollM->getTotalComputationForAllEmployee($data);
 
+
+		// echo "<pre>";
+		// var_dump($data_items);
+		// exit();
+
 		foreach ($data_items as $key => $value) {
 			$objPHPExcel->getActiveSheet()->setCellValue('A'.$cell_counter, $sequence);
 			$totalGross = 0;
@@ -1997,6 +2012,7 @@ class Payrollmodel extends CI_Model {
 
 			foreach ($value as $l => $v) {
 				$k = $l;
+
 				switch ($l) {
 					case 'F': $totalGross += str_replace(',', '', $v);
 					case 'G': $k = 'P'; break;
@@ -2011,8 +2027,9 @@ class Payrollmodel extends CI_Model {
 					case 'V': $k = 'AC'; break;
 					case 'W': $k = 'AD'; break;
 					case 'AC': $k = 'AI'; break;
-					case 'AE' : $k = 'AI'; break;
+					case 'AE' : $k = 'AK'; break;
 				}
+				echo $k.$cell_counter.' ';
 				$objPHPExcel->getActiveSheet()->setCellValue($k.$cell_counter, $v );
 			}
 			$totalGross += $data[$key]->for21;
@@ -2053,7 +2070,7 @@ class Payrollmodel extends CI_Model {
 
 			if($colVal < 0){
 				$forAL = $AE-$colVal;
-				$colLetter = -1*($colVal);
+				$colVal = -1*($colVal);
 			}
 
 			$objPHPExcel->getActiveSheet()->setCellValue($colLetter.$cell_counter, $colVal );

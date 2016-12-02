@@ -228,6 +228,8 @@ class Timecardmodel extends CI_Model {
 			}
 		}
 		
+
+		
 		foreach($dayArr AS $k=>$day){			
 			if(isset($day['schedDate']) && ($day['schedDate']<$dateStart || $day['schedDate']>$dateEnd)){
 				unset($dayArr[$k]);
@@ -748,7 +750,10 @@ class Timecardmodel extends CI_Model {
 			//getting calendar schedule			
 			$dayCurrentDate = strtotime($data['currentDate']);
 			$querySchedule = $this->timeM->getCalendarSchedule($dateStart, $dateEnd, $data['visitID']);
-			
+
+			//check for floating status
+			$queryFloat = $this->dbmodel->getQueryResults('staffs', 'floatStartDate', 'empID ="'.$data['visitID'].'"')[0];
+		
 			foreach($querySchedule AS $k=>$yoyo){
 				$sched = '';
 				if(isset($yoyo['holiday'])){
@@ -769,9 +774,18 @@ class Timecardmodel extends CI_Model {
 				
 				if(isset($yoyo['suspend'])){
 					$sched .= '<a href="'.$this->config->base_url().'detailsNTE/'.$yoyo['suspend'].'/" class="iframe tanone"><div class="daysbox dayonleave">SUSPENDED</div></a>';
+				}else if( $queryFloat->floatStartDate != '0000-00-00' AND strtotime( $queryFloat->floatStartDate ) <= strtotime( $yoyo['schedDate'] ) ){
+					$sched .= '<div class="daysbox dayonleave">FLOATING STATUS</div>';
 				}else{
 					if(isset($yoyo['leave'])){
-						$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';
+						if( is_array($yoyo['leaveID']) ){
+							foreach( $yoyo['leaveID'] as $leave ){
+								$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$leave.'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$leave.'</div></a>';		
+							}	
+						} else {
+							$sched .= '<a href="'.$this->config->base_url().'staffleaves/'.$yoyo['leaveID'].'/" class="iframe tanone"><div class="daysbox dayonleave">On-Leave<br/>'.$yoyo['leave'].'</div></a>';	
+						}
+						
 					}
 					
 					if(isset($yoyo['pendingleave'])){
@@ -794,7 +808,7 @@ class Timecardmodel extends CI_Model {
 								
 				if(!empty($sched) && isset($yoyo['schedDate']) && $yoyo['schedDate']<=$dateEnd && $yoyo['schedDate']>=$dateStart)
 					$data['dayArr'][$k] = $sched;	
-			}	
+			}	//end query
 			return $data;
 	}
 

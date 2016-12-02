@@ -15,7 +15,7 @@ if(count($dataPayslips)==0){
 	echo '</table>';
 }
 
-if( count($data_13thMonth) > 0 ){
+if( count($data_13thMonth) > 0 && $this->access->accessFull){
 	echo '<table class="tableInfo">';
 		foreach( $data_13thMonth as $data ){
 			echo '<tr>';
