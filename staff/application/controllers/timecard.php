@@ -2110,7 +2110,23 @@ class Timecard extends MY_Controller {
 						$this->db->delete('tc13thMonth', array('tcmonthID' => $dID) );	
 					}
 				}
-				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', '1', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
+
+				if( isset($_GET['method']) && $_GET['method'] == 'publish' ){
+					$payID = $_GET['payID'];
+
+					$payID = rtrim($payID, ',');
+
+					//Update to payslip publish
+					
+					$this->dbmodel->updateQueryText('tc13thMonth', 'tc13thMonthPublished = 1, tc13thMonthPublished_Date = CURDATE()', 'tcmonthID IN ('.$payID.') ');
+				}
+
+				$year = date('Y');
+				if( isset($_GET['year']) ){
+					$year = $_GET['year'];
+				}
+
+				$data['queryData'] = $this->dbmodel->getQueryResults('tc13thMonth', 'tc13thMonth.*, fname, lname, startDate, endDate', 'YEAR(periodFrom) = "'.$year.'"', 'LEFT JOIN staffs ON empID=empID_fk', 'dateGenerated, lname');
 			}			
 		}
 		
